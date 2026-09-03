@@ -34,8 +34,12 @@ import moment from "moment";
 import UpdateBatchCustomers from "./UpdateBatchCustomers";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
+import { useSelector } from "react-redux";
 
 export default function Batches() {
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+
   // ----------userefs----------------
   const inputRef = useRef();
   const addBatchRef = useRef();
@@ -50,6 +54,7 @@ export default function Batches() {
   const [regionOptions, setRegionOptions] = useState([]);
   const [batchesData, setBatchesData] = useState([]);
   const [editBatchItem, setEditBatchItem] = useState(null);
+  const [regionCounts, setRegionCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   /* ---------------- Trainer STATES ---------------- */
@@ -270,7 +275,8 @@ export default function Batches() {
     try {
       const response = await getCustomerBatches(payload);
       console.log("get batches response", response);
-      setBatchesData(response?.data?.data || []);
+      setBatchesData(response?.data?.data?.data || []);
+      setRegionCounts(response?.data?.data?.region_count || null);
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -550,7 +556,55 @@ export default function Batches() {
         </Col>
       </Row>
 
-      <div style={{ marginTop: "30px" }}>
+      {permissions.includes("Show Region Summary") && (
+        <div
+          className="livelead_today_summary_container"
+          style={{ marginTop: "20px" }}
+        >
+          <p className="livelead_today_label">REGION SUMMARY</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.hub_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.chennai_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.bangalore_region ?? 0}
+              </span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: "20px" }}>
         <CommonTable
           scroll={{ x: 1000 }}
           columns={columns}

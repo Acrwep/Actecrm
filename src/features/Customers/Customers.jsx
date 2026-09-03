@@ -91,6 +91,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import PrismaZoom from "react-prismazoom";
 import RevertTrainerApproval from "./RevertTrainerApproval";
 import ScrollableTabContainer from "../Common/ScrollableTabContainer";
+import AssignTrainerToCustomer from "./AssignTrainerToCustomer";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -580,15 +581,42 @@ export default function Customers() {
                           Student Verify
                         </Checkbox>
                       ) : (
-                        <div
-                          className="customers_classcompleted_container"
-                          style={{ marginBottom: "6px" }}
-                        >
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Student Verified
-                          </p>
-                        </div>
+                        <>
+                          {permissions.includes("Student Verify") ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginTop: "3px",
+                              }}
+                            >
+                              <button
+                                className="customers_update_studentverify_button"
+                                onClick={() => {
+                                  if (!permissions.includes("Student Verify")) {
+                                    CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  getParticularCustomerDetails(record?.id);
+                                  setDrawerContentStatus("Student Verify");
+                                  setIsStatusUpdateDrawer(true);
+                                }}
+                              >
+                                Update Std Verify
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              className="customers_classcompleted_container"
+                              style={{ marginBottom: "6px" }}
+                            >
+                              <BsPatchCheckFill color="#3c9111" />
+                              <p className="customers_classgoing_completedtext">
+                                Student Verified
+                              </p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </Col>
 
@@ -699,6 +727,29 @@ export default function Customers() {
                                 }}
                               >
                                 Update Trainer
+                              </button>
+                            </div>
+                          ) : permissions.includes("Trainer Assign") ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginTop: "3px",
+                              }}
+                            >
+                              <button
+                                className="customers_update_trainer_coordination_button"
+                                onClick={() => {
+                                  if (!permissions.includes("Trainer Assign")) {
+                                    CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  getParticularCustomerDetails(record?.id);
+                                  setDrawerContentStatus("Assign Trainer");
+                                  setIsStatusUpdateDrawer(true);
+                                }}
+                              >
+                                Update Trnr Coord
                               </button>
                             </div>
                           ) : (
@@ -2740,6 +2791,54 @@ export default function Customers() {
         </Col>
       </Row>
 
+      {/* {permissions.includes("Show Region Summary") && (
+        <div
+          className="livelead_today_summary_container"
+          style={{ marginTop: "12px" }}
+        >
+          <p className="livelead_today_label">REGION SUMMARY</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {regionStatusCounts?.hub_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {regionStatusCounts?.chennai_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {regionStatusCounts?.bangalore_region ?? 0}
+              </span>
+            </p>
+          </div>
+        </div>
+      )} */}
+
       <div className="customers_scroll_wrapper">
         {/* <button
           onClick={() => scroll(-600)}
@@ -3723,11 +3822,34 @@ export default function Customers() {
                     ? customerDetails.name
                     : "-"}
                 </p>
+                {customerDetails?.student_id && (
+                  <p className="customer_coursenametext">
+                    {customerDetails && customerDetails.student_id
+                      ? customerDetails.student_id
+                      : "-"}
+                  </p>
+                )}
                 <p className="customer_coursenametext">
                   {" "}
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
+                  Date Of Joining:{" "}
+                  {customerDetails && customerDetails.date_of_joining
+                    ? moment(customerDetails.date_of_joining).format(
+                        "DD/MM/YYYY",
+                      )
                     : "-"}
+                </p>
+
+                <p className="customer_coursenametext">
+                  Sale Executive:{" "}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </div>
             </div>
@@ -3738,33 +3860,6 @@ export default function Customers() {
             >
               <Col span={12}>
                 <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <LiaIdCardSolid
-                        size={19}
-                        color="gray"
-                        style={{
-                          flexShrink: 0,
-                          marginLeft: "-2.3px",
-                          marginRight: "-2px",
-                        }}
-                      />
-                      <p className="customerdetails_rowheading">Student Id</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.student_id
-                          ? customerDetails.student_id
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <FaRegCircleUser size={15} color="gray" />
@@ -3811,8 +3906,14 @@ export default function Customers() {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.phone
-                        ? customerDetails.phone
+                      {customerDetails?.phone
+                        ? `${
+                            customerDetails?.phonecode
+                              ? customerDetails.phonecode.startsWith("+")
+                                ? customerDetails.phonecode
+                                : `+${customerDetails.phonecode}`
+                              : ""
+                          } ${customerDetails.phone}`
                         : "-"}
                     </p>
                   </Col>
@@ -3827,28 +3928,16 @@ export default function Customers() {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.whatsapp
-                        ? customerDetails.whatsapp
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      {customerDetails && customerDetails.gender === "Male" ? (
-                        <BsGenderMale size={15} color="gray" />
-                      ) : (
-                        <BsGenderFemale size={15} color="gray" />
-                      )}
-                      <p className="customerdetails_rowheading">Gender</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.gender
-                        ? customerDetails.gender
+                      {customerDetails?.whatsapp
+                        ? `${
+                            customerDetails?.whatsapp_phone_code
+                              ? customerDetails.whatsapp_phone_code.startsWith(
+                                  "+",
+                                )
+                                ? customerDetails.whatsapp_phone_code
+                                : `+${customerDetails.whatsapp_phone_code}`
+                              : ""
+                          } ${customerDetails.whatsapp}`
                         : "-"}
                     </p>
                   </Col>
@@ -3858,45 +3947,24 @@ export default function Customers() {
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
+                      <p className="customerdetails_rowheading">Address</p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.current_location
-                        ? customerDetails.current_location
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.address
+                          ? customerDetails.address
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
               </Col>
 
               <Col span={12}>
                 <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Lead Executive
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={`${
-                        customerDetails && customerDetails.lead_assigned_to_id
-                          ? customerDetails.lead_assigned_to_id
-                          : "-"
-                      } (${
-                        customerDetails && customerDetails.lead_assigned_to_name
-                          ? customerDetails.lead_assigned_to_name
-                          : "-"
-                      })`}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Course</p>
@@ -3917,66 +3985,82 @@ export default function Customers() {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Branch</p>
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.total_amount
+                        ? "₹" + customerDetails.total_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Mode Of Class
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <EllipsisTooltip
                       text={
-                        customerDetails && customerDetails.branch_name
-                          ? customerDetails.branch_name
+                        customerDetails?.mode_of_class_name
+                          ? `${customerDetails.mode_of_class_name}${
+                              customerDetails?.place_of_service_name
+                                ? ` (${customerDetails.place_of_service_name})`
+                                : ""
+                            }`
                           : "-"
                       }
                       smallText={true}
                     />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Track</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_tracking
-                        ? customerDetails.batch_tracking
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Type</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_timing
-                        ? customerDetails.batch_timing
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
-                        : "-"}
-                    </p>
                   </Col>
                 </Row>
               </Col>
@@ -4014,8 +4098,10 @@ export default function Customers() {
               <>
                 <StudentVerify
                   ref={studentVerifyRef}
-                  customerDetails={customerDetails}
-                  setUpdateButtonLoading={setUpdateButtonLoading}
+                  customer_details={customerDetails}
+                  setIsStatusUpdateDrawerLoading={
+                    setIsStatusUpdateDrawerLoading
+                  }
                   callgetCustomersApi={() => {
                     updateStatusDrawerReset();
                     setPagination({
@@ -4037,8 +4123,31 @@ export default function Customers() {
                   }}
                 />
               </>
-            ) : drawerContentStatus === "Assign Trainer" ||
-              drawerContentStatus === "Trainer Verify" ||
+            ) : drawerContentStatus === "Assign Trainer" ? (
+              <AssignTrainerToCustomer
+                customer_details={customerDetails}
+                setIsStatusUpdateDrawerLoading={setIsStatusUpdateDrawerLoading}
+                callgetCustomersApi={() => {
+                  updateStatusDrawerReset();
+                  setPagination({
+                    page: 1,
+                  });
+                  getCustomersData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    dateFilterType,
+                    searchValue,
+                    selectedOrigin,
+                    bucketStatus,
+                    status,
+                    allDownliners,
+                    branchOptions,
+                    pagination.page,
+                    pagination.limit,
+                  );
+                }}
+              />
+            ) : drawerContentStatus === "Trainer Verify" ||
               drawerContentStatus === "Trainer Approval" ||
               drawerContentStatus === "Update Assigned Trainer" ? (
               <>
@@ -4210,7 +4319,9 @@ export default function Customers() {
 
         {/* footer */}
         {drawerContentStatus === "Finance Verify" ||
-        drawerContentStatus === "Update Payment" ? (
+        drawerContentStatus === "Update Payment" ||
+        drawerContentStatus === "Student Verify" ||
+        drawerContentStatus === "Assign Trainer" ? (
           ""
         ) : (
           <div className="leadmanager_tablefiler_footer">
@@ -4361,55 +4472,48 @@ export default function Customers() {
                           : "users_adddrawer_createbutton"
                       }
                       onClick={
-                        drawerContentStatus === "Student Verify"
+                        drawerContentStatus === "Update Assigned Trainer"
                           ? () =>
-                              studentVerifyRef.current?.handleStudentVerify()
-                          : drawerContentStatus === "Assign Trainer" ||
-                              drawerContentStatus === "Update Assigned Trainer"
+                              assignAndVerifyTrainerRef.current?.handleAssignTrainer()
+                          : drawerContentStatus === "Re-Assign Trainer"
                             ? () =>
-                                assignAndVerifyTrainerRef.current?.handleAssignTrainer()
-                            : drawerContentStatus === "Re-Assign Trainer"
+                                reAssignTrainerRef.current?.handleReAssignTrainer()
+                            : drawerContentStatus === "Trainer Verify" ||
+                                drawerContentStatus === "Trainer Approval"
                               ? () =>
-                                  reAssignTrainerRef.current?.handleReAssignTrainer()
-                              : drawerContentStatus === "Trainer Verify" ||
-                                  drawerContentStatus === "Trainer Approval"
+                                  assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
+                              : drawerContentStatus === "Class Schedule"
                                 ? () =>
-                                    assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
-                                : drawerContentStatus === "Class Schedule"
+                                    classScheduleRef.current?.handleClassSchedule()
+                                : drawerContentStatus === "Class Going"
                                   ? () =>
-                                      classScheduleRef.current?.handleClassSchedule()
-                                  : drawerContentStatus === "Class Going"
+                                      classScheduleRef.current?.handleUpdateClassGoing()
+                                  : drawerContentStatus === "Add G-Review"
                                     ? () =>
-                                        classScheduleRef.current?.handleUpdateClassGoing()
-                                    : drawerContentStatus === "Add G-Review"
+                                        passedOutProcessRef.current?.handleGoogleReview()
+                                    : drawerContentStatus === "Pre Certificate"
                                       ? () =>
-                                          passedOutProcessRef.current?.handleGoogleReview()
-                                      : drawerContentStatus ===
-                                          "Pre Certificate"
+                                          preCertificateRef.current?.handleGeneratePreCert()
+                                      : drawerContentStatus === "Others"
                                         ? () =>
-                                            preCertificateRef.current?.handleGeneratePreCert()
-                                        : drawerContentStatus === "Others"
-                                          ? () =>
-                                              othersHandlingRef.current?.handleSubmit()
-                                          : handleStatusMismatch
+                                            othersHandlingRef.current?.handleSubmit()
+                                        : handleStatusMismatch
                       }
                     >
-                      {drawerContentStatus === "Assign Trainer"
-                        ? "Assign"
-                        : drawerContentStatus === "Update Assigned Trainer"
-                          ? "Update Trainer"
-                          : drawerContentStatus === "Trainer Approval"
-                            ? "Approve"
-                            : drawerContentStatus === "Re-Assign Trainer"
-                              ? "Re-Assign"
-                              : drawerContentStatus === "Class Going" ||
-                                  drawerContentStatus === "Class Schedule" ||
-                                  drawerContentStatus === "Add G-Review" ||
-                                  drawerContentStatus === "Others"
-                                ? "Update"
-                                : drawerContentStatus == "Pre Certificate"
-                                  ? "Generate"
-                                  : "Verify"}
+                      {drawerContentStatus === "Update Assigned Trainer"
+                        ? "Update Trainer"
+                        : drawerContentStatus === "Trainer Approval"
+                          ? "Approve"
+                          : drawerContentStatus === "Re-Assign Trainer"
+                            ? "Re-Assign"
+                            : drawerContentStatus === "Class Going" ||
+                                drawerContentStatus === "Class Schedule" ||
+                                drawerContentStatus === "Add G-Review" ||
+                                drawerContentStatus === "Others"
+                              ? "Update"
+                              : drawerContentStatus == "Pre Certificate"
+                                ? "Generate"
+                                : "Verify"}
                     </button>
                   )}
                 </>

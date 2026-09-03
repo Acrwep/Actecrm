@@ -13,6 +13,7 @@ import moment from "moment";
 import { FaRegEye, FaRegUser } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
+import { FaWhatsapp } from "react-icons/fa";
 import { IoCallOutline, IoLocationOutline } from "react-icons/io5";
 import PrismaZoom from "react-prismazoom";
 import { LuCircleCheck } from "react-icons/lu";
@@ -376,7 +377,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <FaRegEye size={16} /> View Payment Invoice
             </button>
           </div>
-        ) : item.status === "Student Verified" ? (
+        ) : item.status === "Student Verified" &&
+          (!item.details || typeof item.details?.comments === "string") ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -412,9 +414,10 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <FaRegEye size={16} /> View Proof Screenshot
             </button>
           </div>
-        ) : item.status === "Trainer Assigned" ||
-          item.status === "Trainer Updated" ||
-          item.status === "Trainer Re-Assigned" ? (
+        ) : (item.status === "Trainer Assigned" ||
+            item.status === "Trainer Updated" ||
+            item.status === "Trainer Re-Assigned") &&
+          (!item.details || typeof item.details?.comments === "string") ? (
           <div>
             <p className="customer_history_updateddate">
               {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -758,10 +761,18 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
             </button>
           </div>
         ) : (item.status === "Customer Details Updated" ||
+            item.status === "Welcome Call Details Updated" ||
+            item.status === "Requirement Verification Details Updated" ||
+            item.status === "Trainer Fixation Details Updated" ||
+            item.status === "Trainer Coordination Details Updated" ||
             item.status === "Certificate Updated" ||
             item.status === "Certificate Generated" ||
             item.status === "Google Review Added" ||
-            item.status === "Linkedin Review Added") &&
+            item.status === "Linkedin Review Added" ||
+            item.status === "Student Verified" ||
+            item.status === "Trainer Assigned" ||
+            item.status === "Trainer Updated" ||
+            item.status === "Trainer Re-Assigned") &&
           item.details ? (
           <div>
             <p className="customer_history_updateddate">
@@ -857,7 +868,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                         {key === "profile_image" ||
                         key === "signature_image" ||
                         key === "google_review" ||
-                        key === "linkedin_review" ? (
+                        key === "linkedin_review" ||
+                        key === "proof_communication" ? (
                           <>
                             {detail.previous_value ? (
                               <img
@@ -1123,10 +1135,25 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 )}
                 <p className="customer_coursenametext">
                   {" "}
-                  Created At:{" "}
-                  {customerDetails && customerDetails.created_date
-                    ? moment(customerDetails.created_date).format("DD/MM/YYYY")
+                  Date Of Joining:{" "}
+                  {customerDetails && customerDetails.date_of_joining
+                    ? moment(customerDetails.date_of_joining).format(
+                        "DD/MM/YYYY",
+                      )
                     : "-"}
+                </p>
+
+                <p className="customer_coursenametext">
+                  Sale Executive:{" "}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </div>
             </div>
@@ -1184,8 +1211,14 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.phone
-                        ? customerDetails.phone
+                      {customerDetails?.phone
+                        ? `${
+                            customerDetails?.phonecode
+                              ? customerDetails.phonecode.startsWith("+")
+                                ? customerDetails.phonecode
+                                : `+${customerDetails.phonecode}`
+                              : ""
+                          } ${customerDetails.phone}`
                         : "-"}
                     </p>
                   </Col>
@@ -1193,39 +1226,41 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Area</p>
+                      <FaWhatsapp size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Whatsapp</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {" "}
-                      {customerDetails && customerDetails.current_location
-                        ? customerDetails.current_location
+                      {customerDetails?.whatsapp
+                        ? `${
+                            customerDetails?.whatsapp_phone_code
+                              ? customerDetails.whatsapp_phone_code.startsWith(
+                                  "+",
+                                )
+                                ? customerDetails.whatsapp_phone_code
+                                : `+${customerDetails.whatsapp_phone_code}`
+                              : ""
+                          } ${customerDetails.whatsapp}`
                         : "-"}
                     </p>
                   </Col>
                 </Row>
+
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <FaRegUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">
-                        Lead Executive
-                      </p>
+                      <IoLocationOutline size={15} color="gray" />
+                      <p className="customerdetails_rowheading">Address</p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <EllipsisTooltip
-                      text={`${
-                        customerDetails && customerDetails.lead_assigned_to_id
-                          ? customerDetails.lead_assigned_to_id
+                      text={
+                        customerDetails && customerDetails.address
+                          ? customerDetails.address
                           : "-"
-                      } (${
-                        customerDetails && customerDetails.lead_assigned_to_name
-                          ? customerDetails.lead_assigned_to_name
-                          : "-"
-                      })`}
+                      }
                       smallText={true}
                     />
                   </Col>
@@ -1311,29 +1346,24 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Branch</p>
+                      <p className="customerdetails_rowheading">
+                        Mode Of Class
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.branch_name
-                        ? customerDetails.branch_name
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Track</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_tracking
-                        ? customerDetails.batch_tracking
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails?.mode_of_class_name
+                          ? `${customerDetails.mode_of_class_name}${
+                              customerDetails?.place_of_service_name
+                                ? ` (${customerDetails.place_of_service_name})`
+                                : ""
+                            }`
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
               </Col>

@@ -819,6 +819,7 @@ Course Advisor
                   ? "header_search_options_container"
                   : "header_search_options_hidecontainer"
               }
+              // className="header_search_options_container"
             >
               {searchLoading ? (
                 <div className="header_search_loader_container">
@@ -983,26 +984,56 @@ Course Advisor
                               </div>
 
                               {/* Links Row */}
-                              <div className="header_search_link_row">
-                                {item.brouchures && (
-                                  <a
-                                    href={`${import.meta.env.VITE_API_URL}${item.brouchures}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    Open Brouchure
-                                  </a>
-                                )}
+                              <div className="header_search_price_row">
+                                <div>
+                                  <span className="label">Server</span>
+                                  {item.is_server === 1 ? (
+                                    <span
+                                      className="value"
+                                      style={{
+                                        color: "#3c9111",
+                                        fontSize: "11px",
+                                      }}
+                                    >
+                                      Available (₹
+                                      {Number(
+                                        item.server_amount || 0,
+                                      ).toLocaleString("en-IN")}
+                                      )
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className="value"
+                                      style={{
+                                        color: "#d32f2f",
+                                        fontSize: "11px",
+                                      }}
+                                    >
+                                      Not Available
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="header_search_link_row">
+                                  {item.brouchures && (
+                                    <a
+                                      href={`${import.meta.env.VITE_API_URL}${item.brouchures}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      Open Brouchure
+                                    </a>
+                                  )}
 
-                                {item.syllabus && (
-                                  <a
-                                    href={`${import.meta.env.VITE_API_URL}${item.syllabus}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                  >
-                                    Open Syllabus
-                                  </a>
-                                )}
+                                  {item.syllabus && (
+                                    <a
+                                      href={`${import.meta.env.VITE_API_URL}${item.syllabus}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      Open Syllabus
+                                    </a>
+                                  )}
+                                </div>
                               </div>
 
                               <Divider style={{ margin: "0px 0" }} />

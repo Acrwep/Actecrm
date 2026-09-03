@@ -318,10 +318,10 @@ export default function ParticularCustomerDetails({ customerId }) {
             )}
           </Col>
           <Col span={6}>
-            {renderField("Batch Type", customerDetails?.batch_timing)}
+            {renderField("Preferred Batch", customerDetails?.batch_tracking)}
           </Col>
           <Col span={6}>
-            {renderField("Batch Track", customerDetails?.batch_tracking)}
+            {renderField("Batch Timing", customerDetails?.batch_timing)}
           </Col>
           <Col span={6}>
             {renderField(

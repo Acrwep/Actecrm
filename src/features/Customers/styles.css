@@ -802,6 +802,30 @@
   border-color: rgb(128 128 128 / 38%) !important;
   outline: none !important;
 }
+.customers_update_studentverify_button {
+  background-color: #ffa502 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
+.customers_update_trainer_coordination_button {
+  background-color: #047857 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
 .customers_update_trainer_button {
   background-color: #1e90ff !important;
   color: #fff !important;
@@ -1733,7 +1757,7 @@
   padding: 12px 24px 12px 24px;
 }
 .customer_statusupdate_divider {
-  margin: 16px 0px 14px 0px !important;
+  margin: 20px 0px 14px 0px !important;
   border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
 }
 .customer_statusupdate_adddetailsContainer {

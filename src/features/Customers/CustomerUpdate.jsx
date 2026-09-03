@@ -1364,7 +1364,7 @@ const CustomerUpdate = forwardRef(
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
-                  label="Batch Type"
+                  label="Batch Timing"
                   required={true}
                   options={batchTimingOptions}
                   onChange={(e) => {

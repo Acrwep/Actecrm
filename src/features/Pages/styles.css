@@ -379,11 +379,10 @@
   color: #0a8f3c;
 }
 
-/* link row */
+/*syllabus and brouchure link div */
 .header_search_link_row {
   display: flex;
-  gap: 16px;
-  padding: 0px 12px 6px 12px;
+  flex-direction: column;
 }
 
 .header_search_link_row a {
@@ -391,6 +390,7 @@
   font-weight: 600;
   color: #2091d0;
   text-decoration: none;
+  margin-bottom: 2px;
 }
 
 .header_search_link_row a:hover {

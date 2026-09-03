@@ -23,6 +23,8 @@ import {
   getAdmissions,
   getTableColumns,
   updateTableColumns,
+  getBranches,
+  getUsers,
 } from "../ApiService/action";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
@@ -56,6 +58,7 @@ import {
   FaPhoneSlash,
   FaHandshake,
 } from "react-icons/fa";
+import { LuFileClock } from "react-icons/lu";
 import CommonDnd from "../Common/CommonDnd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
@@ -63,6 +66,8 @@ import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
+import CommonSelectField from "../Common/CommonSelectField";
+import CustomerHistory from "../Customers/CustomerHistory";
 
 export default function Admissions() {
   const mounted = useRef(false);
@@ -75,33 +80,29 @@ export default function Admissions() {
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-  const [selectedOrigin, setSelectedOrigin] = useState("");
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [allAdmissionsRegionCounts, setAllAdmissionsRegionCounts] =
     useState(null);
   const [customerId, setCustomerId] = useState(null);
   const [modeStatus, setModeStatus] = useState("");
-  const [status, setStatus] = useState("");
   const [isStatusUpdateDrawerLoading, setIsStatusUpdateDrawerLoading] =
     useState(false);
   const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
   //feedback usestates
   const [loading, setLoading] = useState(true);
-  //executive filter
+  //filter usestates
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const prevSelectedUserIdRef = useRef("[]");
   const [allDownliners, setAllDownliners] = useState([]);
-  //branch filter
-  const [branchOptions, setBranchOptions] = useState([
-    { id: 1, name: "Classroom", checked: true },
-    { id: 1, name: "Online", checked: true },
-  ]);
-  const [duplicateBranchOptions, setDuplicateBranchOptions] = useState([
-    { id: 1, name: "Classroom", checked: true },
-    { id: 1, name: "Online", checked: true },
-  ]);
+  const [defaultAllDownliners, setDefaultAllDownliners] = useState([]);
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -554,6 +555,81 @@ export default function Admissions() {
       group: "Review & Certifications",
       render: (text) => renderCellWithBackground(text),
     },
+    {
+      title: "View",
+      key: "action",
+      dataIndex: "action",
+      width: 75,
+      fixed: "right",
+      group: "Action",
+      render: (text, record) => {
+        return (
+          <Tooltip
+            placement="top"
+            title="View Customer Full Details"
+            trigger={["hover", "click"]}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "4px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setIsOpenDetailsDrawer(true);
+                setCustomerId(record?.customer_id);
+              }}
+            >
+              <FaRegEye
+                size={15}
+                className="trainers_action_icons"
+                style={{ flexShrink: 0 }}
+              />
+            </div>
+          </Tooltip>
+        );
+      },
+    },
+
+    {
+      title: "History",
+      key: "history",
+      dataIndex: "history",
+      width: 75,
+      fixed: "right",
+      group: "Action",
+      render: (text, record) => {
+        return (
+          <Tooltip
+            placement="top"
+            title="View Customer History"
+            trigger={["hover", "click"]}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "4px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setCustomerId(record?.customer_id);
+                setIsOpenCustomerHistoryDrawer(true);
+              }}
+            >
+              <LuFileClock
+                size={15}
+                className="trainers_action_icons"
+                style={{ flexShrink: 0 }}
+              />
+            </div>
+          </Tooltip>
+        );
+      },
+    },
   ];
 
   const [columns, setColumns] = useState(
@@ -579,7 +655,7 @@ export default function Admissions() {
     }, 300);
 
     setTableColumns(nonChangeColumns);
-  }, [permissions, status]);
+  }, [permissions]);
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -632,6 +708,7 @@ export default function Admissions() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      setDefaultAllDownliners(downliners_ids);
       getAdmissionsData(
         PreviousAndCurrentDate[0],
         PreviousAndCurrentDate[1],
@@ -640,10 +717,6 @@ export default function Admissions() {
         null,
         null,
         downliners_ids,
-        [
-          { id: 1, name: "Classroom", checked: true },
-          { id: 1, name: "Online", checked: true },
-        ],
         1,
         10,
       );
@@ -657,37 +730,33 @@ export default function Admissions() {
     endDate,
     searchvalue,
     bucket,
-    origin,
-    customerStatus,
+    regionId,
+    branchId,
     downliners,
-    branch_options,
     pageNumber,
     limit,
-    is_generate_certificate,
   ) => {
     setLoading(true);
-
-    const region_data = branch_options
-      .filter((f) => f.checked === true)
-      .map((f) => f.name);
+    console.log(
+      startDate,
+      endDate,
+      searchvalue,
+      bucket,
+      regionId,
+      branchId,
+      downliners,
+      pageNumber,
+      limit,
+    );
 
     const payload = {
       ...(searchvalue && { search_filter: searchvalue }),
       from_date: startDate,
       to_date: endDate,
       bucket: bucket,
-      ...(origin && { domain: origin }),
-      ...(customerStatus && {
-        status: customerStatus,
-      }),
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       user_ids: downliners,
-      ...(region_data.includes("Classroom") && region_data.includes("Online")
-        ? {}
-        : region_data.includes("Classroom")
-          ? { region: "Classroom" }
-          : region_data.includes("Online")
-            ? { region: "Online" }
-            : {}),
       page: pageNumber,
       limit: limit,
     };
@@ -826,10 +895,9 @@ export default function Admissions() {
       selectedDates[1],
       searchValue,
       modeStatus,
-      selectedOrigin,
-      status,
+      selectedRegionId,
+      selectedBranchId,
       allDownliners,
-      branchOptions,
       page,
       limit,
     );
@@ -847,10 +915,9 @@ export default function Admissions() {
         selectedDates[1],
         e.target.value,
         modeStatus,
-        selectedOrigin,
-        status,
+        selectedRegionId,
+        selectedBranchId,
         allDownliners,
-        branchOptions,
         1,
         pagination.limit,
       );
@@ -860,8 +927,23 @@ export default function Admissions() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+  };
+
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    // if (!value || value.length <= 0) return;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) && value.length > 0 ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -876,15 +958,59 @@ export default function Admissions() {
         selectedDates[1],
         searchValue,
         modeStatus,
-        selectedOrigin,
-        status,
+        selectedRegionId,
+        selectedBranchId,
         downliners_ids,
-        branchOptions,
         1,
         pagination.limit,
       );
     } catch (error) {
       console.log("all downlines error", error);
+    }
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setSubUsers([]);
+      console.log("get all users error", error);
     }
   };
 
@@ -895,11 +1021,17 @@ export default function Admissions() {
   };
 
   const handleRefresh = () => {
-    setStatus("");
     setSearchValue("");
-    setSelectedUserId(null);
-    setSelectedOrigin("");
+    setSelectedUserId([]);
+    prevSelectedUserIdRef.current = "[]";
     setModeStatus("");
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setSubUsers(downlineUsers);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
@@ -911,9 +1043,15 @@ export default function Admissions() {
   return (
     <div>
       <Row align="middle">
-        <Col xs={24} sm={24} md={24} lg={16}>
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
+        >
           <Row gutter={12} align="middle" wrap={false}>
-            <Col flex="28%">
+            <Col flex="1 1 0%">
               <div
                 className="overallduecustomers_filterContainer"
                 style={{ marginBottom: "0px" }}
@@ -938,10 +1076,9 @@ export default function Admissions() {
                             selectedDates[1],
                             null,
                             modeStatus,
-                            selectedOrigin,
-                            status,
+                            selectedRegionId,
+                            selectedBranchId,
                             allDownliners,
-                            branchOptions,
                             1,
                             pagination.limit,
                           );
@@ -965,19 +1102,108 @@ export default function Admissions() {
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col flex="28%">
-                <CommonMultiSelectField
-                  height="34px"
-                  label="Select User"
-                  labelMarginTop="1px"
-                  labelFontSize="11px"
-                  options={subUsers}
-                  onChange={handleSelectUser}
-                  value={selectedUserId}
-                />
-              </Col>
+              <>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Region"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={[
+                      {
+                        id: 1,
+                        name: "Chennai",
+                      },
+                      {
+                        id: 2,
+                        name: "Bangalore",
+                      },
+                      {
+                        id: 3,
+                        name: "Hub",
+                      },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedRegionId(value);
+                      setSelectedBranchId(null);
+                      setSelectedUserId([]);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getAdmissionsData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        modeStatus,
+                        value,
+                        selectedBranchId,
+                        defaultAllDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                      if (value) {
+                        getUsersData(value, null);
+                        getBranchesData(value);
+                      } else {
+                        setBranchOptions([]);
+                        setSubUsers(downlineUsers);
+                      }
+                    }}
+                    value={selectedRegionId}
+                    disableClearable={false}
+                  />
+                </Col>
+
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Branch"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={branchOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedBranchId(value);
+                      setSelectedUserId([]);
+                      getUsersData(selectedRegionId, value);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getAdmissionsData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        modeStatus,
+                        selectedRegionId,
+                        value,
+                        defaultAllDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                    value={selectedBranchId}
+                    disableClearable={false}
+                    disabled={selectedRegionId == 3 ? true : false}
+                  />
+                </Col>
+                <Col flex="1 1 0%">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
+              </>
             )}
-            <Col flex="none">
+            <Col flex="1.5 1 0%">
               <div
                 style={{
                   display: "flex",
@@ -1008,10 +1234,9 @@ export default function Admissions() {
                           dates[1],
                           searchValue,
                           modeStatus,
-                          selectedOrigin,
-                          status,
+                          selectedRegionId,
+                          selectedBranchId,
                           allDownliners,
-                          branchOptions,
                           1,
                           pagination.limit,
                         );
@@ -1027,7 +1252,8 @@ export default function Admissions() {
           xs={24}
           sm={24}
           md={24}
-          lg={8}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -1138,10 +1364,9 @@ export default function Admissions() {
                 selectedDates[1],
                 searchValue,
                 "Online",
-                selectedOrigin,
-                status,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
-                branchOptions,
                 1,
                 pagination.limit,
               );
@@ -1166,10 +1391,9 @@ export default function Admissions() {
                 selectedDates[1],
                 searchValue,
                 "Classroom",
-                selectedOrigin,
-                status,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
-                branchOptions,
                 1,
                 pagination.limit,
               );
@@ -1185,51 +1409,68 @@ export default function Admissions() {
 
       <Row>
         <Col span={12}>
-          <div
-            className="livelead_today_summary_container"
-            style={{ marginTop: "12px" }}
-          >
-            <p className="livelead_today_label">REGION SUMMARY</p>
+          {permissions.includes("Show Region Summary") && (
+            <div
+              className="livelead_today_summary_container"
+              style={{ marginTop: "12px" }}
+            >
+              <p className="livelead_today_label">REGION SUMMARY</p>
 
-            <div className="livelead_badge_item online">
-              <div
-                className="livelead_badge_dot"
-                style={{ backgroundColor: "#3c9111" }}
-              />
-              <p className="livelead_badge_text">
-                Hub{" "}
-                <span className="livelead_badge_count">
-                  {allAdmissionsRegionCounts?.hub_region ?? 0}
-                </span>
-              </p>
-            </div>
+              <div className="livelead_badge_item online">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#3c9111" }}
+                />
+                <p className="livelead_badge_text">
+                  Hub{" "}
+                  <span className="livelead_badge_count">
+                    {allAdmissionsRegionCounts?.hub_region ?? 0}
+                  </span>
+                </p>
+              </div>
 
-            <div className="livelead_badge_item classroom">
-              <div
-                className="livelead_badge_dot"
-                style={{ backgroundColor: "#1e90ff" }}
-              />
-              <p className="livelead_badge_text">
-                Chennai{" "}
-                <span className="livelead_badge_count">
-                  {allAdmissionsRegionCounts?.chennai_region ?? 0}
-                </span>
-              </p>
-            </div>
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#1e90ff" }}
+                />
+                <p className="livelead_badge_text">
+                  Chennai{" "}
+                  <span className="livelead_badge_count">
+                    {allAdmissionsRegionCounts?.chennai_region ?? 0}
+                  </span>
+                </p>
+              </div>
 
-            <div className="livelead_badge_item classroom">
-              <div
-                className="livelead_badge_dot"
-                style={{ backgroundColor: "#5b69ca" }}
-              />
-              <p className="livelead_badge_text">
-                Bangalore{" "}
-                <span className="livelead_badge_count">
-                  {allAdmissionsRegionCounts?.bangalore_region ?? 0}
-                </span>
-              </p>
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#5b69ca" }}
+                />
+                <p className="livelead_badge_text">
+                  Bangalore{" "}
+                  <span className="livelead_badge_count">
+                    {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item total">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#5b69ca" }}
+                />
+                <p className="livelead_badge_text">
+                  Total{" "}
+                  <span className="livelead_badge_count">
+                    {(allAdmissionsRegionCounts?.hub_region ?? 0) +
+                      (allAdmissionsRegionCounts?.chennai_region ?? 0) +
+                      (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </Col>
         <Col
           span={12}
@@ -1283,6 +1524,10 @@ export default function Admissions() {
             "Review & Certifications": {
               groupHeaderClass: "group-header-purple",
               headerClass: "header-purple",
+            },
+            Action: {
+              groupHeaderClass: "group-header-violet",
+              headerClass: "header-violet",
             },
           };
 
@@ -1412,43 +1657,6 @@ export default function Admissions() {
             <div className="leadmanager_tablefiler_container">
               <CommonDnd data={columns} setColumns={setColumns} />
             </div>
-
-            <Divider className="customer_statusupdate_divider" />
-
-            <div style={{ padding: "0px 12px 20px 24px" }}>
-              <p className="customers_choosebranch_heading">Choose Branch</p>
-              {duplicateBranchOptions.map((item) => {
-                return (
-                  <div className="customers_choosebranch_checkbox_container">
-                    <p>{item.name}</p>
-                    <Checkbox
-                      className="settings_pageaccess_checkbox"
-                      checked={item.checked}
-                      onChange={(e) => {
-                        const updateBranchData = duplicateBranchOptions.map(
-                          (u) => {
-                            if (u.name == item.name) {
-                              return { ...u, checked: e.target.checked };
-                            }
-                            return u;
-                          },
-                        );
-                        const bothFalse = updateBranchData.every(
-                          (item) => item.checked === false,
-                        );
-
-                        if (bothFalse) {
-                          CommonMessage("error", "Choose Atleast One Branch");
-                          return;
-                        }
-                        setDuplicateBranchOptions(updateBranchData);
-                      }}
-                      value={item.checked}
-                    />
-                  </div>
-                );
-              })}
-            </div>
           </Col>
         </Row>
         <div className="leadmanager_tablefiler_footer">
@@ -1467,16 +1675,14 @@ export default function Admissions() {
                   page_name: "Admissions",
                   column_names: columns,
                 };
-                setBranchOptions(duplicateBranchOptions);
                 getAdmissionsData(
                   selectedDates[0],
                   selectedDates[1],
                   searchValue,
                   modeStatus,
-                  selectedOrigin,
-                  status,
+                  selectedRegionId,
+                  selectedBranchId,
                   allDownliners,
-                  duplicateBranchOptions,
                   pagination.page,
                   pagination.limit,
                 );
@@ -1500,6 +1706,16 @@ export default function Admissions() {
         open={isOpenCustomerDetailsModal}
         onClose={() => setIsOpenCustomerDetailsModal(false)}
         customerDetails={customerDetails}
+      />
+
+      {/* customer history drawer */}
+      <CustomerHistory
+        customerId={customerId}
+        isOpen={isOpenCustomerHistoryDrawer}
+        onClose={() => {
+          setIsOpenCustomerHistoryDrawer(false);
+          setCustomerId(null);
+        }}
       />
     </div>
   );

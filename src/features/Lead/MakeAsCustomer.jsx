@@ -149,7 +149,9 @@ const MakeAsCustomer = forwardRef(
     useEffect(() => {
       const subTotalValue = parseFloat(subTotal) || 0;
       const taxPercentage = taxType === "18%" ? 18 : 0;
-      const taxAmount = Number((subTotalValue * (taxPercentage / 100)).toFixed(2));
+      const taxAmount = Number(
+        (subTotalValue * (taxPercentage / 100)).toFixed(2),
+      );
       const totalFeesAmount = Number((subTotalValue + taxAmount).toFixed(2));
       setAmount(totalFeesAmount);
 
@@ -158,13 +160,17 @@ const MakeAsCustomer = forwardRef(
       );
       let conve_fees = 0;
       if (selectedBank && selectedBank.is_convenience == 1) {
-        conve_fees = Number((((parseFloat(paidNow) || 0) * 0.03) / 1.03).toFixed(2));
+        conve_fees = Number(
+          (((parseFloat(paidNow) || 0) * 0.03) / 1.03).toFixed(2),
+        );
       }
       setConvenienceFees(conve_fees.toFixed(2));
 
-      const actualPaid = Number(((parseFloat(paidNow) || 0) - conve_fees).toFixed(2));
+      const actualPaid = Number(
+        ((parseFloat(paidNow) || 0) - conve_fees).toFixed(2),
+      );
       let pending = Number((totalFeesAmount - actualPaid).toFixed(2));
-      
+
       // Fix Javascript negative zero floating point artifact
       if (Math.abs(pending) === 0) {
         pending = 0;
@@ -249,12 +255,16 @@ const MakeAsCustomer = forwardRef(
           selectedBank && selectedBank.is_convenience == 1
             ? Number((((isNaN(value) ? 0 : value) * 0.03) / 1.03).toFixed(2))
             : 0;
-        const actualPaid = Number(((isNaN(value) ? 0 : value) - conve_fees).toFixed(2));
+        const actualPaid = Number(
+          ((isNaN(value) ? 0 : value) - conve_fees).toFixed(2),
+        );
         const taxPercentage = taxType === "18%" ? 18 : 0;
         const subTotalValue = parseFloat(subTotal) || 0;
-        const taxAmount = Number((subTotalValue * (taxPercentage / 100)).toFixed(2));
+        const taxAmount = Number(
+          (subTotalValue * (taxPercentage / 100)).toFixed(2),
+        );
         const totalFeesAmount = Number((subTotalValue + taxAmount).toFixed(2));
-        
+
         setPaidNowError(priceValidator(actualPaid, totalFeesAmount));
       }
     };
@@ -341,11 +351,11 @@ const MakeAsCustomer = forwardRef(
           ? Number((((parseFloat(paidNow) || 0) * 0.03) / 1.03).toFixed(2))
           : 0;
       const calculatedActualPaid = Number(
-        ((parseFloat(paidNow) || 0) - calculatedConveFees).toFixed(2)
+        ((parseFloat(paidNow) || 0) - calculatedConveFees).toFixed(2),
       );
       const paidNowValidate = priceValidator(
         calculatedActualPaid,
-        Number(parseFloat(amount).toFixed(2))
+        Number(parseFloat(amount).toFixed(2)),
       );
 
       const screenshotValidate = selectValidator(paymentScreenShotBase64);
@@ -1381,7 +1391,7 @@ const MakeAsCustomer = forwardRef(
             </Col>
             <Col span={8}>
               <CommonSelectField
-                label="Batch Type"
+                label="Batch Timing"
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
                 required={true}

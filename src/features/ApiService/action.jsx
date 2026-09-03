@@ -1117,6 +1117,15 @@ export const rejectTrainerForCustomer = async (payload) => {
   }
 };
 
+export const updateTrainerCoordination = async (payload) => {
+  try {
+    const response = await api.put("/api/updateTrainerCoordination", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const classScheduleForCustomer = async (payload) => {
   try {
     const response = await api.put("/api/classSchedule", payload);

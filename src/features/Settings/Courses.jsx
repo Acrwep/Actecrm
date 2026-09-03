@@ -63,6 +63,9 @@ export default function Courses() {
   const [price, setPrice] = useState(0);
   const [priceError, setPriceError] = useState("");
   const [offerPrice, setOfferPrice] = useState(0);
+  const [serverAccess, setServerAccess] = useState("");
+  const [serverAmount, setServerAmount] = useState(0);
+
   // const [brouchures, setBrouchures] = useState("");
   // const [syllabus, setSyllabus] = useState("");
   const [brouchures, setBrouchures] = useState(null);
@@ -144,6 +147,29 @@ export default function Courses() {
       },
     },
     {
+      title: "Server Access",
+      key: "is_server",
+      dataIndex: "is_server",
+      width: 110,
+      render: (text) => {
+        return <p>{text == 1 ? "Available" : "Not Available"}</p>;
+      },
+    },
+    {
+      title: "Server Amount",
+      key: "server_amount",
+      dataIndex: "server_amount",
+      width: 120,
+      render: (text) => {
+        return (
+          <p>{`${Number(text).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}</p>
+        );
+      },
+    },
+    {
       title: "Brouchures",
       key: "brouchures",
       dataIndex: "brouchures",
@@ -210,7 +236,7 @@ export default function Courses() {
       title: "Action",
       key: "action",
       dataIndex: "action",
-      // fixed: "right",
+      fixed: "right",
       width: 120,
       render: (text, record) => {
         return (
@@ -397,6 +423,8 @@ export default function Courses() {
     formData.append("course_name", courseName);
     formData.append("price", price);
     formData.append("offer_price", offerPrice); // ✅ FIXED NAME
+    formData.append("is_server", serverAccess == 1 ? 1 : 2);
+    formData.append("server_amount", serverAmount);
 
     // ✅ ONLY send if real File object
     if (brouchures instanceof File) {
@@ -455,6 +483,8 @@ export default function Courses() {
     setCourseName(item.name);
     setPrice(item.price);
     setOfferPrice(item.offer_price);
+    setServerAccess(item?.is_server === 1 ? 1 : 2);
+    setServerAmount(item?.server_amount);
     if (item.brouchures) {
       const brouchureObj = {
         uid: "-1",
@@ -777,6 +807,8 @@ export default function Courses() {
     setPrice(0);
     setPriceError("");
     setOfferPrice(0);
+    setServerAccess("");
+    setServerAmount(0);
     setBrouchures("");
     setSyllabus("");
     setBrouchuresArray([]);
@@ -939,7 +971,7 @@ export default function Courses() {
       </div>
 
       <Drawer
-        title={"Add Course"}
+        title={courseId ? "Update Course" : "Add Course"}
         open={isOpenAddModal}
         onClose={formReset}
         width="50%"
@@ -990,6 +1022,33 @@ export default function Courses() {
             </Col>
           </Row>
 
+          <Row gutter={16} style={{ marginTop: "20px" }}>
+            <Col span={8}>
+              <CommonSelectField
+                label={"Server Access"}
+                options={[
+                  { id: 1, name: "Available" },
+                  { id: 2, name: "Not Available" },
+                ]}
+                onChange={(e) => {
+                  setServerAccess(e.target.value);
+                }}
+                value={serverAccess}
+                error={""}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Server Amount"
+                required={false}
+                onChange={(e) => {
+                  setServerAmount(e.target.value);
+                }}
+                value={serverAmount}
+                error=""
+              />
+            </Col>
+          </Row>
           <div style={{ marginTop: "20px" }}>
             {/* <CommonInputField
               label="Brouchures Link"

@@ -15,6 +15,7 @@ export default function ImageUploadCrop({
   onChange,
   onErrorChange,
   required = false,
+  disabled = false,
 }) {
   const [fileList, setFileList] = useState([]);
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -107,26 +108,30 @@ export default function ImageUploadCrop({
                 <EyeOutlined style={{ color: "gray" }} />
               </Button>
             )}
-            <Button
-              type="link"
-              size="small"
-              style={{ padding: 0, paddingTop: 10, paddingLeft: 8 }}
-              onClick={() => {
-                setFileList([]);
-                setPreviewImage("");
-                reportError(required ? "is required" : "");
-                onChange?.("");
-              }}
-            >
-              <DeleteOutlined style={{ color: "gray" }} />
-            </Button>
+            {!disabled && (
+              <Button
+                type="link"
+                size="small"
+                style={{ padding: 0, paddingTop: 10, paddingLeft: 8 }}
+                onClick={() => {
+                  setFileList([]);
+                  setPreviewImage("");
+                  reportError(required ? "is required" : "");
+                  onChange?.("");
+                }}
+              >
+                <DeleteOutlined style={{ color: "gray" }} />
+              </Button>
+            )}
           </div>
         )}
+        disabled={disabled}
       >
         <Button
           className="imgcrop_uploadbutton"
           icon={<UploadOutlined />}
           style={{ width: "100%", marginTop: 8 }}
+          disabled={disabled}
         >
           Choose file{" "}
           <span className="imgcrop_uploadbutton_subtext">
