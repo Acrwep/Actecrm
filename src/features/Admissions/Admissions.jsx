@@ -26,7 +26,10 @@ import {
   getBranches,
   getUsers,
 } from "../ApiService/action";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  regionOptions,
+} from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
 import { RedoOutlined } from "@ant-design/icons";
 import moment from "moment";
@@ -269,8 +272,8 @@ export default function Admissions() {
           </div>
         </Tooltip>
       ),
-      key: "welcome_call",
-      dataIndex: "welcome_call",
+      key: "welcome_call_status",
+      dataIndex: "welcome_call_status",
       width: 80,
       group: "Student Onboarding",
       render: (text) => renderCellWithBackground(text),
@@ -283,8 +286,8 @@ export default function Admissions() {
           </div>
         </Tooltip>
       ),
-      key: "requirement_verification",
-      dataIndex: "requirement_verification",
+      key: "technology_verified",
+      dataIndex: "technology_verified",
       width: 80,
       group: "Student Onboarding",
       render: (text) => renderCellWithBackground(text),
@@ -301,7 +304,13 @@ export default function Admissions() {
       dataIndex: "trainer_assignment_request",
       width: 80,
       group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text),
+      render: (text, record) => {
+        let trainer_assigned = false;
+        if (record?.trainer_mapping_id) {
+          trainer_assigned = true;
+        }
+        return renderCellWithBackground(trainer_assigned);
+      },
     },
     {
       title: (
@@ -339,8 +348,8 @@ export default function Admissions() {
           </div>
         </Tooltip>
       ),
-      key: "welcome_message",
-      dataIndex: "welcome_message",
+      key: "hr_welcome_message",
+      dataIndex: "hr_welcome_message",
       width: 80,
       group: "Trainer Coordination",
       render: (text) => renderCellWithBackground(text),
@@ -353,8 +362,8 @@ export default function Admissions() {
           </div>
         </Tooltip>
       ),
-      key: "shareteams_link",
-      dataIndex: "shareteams_link",
+      key: "shared_attendance_link",
+      dataIndex: "shared_attendance_link",
       width: 80,
       group: "Trainer Coordination",
       render: (text) => renderCellWithBackground(text),
@@ -1029,9 +1038,6 @@ export default function Admissions() {
     setSelectedRegionId(null);
     setBranchOptions([]);
     setSelectedBranchId(null);
-    setSelectedRegionId(null);
-    setBranchOptions([]);
-    setSelectedBranchId(null);
     setSubUsers(downlineUsers);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
@@ -1110,20 +1116,7 @@ export default function Admissions() {
                     label="Select Region"
                     labelMarginTop="0px"
                     labelFontSize="11px"
-                    options={[
-                      {
-                        id: 1,
-                        name: "Chennai",
-                      },
-                      {
-                        id: 2,
-                        name: "Bangalore",
-                      },
-                      {
-                        id: 3,
-                        name: "Hub",
-                      },
-                    ]}
+                    options={regionOptions}
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedRegionId(value);
@@ -1139,7 +1132,7 @@ export default function Admissions() {
                         searchValue,
                         modeStatus,
                         value,
-                        selectedBranchId,
+                        null,
                         defaultAllDownliners,
                         1,
                         pagination.limit,
@@ -1336,168 +1329,281 @@ export default function Admissions() {
         </Col>
       </Row>
 
-      <div
-        className="customers_scroll_wrapper"
-        style={{ marginTop: "12px", marginBottom: "0px" }}
-      >
-        <div
-          className="customers_status_mainContainer"
-          style={{
-            marginTop: "0px",
-            marginBottom: "0px",
-            display: "flex",
-            gap: "12px",
-          }}
-        >
+      {permissions.includes("Show Region Summary") ? (
+        <>
           <div
-            className={
-              modeStatus === "Online"
-                ? "customers_active_completed_container"
-                : "customers_completed_container"
-            }
-            onClick={() => {
-              if (modeStatus == "Online") {
-                return;
-              }
-              setModeStatus("Online");
-              getAdmissionsData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                "Online",
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
+            className="customers_scroll_wrapper"
+            style={{ marginTop: "12px", marginBottom: "0px" }}
           >
-            <p>Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}</p>
-          </div>
-
-          <div
-            className={
-              modeStatus === "Classroom"
-                ? "customers_active_verifytrainers_container"
-                : "customers_verifytrainers_container"
-            }
-            onClick={() => {
-              if (modeStatus == "Classroom") {
-                return;
-              }
-              setModeStatus("Classroom");
-              getAdmissionsData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                "Classroom",
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Classroom{" "}
-              {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <Row>
-        <Col span={12}>
-          {permissions.includes("Show Region Summary") && (
             <div
-              className="livelead_today_summary_container"
-              style={{ marginTop: "12px" }}
+              className="customers_status_mainContainer"
+              style={{
+                marginTop: "0px",
+                marginBottom: "0px",
+                display: "flex",
+                gap: "12px",
+              }}
             >
-              <p className="livelead_today_label">REGION SUMMARY</p>
-
-              <div className="livelead_badge_item online">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#3c9111" }}
-                />
-                <p className="livelead_badge_text">
-                  Hub{" "}
-                  <span className="livelead_badge_count">
-                    {allAdmissionsRegionCounts?.hub_region ?? 0}
-                  </span>
+              <div
+                className={
+                  modeStatus === "Online"
+                    ? "customers_active_completed_container"
+                    : "customers_completed_container"
+                }
+                onClick={() => {
+                  if (modeStatus == "Online") {
+                    return;
+                  }
+                  setModeStatus("Online");
+                  getAdmissionsData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    searchValue,
+                    "Online",
+                    selectedRegionId,
+                    selectedBranchId,
+                    allDownliners,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}
                 </p>
               </div>
 
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#1e90ff" }}
-                />
-                <p className="livelead_badge_text">
-                  Chennai{" "}
-                  <span className="livelead_badge_count">
-                    {allAdmissionsRegionCounts?.chennai_region ?? 0}
-                  </span>
-                </p>
-              </div>
-
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#5b69ca" }}
-                />
-                <p className="livelead_badge_text">
-                  Bangalore{" "}
-                  <span className="livelead_badge_count">
-                    {allAdmissionsRegionCounts?.bangalore_region ?? 0}
-                  </span>
-                </p>
-              </div>
-
-              <div className="livelead_badge_item total">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#5b69ca" }}
-                />
-                <p className="livelead_badge_text">
-                  Total{" "}
-                  <span className="livelead_badge_count">
-                    {(allAdmissionsRegionCounts?.hub_region ?? 0) +
-                      (allAdmissionsRegionCounts?.chennai_region ?? 0) +
-                      (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
-                  </span>
+              <div
+                className={
+                  modeStatus === "Classroom"
+                    ? "customers_active_verifytrainers_container"
+                    : "customers_verifytrainers_container"
+                }
+                onClick={() => {
+                  if (modeStatus == "Classroom") {
+                    return;
+                  }
+                  setModeStatus("Classroom");
+                  getAdmissionsData(
+                    selectedDates[0],
+                    selectedDates[1],
+                    searchValue,
+                    "Classroom",
+                    selectedRegionId,
+                    selectedBranchId,
+                    allDownliners,
+                    1,
+                    pagination.limit,
+                  );
+                }}
+              >
+                <p>
+                  Classroom{" "}
+                  {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
                 </p>
               </div>
             </div>
-          )}
-        </Col>
-        <Col
-          span={12}
-          style={{
-            marginTop: "12px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <div className="admissions_progress_container">
-            <span className="admissions_progress_label">Overall Progress:</span>
-            <Progress
-              percent={65}
-              showInfo={false}
-              strokeWidth={6}
-              strokeColor={{
-                "0%": "#8a9bf8",
-                "100%": "#5b69ca",
-              }}
-              trailColor="#f1f5f9"
-              className="admissions_progress_bar"
-            />
-            <span className="admissions_progress_text">65%</span>
           </div>
-        </Col>
-      </Row>
+
+          <Row>
+            <Col span={12}>
+              <div
+                className="livelead_today_summary_container"
+                style={{ marginTop: "12px" }}
+              >
+                <p className="livelead_today_label">REGION SUMMARY</p>
+
+                <div className="livelead_badge_item online">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#3c9111" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Hub{" "}
+                    <span className="livelead_badge_count">
+                      {allAdmissionsRegionCounts?.hub_region ?? 0}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="livelead_badge_item classroom">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#1e90ff" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Chennai{" "}
+                    <span className="livelead_badge_count">
+                      {allAdmissionsRegionCounts?.chennai_region ?? 0}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="livelead_badge_item classroom">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#5b69ca" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Bangalore{" "}
+                    <span className="livelead_badge_count">
+                      {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="livelead_badge_item total">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#5b69ca" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Total{" "}
+                    <span className="livelead_badge_count">
+                      {(allAdmissionsRegionCounts?.hub_region ?? 0) +
+                        (allAdmissionsRegionCounts?.chennai_region ?? 0) +
+                        (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </Col>
+            <Col
+              span={12}
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <div className="admissions_progress_container">
+                <span className="admissions_progress_label">
+                  Overall Progress:
+                </span>
+                <Progress
+                  percent={65}
+                  showInfo={false}
+                  strokeWidth={6}
+                  strokeColor={{
+                    "0%": "#8a9bf8",
+                    "100%": "#5b69ca",
+                  }}
+                  trailColor="#f1f5f9"
+                  className="admissions_progress_bar"
+                />
+                <span className="admissions_progress_text">65%</span>
+              </div>
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <Row style={{ marginTop: "12px" }}>
+          <Col span={12}>
+            <div
+              className="customers_scroll_wrapper"
+              style={{ marginTop: "12px", marginBottom: "0px" }}
+            >
+              <div
+                className="customers_status_mainContainer"
+                style={{
+                  marginTop: "0px",
+                  marginBottom: "0px",
+                  display: "flex",
+                  gap: "12px",
+                }}
+              >
+                <div
+                  className={
+                    modeStatus === "Online"
+                      ? "customers_active_completed_container"
+                      : "customers_completed_container"
+                  }
+                  onClick={() => {
+                    if (modeStatus == "Online") {
+                      return;
+                    }
+                    setModeStatus("Online");
+                    getAdmissionsData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      "Online",
+                      selectedRegionId,
+                      selectedBranchId,
+                      allDownliners,
+                      1,
+                      pagination.limit,
+                    );
+                  }}
+                >
+                  <p>
+                    Online{" "}
+                    {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}
+                  </p>
+                </div>
+
+                <div
+                  className={
+                    modeStatus === "Classroom"
+                      ? "customers_active_verifytrainers_container"
+                      : "customers_verifytrainers_container"
+                  }
+                  onClick={() => {
+                    if (modeStatus == "Classroom") {
+                      return;
+                    }
+                    setModeStatus("Classroom");
+                    getAdmissionsData(
+                      selectedDates[0],
+                      selectedDates[1],
+                      searchValue,
+                      "Classroom",
+                      selectedRegionId,
+                      selectedBranchId,
+                      allDownliners,
+                      1,
+                      pagination.limit,
+                    );
+                  }}
+                >
+                  <p>
+                    Classroom{" "}
+                    {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Col>
+
+          <Col
+            span={12}
+            style={{
+              marginTop: "12px",
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            <div className="admissions_progress_container">
+              <span className="admissions_progress_label">
+                Overall Progress:
+              </span>
+              <Progress
+                percent={65}
+                showInfo={false}
+                strokeWidth={6}
+                strokeColor={{
+                  "0%": "#8a9bf8",
+                  "100%": "#5b69ca",
+                }}
+                trailColor="#f1f5f9"
+                className="admissions_progress_bar"
+              />
+              <span className="admissions_progress_text">65%</span>
+            </div>
+          </Col>
+        </Row>
+      )}
 
       <div style={{ marginTop: "22px" }}>
         {(() => {

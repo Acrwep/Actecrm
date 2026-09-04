@@ -411,9 +411,7 @@ const StudentVerify = forwardRef(
       const placeOfServiceValidate = selectValidator(placeOfService);
       const languagesKnownValidate = selectValidator(languagesKnown);
       const commentValidate = addressValidator(studentVerifyComments);
-      const studentVerifyProofValidate = selectValidator(
-        studentVerifyProofBase64,
-      );
+      const studentVerifyProofValidate = "";
       const courseVerifiedValidate =
         courseVerified == 1 ? "" : " is not verified";
 
@@ -624,6 +622,8 @@ const StudentVerify = forwardRef(
               );
             }
           }, 300);
+        } else {
+          getParticularCustomerDetails();
         }
       } catch (error) {
         setButtonLoading(false);
@@ -1047,7 +1047,7 @@ const StudentVerify = forwardRef(
                     label="Proof Communication"
                     aspect={1}
                     maxSizeMB={1}
-                    required={true}
+                    required={false}
                     value={studentVerifyProofBase64}
                     onChange={(base64) => setStudentVerifyProofBase64(base64)}
                     onErrorChange={setStudentVerifyProofError}

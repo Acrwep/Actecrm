@@ -1159,125 +1159,129 @@ export default function Received({
           />
         </Col>
       </Row>
-      <Row style={{ marginBottom: "16px" }}>
-        <Col
-          span={24}
-          style={{ display: "flex", gap: "16px", alignItems: "center" }}
-        >
-          <Flex
-            gap="middle"
-            wrap="wrap"
-            align="center"
-            style={{ marginTop: "18px" }}
-          >
-            {[
-              {
-                label: "New",
-                value: "NEW",
-                baseColor: "#0f8753",
-                count: statusCount?.new_payment || 0,
-              },
-              {
-                label: "Repayment",
-                value: "REPAYMENT",
-                baseColor: "#ffa502",
-                count: statusCount?.re_payment || 0,
-              },
-              {
-                label: "Rejected",
-                value: "REJECTED",
-                baseColor: "#e11d48",
-                count: statusCount?.rejected || 0,
-              },
-            ].map((bucket) => {
-              const isActive = paymentType === bucket.value;
-              const baseColor = bucket.baseColor;
-              return (
-                <div
-                  key={bucket.label}
-                  onClick={() => {
-                    if (paymentType == bucket?.value) {
-                      return;
-                    }
-                    setPaymentType(bucket.value);
-                    setPagination({ ...pagination, page: 1 });
-                    getPaymentRecievedData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      searchValue,
-                      allDownliners,
-                      selectedRegionId,
-                      selectedBranchId,
-                      1,
-                      pagination.limit,
-                      bucket.value,
-                    );
-                  }}
-                  className={`leadmanager_bucket ${isActive ? "active" : ""}`}
-                  style={{
-                    border: `1px solid ${isActive ? baseColor : baseColor + "66"}`,
-                    backgroundColor: isActive ? baseColor : baseColor + "15",
-                    color: isActive ? "#fff" : baseColor,
-                    minWidth: "max-content",
-                  }}
-                >
-                  {bucket.label}{" "}
-                  {bucket.count !== null && `( ${bucket.count} )`}
-                </div>
-              );
-            })}
-          </Flex>
-        </Col>
-      </Row>
 
-      <Row style={{ marginTop: "16px" }}>
-        <Col span={12}>
-          {permissions.includes("Show Region Summary") && (
-            <div
-              className="livelead_today_summary_container"
-              style={{ marginTop: "0px" }}
+      {permissions.includes("Show Region Summary") ? (
+        <>
+          <Row style={{ marginBottom: "16px" }}>
+            <Col
+              span={24}
+              style={{ display: "flex", gap: "16px", alignItems: "center" }}
             >
-              <p className="livelead_today_label">Region Summary</p>
+              <Flex
+                gap="middle"
+                wrap="wrap"
+                align="center"
+                style={{ marginTop: "18px" }}
+              >
+                {[
+                  {
+                    label: "New",
+                    value: "NEW",
+                    baseColor: "#0f8753",
+                    count: statusCount?.new_payment || 0,
+                  },
+                  {
+                    label: "Repayment",
+                    value: "REPAYMENT",
+                    baseColor: "#ffa502",
+                    count: statusCount?.re_payment || 0,
+                  },
+                  {
+                    label: "Rejected",
+                    value: "REJECTED",
+                    baseColor: "#e11d48",
+                    count: statusCount?.rejected || 0,
+                  },
+                ].map((bucket) => {
+                  const isActive = paymentType === bucket.value;
+                  const baseColor = bucket.baseColor;
+                  return (
+                    <div
+                      key={bucket.label}
+                      onClick={() => {
+                        if (paymentType == bucket?.value) {
+                          return;
+                        }
+                        setPaymentType(bucket.value);
+                        setPagination({ ...pagination, page: 1 });
+                        getPaymentRecievedData(
+                          selectedDates[0],
+                          selectedDates[1],
+                          searchValue,
+                          allDownliners,
+                          selectedRegionId,
+                          selectedBranchId,
+                          1,
+                          pagination.limit,
+                          bucket.value,
+                        );
+                      }}
+                      className={`leadmanager_bucket ${isActive ? "active" : ""}`}
+                      style={{
+                        border: `1px solid ${isActive ? baseColor : baseColor + "66"}`,
+                        backgroundColor: isActive
+                          ? baseColor
+                          : baseColor + "15",
+                        color: isActive ? "#fff" : baseColor,
+                        minWidth: "max-content",
+                      }}
+                    >
+                      {bucket.label}{" "}
+                      {bucket.count !== null && `( ${bucket.count} )`}
+                    </div>
+                  );
+                })}
+              </Flex>
+            </Col>
+          </Row>
 
-              <div className="livelead_badge_item online">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#3c9111" }}
-                />
-                <p className="livelead_badge_text">
-                  Hub{" "}
-                  <span className="livelead_badge_count">
-                    {statusCount?.hub ?? "-"}
-                  </span>
-                </p>
-              </div>
+          <Row style={{ marginTop: "16px" }}>
+            <Col span={12}>
+              <div
+                className="livelead_today_summary_container"
+                style={{ marginTop: "0px" }}
+              >
+                <p className="livelead_today_label">Region Summary</p>
 
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#1e90ff" }}
-                />
-                <p className="livelead_badge_text">
-                  Chennai{" "}
-                  <span className="livelead_badge_count">
-                    {statusCount?.chennai ?? "-"}
-                  </span>
-                </p>
-              </div>
+                <div className="livelead_badge_item online">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#3c9111" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Hub{" "}
+                    <span className="livelead_badge_count">
+                      {statusCount?.hub ?? "-"}
+                    </span>
+                  </p>
+                </div>
 
-              <div className="livelead_badge_item corporate">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#607d8b" }}
-                />
-                <p className="livelead_badge_text">
-                  Bangalore{" "}
-                  <span className="livelead_badge_count">
-                    {statusCount?.bangalore ?? "-"}
-                  </span>
-                </p>
-              </div>
-              {/* <div className="livelead_badge_item total">
+                <div className="livelead_badge_item classroom">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#1e90ff" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Chennai{" "}
+                    <span className="livelead_badge_count">
+                      {statusCount?.chennai ?? "-"}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="livelead_badge_item corporate">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#607d8b" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Bangalore{" "}
+                    <span className="livelead_badge_count">
+                      {statusCount?.bangalore ?? "-"}
+                    </span>
+                  </p>
+                </div>
+                {/* <div className="livelead_badge_item total">
             <div
               className="livelead_badge_dot"
               style={{ backgroundColor: "#5b69ca" }}
@@ -1289,30 +1293,118 @@ export default function Received({
               </span>
             </p>
           </div> */}
-            </div>
-          )}
-        </Col>
-        <Col
-          span={12}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
-          <div
-            className="overall_pending_amount_card"
-            style={{ padding: "8px 16px" }}
+              </div>
+            </Col>
+            <Col
+              span={12}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+              }}
+            >
+              <div
+                className="overall_pending_amount_card"
+                style={{ padding: "8px 16px" }}
+              >
+                <span className="overall_pending_amount_label">
+                  Total Amount to Be Verified:
+                </span>
+                <span className="overall_pending_amount_value">
+                  ₹{Number(totalAmountOfReceived)?.toLocaleString("en-IN") || 0}
+                </span>
+              </div>
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <Row style={{ marginTop: "16px", marginBottom: "16px" }}>
+          <Col
+            span={12}
+            style={{ display: "flex", gap: "16px", alignItems: "center" }}
           >
-            <span className="overall_pending_amount_label">
-              Total Amount to Be Verified:
-            </span>
-            <span className="overall_pending_amount_value">
-              ₹{Number(totalAmountOfReceived)?.toLocaleString("en-IN") || 0}
-            </span>
-          </div>
-        </Col>
-      </Row>
+            <Flex gap="middle" wrap="wrap" align="center">
+              {[
+                {
+                  label: "New",
+                  value: "NEW",
+                  baseColor: "#0f8753",
+                  count: statusCount?.new_payment || 0,
+                },
+                {
+                  label: "Repayment",
+                  value: "REPAYMENT",
+                  baseColor: "#ffa502",
+                  count: statusCount?.re_payment || 0,
+                },
+                {
+                  label: "Rejected",
+                  value: "REJECTED",
+                  baseColor: "#e11d48",
+                  count: statusCount?.rejected || 0,
+                },
+              ].map((bucket) => {
+                const isActive = paymentType === bucket.value;
+                const baseColor = bucket.baseColor;
+                return (
+                  <div
+                    key={bucket.label}
+                    onClick={() => {
+                      if (paymentType == bucket?.value) {
+                        return;
+                      }
+                      setPaymentType(bucket.value);
+                      setPagination({ ...pagination, page: 1 });
+                      getPaymentRecievedData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        searchValue,
+                        allDownliners,
+                        selectedRegionId,
+                        selectedBranchId,
+                        1,
+                        pagination.limit,
+                        bucket.value,
+                      );
+                    }}
+                    className={`leadmanager_bucket ${isActive ? "active" : ""}`}
+                    style={{
+                      border: `1px solid ${isActive ? baseColor : baseColor + "66"}`,
+                      backgroundColor: isActive ? baseColor : baseColor + "15",
+                      color: isActive ? "#fff" : baseColor,
+                      minWidth: "max-content",
+                    }}
+                  >
+                    {bucket.label}{" "}
+                    {bucket.count !== null && `( ${bucket.count} )`}
+                  </div>
+                );
+              })}
+            </Flex>
+          </Col>
+
+          <Col
+            span={12}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+            }}
+          >
+            <div
+              className="overall_pending_amount_card"
+              style={{ padding: "8px 16px" }}
+            >
+              <span className="overall_pending_amount_label">
+                Total Amount to Be Verified:
+              </span>
+              <span className="overall_pending_amount_value">
+                ₹{Number(totalAmountOfReceived)?.toLocaleString("en-IN") || 0}
+              </span>
+            </div>
+          </Col>
+        </Row>
+      )}
 
       <div style={{ marginTop: "16px" }}>
         <CommonTable

@@ -29,9 +29,11 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import "./styles.css";
 import {
   getAllDownlineUsers,
+  getBranches,
   getCustomerById,
   getCustomers,
   getTableColumns,
+  getUsers,
   updateTableColumns,
   verifyReview,
   viewCertForCustomer,
@@ -41,6 +43,7 @@ import {
   formatToBackendIST,
   getCurrentandPreviousweekDate,
   isWithin30Days,
+  regionOptions,
 } from "../Common/Validation";
 import { FcGoogle } from "react-icons/fc";
 import { FaLinkedin } from "react-icons/fa";
@@ -122,14 +125,25 @@ export default function Customers() {
   const [bucketStatus, setBucketStatus] = useState("");
   const [customerBucketStatusCount, setCustomerBucketStatusCount] =
     useState(null);
+  //filter usestates
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [dateFilterType, setDateFilterType] = useState("Updated");
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [filterType, setFilterType] = useState(1);
+  const [subUsers, setSubUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState([]);
+  const prevSelectedUserIdRef = useRef("[]");
+  const [allDownliners, setAllDownliners] = useState([]);
+  const [defaultAllDownliners, setDefaultAllDownliners] = useState([]);
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [filterBranchOptions, setFilterBranchOptions] = useState([]);
+  //-------------------------------------------------------------------
   const [selectedOrigin, setSelectedOrigin] = useState("");
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
+  const [regionCounts, setRegionCounts] = useState(null);
   const [customerStatusCount, setCustomerStatusCount] = useState(null);
   const [isOpenEditDrawer, setIsOpenEditDrawer] = useState(false);
   const [updateDrawerTabKey, setUpdateDrawerTabKey] = useState("1");
@@ -179,10 +193,6 @@ export default function Customers() {
   //email template usestates
   const [isOpenEmailTemplateDrawer, setIsOpenEmailTemplateDrawer] =
     useState(false);
-  //executive filter
-  const [subUsers, setSubUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [allDownliners, setAllDownliners] = useState([]);
   //branch filter
   const [branchOptions, setBranchOptions] = useState([
     { id: 1, name: "Classroom", checked: true },
@@ -1585,6 +1595,7 @@ export default function Customers() {
           return u.user_id;
         });
         setAllDownliners(downliners_ids);
+        setDefaultAllDownliners(downliners_ids);
         rerunCustomerFilters(data, downliners_ids);
       } catch (error) {
         console.log("all downlines error", error);
@@ -1654,6 +1665,8 @@ export default function Customers() {
       null,
       null,
       null,
+      null,
+      null,
       receivedValueFromDashboard
         ? receivedValueFromDashboard === "Trainer Rejected"
           ? ["Trainer Rejected"]
@@ -1693,6 +1706,8 @@ export default function Customers() {
     endDate,
     date_type,
     searchvalue,
+    regionId,
+    branchId,
     origin,
     bucketStatus,
     customerStatus,
@@ -1721,6 +1736,8 @@ export default function Customers() {
       from_date: startDate,
       to_date: endDate,
       date_type: date_type,
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       ...(origin && { domain: origin }),
       ...(customerStatus && {
         status: customerStatus,
@@ -1754,6 +1771,7 @@ export default function Customers() {
       setCustomerBucketStatusCount(
         response?.data?.data?.bucket_status_count || null,
       );
+      setRegionCounts(response?.data?.data?.regoin_count || null);
       setCustomerStatusCount(
         response?.data?.data?.customer_status_count || null,
       );
@@ -1777,6 +1795,7 @@ export default function Customers() {
         }
       }
     } catch (error) {
+      setRegionCounts(null);
       setCustomerStatusCount(null);
       setCustomersData([]);
       console.log("get customers error", error);
@@ -1889,6 +1908,8 @@ export default function Customers() {
       selectedDates[1],
       dateFilterType,
       searchValue,
+      selectedRegionId,
+      selectedBranchId,
       selectedOrigin,
       bucketStatus,
       status,
@@ -1911,6 +1932,8 @@ export default function Customers() {
         selectedDates[1],
         dateFilterType,
         e.target.value,
+        selectedRegionId,
+        selectedBranchId,
         selectedOrigin,
         bucketStatus,
         status,
@@ -1925,8 +1948,23 @@ export default function Customers() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+  };
+
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    // if (!value || value.length <= 0) return;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) && value.length > 0 ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -1941,6 +1979,8 @@ export default function Customers() {
         selectedDates[1],
         dateFilterType,
         searchValue,
+        selectedRegionId,
+        selectedBranchId,
         selectedOrigin,
         bucketStatus,
         status,
@@ -1951,6 +1991,51 @@ export default function Customers() {
       );
     } catch (error) {
       console.log("all downlines error", error);
+    }
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setFilterBranchOptions(reordered);
+        } else {
+          setFilterBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setFilterBranchOptions([]);
+      }
+    } catch (error) {
+      setFilterBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setSubUsers([]);
+      console.log("get all users error", error);
     }
   };
 
@@ -1969,7 +2054,12 @@ export default function Customers() {
     setBucketStatus("");
     setStatus("");
     setSearchValue("");
-    setSelectedUserId(null);
+    setSelectedUserId([]);
+    prevSelectedUserIdRef.current = "[]";
+    setSelectedRegionId(null);
+    setFilterBranchOptions([]);
+    setSelectedBranchId(null);
+    setSubUsers(downlineUsers);
     setSelectedOrigin("");
     setDateFilterType("Updated");
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
@@ -2068,6 +2158,8 @@ export default function Customers() {
           selectedDates[1],
           dateFilterType,
           searchValue,
+          selectedRegionId,
+          selectedBranchId,
           selectedOrigin,
           bucketStatus,
           status,
@@ -2091,7 +2183,7 @@ export default function Customers() {
     <div>
       <div
         className="settings_tabbutton_maincontainer"
-        style={{ marginBottom: "4px" }}
+        style={{ marginBottom: "0px" }}
       >
         <ScrollableTabContainer>
           <div
@@ -2114,6 +2206,8 @@ export default function Customers() {
                 selectedDates[1],
                 dateFilterType,
                 searchValue,
+                selectedRegionId,
+                selectedBranchId,
                 selectedOrigin,
                 null,
                 null,
@@ -2156,6 +2250,8 @@ export default function Customers() {
                 selectedDates[1],
                 dateFilterType,
                 searchValue,
+                selectedRegionId,
+                selectedBranchId,
                 selectedOrigin,
                 "Training Coordination",
                 null,
@@ -2199,6 +2295,8 @@ export default function Customers() {
                 selectedDates[1],
                 dateFilterType,
                 searchValue,
+                selectedRegionId,
+                selectedBranchId,
                 selectedOrigin,
                 "Progress Monitoring",
                 null,
@@ -2242,6 +2340,8 @@ export default function Customers() {
                 selectedDates[1],
                 dateFilterType,
                 searchValue,
+                selectedRegionId,
+                selectedBranchId,
                 selectedOrigin,
                 "Course completion",
                 null,
@@ -2285,6 +2385,8 @@ export default function Customers() {
                 selectedDates[1],
                 dateFilterType,
                 searchValue,
+                selectedRegionId,
+                selectedBranchId,
                 selectedOrigin,
                 "Reviews & Certification",
                 null,
@@ -2321,11 +2423,24 @@ export default function Customers() {
         </div>
       </div>
 
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={20}>
-          <Row gutter={12}>
-            <Col flex="24%">
-              <div className="overallduecustomers_filterContainer">
+      <Row
+        style={{
+          paddingTop: "5px",
+          marginBottom: "12px",
+          flexWrap: "nowrap",
+          overflowX: "auto",
+          paddingBottom: "4px",
+        }}
+        align="middle"
+        gutter={12}
+      >
+        <Col flex="auto">
+          <Row gutter={12} align="middle" wrap={false}>
+            <Col flex="1 1 0%">
+              <div
+                className="overallduecustomers_filterContainer"
+                style={{ marginBottom: "0px" }}
+              >
                 {/* Search Input */}
                 <CommonOutlinedInput
                   label={
@@ -2356,6 +2471,8 @@ export default function Customers() {
                             selectedDates[1],
                             dateFilterType,
                             null,
+                            selectedRegionId,
+                            selectedBranchId,
                             selectedOrigin,
                             bucketStatus,
                             status,
@@ -2410,6 +2527,8 @@ export default function Customers() {
                                 selectedDates[1],
                                 dateFilterType,
                                 null,
+                                selectedRegionId,
+                                selectedBranchId,
                                 selectedOrigin,
                                 bucketStatus,
                                 status,
@@ -2448,7 +2567,7 @@ export default function Customers() {
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
-              <Col flex="25%">
+              <Col flex="1 1 0%">
                 <CommonMultiSelectField
                   height="34px"
                   label="Select User"
@@ -2456,22 +2575,24 @@ export default function Customers() {
                   labelFontSize="11px"
                   options={subUsers}
                   onChange={handleSelectUser}
+                  onBlur={handleSelectUserBlur}
                   value={selectedUserId}
                 />
               </Col>
             )}
-            <Col flex="none">
+            <Col flex="1.4 1 0%">
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
                   flexWrap: "nowrap",
+                  width: "100%",
                 }}
               >
-                <div style={{ flex: "0 0 120px" }}>
+                <div style={{ flex: 1 }}>
                   <CommonMuiCustomDatePicker
-                    width="280px"
+                    width="100%"
                     value={selectedDates}
                     onDateChange={(dates) => {
                       setSelectedDates(dates);
@@ -2483,6 +2604,8 @@ export default function Customers() {
                         dates[1],
                         dateFilterType,
                         searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
                         selectedOrigin,
                         bucketStatus,
                         status,
@@ -2518,6 +2641,8 @@ export default function Customers() {
                               selectedDates[1],
                               e.target.value,
                               searchValue,
+                              selectedRegionId,
+                              selectedBranchId,
                               selectedOrigin,
                               bucketStatus,
                               status,
@@ -2563,7 +2688,7 @@ export default function Customers() {
               </div>
             </Col>
 
-            <Col flex="none">
+            <Col flex="1 1 0%">
               <Popover
                 placement="bottomLeft"
                 trigger="click"
@@ -2604,7 +2729,7 @@ export default function Customers() {
                         Advanced Filters
                       </span>
                       <Badge
-                        count={1}
+                        count={3}
                         style={{
                           backgroundColor: "#3b82f6",
                           boxShadow: "0 0 0 2px #f8fafc",
@@ -2615,72 +2740,153 @@ export default function Customers() {
                       style={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: "20px",
+                        gap: "16px",
                         maxHeight: "420px",
                         overflowY: "auto",
                         padding: "20px",
                       }}
                     >
-                      <div style={{ width: "100%" }}>
-                        <CommonSelectField
-                          width="100%"
-                          height="35px"
-                          label="Select Origin"
-                          labelMarginTop="0px"
-                          labelFontSize="12px"
-                          options={[
-                            {
-                              id: "acte.in",
-                              name: "acte.in",
-                            },
-                            {
-                              id: "acte.co.in",
-                              name: "acte.co.in",
-                            },
-                            {
-                              id: "learnovita.com",
-                              name: "learnovita.com",
-                            },
-                            {
-                              id: "acte.courses",
-                              name: "placement7.com",
-                            },
-                            {
-                              id: "linkplux.com",
-                              name: "linkplux.com",
-                            },
-                            {
-                              id: "careerfast.in",
-                              name: "careerfast.in",
-                            },
-                            {
-                              id: "Google Ads",
-                              name: "Google Ads",
-                            },
-                          ]}
-                          onChange={(e) => {
-                            setSelectedOrigin(e.target.value);
-                            setPagination({
-                              page: 1,
-                            });
-                            getCustomersData(
-                              selectedDates[0],
-                              selectedDates[1],
-                              dateFilterType,
-                              searchValue,
-                              e.target.value,
-                              bucketStatus,
-                              status,
-                              allDownliners,
-                              branchOptions,
-                              1,
-                              pagination.limit,
-                            );
-                          }}
-                          value={selectedOrigin}
-                          disableClearable={false}
-                        />{" "}
-                      </div>
+                      {permissions.includes("Lead Executive Filter") && (
+                        <>
+                          <CommonSelectField
+                            height="33px"
+                            label="Select Region"
+                            labelMarginTop="0px"
+                            labelFontSize="11px"
+                            options={regionOptions}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setSelectedRegionId(value);
+                              setSelectedBranchId(null);
+                              setSelectedUserId([]);
+                              setPagination({
+                                page: 1,
+                                limit: pagination.limit,
+                              });
+                              getCustomersData(
+                                selectedDates[0],
+                                selectedDates[1],
+                                dateFilterType,
+                                searchValue,
+                                value,
+                                null,
+                                selectedOrigin,
+                                bucketStatus,
+                                status,
+                                defaultAllDownliners,
+                                branchOptions,
+                                1,
+                                pagination.limit,
+                              );
+                              if (value) {
+                                getUsersData(value, null);
+                                getBranchesData(value);
+                              } else {
+                                setFilterBranchOptions([]);
+                                setSubUsers(downlineUsers);
+                              }
+                            }}
+                            value={selectedRegionId}
+                            disableClearable={false}
+                          />
+
+                          <CommonSelectField
+                            height="33px"
+                            label="Select Branch"
+                            labelMarginTop="0px"
+                            labelFontSize="11px"
+                            options={filterBranchOptions}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setSelectedBranchId(value);
+                              setSelectedUserId([]);
+                              getUsersData(selectedRegionId, value);
+                              setPagination({
+                                page: 1,
+                                limit: pagination.limit,
+                              });
+                              getCustomersData(
+                                selectedDates[0],
+                                selectedDates[1],
+                                dateFilterType,
+                                searchValue,
+                                selectedRegionId,
+                                value,
+                                selectedOrigin,
+                                bucketStatus,
+                                status,
+                                defaultAllDownliners,
+                                branchOptions,
+                                1,
+                                pagination.limit,
+                              );
+                            }}
+                            value={selectedBranchId}
+                            disableClearable={false}
+                            disabled={selectedRegionId == 3 ? true : false}
+                          />
+                        </>
+                      )}
+                      <CommonSelectField
+                        width="100%"
+                        height="35px"
+                        label="Select Origin"
+                        labelMarginTop="0px"
+                        labelFontSize="12px"
+                        options={[
+                          {
+                            id: "acte.in",
+                            name: "acte.in",
+                          },
+                          {
+                            id: "acte.co.in",
+                            name: "acte.co.in",
+                          },
+                          {
+                            id: "learnovita.com",
+                            name: "learnovita.com",
+                          },
+                          {
+                            id: "acte.courses",
+                            name: "placement7.com",
+                          },
+                          {
+                            id: "linkplux.com",
+                            name: "linkplux.com",
+                          },
+                          {
+                            id: "careerfast.in",
+                            name: "careerfast.in",
+                          },
+                          {
+                            id: "Google Ads",
+                            name: "Google Ads",
+                          },
+                        ]}
+                        onChange={(e) => {
+                          setSelectedOrigin(e.target.value);
+                          setPagination({
+                            page: 1,
+                          });
+                          getCustomersData(
+                            selectedDates[0],
+                            selectedDates[1],
+                            dateFilterType,
+                            searchValue,
+                            selectedRegionId,
+                            selectedBranchId,
+                            e.target.value,
+                            bucketStatus,
+                            status,
+                            allDownliners,
+                            branchOptions,
+                            1,
+                            pagination.limit,
+                          );
+                        }}
+                        value={selectedOrigin}
+                        disableClearable={false}
+                      />{" "}
                     </div>
                   </div>
                 }
@@ -2708,10 +2914,7 @@ export default function Customers() {
           </Row>
         </Col>
         <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={4}
+          flex="none"
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -2839,7 +3042,10 @@ export default function Customers() {
         </div>
       )} */}
 
-      <div className="customers_scroll_wrapper">
+      <div
+        className="customers_scroll_wrapper"
+        style={{ marginBottom: "12px" }}
+      >
         {/* <button
           onClick={() => scroll(-600)}
           className="customer_statusscroll_button"
@@ -2870,6 +3076,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     null,
@@ -2910,6 +3118,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Form Pending",
@@ -2951,6 +3161,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Awaiting Verify",
@@ -3006,6 +3218,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       isAssignTrainerSwap
@@ -3066,6 +3280,8 @@ export default function Customers() {
                         selectedDates[1],
                         dateFilterType,
                         searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
                         selectedOrigin,
                         bucketStatus,
                         newStatus,
@@ -3114,6 +3330,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     isApprovalTrainerSwap
@@ -3175,6 +3393,8 @@ export default function Customers() {
                         selectedDates[1],
                         dateFilterType,
                         searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
                         selectedOrigin,
                         bucketStatus,
                         newStatus,
@@ -3208,6 +3428,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Trainer Approval",
@@ -3254,6 +3476,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Awaiting Class",
@@ -3296,6 +3520,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Class Scheduled",
@@ -3337,6 +3563,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Class Going",
@@ -3378,6 +3606,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Escalated",
@@ -3420,6 +3650,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     "Others",
@@ -3465,6 +3697,8 @@ export default function Customers() {
                   selectedDates[1],
                   dateFilterType,
                   searchValue,
+                  selectedRegionId,
+                  selectedBranchId,
                   selectedOrigin,
                   bucketStatus,
                   "Passedout Process",
@@ -3509,6 +3743,8 @@ export default function Customers() {
                   selectedDates[1],
                   dateFilterType,
                   searchValue,
+                  selectedRegionId,
+                  selectedBranchId,
                   selectedOrigin,
                   bucketStatus,
                   "Completed",
@@ -3540,6 +3776,54 @@ export default function Customers() {
           <IoMdArrowDropright size={25} />
         </button> */}
       </div>
+
+      {permissions.includes("Show Region Summary") && (
+        <div
+          className="livelead_today_summary_container"
+          style={{ marginTop: "0px", marginBottom: "20px" }}
+        >
+          <p className="livelead_today_label">REGION SUMMARY</p>
+
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.hub_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.chennai_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {regionCounts?.bangalore_region ?? 0}
+              </span>
+            </p>
+          </div>
+        </div>
+      )}
 
       <div>
         <CommonTable
@@ -3611,6 +3895,8 @@ export default function Customers() {
               selectedDates[1],
               dateFilterType,
               searchValue,
+              selectedRegionId,
+              selectedBranchId,
               selectedOrigin,
               bucketStatus,
               status,
@@ -4084,6 +4370,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     status,
@@ -4112,6 +4400,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       status,
@@ -4137,6 +4427,8 @@ export default function Customers() {
                     selectedDates[1],
                     dateFilterType,
                     searchValue,
+                    selectedRegionId,
+                    selectedBranchId,
                     selectedOrigin,
                     bucketStatus,
                     status,
@@ -4167,6 +4459,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       status,
@@ -4195,6 +4489,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       status,
@@ -4224,6 +4520,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       status,
@@ -4261,6 +4559,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       status,
@@ -4289,6 +4589,8 @@ export default function Customers() {
                       selectedDates[1],
                       dateFilterType,
                       searchValue,
+                      selectedRegionId,
+                      selectedBranchId,
                       selectedOrigin,
                       bucketStatus,
                       status,
@@ -4626,6 +4928,8 @@ export default function Customers() {
                   selectedDates[1],
                   dateFilterType,
                   searchValue,
+                  selectedRegionId,
+                  selectedBranchId,
                   selectedOrigin,
                   bucketStatus,
                   status,
@@ -4859,6 +5163,8 @@ export default function Customers() {
             selectedDates[1],
             dateFilterType,
             searchValue,
+            selectedRegionId,
+            selectedBranchId,
             selectedOrigin,
             bucketStatus,
             status,

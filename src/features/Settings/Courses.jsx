@@ -424,8 +424,10 @@ export default function Courses() {
     formData.append("price", price);
     formData.append("offer_price", offerPrice); // ✅ FIXED NAME
     formData.append("is_server", serverAccess == 1 ? 1 : 2);
-    formData.append("server_amount", serverAmount);
-
+    formData.append(
+      "server_amount",
+      serverAccess == 1 && serverAmount ? serverAmount : 0,
+    );
     // ✅ ONLY send if real File object
     if (brouchures instanceof File) {
       formData.append("brouchures", brouchures);
@@ -1032,6 +1034,9 @@ export default function Courses() {
                 ]}
                 onChange={(e) => {
                   setServerAccess(e.target.value);
+                  if (e.target.value == 2) {
+                    setServerAmount(0);
+                  }
                 }}
                 value={serverAccess}
                 error={""}

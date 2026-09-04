@@ -42,14 +42,17 @@ import {
   formatToBackendIST,
   getCurrentandLast90Date,
   getCurrentandPreviousweekDate,
+  regionOptions,
   selectValidator,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
+  getBranches,
   getCustomerById,
   getServerHistory,
   getServerRequest,
   getTableColumns,
+  getUsers,
   insertServerTrack,
   sendNotification,
   serverIssue,
@@ -100,6 +103,7 @@ export default function Server() {
   const [serverData, setServerData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [regionCounts, setRegionCounts] = useState(null);
   const [statusCount, setStatusCount] = useState(null);
   const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -133,8 +137,13 @@ export default function Server() {
   const [serverHistoryLoading, setServerHistoryLoading] = useState(false);
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserId, setSelectedUserId] = useState([]);
+  const prevSelectedUserIdRef = useRef("[]");
   const [allDownliners, setAllDownliners] = useState([]);
+  const [defaultAllDownliners, setDefaultAllDownliners] = useState([]);
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [branchOptions, setBranchOptions] = useState([]);
   //table dnd
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [updateTableId, setUpdateTableId] = useState(null);
@@ -634,6 +643,7 @@ export default function Server() {
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      setDefaultAllDownliners(downliners_ids);
       const PreviousAndCurrentDate = getCurrentandLast90Date();
       // getServerRequestData(
       //   PreviousAndCurrentDate[0],
@@ -688,6 +698,8 @@ export default function Server() {
         ? receivedEndDateFromNotification
         : PreviousAndCurrentDate[1],
       "Raise Date",
+      null,
+      null,
       downliners,
       null,
       receivedSearchValueFromNotification,
@@ -700,6 +712,8 @@ export default function Server() {
     startDate,
     endDate,
     dateType,
+    regionId,
+    branchId,
     downliners,
     serverStatus,
     searchvalue,
@@ -714,6 +728,8 @@ export default function Server() {
       start_date: startDate,
       end_date: endDate,
       type: dateType,
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       ...(converAsJson?.user_id == "BNG9001" ? {} : { user_ids: downliners }),
       ...(serverStatus && serverStatus == "Server Raised"
         ? {
@@ -740,6 +756,7 @@ export default function Server() {
       const response = await getServerRequest(payload);
       console.log("server response", response);
       setServerData(response?.data?.data?.data || []);
+      setRegionCounts(response?.data?.data?.region_count || null);
       setStatusCount(response?.data?.data?.statusCount || null);
 
       const pagination = response?.data?.data?.pagination;
@@ -752,6 +769,7 @@ export default function Server() {
     } catch (error) {
       setServerData([]);
       setStatusCount(null);
+      setRegionCounts(null);
       console.log("get server error", error);
     } finally {
       setTimeout(() => {
@@ -1302,6 +1320,8 @@ export default function Server() {
         selectedDates[0],
         selectedDates[1],
         dateFilterType,
+        selectedRegionId,
+        selectedBranchId,
         allDownliners,
         status,
         e.target.value,
@@ -1314,8 +1334,23 @@ export default function Server() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
+  };
+
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    // if (!value || value.length <= 0) return;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+
     try {
-      const response = await getAllDownlineUsers(value ? value : loginUserId);
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) && value.length > 0 ? value : loginUserId,
+      );
       console.log("all downlines response", response);
       const downliners = response?.data?.data || [];
       const downliners_ids = downliners.map((u) => {
@@ -1329,6 +1364,8 @@ export default function Server() {
         selectedDates[0],
         selectedDates[1],
         dateFilterType,
+        selectedRegionId,
+        selectedBranchId,
         downliners_ids,
         status,
         searchValue,
@@ -1340,11 +1377,58 @@ export default function Server() {
     }
   };
 
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
+    }
+  };
+
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("users response", response);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      setSubUsers([]);
+      console.log("get all users error", error);
+    }
+  };
+
   const handlePaginationChange = ({ page, limit }) => {
     getServerRequestData(
       selectedDates[0],
       selectedDates[1],
       dateFilterType,
+      selectedRegionId,
+      selectedBranchId,
       allDownliners,
       status,
       searchValue,
@@ -1404,6 +1488,8 @@ export default function Server() {
           selectedDates[0],
           selectedDates[1],
           dateFilterType,
+          selectedRegionId,
+          selectedBranchId,
           allDownliners,
           status,
           searchValue,
@@ -1559,9 +1645,15 @@ export default function Server() {
 
   const handleRefresh = () => {
     const PreviousAndCurrentDate = getCurrentandLast90Date();
-    setSelectedDates(PreviousAndCurrentDate);
     setSearchValue("");
-    setSelectedUserId(null);
+    setSelectedUserId([]);
+    prevSelectedUserIdRef.current = "[]";
+    setSelectedRegionId(null);
+    setBranchOptions([]);
+    setSelectedBranchId(null);
+    setSubUsers(downlineUsers);
+    setDateFilterType("Raise Date");
+    setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
     setPagination({
       page: 1,
@@ -1571,11 +1663,20 @@ export default function Server() {
 
   return (
     <div>
-      <Row style={{ marginBottom: "12px" }}>
-        <Col xs={24} sm={24} md={24} lg={19}>
-          <Row gutter={16}>
-            <Col span={7}>
-              <div className="overallduecustomers_filterContainer">
+      <Row style={{ marginBottom: "12px" }} align="middle">
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
+        >
+          <Row gutter={12} align="middle" wrap={false}>
+            <Col flex="1 1 0%">
+              <div
+                className="overallduecustomers_filterContainer"
+                style={{ marginBottom: "0px" }}
+              >
                 <CommonOutlinedInput
                   label={
                     filterType == 1
@@ -1602,6 +1703,8 @@ export default function Server() {
                             selectedDates[0],
                             selectedDates[1],
                             dateFilterType,
+                            selectedRegionId,
+                            selectedBranchId,
                             allDownliners,
                             status,
                             null,
@@ -1677,7 +1780,7 @@ export default function Server() {
               </div>
             </Col>
 
-            {permissions.includes("Lead Executive Filter") && (
+            {/* {permissions.includes("Lead Executive Filter") && (
               <Col span={7}>
                 <div className="overallduecustomers_filterContainer">
                   <div style={{ flex: 1 }}>
@@ -1693,36 +1796,111 @@ export default function Server() {
                   </div>
                 </div>
               </Col>
+            )} */}
+            {permissions.includes("Lead Executive Filter") && (
+              <>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Region"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={regionOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedRegionId(value);
+                      setSelectedBranchId(null);
+                      setSelectedUserId([]);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getServerRequestData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        value,
+                        null,
+                        defaultAllDownliners,
+                        status,
+                        searchValue,
+                        1,
+                        pagination.limit,
+                      );
+                      if (value) {
+                        getUsersData(value, null);
+                        getBranchesData(value);
+                      } else {
+                        setBranchOptions([]);
+                        setSubUsers(downlineUsers);
+                      }
+                    }}
+                    value={selectedRegionId}
+                    disableClearable={false}
+                  />
+                </Col>
+
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Branch"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={branchOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedBranchId(value);
+                      setSelectedUserId([]);
+                      getUsersData(selectedRegionId, value);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getServerRequestData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        selectedRegionId,
+                        value,
+                        defaultAllDownliners,
+                        status,
+                        searchValue,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                    value={selectedBranchId}
+                    disableClearable={false}
+                    disabled={selectedRegionId == 3 ? true : false}
+                  />
+                </Col>
+                <Col flex="1 1 0%">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
+              </>
             )}
-            <Col span={10}>
-              {/* <CommonMuiCustomDatePicker
-                value={selectedDates}
-                onDateChange={(dates) => {
-                  setSelectedDates(dates);
-                  setPagination({
-                    page: 1,
-                  });
-                  getServerRequestData(
-                    dates[0],
-                    dates[1],
-                    allDownliners,
-                    status,
-                    searchValue,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-              /> */}
+            <Col flex="1.5 1 0%">
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
                   flexWrap: "nowrap",
+                  width: "100%",
                 }}
               >
-                <div style={{ flex: "0 0 260px" }}>
+                <div style={{ flex: 1 }}>
                   <CommonMuiCustomDatePicker
+                    width="100%"
                     value={selectedDates}
                     onDateChange={(dates) => {
                       setSelectedDates(dates);
@@ -1733,6 +1911,8 @@ export default function Server() {
                         dates[0],
                         dates[1],
                         dateFilterType,
+                        selectedRegionId,
+                        selectedBranchId,
                         allDownliners,
                         status,
                         searchValue,
@@ -1762,6 +1942,8 @@ export default function Server() {
                               selectedDates[0],
                               selectedDates[1],
                               e.target.value,
+                              selectedRegionId,
+                              selectedBranchId,
                               allDownliners,
                               status,
                               searchValue,
@@ -1772,16 +1954,18 @@ export default function Server() {
                         >
                           <Radio
                             value="Raise Date"
+                            className="customers_datetypefilter_radio"
                             style={{
                               marginTop: "6px",
                               marginBottom: "12px",
+                              fontSize: "12px",
                             }}
                           >
                             Search by Raise Date
                           </Radio>
                           <Radio
                             value="Created Date"
-                            style={{ marginBottom: "12px" }}
+                            style={{ marginBottom: "12px", fontSize: "12px" }}
                           >
                             Search by Created Date
                           </Radio>
@@ -1809,7 +1993,8 @@ export default function Server() {
           xs={24}
           sm={24}
           md={24}
-          lg={5}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -1861,6 +2046,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 null,
                 searchValue,
@@ -1893,6 +2080,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Requested",
                 searchValue,
@@ -1928,6 +2117,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Server Raised",
                 searchValue,
@@ -1963,6 +2154,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Awaiting Verify",
                 searchValue,
@@ -1995,6 +2188,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Awaiting Approval",
                 searchValue,
@@ -2030,6 +2225,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Approved",
                 searchValue,
@@ -2065,6 +2262,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Issued",
                 searchValue,
@@ -2125,6 +2324,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Expired",
                 searchValue,
@@ -2155,6 +2356,8 @@ export default function Server() {
                 selectedDates[0],
                 selectedDates[1],
                 dateFilterType,
+                selectedRegionId,
+                selectedBranchId,
                 allDownliners,
                 "Hold",
                 searchValue,
@@ -2179,13 +2382,103 @@ export default function Server() {
         </button>
       </div>
 
-      <div style={{ marginTop: "20px", position: "relative" }}>
+      {permissions.includes("Show Region Summary") ? (
+        <Row style={{ position: "relative" }}>
+          <Col span={12}>
+            <div
+              className="livelead_today_summary_container"
+              style={{ marginTop: "0px" }}
+            >
+              <p className="livelead_today_label">REGION SUMMARY</p>
+
+              <div className="livelead_badge_item online">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#3c9111" }}
+                />
+                <p className="livelead_badge_text">
+                  Hub{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.hub_region ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#1e90ff" }}
+                />
+                <p className="livelead_badge_text">
+                  Chennai{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.chennai_region ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#5b69ca" }}
+                />
+                <p className="livelead_badge_text">
+                  Bangalore{" "}
+                  <span className="livelead_badge_count">
+                    {regionCounts?.bangalore_region ?? 0}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </Col>
+          <Col
+            span={12}
+            style={{
+              marginTop: "12px",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <div
+              className={
+                selectedRowKeys.length >= 1
+                  ? "show_server_total_container"
+                  : "server_total_container"
+              }
+            >
+              <div className="server_total_card">
+                <p className="server_total_label">
+                  Selected Total
+                  {selectedRows.length > 0 && (
+                    <span className="server_total_selected_badge">
+                      {selectedRows.length}
+                    </span>
+                  )}
+                  :
+                </p>
+                <p className="server_total_value">
+                  {"₹" +
+                    selectedRows
+                      .reduce(
+                        (acc, row) => acc + (Number(row.server_cost) || 0),
+                        0,
+                      )
+                      .toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      ) : (
         <div
           className={
             selectedRowKeys.length >= 1
               ? "show_server_total_container"
               : "server_total_container"
           }
+          style={{
+            ...(selectedRowKeys.length <= 0 && { height: "20px" }),
+          }}
         >
           <div className="server_total_card">
             <p className="server_total_label">
@@ -2205,30 +2498,36 @@ export default function Server() {
             </p>
           </div>
         </div>
+      )}
 
-        <div style={{ marginTop: "42px" }}>
-          <CommonTable
-            // scroll={{ x: 1200 }}
-            scroll={{
-              x: tableColumns.reduce(
-                (total, col) => total + (col.width || 150),
-                0,
-              ),
-            }}
-            columns={tableColumns}
-            dataSource={serverData}
-            loading={loading}
-            checkBox={"true"}
-            size="small"
-            className="questionupload_table"
-            onPaginationChange={handlePaginationChange} // callback to fetch new data
-            selectedDatas={handleSelectedRow}
-            selectedRowKeys={selectedRowKeys}
-            limit={pagination.limit} // page size
-            page_number={pagination.page} // current page
-            totalPageNumber={pagination.total} // total rows
-          />
-        </div>
+      <div
+        style={{
+          marginTop: permissions.includes("Show Region Summary")
+            ? "12px"
+            : "0px",
+        }}
+      >
+        <CommonTable
+          // scroll={{ x: 1200 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0,
+            ),
+          }}
+          columns={tableColumns}
+          dataSource={serverData}
+          loading={loading}
+          checkBox={"true"}
+          size="small"
+          className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
+        />
       </div>
 
       {/* update drawer */}
@@ -2541,6 +2840,8 @@ export default function Server() {
                   selectedDates[0],
                   selectedDates[1],
                   dateFilterType,
+                  selectedRegionId,
+                  selectedBranchId,
                   allDownliners,
                   status,
                   searchValue,
@@ -2560,6 +2861,8 @@ export default function Server() {
                   selectedDates[0],
                   selectedDates[1],
                   dateFilterType,
+                  selectedRegionId,
+                  selectedBranchId,
                   allDownliners,
                   status,
                   searchValue,
@@ -2579,6 +2882,8 @@ export default function Server() {
                   selectedDates[0],
                   selectedDates[1],
                   dateFilterType,
+                  selectedRegionId,
+                  selectedBranchId,
                   allDownliners,
                   status,
                   searchValue,
@@ -2598,6 +2903,8 @@ export default function Server() {
                   selectedDates[0],
                   selectedDates[1],
                   dateFilterType,
+                  selectedRegionId,
+                  selectedBranchId,
                   allDownliners,
                   status,
                   searchValue,
