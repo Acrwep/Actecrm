@@ -986,32 +986,26 @@ Course Advisor
                               {/* Links Row */}
                               <div className="header_search_price_row">
                                 <div>
-                                  <span className="label">Server</span>
-                                  {item.is_server === 1 ? (
+                                  <p
+                                    className="label"
+                                    style={{ fontSize: "11px" }}
+                                  >
+                                    Server:{" "}
                                     <span
-                                      className="value"
                                       style={{
-                                        color: "#3c9111",
-                                        fontSize: "11px",
+                                        fontWeight: "700",
+                                        color: "#333",
                                       }}
                                     >
-                                      Available (₹
-                                      {Number(
-                                        item.server_amount || 0,
-                                      ).toLocaleString("en-IN")}
-                                      )
+                                      {item.is_server === 1
+                                        ? Number(item.server_amount || 0) > 0
+                                          ? Number(
+                                              item.server_amount,
+                                            ).toLocaleString("en-IN")
+                                          : "Available"
+                                        : "NA"}
                                     </span>
-                                  ) : (
-                                    <span
-                                      className="value"
-                                      style={{
-                                        color: "#d32f2f",
-                                        fontSize: "11px",
-                                      }}
-                                    >
-                                      Not Available
-                                    </span>
-                                  )}
+                                  </p>
                                 </div>
                                 <div className="header_search_link_row">
                                   {item.brouchures && (

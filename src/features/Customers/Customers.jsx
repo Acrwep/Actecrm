@@ -141,11 +141,14 @@ export default function Customers() {
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
   const [modeOfTrainingFilterId, setModeOfTrainingFilterId] = useState(null);
   const [selectedOrigin, setSelectedOrigin] = useState("");
+  const [classGoingSubBucketStatus, setClassGoingSubBucketStatus] =
+    useState("");
   //-------------------------------------------------------------------
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [regionCounts, setRegionCounts] = useState(null);
   const [customerStatusCount, setCustomerStatusCount] = useState(null);
+  const [classGoingCounts, setClassGoingCounts] = useState(null);
   const [isOpenEditDrawer, setIsOpenEditDrawer] = useState(false);
   const [updateDrawerTabKey, setUpdateDrawerTabKey] = useState("1");
   const [showLeftScroll, setShowLeftScroll] = useState(false);
@@ -1687,6 +1690,7 @@ export default function Customers() {
           ? ["Trainer Rejected"]
           : receivedValueFromDashboard
         : null,
+      null,
       downliners,
       1,
       10,
@@ -1723,6 +1727,7 @@ export default function Customers() {
     origin,
     bucketStatus,
     customerStatus,
+    class_going_sub_bucket_status,
     downliners,
     pageNumber,
     limit,
@@ -1748,6 +1753,10 @@ export default function Customers() {
       ...(customerStatus && {
         status: customerStatus,
       }),
+      ...(class_going_sub_bucket_status &&
+        customerStatus == "Class Going" && {
+          class_going_sub_bucket: class_going_sub_bucket_status,
+        }),
       user_ids: downliners,
       // ...(region_data.includes("Classroom") && region_data.includes("Online")
       //   ? {}
@@ -1781,6 +1790,9 @@ export default function Customers() {
       setCustomerStatusCount(
         response?.data?.data?.customer_status_count || null,
       );
+      setClassGoingCounts(
+        response?.data?.data?.class_going_sub_bucket_count || null,
+      );
       if (is_generate_certificate === true) {
         if (customers.length >= 1) {
           const findCurrentCustomer = customers.find(
@@ -1803,6 +1815,7 @@ export default function Customers() {
     } catch (error) {
       setRegionCounts(null);
       setCustomerStatusCount(null);
+      setClassGoingCounts(null);
       setCustomersData([]);
       console.log("get customers error", error);
     } finally {
@@ -1920,6 +1933,7 @@ export default function Customers() {
       selectedOrigin,
       bucketStatus,
       status,
+      classGoingSubBucketStatus,
       allDownliners,
       page,
       limit,
@@ -1944,6 +1958,7 @@ export default function Customers() {
         selectedOrigin,
         bucketStatus,
         status,
+        classGoingSubBucketStatus,
         allDownliners,
         1,
         pagination.limit,
@@ -1991,6 +2006,7 @@ export default function Customers() {
         selectedOrigin,
         bucketStatus,
         status,
+        classGoingSubBucketStatus,
         downliners_ids,
         1,
         pagination.limit,
@@ -2068,6 +2084,7 @@ export default function Customers() {
     setSubUsers(downlineUsers);
     setSelectedOrigin("");
     setModeOfTrainingFilterId(null);
+    setClassGoingSubBucketStatus("");
     setDateFilterType("Updated");
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
@@ -2171,6 +2188,7 @@ export default function Customers() {
           selectedOrigin,
           bucketStatus,
           status,
+          classGoingSubBucketStatus,
           allDownliners,
           pagination.page,
           pagination.limit,
@@ -2219,6 +2237,7 @@ export default function Customers() {
                 selectedOrigin,
                 null,
                 null,
+                classGoingSubBucketStatus,
                 allDownliners,
                 1,
                 pagination.limit,
@@ -2263,6 +2282,7 @@ export default function Customers() {
                 selectedOrigin,
                 "Student Onboarding",
                 null,
+                classGoingSubBucketStatus,
                 allDownliners,
                 1,
                 pagination.limit,
@@ -2307,6 +2327,7 @@ export default function Customers() {
                 selectedOrigin,
                 "Training Coordination",
                 null,
+                classGoingSubBucketStatus,
                 allDownliners,
                 1,
                 pagination.limit,
@@ -2352,6 +2373,7 @@ export default function Customers() {
                 selectedOrigin,
                 "Progress Monitoring",
                 null,
+                classGoingSubBucketStatus,
                 allDownliners,
                 1,
                 pagination.limit,
@@ -2397,6 +2419,7 @@ export default function Customers() {
                 selectedOrigin,
                 "Course completion",
                 null,
+                classGoingSubBucketStatus,
                 allDownliners,
                 1,
                 pagination.limit,
@@ -2442,6 +2465,7 @@ export default function Customers() {
                 selectedOrigin,
                 "Reviews & Certification",
                 null,
+                classGoingSubBucketStatus,
                 allDownliners,
                 1,
                 pagination.limit,
@@ -2524,6 +2548,7 @@ export default function Customers() {
                             selectedOrigin,
                             bucketStatus,
                             status,
+                            classGoingSubBucketStatus,
                             allDownliners,
                             1,
                             pagination.limit,
@@ -2577,6 +2602,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         status,
+                        classGoingSubBucketStatus,
                         defaultAllDownliners,
                         1,
                         pagination.limit,
@@ -2620,6 +2646,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         status,
+                        classGoingSubBucketStatus,
                         defaultAllDownliners,
                         1,
                         pagination.limit,
@@ -2675,6 +2702,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         status,
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -2712,6 +2740,7 @@ export default function Customers() {
                               selectedOrigin,
                               bucketStatus,
                               status,
+                              classGoingSubBucketStatus,
                               allDownliners,
                               1,
                               pagination.limit,
@@ -2835,6 +2864,7 @@ export default function Customers() {
                             selectedOrigin,
                             bucketStatus,
                             status,
+                            classGoingSubBucketStatus,
                             allDownliners,
                             1,
                             pagination.limit,
@@ -2895,6 +2925,7 @@ export default function Customers() {
                             e.target.value,
                             bucketStatus,
                             status,
+                            classGoingSubBucketStatus,
                             allDownliners,
                             1,
                             pagination.limit,
@@ -3133,6 +3164,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Form Pending",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3176,6 +3208,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Awaiting Verify",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3222,6 +3255,7 @@ export default function Customers() {
                           selectedOrigin,
                           bucketStatus,
                           "Awaiting Trainer",
+                          classGoingSubBucketStatus,
                           allDownliners,
                           1,
                           pagination.limit,
@@ -3267,6 +3301,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Trainer Rejected",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3315,6 +3350,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Awaiting Trainer Verify",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3360,6 +3396,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Trainer Approval",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3404,6 +3441,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Approval Rejected",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3452,6 +3490,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Awaiting Class",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3496,6 +3535,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Class Scheduled",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3525,6 +3565,7 @@ export default function Customers() {
                         return;
                       }
                       setStatus("Class Going");
+                      setClassGoingSubBucketStatus("");
                       setPagination({
                         page: 1,
                       });
@@ -3539,6 +3580,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Class Going",
+                        null,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3582,6 +3624,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Escalated",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3626,6 +3669,7 @@ export default function Customers() {
                         selectedOrigin,
                         bucketStatus,
                         "Others",
+                        classGoingSubBucketStatus,
                         allDownliners,
                         1,
                         pagination.limit,
@@ -3673,6 +3717,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       "Passedout Process",
+                      classGoingSubBucketStatus,
                       allDownliners,
                       1,
                       pagination.limit,
@@ -3719,6 +3764,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       "Completed",
+                      classGoingSubBucketStatus,
                       allDownliners,
                       1,
                       pagination.limit,
@@ -3806,6 +3852,159 @@ export default function Customers() {
         </div>
       )}
 
+      {status === "Class Going" && (
+        <Row
+          style={{
+            marginBottom: "22px",
+            gap: "12px",
+            paddingLeft: "12px",
+          }}
+        >
+          <div
+            className={
+              classGoingSubBucketStatus === "under_25"
+                ? "trainers_active_stage1_container"
+                : "trainers_stage1_container"
+            }
+            onClick={() => {
+              if (classGoingSubBucketStatus === "under_25") return;
+              setClassGoingSubBucketStatus("under_25");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                status,
+                "under_25",
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <p>
+              {`25 & Below`} {`( ${classGoingCounts?.under_25 ?? 0} )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              classGoingSubBucketStatus === "under_50"
+                ? "trainers_active_stage2_container"
+                : "trainers_stage2_container"
+            }
+            onClick={() => {
+              if (classGoingSubBucketStatus === "under_50") return;
+              setClassGoingSubBucketStatus("under_50");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                status,
+                "under_50",
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <p>
+              {`50 & Below`} {`( ${classGoingCounts?.under_50 ?? 0} )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              classGoingSubBucketStatus === "under_75"
+                ? "trainers_active_stage4_container"
+                : "trainers_stage4_container"
+            }
+            onClick={() => {
+              if (classGoingSubBucketStatus === "under_75") return;
+              setClassGoingSubBucketStatus("under_75");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                status,
+                "under_75",
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <p>
+              {`75 & Below`} {`( ${classGoingCounts?.under_75 ?? 0} )`}
+            </p>
+          </div>
+          <div
+            className={
+              classGoingSubBucketStatus === "under_99"
+                ? "customers_active_trainer_coordination_container"
+                : "customers_trainer_coordination_container"
+            }
+            onClick={() => {
+              if (classGoingSubBucketStatus === "under_99") return;
+              setClassGoingSubBucketStatus("under_99");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                status,
+                "under_99",
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <p>
+              {`99 & Below`} {`( ${classGoingCounts?.under_99 ?? 0} )`}
+            </p>
+          </div>
+        </Row>
+      )}
+
       <div style={{ marginTop: bucketStatus ? "0px" : "23px" }}>
         <CommonTable
           // scroll={{ x: 2350 }}
@@ -3882,6 +4081,7 @@ export default function Customers() {
               selectedOrigin,
               bucketStatus,
               status,
+              classGoingSubBucketStatus,
               allDownliners,
               pagination.page,
               pagination.limit,
@@ -4357,6 +4557,7 @@ export default function Customers() {
                     selectedOrigin,
                     bucketStatus,
                     status,
+                    classGoingSubBucketStatus,
                     allDownliners,
                     pagination.page,
                     pagination.limit,
@@ -4387,6 +4588,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       status,
+                      classGoingSubBucketStatus,
                       allDownliners,
                       pagination.page,
                       pagination.limit,
@@ -4414,6 +4616,7 @@ export default function Customers() {
                     selectedOrigin,
                     bucketStatus,
                     status,
+                    classGoingSubBucketStatus,
                     allDownliners,
                     pagination.page,
                     pagination.limit,
@@ -4446,6 +4649,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       status,
+                      classGoingSubBucketStatus,
                       allDownliners,
                       pagination.page,
                       pagination.limit,
@@ -4476,6 +4680,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       status,
+                      classGoingSubBucketStatus,
                       allDownliners,
                       pagination.page,
                       pagination.limit,
@@ -4507,6 +4712,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       status,
+                      classGoingSubBucketStatus,
                       allDownliners,
                       pagination.page,
                       pagination.limit,
@@ -4546,6 +4752,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       status,
+                      classGoingSubBucketStatus,
                       allDownliners,
                       pagination.page,
                       pagination.limit,
@@ -4576,6 +4783,7 @@ export default function Customers() {
                       selectedOrigin,
                       bucketStatus,
                       status,
+                      classGoingSubBucketStatus,
                       allDownliners,
                       pagination.page,
                       pagination.limit,
@@ -4915,6 +5123,7 @@ export default function Customers() {
                   selectedOrigin,
                   bucketStatus,
                   status,
+                  classGoingSubBucketStatus,
                   allDownliners,
                   pagination.page,
                   pagination.limit,
@@ -5150,6 +5359,7 @@ export default function Customers() {
             selectedOrigin,
             bucketStatus,
             status,
+            classGoingSubBucketStatus,
             allDownliners,
             pagination.page,
             pagination.limit,
