@@ -99,7 +99,6 @@ export default function Server() {
   const [dateFilterType, setDateFilterType] = useState("Raise Date");
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-  const [filterType, setFilterType] = useState(1);
   const [serverData, setServerData] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -670,7 +669,6 @@ export default function Server() {
     const receivedEndDateFromNotification = stateData?.endDate || null;
 
     if (receivedSearchValueFromNotification) {
-      setFilterType(1);
       setSearchValue(receivedSearchValueFromNotification);
     }
 
@@ -740,15 +738,7 @@ export default function Server() {
             ],
           }
         : { status: serverStatus }),
-      ...(searchvalue && filterType == 1
-        ? { mobile: searchvalue }
-        : searchvalue && filterType == 2
-          ? { name: searchvalue }
-          : searchvalue && filterType == 3
-            ? { email: searchvalue }
-            : searchvalue && filterType == 4
-              ? { server: searchvalue }
-              : {}),
+      ...(searchvalue && { search_filter: searchvalue }),
       page: pageNumber,
       limit: limit,
     };
@@ -1678,15 +1668,7 @@ export default function Server() {
                 style={{ marginBottom: "0px" }}
               >
                 <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                        ? "Search By Name"
-                        : filterType == 3
-                          ? "Search by Email"
-                          : ""
-                  }
+                  label={"Search..."}
                   width="100%"
                   height="32px"
                   labelFontSize="11px"
@@ -1721,8 +1703,6 @@ export default function Server() {
                   }
                   labelMarginTop="0px"
                   style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
                     padding: searchValue
                       ? "0px 26px 0px 0px"
                       : "0px 8px 0px 0px",
@@ -1730,53 +1710,6 @@ export default function Server() {
                   onChange={handleSearch}
                   value={searchValue}
                 />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setFilterType(e.target.value);
-                            if (searchValue === "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "6px" }}>
-                            Search by Server Name
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
               </div>
             </Col>
 

@@ -276,7 +276,7 @@ export default function Admissions() {
       dataIndex: "welcome_call_status",
       width: 80,
       group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -290,7 +290,7 @@ export default function Admissions() {
       dataIndex: "technology_verified",
       width: 80,
       group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -324,7 +324,7 @@ export default function Admissions() {
       dataIndex: "trainer_fixation_call",
       width: 80,
       group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -338,7 +338,7 @@ export default function Admissions() {
       dataIndex: "whatsapp_group_creation",
       width: 80,
       group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -352,7 +352,7 @@ export default function Admissions() {
       dataIndex: "hr_welcome_message",
       width: 80,
       group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -366,7 +366,7 @@ export default function Admissions() {
       dataIndex: "shared_attendance_link",
       width: 80,
       group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -380,7 +380,7 @@ export default function Admissions() {
       dataIndex: "first_class_monitoring",
       width: 80,
       group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -394,7 +394,7 @@ export default function Admissions() {
       dataIndex: "trainer_confirmation",
       width: 80,
       group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -408,7 +408,7 @@ export default function Admissions() {
       dataIndex: "class_progress_monitoring",
       width: 80,
       group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -422,7 +422,7 @@ export default function Admissions() {
       dataIndex: "student_support",
       width: 80,
       group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -436,7 +436,7 @@ export default function Admissions() {
       dataIndex: "mid_course_feedback",
       width: 80,
       group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -450,7 +450,7 @@ export default function Admissions() {
       dataIndex: "class_completion_confirmation",
       width: 80,
       group: "Course Completion",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -464,7 +464,7 @@ export default function Admissions() {
       dataIndex: "trainer_completion_report",
       width: 80,
       group: "Course Completion",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -478,7 +478,7 @@ export default function Admissions() {
       dataIndex: "student_completion_report",
       width: 80,
       group: "Course Completion",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -492,7 +492,7 @@ export default function Admissions() {
       dataIndex: "google_review_collection",
       width: 80,
       group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -506,7 +506,7 @@ export default function Admissions() {
       dataIndex: "linkedin_recommendation",
       width: 80,
       group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -520,7 +520,7 @@ export default function Admissions() {
       dataIndex: "certificate_verification",
       width: 80,
       group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -534,7 +534,7 @@ export default function Admissions() {
       dataIndex: "course_completion_certificate",
       width: 80,
       group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -548,7 +548,7 @@ export default function Admissions() {
       dataIndex: "course_closure_call",
       width: 80,
       group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -562,7 +562,7 @@ export default function Admissions() {
       dataIndex: "placement_handover",
       width: 80,
       group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text),
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: "View",
@@ -658,12 +658,13 @@ export default function Admissions() {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
-    setLoginUserId(convertAsJson?.user_id);
-    setTimeout(() => {
-      getTableColumnsData(convertAsJson?.user_id);
-    }, 300);
+    const userId = convertAsJson?.user_id;
 
-    setTableColumns(nonChangeColumns);
+    setLoginUserId(userId);
+
+    if (userId) {
+      getTableColumnsData(userId);
+    }
   }, [permissions]);
 
   useEffect(() => {
@@ -814,7 +815,7 @@ export default function Admissions() {
       }
 
       const filterPage = data.find((f) => f.page_name === "Admissions");
-
+      console.log("filterPage", filterPage);
       if (!filterPage) {
         setUpdateTableId(null);
         const newCols = nonChangeColumns.map((c) => ({
@@ -865,16 +866,44 @@ export default function Admissions() {
     }
   };
 
+  // const updateTableColumnsData = async () => {
+  //   const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+  //   const convertAsJson = JSON.parse(getLoginUserDetails);
+
+  //   const payload = {
+  //     user_id: convertAsJson?.user_id,
+  //     page_name: "Admissions",
+  //     column_names: columns,
+  //   };
+  //   console.log("updateTableColumnsData", payload);
+  //   try {
+  //     await updateTableColumns(payload);
+  //   } catch (error) {
+  //     console.log("update table columns error", error);
+  //   }
+  // };
+
   const updateTableColumnsData = async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
+    const serializableColumns = columns.map((col) => ({
+      key: col.key,
+      dataIndex: col.dataIndex,
+      width: col.width,
+      group: col.group,
+      fixed: col.fixed,
+      isChecked: col.isChecked,
+    }));
+
     const payload = {
       user_id: convertAsJson?.user_id,
       page_name: "Admissions",
-      column_names: columns,
+      column_names: serializableColumns,
     };
+
     console.log("updateTableColumnsData", payload);
+
     try {
       await updateTableColumns(payload);
     } catch (error) {
@@ -1684,6 +1713,7 @@ export default function Admissions() {
           return (
             <CommonTable
               // scroll={{ x: 2350 }}
+              key={tableColumns.map((col) => col.key).join("-")}
               scroll={{
                 x: tableColumns.reduce(
                   (total, col) => total + (col.width || 150),

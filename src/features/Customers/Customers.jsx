@@ -130,7 +130,6 @@ export default function Customers() {
   const [dateFilterType, setDateFilterType] = useState("Updated");
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
-  const [filterType, setFilterType] = useState(1);
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
   const prevSelectedUserIdRef = useRef("[]");
@@ -1724,15 +1723,7 @@ export default function Customers() {
       .map((f) => f.name);
 
     const payload = {
-      ...(searchvalue && filterType == 1
-        ? { mobile: searchvalue }
-        : searchvalue && filterType == 2
-          ? { name: searchvalue }
-          : searchvalue && filterType == 3
-            ? { email: searchvalue }
-            : searchvalue && filterType == 4
-              ? { course: searchvalue }
-              : {}),
+      ...(searchvalue && { search_filter: searchvalue }),
       from_date: startDate,
       to_date: endDate,
       date_type: date_type,
@@ -2443,17 +2434,7 @@ export default function Customers() {
               >
                 {/* Search Input */}
                 <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                        ? "Search By Name"
-                        : filterType == 3
-                          ? "Search by Email"
-                          : filterType == 4
-                            ? "Search by Course"
-                            : ""
-                  }
+                  label={"Search..."}
                   width="100%"
                   height="32px"
                   labelFontSize="11px"
@@ -2491,8 +2472,6 @@ export default function Customers() {
                   }
                   labelMarginTop="0px"
                   style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
                     padding: searchValue
                       ? "0px 26px 0px 0px"
                       : "0px 8px 0px 0px",
@@ -2500,70 +2479,6 @@ export default function Customers() {
                   onChange={handleSearch}
                   value={searchValue}
                 />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            setFilterType(e.target.value);
-                            if (searchValue === "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                              setPagination({
-                                page: 1,
-                              });
-                              getCustomersData(
-                                selectedDates[0],
-                                selectedDates[1],
-                                dateFilterType,
-                                null,
-                                selectedRegionId,
-                                selectedBranchId,
-                                selectedOrigin,
-                                bucketStatus,
-                                status,
-                                allDownliners,
-                                branchOptions,
-                                1,
-                                pagination.limit,
-                              );
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "6px" }}>
-                            Search by Course
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
               </div>
             </Col>
             {permissions.includes("Lead Executive Filter") && (
