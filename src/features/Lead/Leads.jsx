@@ -18,6 +18,7 @@ import {
   formatToBackendIST,
   getCurrentandPreviousweekDate,
   isWithin30Days,
+  modeOfTrainingOptions,
   selectValidator,
 } from "../Common/Validation";
 import { PiShareFatBold } from "react-icons/pi";
@@ -2622,10 +2623,7 @@ export default function Leads({
                           label="Select Mode Of Training"
                           labelMarginTop="0px"
                           labelFontSize="12px"
-                          options={[
-                            { id: 1, name: "Online" },
-                            { id: 2, name: "Classroom" },
-                          ]}
+                          options={modeOfTrainingOptions}
                           onChange={(e) => {
                             const value = e.target.value;
                             setModeOfTrainingFilterId(value);

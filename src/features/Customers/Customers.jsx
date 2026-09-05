@@ -43,6 +43,7 @@ import {
   formatToBackendIST,
   getCurrentandPreviousweekDate,
   isWithin30Days,
+  modeOfTrainingOptions,
   regionOptions,
 } from "../Common/Validation";
 import { FcGoogle } from "react-icons/fc";
@@ -138,8 +139,9 @@ export default function Customers() {
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
-  //-------------------------------------------------------------------
+  const [modeOfTrainingFilterId, setModeOfTrainingFilterId] = useState(null);
   const [selectedOrigin, setSelectedOrigin] = useState("");
+  //-------------------------------------------------------------------
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [regionCounts, setRegionCounts] = useState(null);
@@ -1666,16 +1668,13 @@ export default function Customers() {
       null,
       null,
       null,
+      null,
       receivedValueFromDashboard
         ? receivedValueFromDashboard === "Trainer Rejected"
           ? ["Trainer Rejected"]
           : receivedValueFromDashboard
         : null,
       downliners,
-      [
-        { id: 1, name: "Classroom", checked: true },
-        { id: 1, name: "Online", checked: true },
-      ],
       1,
       10,
     );
@@ -1707,20 +1706,20 @@ export default function Customers() {
     searchvalue,
     regionId,
     branchId,
+    modeOfTraining,
     origin,
     bucketStatus,
     customerStatus,
     downliners,
-    branch_options,
     pageNumber,
     limit,
     is_generate_certificate,
   ) => {
     setLoading(true);
 
-    const region_data = branch_options
-      .filter((f) => f.checked === true)
-      .map((f) => f.name);
+    // const region_data = branch_options
+    //   .filter((f) => f.checked === true)
+    //   .map((f) => f.name);
 
     const payload = {
       ...(searchvalue && { search_filter: searchvalue }),
@@ -1729,18 +1728,21 @@ export default function Customers() {
       date_type: date_type,
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
+      ...(modeOfTraining && {
+        bucket: modeOfTraining == 1 ? "Online" : "Classroom",
+      }),
       ...(origin && { domain: origin }),
       ...(customerStatus && {
         status: customerStatus,
       }),
       user_ids: downliners,
-      ...(region_data.includes("Classroom") && region_data.includes("Online")
-        ? {}
-        : region_data.includes("Classroom")
-          ? { region: "Classroom" }
-          : region_data.includes("Online")
-            ? { region: "Online" }
-            : {}),
+      // ...(region_data.includes("Classroom") && region_data.includes("Online")
+      //   ? {}
+      //   : region_data.includes("Classroom")
+      //     ? { region: "Classroom" }
+      //     : region_data.includes("Online")
+      //       ? { region: "Online" }
+      //       : {}),
       bucket_status: bucketStatus ? bucketStatus : "Student Onboarding",
       page: pageNumber,
       limit: limit,
@@ -1901,11 +1903,11 @@ export default function Customers() {
       searchValue,
       selectedRegionId,
       selectedBranchId,
+      modeOfTrainingFilterId,
       selectedOrigin,
       bucketStatus,
       status,
       allDownliners,
-      branchOptions,
       page,
       limit,
     );
@@ -1925,11 +1927,11 @@ export default function Customers() {
         e.target.value,
         selectedRegionId,
         selectedBranchId,
+        modeOfTrainingFilterId,
         selectedOrigin,
         bucketStatus,
         status,
         allDownliners,
-        branchOptions,
         1,
         pagination.limit,
       );
@@ -1972,11 +1974,11 @@ export default function Customers() {
         searchValue,
         selectedRegionId,
         selectedBranchId,
+        modeOfTrainingFilterId,
         selectedOrigin,
         bucketStatus,
         status,
         downliners_ids,
-        branchOptions,
         1,
         pagination.limit,
       );
@@ -2052,6 +2054,7 @@ export default function Customers() {
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
     setSelectedOrigin("");
+    setModeOfTrainingFilterId(null);
     setDateFilterType("Updated");
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
@@ -2151,11 +2154,11 @@ export default function Customers() {
           searchValue,
           selectedRegionId,
           selectedBranchId,
+          modeOfTrainingFilterId,
           selectedOrigin,
           bucketStatus,
           status,
           allDownliners,
-          branchOptions,
           pagination.page,
           pagination.limit,
         );
@@ -2199,11 +2202,11 @@ export default function Customers() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
+                modeOfTrainingFilterId,
                 selectedOrigin,
                 null,
                 null,
                 allDownliners,
-                duplicateBranchOptions,
                 1,
                 pagination.limit,
               );
@@ -2243,11 +2246,11 @@ export default function Customers() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
+                modeOfTrainingFilterId,
                 selectedOrigin,
                 "Training Coordination",
                 null,
                 allDownliners,
-                duplicateBranchOptions,
                 1,
                 pagination.limit,
               );
@@ -2288,11 +2291,11 @@ export default function Customers() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
+                modeOfTrainingFilterId,
                 selectedOrigin,
                 "Progress Monitoring",
                 null,
                 allDownliners,
-                duplicateBranchOptions,
                 1,
                 pagination.limit,
               );
@@ -2333,11 +2336,11 @@ export default function Customers() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
+                modeOfTrainingFilterId,
                 selectedOrigin,
                 "Course completion",
                 null,
                 allDownliners,
-                duplicateBranchOptions,
                 1,
                 pagination.limit,
               );
@@ -2378,11 +2381,11 @@ export default function Customers() {
                 searchValue,
                 selectedRegionId,
                 selectedBranchId,
+                modeOfTrainingFilterId,
                 selectedOrigin,
                 "Reviews & Certification",
                 null,
                 allDownliners,
-                duplicateBranchOptions,
                 1,
                 pagination.limit,
               );
@@ -2425,7 +2428,13 @@ export default function Customers() {
         align="middle"
         gutter={12}
       >
-        <Col flex="auto">
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 14}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
+        >
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1 1 0%">
               <div
@@ -2454,11 +2463,11 @@ export default function Customers() {
                             null,
                             selectedRegionId,
                             selectedBranchId,
+                            modeOfTrainingFilterId,
                             selectedOrigin,
                             bucketStatus,
                             status,
                             allDownliners,
-                            branchOptions,
                             1,
                             pagination.limit,
                           );
@@ -2481,21 +2490,105 @@ export default function Customers() {
                 />
               </div>
             </Col>
+
             {permissions.includes("Lead Executive Filter") && (
-              <Col flex="1 1 0%">
-                <CommonMultiSelectField
-                  height="34px"
-                  label="Select User"
-                  labelMarginTop="1px"
-                  labelFontSize="11px"
-                  options={subUsers}
-                  onChange={handleSelectUser}
-                  onBlur={handleSelectUserBlur}
-                  value={selectedUserId}
-                />
-              </Col>
+              <>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Region"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={regionOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedRegionId(value);
+                      setSelectedBranchId(null);
+                      setSelectedUserId([]);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        value,
+                        null,
+                        modeOfTrainingFilterId,
+                        selectedOrigin,
+                        bucketStatus,
+                        status,
+                        defaultAllDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                      if (value) {
+                        getUsersData(value, null);
+                        getBranchesData(value);
+                      } else {
+                        setFilterBranchOptions([]);
+                        setSubUsers(downlineUsers);
+                      }
+                    }}
+                    value={selectedRegionId}
+                    disableClearable={false}
+                  />
+                </Col>
+                <Col flex="0.8 1 0%">
+                  <CommonSelectField
+                    height="33px"
+                    label="Select Branch"
+                    labelMarginTop="0px"
+                    labelFontSize="11px"
+                    options={filterBranchOptions}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedBranchId(value);
+                      setSelectedUserId([]);
+                      getUsersData(selectedRegionId, value);
+                      setPagination({
+                        page: 1,
+                        limit: pagination.limit,
+                      });
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedRegionId,
+                        value,
+                        modeOfTrainingFilterId,
+                        selectedOrigin,
+                        bucketStatus,
+                        status,
+                        defaultAllDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                    value={selectedBranchId}
+                    disableClearable={false}
+                    disabled={selectedRegionId == 3 ? true : false}
+                  />
+                </Col>
+
+                <Col flex="1 1 0%">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
+              </>
             )}
-            <Col flex="1.4 1 0%">
+            <Col flex="1.6 1 0%">
               <div
                 style={{
                   display: "flex",
@@ -2521,11 +2614,11 @@ export default function Customers() {
                         searchValue,
                         selectedRegionId,
                         selectedBranchId,
+                        modeOfTrainingFilterId,
                         selectedOrigin,
                         bucketStatus,
                         status,
                         allDownliners,
-                        branchOptions,
                         1,
                         pagination.limit,
                       );
@@ -2558,11 +2651,11 @@ export default function Customers() {
                               searchValue,
                               selectedRegionId,
                               selectedBranchId,
+                              modeOfTrainingFilterId,
                               selectedOrigin,
                               bucketStatus,
                               status,
                               allDownliners,
-                              branchOptions,
                               1,
                               pagination.limit,
                             );
@@ -2603,7 +2696,7 @@ export default function Customers() {
               </div>
             </Col>
 
-            <Col flex="1 1 0%">
+            <Col flex="none">
               <Popover
                 placement="bottomLeft"
                 trigger="click"
@@ -2644,7 +2737,7 @@ export default function Customers() {
                         Advanced Filters
                       </span>
                       <Badge
-                        count={3}
+                        count={2}
                         style={{
                           backgroundColor: "#3b82f6",
                           boxShadow: "0 0 0 2px #f8fafc",
@@ -2661,87 +2754,38 @@ export default function Customers() {
                         padding: "20px",
                       }}
                     >
-                      {permissions.includes("Lead Executive Filter") && (
-                        <>
-                          <CommonSelectField
-                            height="33px"
-                            label="Select Region"
-                            labelMarginTop="0px"
-                            labelFontSize="11px"
-                            options={regionOptions}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setSelectedRegionId(value);
-                              setSelectedBranchId(null);
-                              setSelectedUserId([]);
-                              setPagination({
-                                page: 1,
-                                limit: pagination.limit,
-                              });
-                              getCustomersData(
-                                selectedDates[0],
-                                selectedDates[1],
-                                dateFilterType,
-                                searchValue,
-                                value,
-                                null,
-                                selectedOrigin,
-                                bucketStatus,
-                                status,
-                                defaultAllDownliners,
-                                branchOptions,
-                                1,
-                                pagination.limit,
-                              );
-                              if (value) {
-                                getUsersData(value, null);
-                                getBranchesData(value);
-                              } else {
-                                setFilterBranchOptions([]);
-                                setSubUsers(downlineUsers);
-                              }
-                            }}
-                            value={selectedRegionId}
-                            disableClearable={false}
-                          />
-
-                          <CommonSelectField
-                            height="33px"
-                            label="Select Branch"
-                            labelMarginTop="0px"
-                            labelFontSize="11px"
-                            options={filterBranchOptions}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setSelectedBranchId(value);
-                              setSelectedUserId([]);
-                              getUsersData(selectedRegionId, value);
-                              setPagination({
-                                page: 1,
-                                limit: pagination.limit,
-                              });
-                              getCustomersData(
-                                selectedDates[0],
-                                selectedDates[1],
-                                dateFilterType,
-                                searchValue,
-                                selectedRegionId,
-                                value,
-                                selectedOrigin,
-                                bucketStatus,
-                                status,
-                                defaultAllDownliners,
-                                branchOptions,
-                                1,
-                                pagination.limit,
-                              );
-                            }}
-                            value={selectedBranchId}
-                            disableClearable={false}
-                            disabled={selectedRegionId == 3 ? true : false}
-                          />
-                        </>
-                      )}
+                      <CommonSelectField
+                        width="100%"
+                        height="35px"
+                        label="Select Mode Of Training"
+                        labelMarginTop="0px"
+                        labelFontSize="12px"
+                        options={modeOfTrainingOptions}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setModeOfTrainingFilterId(value);
+                          setPagination({
+                            page: 1,
+                          });
+                          getCustomersData(
+                            selectedDates[0],
+                            selectedDates[1],
+                            dateFilterType,
+                            searchValue,
+                            selectedRegionId,
+                            selectedBranchId,
+                            value,
+                            selectedOrigin,
+                            bucketStatus,
+                            status,
+                            allDownliners,
+                            1,
+                            pagination.limit,
+                          );
+                        }}
+                        value={modeOfTrainingFilterId}
+                        disableClearable={false}
+                      />{" "}
                       <CommonSelectField
                         width="100%"
                         height="35px"
@@ -2790,11 +2834,11 @@ export default function Customers() {
                             searchValue,
                             selectedRegionId,
                             selectedBranchId,
+                            modeOfTrainingFilterId,
                             e.target.value,
                             bucketStatus,
                             status,
                             allDownliners,
-                            branchOptions,
                             1,
                             pagination.limit,
                           );
@@ -2829,7 +2873,11 @@ export default function Customers() {
           </Row>
         </Col>
         <Col
-          flex="none"
+          xs={24}
+          sm={24}
+          md={24}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 10}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -2993,11 +3041,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     null,
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3035,11 +3083,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Form Pending",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3078,11 +3126,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Awaiting Verify",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3135,13 +3183,13 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       isAssignTrainerSwap
                         ? "Trainer Rejected"
                         : "Awaiting Trainer",
                       allDownliners,
-                      branchOptions,
                       1,
                       pagination.limit,
                     );
@@ -3197,11 +3245,11 @@ export default function Customers() {
                         searchValue,
                         selectedRegionId,
                         selectedBranchId,
+                        modeOfTrainingFilterId,
                         selectedOrigin,
                         bucketStatus,
                         newStatus,
                         allDownliners,
-                        branchOptions,
                         1,
                         pagination.limit,
                       );
@@ -3247,13 +3295,13 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     isApprovalTrainerSwap
                       ? "Approval Rejected"
                       : "Awaiting Trainer Verify",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3310,11 +3358,11 @@ export default function Customers() {
                         searchValue,
                         selectedRegionId,
                         selectedBranchId,
+                        modeOfTrainingFilterId,
                         selectedOrigin,
                         bucketStatus,
                         newStatus,
                         allDownliners,
-                        branchOptions,
                         1,
                         pagination.limit,
                       );
@@ -3345,11 +3393,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Trainer Approval",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3393,11 +3441,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Awaiting Class",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3437,11 +3485,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Class Scheduled",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3480,11 +3528,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Class Going",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3523,11 +3571,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Escalated",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3567,11 +3615,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     "Others",
                     allDownliners,
-                    branchOptions,
                     1,
                     pagination.limit,
                   );
@@ -3614,11 +3662,11 @@ export default function Customers() {
                   searchValue,
                   selectedRegionId,
                   selectedBranchId,
+                  modeOfTrainingFilterId,
                   selectedOrigin,
                   bucketStatus,
                   "Passedout Process",
                   allDownliners,
-                  branchOptions,
                   1,
                   pagination.limit,
                 );
@@ -3660,11 +3708,11 @@ export default function Customers() {
                   searchValue,
                   selectedRegionId,
                   selectedBranchId,
+                  modeOfTrainingFilterId,
                   selectedOrigin,
                   bucketStatus,
                   "Completed",
                   allDownliners,
-                  branchOptions,
                   1,
                   pagination.limit,
                 );
@@ -3812,11 +3860,11 @@ export default function Customers() {
               searchValue,
               selectedRegionId,
               selectedBranchId,
+              modeOfTrainingFilterId,
               selectedOrigin,
               bucketStatus,
               status,
               allDownliners,
-              branchOptions,
               pagination.page,
               pagination.limit,
             );
@@ -4287,11 +4335,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     status,
                     allDownliners,
-                    branchOptions,
                     pagination.page,
                     pagination.limit,
                   );
@@ -4317,11 +4365,11 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       status,
                       allDownliners,
-                      branchOptions,
                       pagination.page,
                       pagination.limit,
                     );
@@ -4344,11 +4392,11 @@ export default function Customers() {
                     searchValue,
                     selectedRegionId,
                     selectedBranchId,
+                    modeOfTrainingFilterId,
                     selectedOrigin,
                     bucketStatus,
                     status,
                     allDownliners,
-                    branchOptions,
                     pagination.page,
                     pagination.limit,
                   );
@@ -4376,11 +4424,11 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       status,
                       allDownliners,
-                      branchOptions,
                       pagination.page,
                       pagination.limit,
                     );
@@ -4406,11 +4454,11 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       status,
                       allDownliners,
-                      branchOptions,
                       pagination.page,
                       pagination.limit,
                     );
@@ -4437,11 +4485,11 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       status,
                       allDownliners,
-                      branchOptions,
                       pagination.page,
                       pagination.limit,
                     );
@@ -4476,11 +4524,11 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       status,
                       allDownliners,
-                      branchOptions,
                       pagination.page,
                       pagination.limit,
                       cert_gen,
@@ -4506,11 +4554,11 @@ export default function Customers() {
                       searchValue,
                       selectedRegionId,
                       selectedBranchId,
+                      modeOfTrainingFilterId,
                       selectedOrigin,
                       bucketStatus,
                       status,
                       allDownliners,
-                      branchOptions,
                       pagination.page,
                       pagination.limit,
                     );
@@ -4783,7 +4831,7 @@ export default function Customers() {
               <CommonDnd data={columns} setColumns={setColumns} />
             </div>
 
-            <Divider className="customer_statusupdate_divider" />
+            {/* <Divider className="customer_statusupdate_divider" />
 
             <div style={{ padding: "0px 12px 20px 24px" }}>
               <p className="customers_choosebranch_heading">Choose Branch</p>
@@ -4818,7 +4866,7 @@ export default function Customers() {
                   </div>
                 );
               })}
-            </div>
+            </div> */}
           </Col>
         </Row>
         <div className="leadmanager_tablefiler_footer">
@@ -4837,7 +4885,7 @@ export default function Customers() {
                   page_name: "Customers",
                   column_names: columns,
                 };
-                setBranchOptions(duplicateBranchOptions);
+                // setBranchOptions(duplicateBranchOptions);
                 getCustomersData(
                   selectedDates[0],
                   selectedDates[1],
@@ -4845,11 +4893,11 @@ export default function Customers() {
                   searchValue,
                   selectedRegionId,
                   selectedBranchId,
+                  modeOfTrainingFilterId,
                   selectedOrigin,
                   bucketStatus,
                   status,
                   allDownliners,
-                  duplicateBranchOptions,
                   pagination.page,
                   pagination.limit,
                 );
@@ -5080,11 +5128,11 @@ export default function Customers() {
             searchValue,
             selectedRegionId,
             selectedBranchId,
+            modeOfTrainingFilterId,
             selectedOrigin,
             bucketStatus,
             status,
             allDownliners,
-            duplicateBranchOptions,
             pagination.page,
             pagination.limit,
           );

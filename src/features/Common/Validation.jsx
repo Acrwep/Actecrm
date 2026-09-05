@@ -1011,6 +1011,11 @@ export const regionOptions = [
   },
 ];
 
+export const modeOfTrainingOptions = [
+  { id: 1, name: "Online" },
+  { id: 2, name: "Classroom" },
+];
+
 export const bank_sheet_columns = [
   {
     title: "Payment Type",
