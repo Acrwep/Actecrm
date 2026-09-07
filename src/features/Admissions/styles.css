@@ -1,3 +1,10 @@
+.admissions_overall_heading {
+  color: #333;
+  font-size: 14.5px !important;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 12px !important;
+}
 .admissions_progress_container {
   width: 55%;
   background: linear-gradient(135deg, #ffffff, #f9fafb);

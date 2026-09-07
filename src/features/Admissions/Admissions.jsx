@@ -1078,6 +1078,14 @@ export default function Admissions() {
 
   return (
     <div>
+      <p className="admissions_overall_heading">
+        OverAll{" "}
+        {`( ${
+          (allAdmissionsRegionCounts?.hub_region ?? 0) +
+          (allAdmissionsRegionCounts?.chennai_region ?? 0) +
+          (allAdmissionsRegionCounts?.bangalore_region ?? 0)
+        } )`}
+      </p>
       <Row align="middle">
         <Col
           xs={24}

@@ -613,6 +613,27 @@
   box-shadow: none !important;
   opacity: 1;
 }
+.customers_status_videos_given_button {
+  background: #e8439310;
+  color: #e84393;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px 12px !important;
+  width: max-content !important;
+  font-weight: 500;
+  font-size: 11px;
+  border-radius: 4px;
+  border: none;
+  height: 0px !important;
+}
+
+.customers_status_videos_given_button:hover {
+  background-color: #e8439310 !important;
+  color: #e84393 !important;
+  box-shadow: none !important;
+  opacity: 1;
+}
 .customer_profileContainer {
   display: flex;
   gap: 12px;
@@ -2146,4 +2167,21 @@
 
 .transaction-details-table .btn-icon:hover {
   opacity: 0.7;
+}
+
+.customers_buckets_region_gap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (min-width: 1400px) {
+  .customers_buckets_region_gap {
+    gap: 40px;
+  }
+}
+@media (min-width: 1800px) {
+  .customers_buckets_region_gap {
+    gap: 80px;
+  }
 }

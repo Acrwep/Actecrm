@@ -113,10 +113,26 @@ export default function Customers() {
   const location = useLocation();
 
   const scroll = (scrollOffset) => {
-    scrollRef.current.scrollBy({
-      left: scrollOffset,
-      behavior: "smooth",
-    });
+    if (!scrollRef.current) return;
+    const start = scrollRef.current.scrollLeft;
+    const end = start + scrollOffset;
+    const duration = 300;
+    const startTime = performance.now();
+
+    const animateScroll = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = progress * (2 - progress); // easeOutQuad
+
+      if (scrollRef.current) {
+        scrollRef.current.scrollLeft = start + (end - start) * easeProgress;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
+    requestAnimationFrame(animateScroll);
   };
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
@@ -1396,10 +1412,16 @@ export default function Customers() {
                 text === "Hold" ||
                 text === "Partially Closed" ||
                 text === "Discontinued" ||
-                text === "Demo Completed" ||
-                text === "Videos Given" ||
                 text === "Refund" ? (
                 <Button className="trainers_rejected_button">{text}</Button>
+              ) : text === "Demo Completed" ? (
+                <Button className="customers_status_classgoing_button">
+                  {text}
+                </Button>
+              ) : text === "Videos Given" ? (
+                <Button className="customers_status_videos_given_button">
+                  {text}
+                </Button>
               ) : text === "Class Going" ? (
                 <div style={{ display: "flex", gap: "12px" }}>
                   <Button className="customers_status_classgoing_button">
@@ -1765,7 +1787,7 @@ export default function Customers() {
       //     : region_data.includes("Online")
       //       ? { region: "Online" }
       //       : {}),
-      bucket_status: bucketStatus ? bucketStatus : "Student Onboarding",
+      ...(bucketStatus && { bucket_status: bucketStatus }),
       page: pageNumber,
       limit: limit,
     };
@@ -2214,8 +2236,8 @@ export default function Customers() {
           <div
             className={
               bucketStatus === ""
-                ? "trainers_active_all_container"
-                : "trainers_all_container"
+                ? "addlead_tab_activebutton"
+                : "addlead_tab_inactivebutton"
             }
             onClick={() => {
               if (bucketStatus === "") {
@@ -3101,13 +3123,7 @@ export default function Customers() {
           )}
         </>
       ) : (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
+        <div className="customers_buckets_region_gap">
           <div
             className="customers_scroll_wrapper"
             style={{
@@ -3119,18 +3135,16 @@ export default function Customers() {
               gap: "10px",
             }}
           >
-            {showLeftScroll && (
-              <button
-                onClick={() => scroll(-600)}
-                className="customer_statusscroll_button"
-                style={{
-                  flexShrink: 0,
-                  display: showLeftScroll ? "flex" : "none",
-                }}
-              >
-                <IoMdArrowDropleft size={25} />
-              </button>
-            )}
+            <button
+              onClick={() => scroll(-350)}
+              className="customer_statusscroll_button"
+              style={{
+                flexShrink: 0,
+                display: showLeftScroll ? "flex" : "none",
+              }}
+            >
+              <IoMdArrowDropleft size={25} />
+            </button>
             <div
               className="customers_status_mainContainer"
               ref={scrollRef}
@@ -3739,54 +3753,144 @@ export default function Customers() {
               )}
 
               {bucketStatus === "Reviews & Certification" && (
-                <div
-                  className={
-                    status === "Completed"
-                      ? "customers_active_completed_container"
-                      : "customers_completed_container"
-                  }
-                  onClick={() => {
-                    if (status === "Completed") {
-                      return;
+                <>
+                  <div
+                    className={
+                      status === "Completed"
+                        ? "customers_active_completed_container"
+                        : "customers_completed_container"
                     }
-                    setStatus("Completed");
-                    setPagination({
-                      page: 1,
-                    });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      "Completed",
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      1,
-                      pagination.limit,
-                    );
-                  }}
-                >
-                  <p>
-                    Completed{" "}
-                    {`(  ${
-                      customerStatusCount &&
-                      customerStatusCount.completed !== undefined &&
-                      customerStatusCount.completed !== null
-                        ? customerStatusCount.completed
-                        : "-"
-                    }
+                    onClick={() => {
+                      if (status === "Completed") {
+                        return;
+                      }
+                      setStatus("Completed");
+                      setPagination({
+                        page: 1,
+                      });
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        modeOfTrainingFilterId,
+                        selectedOrigin,
+                        bucketStatus,
+                        "Completed",
+                        classGoingSubBucketStatus,
+                        allDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  >
+                    <p>
+                      Completed{" "}
+                      {`(  ${
+                        customerStatusCount &&
+                        customerStatusCount.completed !== undefined &&
+                        customerStatusCount.completed !== null
+                          ? customerStatusCount.completed
+                          : "-"
+                      }
  )`}
-                  </p>
-                </div>
+                    </p>
+                  </div>
+                  <div
+                    className={
+                      status === "Demo Completed"
+                        ? "customers_active_classgoing_container"
+                        : "customers_classgoing_container"
+                    }
+                    onClick={() => {
+                      if (status === "Demo Completed") {
+                        return;
+                      }
+                      setStatus("Demo Completed");
+                      setPagination({
+                        page: 1,
+                      });
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        modeOfTrainingFilterId,
+                        selectedOrigin,
+                        bucketStatus,
+                        "Demo Completed",
+                        classGoingSubBucketStatus,
+                        allDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  >
+                    <p>
+                      Demo Completed{" "}
+                      {`(  ${
+                        customerStatusCount &&
+                        customerStatusCount.demo_completed !== undefined &&
+                        customerStatusCount.demo_completed !== null
+                          ? customerStatusCount.demo_completed
+                          : "-"
+                      }
+ )`}
+                    </p>
+                  </div>
+                  <div
+                    className={
+                      status === "Videos Given"
+                        ? "trainers_active_stage4_container"
+                        : "trainers_stage4_container"
+                    }
+                    onClick={() => {
+                      if (status === "Videos Given") {
+                        return;
+                      }
+                      setStatus("Videos Given");
+                      setPagination({
+                        page: 1,
+                      });
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        modeOfTrainingFilterId,
+                        selectedOrigin,
+                        bucketStatus,
+                        "Videos Given",
+                        classGoingSubBucketStatus,
+                        allDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  >
+                    <p>
+                      Videos Given{" "}
+                      {`(  ${
+                        customerStatusCount &&
+                        customerStatusCount.videos_given !== undefined &&
+                        customerStatusCount.videos_given !== null
+                          ? customerStatusCount.videos_given
+                          : "-"
+                      }
+ )`}
+                    </p>
+                  </div>
+                </>
               )}
             </div>
             <button
-              onClick={() => scroll(600)}
+              onClick={() => scroll(350)}
               className="customer_statusscroll_button"
               style={{
                 flexShrink: 0,
