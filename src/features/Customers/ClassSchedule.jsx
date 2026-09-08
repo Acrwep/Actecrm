@@ -4,7 +4,7 @@ import React, {
   useImperativeHandle,
   useEffect,
 } from "react";
-import { Row, Col, Button, Modal } from "antd";
+import { Row, Col, Button, Modal, Steps } from "antd";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTextArea from "../Common/CommonTextArea";
@@ -19,11 +19,18 @@ import {
 } from "../Common/Validation";
 import {
   classScheduleForCustomer,
+  getCustomerById,
   inserCustomerTrack,
   updateClassGoingForCustomer,
   updateCustomerStatus,
+  updateTrainerCoordination,
 } from "../ApiService/action";
+import { RiCalendarScheduleLine } from "react-icons/ri";
+import { MdOutlineAssignmentInd } from "react-icons/md";
+import { FaPhoneAlt } from "react-icons/fa";
 import { CommonMessage } from "../Common/CommonMessage";
+
+const { Step } = Steps;
 
 const ClassSchedule = forwardRef(
   (
@@ -37,6 +44,7 @@ const ClassSchedule = forwardRef(
     ref,
   ) => {
     //class schedule usestates
+    const [stepIndex, setStepIndex] = useState(0);
     const scheduleOptions = [
       { id: 1, name: "On Going" },
       { id: 3, name: "Hold" },
@@ -57,6 +65,14 @@ const ClassSchedule = forwardRef(
     const [classStartDateError, setClassStartDateError] = useState("");
     const [classHoldComments, setClassHoldComments] = useState("");
     const [classHoldCommentsError, setClassHoldCommentsError] = useState("");
+    //trainer coordination usestates
+    const [cus_details, setCus_Details] = useState(null);
+    const [whatsappGroupStatus, setWhatsappGroupStatus] = useState(null);
+    const [welcomeMessageStatus, setWelcomeMessageStatus] = useState(null);
+    const [linkStatus, setLinkStatus] = useState(null);
+    const [classMonitorStatus, setClassMonitorStatus] = useState(null);
+    const [trainerConfirmation, setTrainerConfirmation] = useState(null);
+    const [buttonLoading, setButtonLoading] = useState(false);
     //class going usestates
     const [classGoingPercentage, setClassGoingPercentage] = useState(0);
     const [classGoingPercentageError, setClassGoingPercentageError] =
@@ -69,6 +85,27 @@ const ClassSchedule = forwardRef(
       useState(false);
     const [classCompleteLoading, setClassCompleteLoading] = useState(false);
     const [isShowAddAttachment, setIsShowAddAttachment] = useState(false);
+
+    const prev = () => setStepIndex(stepIndex - 1);
+
+    useEffect(() => {
+      console.log("customer_details", customerDetails);
+      //trainer coordination
+      setWhatsappGroupStatus(
+        customerDetails?.whatsapp_group_creation === 1 ? 1 : 2,
+      );
+      setWelcomeMessageStatus(
+        customerDetails?.hr_welcome_message === 1 ? 1 : 2,
+      );
+      setLinkStatus(customerDetails?.shared_attendance_link === 1 ? 1 : 2);
+      setClassMonitorStatus(
+        customerDetails?.first_class_monitoring === 1 ? 1 : 2,
+      );
+      setTrainerConfirmation(
+        customerDetails?.trainer_confirmation === 1 ? 1 : 2,
+      );
+      setCus_Details(customerDetails);
+    }, []);
 
     useEffect(() => {
       console.log("customerIdsFromBatch", customerIdsFromBatch);
@@ -89,10 +126,158 @@ const ClassSchedule = forwardRef(
       );
     }, []);
 
+    const getParticularCustomerDetails = async () => {
+      // setIsStatusUpdateDrawerLoading(true);
+      try {
+        const response = await getCustomerById(customerDetails?.id);
+        console.log("particular customer response", response);
+        const particular_customer_details = response?.data?.data;
+        setCus_Details(particular_customer_details);
+      } catch (error) {
+        console.log("getcustomer by id error", error);
+        setCus_Details(null);
+      } finally {
+        setButtonLoading(false);
+      }
+    };
+
     useImperativeHandle(ref, () => ({
       handleClassSchedule,
       handleUpdateClassGoing,
     }));
+
+    const handleTrainerCoordination = async () => {
+      const initialWhatsappGroupStatus =
+        cus_details?.whatsapp_group_creation === 1 ? 1 : 2;
+      const initialWelcomeMessageStatus =
+        cus_details?.hr_welcome_message === 1 ? 1 : 2;
+      const initialLinkStatus =
+        cus_details?.shared_attendance_link === 1 ? 1 : 2;
+      const initialsMonitorStatus =
+        cus_details?.first_class_monitoring === 1 ? 1 : 2;
+      const initialsTrainerConfirmation =
+        cus_details?.trainer_confirmation === 1 ? 1 : 2;
+
+      if (
+        whatsappGroupStatus == initialWhatsappGroupStatus &&
+        welcomeMessageStatus == initialWelcomeMessageStatus &&
+        linkStatus == initialLinkStatus &&
+        classMonitorStatus == initialsMonitorStatus &&
+        trainerConfirmation == initialsTrainerConfirmation
+      ) {
+        CommonMessage("warning", "No changes made to update");
+        return;
+      }
+
+      setButtonLoading(true);
+      const payload = {
+        whatsapp_group_creation: whatsappGroupStatus == 1 ? 1 : 0,
+        hr_welcome_message: welcomeMessageStatus == 1 ? 1 : 0,
+        shared_attendance_link: linkStatus == 1 ? 1 : 0,
+        first_class_monitoring: classMonitorStatus == 1 ? 1 : 0,
+        trainer_confirmation: trainerConfirmation == 1 ? 1 : 0,
+        trainer_mapping_id: customerDetails?.training_map_id,
+      };
+
+      const changedFields = {};
+      const whatsappOptions = [
+        { id: 1, name: "Created" },
+        { id: 2, name: "Not Yet" },
+      ];
+      const welcomeMessageOptions = [
+        { id: 1, name: "Completed" },
+        { id: 2, name: "Pending" },
+      ];
+      const linkOptions = [
+        { id: 1, name: "Shared" },
+        { id: 2, name: "Not Yet" },
+      ];
+      const classMonitorOptions = [
+        { id: 1, name: "Monitored" },
+        { id: 2, name: "Not Yet" },
+      ];
+      const trainerConfirmOptions = [
+        { id: 1, name: "Completed" },
+        { id: 2, name: "Pending" },
+      ];
+
+      const getName = (options, val) => {
+        const found = options.find((o) => String(o.id) === String(val));
+        return found ? found.name : val;
+      };
+
+      if (whatsappGroupStatus != initialWhatsappGroupStatus) {
+        changedFields["whatsapp_group_creation"] = {
+          previous_value: getName(whatsappOptions, initialWhatsappGroupStatus),
+          new_value: getName(whatsappOptions, whatsappGroupStatus),
+        };
+      }
+      if (welcomeMessageStatus != initialWelcomeMessageStatus) {
+        changedFields["hr_welcome_message"] = {
+          previous_value: getName(
+            welcomeMessageOptions,
+            initialWelcomeMessageStatus,
+          ),
+          new_value: getName(welcomeMessageOptions, welcomeMessageStatus),
+        };
+      }
+      if (linkStatus != initialLinkStatus) {
+        changedFields["shared_attendance_link"] = {
+          previous_value: getName(linkOptions, initialLinkStatus),
+          new_value: getName(linkOptions, linkStatus),
+        };
+      }
+      if (classMonitorStatus != initialsMonitorStatus) {
+        changedFields["first_class_monitoring"] = {
+          previous_value: getName(classMonitorOptions, initialsMonitorStatus),
+          new_value: getName(classMonitorOptions, classMonitorStatus),
+        };
+      }
+      if (trainerConfirmation != initialsTrainerConfirmation) {
+        changedFields["trainer_confirmation"] = {
+          previous_value: getName(
+            trainerConfirmOptions,
+            initialsTrainerConfirmation,
+          ),
+          new_value: getName(trainerConfirmOptions, trainerConfirmation),
+        };
+      }
+
+      try {
+        await updateTrainerCoordination(payload);
+
+        const getloginUserDetails = localStorage.getItem("loginUserDetails");
+        const converAsJson = getloginUserDetails
+          ? JSON.parse(getloginUserDetails)
+          : null;
+
+        const trackPayload = {
+          customers: [
+            {
+              customer_id: customerDetails?.id,
+              status: "Trainer Coordination Details Updated",
+              details: changedFields,
+              status_date: formatToBackendIST(new Date()),
+              updated_by: converAsJson?.user_id || "",
+            },
+          ],
+        };
+        await inserCustomerTrack(trackPayload);
+
+        CommonMessage(
+          "success",
+          "Trainer Coordination Details Updated Successfully",
+        );
+        getParticularCustomerDetails();
+      } catch (error) {
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
+      }
+    };
 
     const handleClassSchedule = async () => {
       const scheduleIdValidate = selectValidator(scheduleId);
@@ -122,6 +307,7 @@ const ClassSchedule = forwardRef(
       )
         return;
       setUpdateButtonLoading(true);
+      setButtonLoading(true);
 
       const today = new Date();
 
@@ -169,6 +355,7 @@ const ClassSchedule = forwardRef(
         }, 300);
       } catch (error) {
         setUpdateButtonLoading(false);
+        setButtonLoading(false);
         CommonMessage(
           "error",
           error?.response?.data?.details ||
@@ -506,102 +693,256 @@ const ClassSchedule = forwardRef(
       <>
         {drawerContentStatus == "Class Schedule" ? (
           <div className="customer_statusupdate_adddetailsContainer">
-            <p className="customer_statusupdate_adddetails_heading">
-              Add Details
-            </p>
-
-            <div
-              style={{
-                marginTop: "16px",
-                marginBottom:
-                  scheduleId == null || scheduleId == "" || scheduleId == 1
-                    ? "40px"
-                    : "0px",
-              }}
-            >
-              <CommonSelectField
-                label="Schedule Status"
-                options={scheduleOptions}
-                required={true}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  console.log("valllllllllll", value);
-                  setScheduleId(value);
-                  setScheduleIdError(selectValidator(value));
-                  if (value == 6) {
-                    setTimeout(() => {
-                      const container = document.getElementById(
-                        "customer_scheduledatefield_container",
-                      );
-                      container.scrollIntoView({ behavior: "smooth" });
-                    }, 200);
-                    setClassStartDateError(selectValidator(classStartDate));
-                  } else {
-                    setClassStartDate(null);
-                    setClassStartDateError("");
-                  }
-
-                  if (value == 3 || value == 10) {
-                    setTimeout(() => {
-                      const container = document.getElementById(
-                        "customer_scheduledatefield_container",
-                      );
-                      container.scrollIntoView({ behavior: "smooth" });
-                    }, 200);
-                    setClassHoldCommentsError(
-                      addressValidator(classHoldComments),
-                    );
-                  } else {
-                    setClassHoldCommentsError("");
-                  }
-                }}
-                value={scheduleId}
-                error={scheduleIdError}
-              />
-            </div>
-            {scheduleId == 6 ? (
-              <div
-                id="customer_scheduledatefield_container"
-                style={{ marginTop: "30px", marginBottom: "40px" }}
-              >
-                <CommonMuiDatePicker
-                  label="Schedule Date"
-                  required={true}
-                  onChange={(value) => {
-                    setClassStartDate(value);
-                    setClassStartDateError(selectValidator(value));
-                  }}
-                  value={classStartDate}
-                  error={classStartDateError}
-                  disablePreviousDates={true}
-                />
-              </div>
-            ) : (
-              ""
-            )}
-
-            {scheduleId == 3 || scheduleId == 10 ? (
-              <Row
-                id="customer_scheduledatefield_container"
-                style={{ marginTop: "20px", marginBottom: 40 }}
-              >
-                <Col span={24}>
-                  <CommonTextArea
-                    label="Comments"
-                    required={false}
-                    onChange={(e) => {
-                      setClassHoldComments(e.target.value);
-                      setClassHoldCommentsError(
-                        addressValidator(e.target.value),
-                      );
+            <Steps current={stepIndex} size="small">
+              <Step
+                title={
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: "13px",
                     }}
-                    value={classHoldComments}
-                    error={classHoldCommentsError}
+                  >
+                    Trainer Coordination
+                    <FaPhoneAlt
+                      color="#2d4191"
+                      size={16}
+                      style={{ marginLeft: 6 }}
+                    />
+                  </span>
+                }
+              />
+
+              <Step
+                title={
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: "13px",
+                    }}
+                  >
+                    Class Schedule
+                    <RiCalendarScheduleLine
+                      size={18}
+                      style={{ marginLeft: 6 }}
+                      color="#2d4191"
+                    />
+                  </span>
+                }
+              />
+            </Steps>
+
+            {stepIndex == 0 && (
+              <Row
+                gutter={[12, 24]}
+                style={{ marginTop: "20px", marginBottom: "30px" }}
+              >
+                <Col span={8}>
+                  <CommonSelectField
+                    label={"Whatsapp Group Status"}
+                    required={true}
+                    options={[
+                      { id: 1, name: "Created" },
+                      { id: 2, name: "Not Yet" },
+                    ]}
+                    onChange={(e) => {
+                      setWhatsappGroupStatus(e.target.value);
+                    }}
+                    value={whatsappGroupStatus}
+                    error={""}
+                    height={"33px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"0px"}
+                    errorFontSize="9px"
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label={"Welcome Message Status"}
+                    required={true}
+                    options={[
+                      { id: 1, name: "Completed" },
+                      { id: 2, name: "Pending" },
+                    ]}
+                    onChange={(e) => {
+                      setWelcomeMessageStatus(e.target.value);
+                    }}
+                    value={welcomeMessageStatus}
+                    error={""}
+                    height={"33px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"0px"}
+                    errorFontSize="9px"
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label={"Shared Teams & Attendance Link"}
+                    required={true}
+                    options={[
+                      { id: 1, name: "Shared" },
+                      { id: 2, name: "Not Yet" },
+                    ]}
+                    onChange={(e) => {
+                      setLinkStatus(e.target.value);
+                    }}
+                    value={linkStatus}
+                    error={""}
+                    height={"33px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"0px"}
+                    errorFontSize="9px"
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label={"First Class Monitoring"}
+                    required={true}
+                    options={[
+                      { id: 1, name: "Monitored" },
+                      { id: 2, name: "Not Yet" },
+                    ]}
+                    onChange={(e) => {
+                      setClassMonitorStatus(e.target.value);
+                    }}
+                    value={classMonitorStatus}
+                    error={""}
+                    height={"33px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"0px"}
+                    errorFontSize="9px"
+                  />
+                </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label={"Trainer Confirmation"}
+                    required={true}
+                    options={[
+                      { id: 1, name: "Completed" },
+                      { id: 2, name: "Pending" },
+                    ]}
+                    onChange={(e) => {
+                      setTrainerConfirmation(e.target.value);
+                    }}
+                    value={trainerConfirmation}
+                    error={""}
+                    height={"33px"}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"0px"}
+                    errorFontSize="9px"
                   />
                 </Col>
               </Row>
-            ) : (
-              ""
+            )}
+
+            {stepIndex == 1 && (
+              <>
+                <p
+                  className="customer_statusupdate_adddetails_heading"
+                  style={{ marginTop: "20px" }}
+                >
+                  Add Details
+                </p>
+
+                <div
+                  style={{
+                    marginTop: "12px",
+                    marginBottom:
+                      scheduleId == null || scheduleId == "" || scheduleId == 1
+                        ? "40px"
+                        : "0px",
+                  }}
+                >
+                  <CommonSelectField
+                    label="Schedule Status"
+                    options={scheduleOptions}
+                    required={true}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      console.log("valllllllllll", value);
+                      setScheduleId(value);
+                      setScheduleIdError(selectValidator(value));
+                      if (value == 6) {
+                        setTimeout(() => {
+                          const container = document.getElementById(
+                            "customer_scheduledatefield_container",
+                          );
+                          container.scrollIntoView({ behavior: "smooth" });
+                        }, 200);
+                        setClassStartDateError(selectValidator(classStartDate));
+                      } else {
+                        setClassStartDate(null);
+                        setClassStartDateError("");
+                      }
+
+                      if (value == 3 || value == 10) {
+                        setTimeout(() => {
+                          const container = document.getElementById(
+                            "customer_scheduledatefield_container",
+                          );
+                          container.scrollIntoView({ behavior: "smooth" });
+                        }, 200);
+                        setClassHoldCommentsError(
+                          addressValidator(classHoldComments),
+                        );
+                      } else {
+                        setClassHoldCommentsError("");
+                      }
+                    }}
+                    value={scheduleId}
+                    error={scheduleIdError}
+                    disabled={
+                      stepIndex == 1 &&
+                      customerDetails?.status === "Class Going"
+                    }
+                  />
+                </div>
+                {scheduleId == 6 ? (
+                  <div
+                    id="customer_scheduledatefield_container"
+                    style={{ marginTop: "30px", marginBottom: "40px" }}
+                  >
+                    <CommonMuiDatePicker
+                      label="Schedule Date"
+                      required={true}
+                      onChange={(value) => {
+                        setClassStartDate(value);
+                        setClassStartDateError(selectValidator(value));
+                      }}
+                      value={classStartDate}
+                      error={classStartDateError}
+                      disablePreviousDates={true}
+                    />
+                  </div>
+                ) : (
+                  ""
+                )}
+
+                {scheduleId == 3 || scheduleId == 10 ? (
+                  <Row
+                    id="customer_scheduledatefield_container"
+                    style={{ marginTop: "20px", marginBottom: 40 }}
+                  >
+                    <Col span={24}>
+                      <CommonTextArea
+                        label="Comments"
+                        required={false}
+                        onChange={(e) => {
+                          setClassHoldComments(e.target.value);
+                          setClassHoldCommentsError(
+                            addressValidator(e.target.value),
+                          );
+                        }}
+                        value={classHoldComments}
+                        error={classHoldCommentsError}
+                      />
+                    </Col>
+                  </Row>
+                ) : (
+                  ""
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -720,6 +1061,66 @@ const ClassSchedule = forwardRef(
                 </Col>
               </Row>
             )}
+          </div>
+        )}
+
+        {drawerContentStatus === "Class Schedule" && (
+          <div className="leadmanager_tablefiler_footer">
+            <div
+              className="leadmanager_submitlead_buttoncontainer"
+              style={{ gap: "12px" }}
+            >
+              {stepIndex > 0 && (
+                <Button onClick={prev} className="customer_stepperbuttons">
+                  Previous
+                </Button>
+              )}
+
+              {stepIndex == 1 && customerDetails?.status === "Class Going" ? (
+                ""
+              ) : (
+                <>
+                  {buttonLoading ? (
+                    <button
+                      className={"users_adddrawer_loadingcreatebutton"}
+                      // style={{
+                      //   ...(stepIndex === 0 ? { width: "120px" } : {}),
+                      // }}
+                      // style={{ width: "120px" }}
+                    >
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className={"users_adddrawer_createbutton"}
+                      onClick={
+                        stepIndex === 0
+                          ? handleTrainerCoordination
+                          : handleClassSchedule
+                      }
+                      // onClick={handleAssignTrainer}
+                      // style={{ width: "120px" }}
+                      // style={{
+                      //   ...(stepIndex === 0 ? { width: "120px" } : {}),
+                      // }}
+                    >
+                      Update
+                    </button>
+                  )}
+                </>
+              )}
+
+              {stepIndex < 1 && (
+                <Button
+                  onClick={() => {
+                    setStepIndex(stepIndex + 1);
+                  }}
+                  className={"customer_stepperbuttons"}
+                >
+                  Next
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

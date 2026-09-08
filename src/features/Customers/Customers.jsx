@@ -201,6 +201,7 @@ export default function Customers() {
   const [isSwap, setIsSwap] = useState(false);
   //student verify usestates
   //assign trainer usestates
+  const [trainerSubbucketStatus, setTrainerSubbucketsStatus] = useState("");
   //trainer verify usestates
   const [rejectbuttonLoader, setRejectButtonLoader] = useState(false);
   //class schedule usestates
@@ -772,30 +773,31 @@ export default function Customers() {
                                 Update Trainer
                               </button>
                             </div>
-                          ) : permissions.includes("Trainer Assign") ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                marginTop: "3px",
-                              }}
-                            >
-                              <button
-                                className="customers_update_trainer_coordination_button"
-                                onClick={() => {
-                                  if (!permissions.includes("Trainer Assign")) {
-                                    CommonMessage("error", "Access Denied");
-                                    return;
-                                  }
-                                  getParticularCustomerDetails(record?.id);
-                                  setDrawerContentStatus("Assign Trainer");
-                                  setIsStatusUpdateDrawer(true);
-                                }}
-                              >
-                                Update Trnr Coord
-                              </button>
-                            </div>
                           ) : (
+                            // : permissions.includes("Trainer Assign") ? (
+                            //   <div
+                            //     style={{
+                            //       display: "flex",
+                            //       alignItems: "center",
+                            //       marginTop: "3px",
+                            //     }}
+                            //   >
+                            //     <button
+                            //       className="customers_update_trainer_coordination_button"
+                            //       onClick={() => {
+                            //         if (!permissions.includes("Trainer Assign")) {
+                            //           CommonMessage("error", "Access Denied");
+                            //           return;
+                            //         }
+                            //         getParticularCustomerDetails(record?.id);
+                            //         setDrawerContentStatus("Assign Trainer");
+                            //         setIsStatusUpdateDrawer(true);
+                            //       }}
+                            //     >
+                            //       Update Trnr Coord
+                            //     </button>
+                            //   </div>
+                            // )
                             <div
                               className="customers_classcompleted_container"
                               style={{ marginBottom: "6px" }}
@@ -1150,6 +1152,37 @@ export default function Customers() {
                         </div>
                       )}
                     </Col>
+
+                    {record.status === "Class Going" ||
+                    record.status === "Passedout process" ||
+                    record.status === "Completed" ? (
+                      <Col span={12}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginTop: "3px",
+                          }}
+                        >
+                          <button
+                            className="customers_update_trainer_coordination_button"
+                            onClick={() => {
+                              if (!permissions.includes("Trainer Assign")) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              getParticularCustomerDetails(record?.id);
+                              setDrawerContentStatus("Class Schedule");
+                              setIsStatusUpdateDrawer(true);
+                            }}
+                          >
+                            Update Trnr Coord
+                          </button>
+                        </div>
+                      </Col>
+                    ) : (
+                      ""
+                    )}
 
                     {record.status === "Class Going" ||
                     record.status === "Passedout process" ||
@@ -2108,6 +2141,7 @@ export default function Customers() {
     setModeOfTrainingFilterId(null);
     setClassGoingSubBucketStatus("");
     setDateFilterType("Updated");
+    setIsSwap(false);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
@@ -3199,6 +3233,114 @@ export default function Customers() {
 
                   <div
                     className={
+                      status === "Awaiting Finance"
+                        ? "customers_active_awaitfinance_container"
+                        : status === "Payment Rejected"
+                          ? "customers_active_paymentreject_container"
+                          : isSwap
+                            ? "customers_paymentreject_container"
+                            : "customers_awaitfinance_container"
+                    }
+                    onClick={() => {
+                      if (
+                        status === "Awaiting Finance" ||
+                        status === "Payment Rejected"
+                      ) {
+                        return;
+                      }
+                      setStatus(
+                        isSwap ? "Payment Rejected" : "Awaiting Finance",
+                      );
+
+                      setPagination({
+                        page: 1,
+                      });
+                      getCustomersData(
+                        selectedDates[0],
+                        selectedDates[1],
+                        dateFilterType,
+                        searchValue,
+                        selectedRegionId,
+                        selectedBranchId,
+                        modeOfTrainingFilterId,
+                        selectedOrigin,
+                        bucketStatus,
+                        "Awaiting Finance",
+                        classGoingSubBucketStatus,
+                        allDownliners,
+                        1,
+                        pagination.limit,
+                      );
+                    }}
+                  >
+                    {isSwap ? (
+                      <p>
+                        Payment Rejected{" "}
+                        {`(  ${
+                          customerStatusCount &&
+                          customerStatusCount.payment_rejected !== undefined &&
+                          customerStatusCount.payment_rejected !== null
+                            ? customerStatusCount.payment_rejected
+                            : "-"
+                        }
+ )`}
+                      </p>
+                    ) : (
+                      <p>
+                        Payment Verify{" "}
+                        {`(  ${
+                          customerStatusCount &&
+                          customerStatusCount.awaiting_verify !== undefined &&
+                          customerStatusCount.awaiting_verify !== null
+                            ? customerStatusCount.awaiting_verify
+                            : "-"
+                        }
+ )`}
+                      </p>
+                    )}
+                    <MdOutlineSwapVert
+                      size={19}
+                      style={{
+                        cursor: "pointer",
+                        transition: "transform 0.3s ease",
+                        transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
+                      }}
+                      onClick={() => {
+                        console.log("staaaaaaaaaaaaaaaa", status);
+                        setTimeout(() => {
+                          const newSwap = !isSwap;
+                          const newStatus = newSwap
+                            ? "Payment Rejected"
+                            : "Awaiting Finance";
+
+                          console.log("newStatus:", newStatus);
+
+                          setIsSwap(newSwap);
+                          setStatus(newStatus);
+
+                          getCustomersData(
+                            selectedDates[0],
+                            selectedDates[1],
+                            dateFilterType,
+                            searchValue,
+                            selectedRegionId,
+                            selectedBranchId,
+                            modeOfTrainingFilterId,
+                            selectedOrigin,
+                            bucketStatus,
+                            newStatus,
+                            classGoingSubBucketStatus,
+                            allDownliners,
+                            1,
+                            pagination.limit,
+                          );
+                        }, 200);
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    className={
                       status === "Awaiting Verify"
                         ? "customers_active_studentvefity_container"
                         : "customers_studentvefity_container"
@@ -3244,17 +3386,18 @@ export default function Customers() {
 
                   <div
                     className={
-                      status === "Awaiting Trainer"
+                      status === "assign_trainer"
                         ? "customers_active_assigntrainers_container"
                         : "customers_assigntrainers_container"
                     }
                   >
                     <div
                       onClick={() => {
-                        if (status === "Awaiting Trainer") {
+                        if (status === "assign_trainer") {
                           return;
                         }
-                        setStatus("Awaiting Trainer");
+                        setStatus("assign_trainer");
+                        setTrainerSubbucketsStatus("");
                         setPagination({
                           page: 1,
                         });
@@ -3268,7 +3411,7 @@ export default function Customers() {
                           modeOfTrainingFilterId,
                           selectedOrigin,
                           bucketStatus,
-                          "Awaiting Trainer",
+                          "assign_trainer",
                           classGoingSubBucketStatus,
                           allDownliners,
                           1,
@@ -3280,204 +3423,18 @@ export default function Customers() {
                         Assign Trainer{" "}
                         {`(  ${
                           customerStatusCount &&
-                          customerStatusCount.awaiting_trainer !== undefined &&
-                          customerStatusCount.awaiting_trainer !== null
-                            ? customerStatusCount.awaiting_trainer
+                          customerStatusCount.assign_trainer !== undefined &&
+                          customerStatusCount.assign_trainer !== null
+                            ? customerStatusCount.assign_trainer
                             : "-"
-                        }
- )`}
+                        } )`}
                       </p>
                     </div>
-                  </div>
-
-                  <div
-                    className={
-                      status === "Trainer Rejected"
-                        ? "customers_active_paymentreject_container"
-                        : "customers_paymentreject_container"
-                    }
-                    onClick={() => {
-                      if (status === "Trainer Rejected") {
-                        return;
-                      }
-                      setStatus("Trainer Rejected");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Trainer Rejected",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Trainer Rejected{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.trainer_rejected !== undefined &&
-                        customerStatusCount.trainer_rejected !== null
-                          ? customerStatusCount.trainer_rejected
-                          : "-"
-                      }
- )`}
-                    </p>
                   </div>
                 </>
               )}
 
               {bucketStatus === "Training Coordination" && (
-                <>
-                  <div
-                    className={
-                      status === "Awaiting Trainer Verify"
-                        ? "customers_active_verifytrainers_container"
-                        : "customers_verifytrainers_container"
-                    }
-                    onClick={() => {
-                      if (status === "Awaiting Trainer Verify") {
-                        return;
-                      }
-                      setStatus("Awaiting Trainer Verify");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Awaiting Trainer Verify",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Verify Trainer{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.awaiting_trainer_verify !==
-                          undefined &&
-                        customerStatusCount.awaiting_trainer_verify !== null
-                          ? customerStatusCount.awaiting_trainer_verify
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-
-                  <div
-                    className={
-                      status === "Trainer Approval"
-                        ? "customers_active_trainerapproval_container"
-                        : "customers_trainerapproval_container"
-                    }
-                    onClick={() => {
-                      if (status === "Trainer Approval") {
-                        return;
-                      }
-                      setStatus("Trainer Approval");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Trainer Approval",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Trainer Approval{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.trainer_approval !== undefined &&
-                        customerStatusCount.trainer_approval !== null
-                          ? customerStatusCount.trainer_approval
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-
-                  <div
-                    className={
-                      status === "Approval Rejected"
-                        ? "customers_active_paymentreject_container"
-                        : "customers_paymentreject_container"
-                    }
-                    onClick={() => {
-                      if (status === "Approval Rejected") {
-                        return;
-                      }
-                      setStatus("Approval Rejected");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Approval Rejected",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Approval Rejected{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.approval_rejected !== undefined &&
-                        customerStatusCount.approval_rejected !== null
-                          ? customerStatusCount.approval_rejected
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                </>
-              )}
-
-              {bucketStatus === "Progress Monitoring" && (
                 <>
                   <div
                     className={
@@ -3523,7 +3480,11 @@ export default function Customers() {
  )`}
                     </p>
                   </div>
+                </>
+              )}
 
+              {bucketStatus === "Progress Monitoring" && (
+                <>
                   <div
                     className={
                       status === "Class Scheduled"
@@ -3954,6 +3915,240 @@ export default function Customers() {
             </div>
           )}
         </div>
+      )}
+
+      {status === "assign_trainer" && (
+        <Row
+          style={{
+            marginBottom: "22px",
+            gap: "12px",
+            paddingLeft: "12px",
+          }}
+        >
+          <div
+            className={
+              trainerSubbucketStatus === "Awaiting Trainer"
+                ? "customers_active_awaitingclass_container"
+                : "customers_awaitingclass_container"
+            }
+            onClick={() => {
+              if (trainerSubbucketStatus === "Awaiting Trainer") {
+                return;
+              }
+              setTrainerSubbucketsStatus("Awaiting Trainer");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                "Awaiting Trainer",
+                classGoingSubBucketStatus,
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Awaiting Trainer{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.awaiting_trainer !== undefined &&
+                customerStatusCount.awaiting_trainer !== null
+                  ? customerStatusCount.awaiting_trainer
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              trainerSubbucketStatus === "Trainer Rejected"
+                ? "customers_active_paymentreject_container"
+                : "customers_paymentreject_container"
+            }
+            onClick={() => {
+              if (trainerSubbucketStatus === "Trainer Rejected") {
+                return;
+              }
+              setTrainerSubbucketsStatus("Trainer Rejected");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                "Trainer Rejected",
+                classGoingSubBucketStatus,
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Trainer Rejected{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.trainer_rejected !== undefined &&
+                customerStatusCount.trainer_rejected !== null
+                  ? customerStatusCount.trainer_rejected
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+          <div
+            className={
+              trainerSubbucketStatus === "Awaiting Trainer Verify"
+                ? "customers_active_verifytrainers_container"
+                : "customers_verifytrainers_container"
+            }
+            onClick={() => {
+              if (trainerSubbucketStatus === "Awaiting Trainer Verify") {
+                return;
+              }
+              setTrainerSubbucketsStatus("Awaiting Trainer Verify");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                "Awaiting Trainer Verify",
+                classGoingSubBucketStatus,
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Verify Trainer{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.awaiting_trainer_verify !== undefined &&
+                customerStatusCount.awaiting_trainer_verify !== null
+                  ? customerStatusCount.awaiting_trainer_verify
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              trainerSubbucketStatus === "Trainer Approval"
+                ? "customers_active_trainerapproval_container"
+                : "customers_trainerapproval_container"
+            }
+            onClick={() => {
+              if (trainerSubbucketStatus === "Trainer Approval") {
+                return;
+              }
+              setTrainerSubbucketsStatus("Trainer Approval");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                "Trainer Approval",
+                classGoingSubBucketStatus,
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Trainer Approval{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.trainer_approval !== undefined &&
+                customerStatusCount.trainer_approval !== null
+                  ? customerStatusCount.trainer_approval
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+
+          <div
+            className={
+              trainerSubbucketStatus === "Approval Rejected"
+                ? "customers_active_paymentreject_container"
+                : "customers_paymentreject_container"
+            }
+            onClick={() => {
+              if (trainerSubbucketStatus === "Approval Rejected") {
+                return;
+              }
+              setTrainerSubbucketsStatus("Approval Rejected");
+              setPagination({
+                page: 1,
+              });
+              getCustomersData(
+                selectedDates[0],
+                selectedDates[1],
+                dateFilterType,
+                searchValue,
+                selectedRegionId,
+                selectedBranchId,
+                modeOfTrainingFilterId,
+                selectedOrigin,
+                bucketStatus,
+                "Approval Rejected",
+                classGoingSubBucketStatus,
+                allDownliners,
+                1,
+                pagination.limit,
+              );
+            }}
+          >
+            <p>
+              Approval Rejected{" "}
+              {`(  ${
+                customerStatusCount &&
+                customerStatusCount.approval_rejected !== undefined &&
+                customerStatusCount.approval_rejected !== null
+                  ? customerStatusCount.approval_rejected
+                  : "-"
+              }
+ )`}
+            </p>
+          </div>
+        </Row>
       )}
 
       {status === "Class Going" && (
@@ -4916,7 +5111,8 @@ export default function Customers() {
         {drawerContentStatus === "Finance Verify" ||
         drawerContentStatus === "Update Payment" ||
         drawerContentStatus === "Student Verify" ||
-        drawerContentStatus === "Assign Trainer" ? (
+        drawerContentStatus === "Assign Trainer" ||
+        drawerContentStatus === "Class Schedule" ? (
           ""
         ) : (
           <div className="leadmanager_tablefiler_footer">

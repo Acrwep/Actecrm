@@ -574,7 +574,7 @@ export default function AssignTrainerToCustomer({
 
     try {
       await assignTrainerForCustomer(payload);
-      CommonMessage("success", "Updated Successfully");
+      CommonMessage("success", "Trainer Assigned Successfully");
       setTimeout(async () => {
         const payload = {
           customer_ids: [
@@ -1134,7 +1134,7 @@ export default function AssignTrainerToCustomer({
       <Divider className="customer_statusupdate_divider" />
 
       <div className="customer_statusupdate_adddetailsContainer">
-        <Steps current={stepIndex} size="small">
+        {/* <Steps current={stepIndex} size="small">
           <Step
             title={
               <span
@@ -1153,7 +1153,6 @@ export default function AssignTrainerToCustomer({
               </span>
             }
           />
-          {/* <Step title="Certificate Details" /> */}
           <Step
             title={
               <span
@@ -1172,165 +1171,163 @@ export default function AssignTrainerToCustomer({
               </span>
             }
           />
-        </Steps>
+        </Steps> */}
 
-        {stepIndex == 0 && (
-          <>
-            <p
-              className="customer_statusupdate_adddetails_heading"
-              style={{ marginTop: "20px" }}
-            >
-              {trainerHistory.length >= 1
-                ? "Assigned Trainer Details"
-                : "Assign New Trainer"}
-            </p>
+        <>
+          <p
+            className="customer_statusupdate_adddetails_heading"
+            style={{ marginTop: "20px" }}
+          >
+            {trainerHistory.length >= 1
+              ? "Assigned Trainer Details"
+              : "Assign New Trainer"}
+          </p>
 
-            <Row gutter={16} style={{ marginTop: "14px" }}>
-              <Col span={12}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <CommonCustomerSingleSelectField
-                      label="Trainer"
-                      required={true}
-                      options={mergedTrainers}
-                      value={selectedTrainerId}
-                      onChange={handleTrainerSelect}
-                      onInputChange={handleTrainerSearch}
-                      onDropdownOpen={handleTrainerDropdownOpen}
-                      onDropdownScroll={handleTrainerScroll}
-                      loading={trainerSelectloading}
-                      renderOption={renderTrainerOption}
-                      error={selectedTrainerIdError}
-                      disableClearable={false}
-                      showLabelStatus="Name"
-                      disabled={trainerHistory.length >= 1}
-                    />
-                  </div>
-
-                  {selectedTrainerId && (
-                    <Tooltip
-                      placement="top"
-                      title="View Trainer Details"
-                      trigger={["hover", "click"]}
-                    >
-                      <FaRegEye
-                        size={14.5}
-                        className="trainers_action_icons"
-                        onClick={() => {
-                          setIsOpenTrainerDetailModal(true);
-                          setClickedTrainerDetails([selectedTrainerObject]);
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-                </div>
-              </Col>
-
-              <Col span={12}>
-                <CommonOutlinedInput
-                  label="Commercial"
-                  type="number"
-                  required={true}
-                  onChange={(e) => {
-                    setCommercial(e.target.value);
-                    setCommercialError(selectValidator(e.target.value));
-                  }}
-                  value={commercial}
-                  error={commercialError}
-                  onInput={(e) => {
-                    if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10);
-                    }
-                  }}
-                  icon={<LuIndianRupee size={16} />}
-                  disabled={trainerHistory.length >= 1}
-                />
-              </Col>
-            </Row>
-
-            <Row gutter={16} style={{ marginTop: "30px" }}>
-              <Col span={12}>
-                <CommonSelectField
-                  label="Mode Of Class"
-                  required={true}
-                  options={modeOfClassOptions}
-                  onChange={(e) => {
-                    setModeOfClass(e.target.value);
-                    setModeOfClassError(selectValidator(e.target.value));
-                  }}
-                  value={modeOfClass}
-                  error={modeOfClassError}
-                  disabled={trainerHistory.length >= 1}
-                />
-              </Col>
-              <Col span={12}>
-                <CommonInputField
-                  label="Trainer Type"
-                  required={true}
-                  value={trainerType}
-                  disabled={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "28px", marginBottom: "30px" }}>
-              <Col span={24}>
-                <div>
-                  <CommonTextArea
-                    label="Comments"
+          <Row gutter={16} style={{ marginTop: "14px" }}>
+            <Col span={12}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <CommonCustomerSingleSelectField
+                    label="Trainer"
                     required={true}
-                    onChange={(e) => {
-                      setAssignTrainerComments(e.target.value);
-                      setAssignTrainerCommentsError(
-                        addressValidator(e.target.value),
-                      );
-                    }}
-                    value={assignTrainerComments}
-                    error={assignTrainerCommentsError}
+                    options={mergedTrainers}
+                    value={selectedTrainerId}
+                    onChange={handleTrainerSelect}
+                    onInputChange={handleTrainerSearch}
+                    onDropdownOpen={handleTrainerDropdownOpen}
+                    onDropdownScroll={handleTrainerScroll}
+                    loading={trainerSelectloading}
+                    renderOption={renderTrainerOption}
+                    error={selectedTrainerIdError}
+                    disableClearable={false}
+                    showLabelStatus="Name"
                     disabled={trainerHistory.length >= 1}
                   />
                 </div>
 
-                <div
-                  style={{
-                    position: "relative",
-                    marginTop: "40px",
-                  }}
-                >
-                  <ImageUploadCrop
-                    label="Proof Communication"
-                    aspect={1}
-                    maxSizeMB={1}
-                    required={true}
-                    value={assignTrainerProofBase64}
-                    onChange={(base64) => setAssignTrainerProofBase64(base64)}
-                    onErrorChange={setAssignTrainerProofError}
-                    disabled={trainerHistory.length >= 1}
-                  />
-                  {assignTrainerProofError && (
-                    <p
-                      style={{
-                        fontSize: "12px",
-                        color: "#d32f2f",
-                        marginTop: 4,
+                {selectedTrainerId && (
+                  <Tooltip
+                    placement="top"
+                    title="View Trainer Details"
+                    trigger={["hover", "click"]}
+                  >
+                    <FaRegEye
+                      size={14.5}
+                      className="trainers_action_icons"
+                      onClick={() => {
+                        setIsOpenTrainerDetailModal(true);
+                        setClickedTrainerDetails([selectedTrainerObject]);
                       }}
-                    >
-                      {`Proof Screenshot ${assignTrainerProofError}`}
-                    </p>
-                  )}
-                </div>
-              </Col>
-            </Row>
-          </>
-        )}
+                    />
+                  </Tooltip>
+                )}
+              </div>
+            </Col>
 
-        {stepIndex == 1 && (
+            <Col span={12}>
+              <CommonOutlinedInput
+                label="Commercial"
+                type="number"
+                required={true}
+                onChange={(e) => {
+                  setCommercial(e.target.value);
+                  setCommercialError(selectValidator(e.target.value));
+                }}
+                value={commercial}
+                error={commercialError}
+                onInput={(e) => {
+                  if (e.target.value.length > 10) {
+                    e.target.value = e.target.value.slice(0, 10);
+                  }
+                }}
+                icon={<LuIndianRupee size={16} />}
+                disabled={trainerHistory.length >= 1}
+              />
+            </Col>
+          </Row>
+
+          <Row gutter={16} style={{ marginTop: "30px" }}>
+            <Col span={12}>
+              <CommonSelectField
+                label="Mode Of Class"
+                required={true}
+                options={modeOfClassOptions}
+                onChange={(e) => {
+                  setModeOfClass(e.target.value);
+                  setModeOfClassError(selectValidator(e.target.value));
+                }}
+                value={modeOfClass}
+                error={modeOfClassError}
+                disabled={trainerHistory.length >= 1}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonInputField
+                label="Trainer Type"
+                required={true}
+                value={trainerType}
+                disabled={true}
+              />
+            </Col>
+          </Row>
+
+          <Row style={{ marginTop: "28px", marginBottom: "30px" }}>
+            <Col span={24}>
+              <div>
+                <CommonTextArea
+                  label="Comments"
+                  required={true}
+                  onChange={(e) => {
+                    setAssignTrainerComments(e.target.value);
+                    setAssignTrainerCommentsError(
+                      addressValidator(e.target.value),
+                    );
+                  }}
+                  value={assignTrainerComments}
+                  error={assignTrainerCommentsError}
+                  disabled={trainerHistory.length >= 1}
+                />
+              </div>
+
+              <div
+                style={{
+                  position: "relative",
+                  marginTop: "40px",
+                }}
+              >
+                <ImageUploadCrop
+                  label="Proof Communication"
+                  aspect={1}
+                  maxSizeMB={1}
+                  required={true}
+                  value={assignTrainerProofBase64}
+                  onChange={(base64) => setAssignTrainerProofBase64(base64)}
+                  onErrorChange={setAssignTrainerProofError}
+                  disabled={trainerHistory.length >= 1}
+                />
+                {assignTrainerProofError && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#d32f2f",
+                      marginTop: 4,
+                    }}
+                  >
+                    {`Proof Screenshot ${assignTrainerProofError}`}
+                  </p>
+                )}
+              </div>
+            </Col>
+          </Row>
+        </>
+
+        {/* {stepIndex == 1 && (
           <Row
             gutter={[12, 24]}
             style={{ marginTop: "20px", marginBottom: "30px" }}
@@ -1431,7 +1428,7 @@ export default function AssignTrainerToCustomer({
               />
             </Col>
           </Row>
-        )}
+        )} */}
       </div>
 
       <div className="leadmanager_tablefiler_footer">
@@ -1439,44 +1436,48 @@ export default function AssignTrainerToCustomer({
           className="leadmanager_submitlead_buttoncontainer"
           style={{ gap: "12px" }}
         >
-          {stepIndex > 0 && (
+          {/* {stepIndex > 0 && (
             <Button onClick={prev} className="customer_stepperbuttons">
               Previous
             </Button>
-          )}
+          )} */}
 
-          {stepIndex == 0 && trainerHistory.length >= 1 ? (
+          {/* {stepIndex == 0 && trainerHistory.length >= 1 ? (
             ""
-          ) : (
-            <>
-              {buttonLoading ? (
-                <button
-                  className={"users_adddrawer_loadingcreatebutton"}
-                  style={{
-                    ...(stepIndex === 0 ? { width: "120px" } : {}),
-                  }}
-                >
-                  <CommonSpinner />
-                </button>
-              ) : (
-                <button
-                  className={"users_adddrawer_createbutton"}
-                  onClick={
-                    stepIndex === 0
-                      ? handleAssignTrainer
-                      : handleTrainerCoordination
-                  }
-                  style={{
-                    ...(stepIndex === 0 ? { width: "120px" } : {}),
-                  }}
-                >
-                  {stepIndex === 0 ? "Assign Trainer" : "Update"}
-                </button>
-              )}
-            </>
-          )}
+          ) : ( */}
+          <>
+            {buttonLoading ? (
+              <button
+                className={"users_adddrawer_loadingcreatebutton"}
+                // style={{
+                //   ...(stepIndex === 0 ? { width: "120px" } : {}),
+                // }}
+                style={{ width: "120px" }}
+              >
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className={"users_adddrawer_createbutton"}
+                // onClick={
+                //   stepIndex === 0
+                //     ? handleAssignTrainer
+                //     : handleTrainerCoordination
+                // }
+                onClick={handleAssignTrainer}
+                style={{ width: "120px" }}
+                // style={{
+                //   ...(stepIndex === 0 ? { width: "120px" } : {}),
+                // }}
+              >
+                {/* {stepIndex === 0 ? "Assign Trainer" : "Update"} */}
+                Assign Trainer
+              </button>
+            )}
+          </>
+          {/* )} */}
 
-          {stepIndex < 1 && (
+          {/* {stepIndex < 1 && (
             <Button
               onClick={() => {
                 setStepIndex(stepIndex + 1);
@@ -1485,7 +1486,7 @@ export default function AssignTrainerToCustomer({
             >
               Next
             </Button>
-          )}
+          )} */}
         </div>
       </div>
 
