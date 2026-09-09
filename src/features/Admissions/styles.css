@@ -1,9 +1,42 @@
-.admissions_overall_heading {
-  color: #333;
-  font-size: 14.5px !important;
+.admissions_overall_header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+
+.admissions_overall_indicator {
+  width: 4px;
+  height: 24px;
+  border-radius: 4px;
+  background: #5b69ca;
+}
+
+.admissions_overall_content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admissions_overall_label {
+  color: #252525;
+  font-size: 16px !important;
   font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 12px !important;
+  letter-spacing: 0.1px;
+}
+
+.admissions_overall_count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: #e7e9f7;
+  color: #5b69ca;
+  font-size: 14px;
+  font-weight: 700;
 }
 .admissions_progress_container {
   width: 55%;

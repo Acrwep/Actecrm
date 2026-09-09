@@ -273,722 +273,779 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
     }
   };
 
-  const items = customerHistory.map((item) => ({
-    key: item.id,
-    dot:
-      item.status.includes("Google verified") ||
-      item.status.includes("Google Review Verified") ||
-      item.status.includes("Linkedin verified") ||
-      item.status.includes("Linkedin verified") ? (
-        <PiSealCheckFill size={17} />
-      ) : item.status.includes("Reverted") ? (
-        <SlActionUndo size={16} style={{ color: "gray" }} />
-      ) : item.status.includes("Verified") ||
-        item.status.includes("Form Submitted") ||
-        item.status.includes("Class Completion Acknowledged") ||
-        item.status.includes("Down") ||
-        item.status.includes("Paid") ||
-        item.status.includes("Assigned") ||
-        item.status.includes("Claim") ||
-        item.status.includes("Added") ||
-        item.status.includes("Completed") ||
-        item.status.includes("Approved") ||
-        item.status.includes("created") ||
-        item.status.includes("Generated") ||
-        item.status.includes("Scheduled") ? (
-        <LuCircleCheck size={16} style={{ color: "green" }} />
-      ) : item.status.includes("Going") || item.status.includes("Updated") ? (
-        <GrUpdate size={14} style={{ color: "gray" }} />
-      ) : item.status.includes("Hold") ? (
-        <BsStopCircle size={16} style={{ color: "#ffa502" }} />
-      ) : item.status.includes("Escalated") ||
-        item.status.includes("Partially") ||
-        item.status.includes("Demo") ||
-        item.status.includes("Discontinued") ? (
-        <IoBan size={16} style={{ color: "#d32f2f" }} />
-      ) : item.status.includes("Refund") ? (
-        <RiRefund2Fill style={{ color: "#d32f2f" }} />
-      ) : item.status.includes("Rejected") ? (
-        <FaRegCircleXmark style={{ color: "#d32f2f" }} />
-      ) : item.status.includes("Awaiting") ||
-        item.status.includes("Passedout") ? (
-        <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
-      ) : item.status.includes("Class Completion Acknowledgement Sent") ||
-        item.status.includes("Class Completion Acknowledgeme") ||
-        item.status.includes("Trainer Payment Claim Form Sent") ? (
-        <LuSend size={16} style={{ color: "gray" }} />
-      ) : undefined,
-    label: (
-      <span
-        style={{
-          whiteSpace: "nowrap",
-          textWrap: "auto",
-          fontSize: "12.5px",
-          textTransform: "capitalize",
-        }}
-      >
-        {item.status}
-      </span>
-    ),
-    children: (
-      <>
-        {item.status == "Form Submitted" ||
-        item.status == "Class Completion Acknowledged" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>Customer</span>
-            </p>
-          </div>
-        ) : item.status == "Trainer Payment Claim Submitted" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>Trainer</span>
-            </p>
-          </div>
-        ) : item.status === "Payment Verified" ||
-          item.status === "Part Payment Verified" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <button
-              className="customer_history_viewproofbutton"
-              style={{ marginTop: "12px" }}
-              onClick={() => {
-                handleViewIncoice(item?.details?.transaction_id ?? "0");
-              }}
-            >
-              <FaRegEye size={16} /> View Payment Invoice
-            </button>
-          </div>
-        ) : item.status === "Student Verified" &&
-          (!item.details || typeof item.details?.comments === "string") ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
+  const firstHistoryItemDate =
+    customerHistory.length > 0
+      ? moment(customerHistory[customerHistory.length - 1].status_date)
+      : null;
 
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={5}>
-                <p className="customer_history_comments">Comments: </p>
-              </Col>
-              <Col span={18}>
-                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
-                  {item.details.comments}
-                </p>
-              </Col>
-            </Row>
-            <button
-              className="customer_history_viewproofbutton"
-              style={{ marginTop: "12px" }}
-              onClick={() => {
-                getImageTypeFromBase64(item.details.proof_communication);
-                setProofScreenshotBase64(item.details.proof_communication);
-                setIsOpenProofViewModal(true);
-              }}
-            >
-              <FaRegEye size={16} /> View Proof Screenshot
-            </button>
-          </div>
-        ) : (item.status === "Trainer Assigned" ||
-            item.status === "Trainer Updated" ||
-            item.status === "Trainer Re-Assigned") &&
-          (!item.details || typeof item.details?.comments === "string") ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Trainer Name
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.trainer_name
-                        ? item.details.trainer_name
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
+  const items = customerHistory.map((item, index) => {
+    let daysTaken = "-";
+    if (firstHistoryItemDate) {
+      if (customerHistory.length === 1) {
+        daysTaken = "0 Days";
+      } else {
+        const diff = Math.max(
+          0,
+          moment(item.status_date).diff(firstHistoryItemDate, "days"),
+        );
+        daysTaken = diff === 1 ? "1 Day" : `${diff} Days`;
+      }
+    }
 
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Mode Of Training
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.mode_of_class}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">Comments</p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.comments}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">Commercial</p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {"₹" + item.details.commercial}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Trainer Type
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.trainer_type}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={24}>
-                    <button
-                      className="customer_history_viewproofbutton"
-                      onClick={() => {
-                        getImageTypeFromBase64(
-                          item.details.proof_communication,
-                        );
-                        setProofScreenshotBase64(
-                          item.details.proof_communication,
-                        );
-                        setIsOpenProofViewModal(true);
-                      }}
-                    >
-                      <FaRegEye size={16} /> View Proof Screenshot
-                    </button>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </div>
-        ) : item.status === "Trainer Rejected" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Trainer Name
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details?.trainer_name || "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Commercial%
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p
-                      className="customer_history_details_text"
-                      style={{
-                        color:
-                          item.details &&
-                          item.details.trainer_commercial_percentage !== null
-                            ? item.details.trainer_commercial_percentage < 18
-                              ? "#3c9111" // green
-                              : item.details.trainer_commercial_percentage >
-                                    19 &&
-                                  item.details.trainer_commercial_percentage <=
-                                    22
-                                ? "#ffa502" // orange
-                                : item.details.trainer_commercial_percentage >
-                                    22
-                                  ? "#d32f2f" // red
-                                  : "inherit"
-                            : "inherit", // fallback color if null
-                        fontWeight: 500,
-                      }}
-                    >
-                      {item.details.trainer_commercial_percentage + "%"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Trainer Type
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.trainer_type}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">Commercial</p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {"₹" + item.details.trainer_commercial}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Mode Of Training
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.mode_of_class}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <p className="customer_history_details_label">
-                      Rejection Reason
-                    </p>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customer_history_details_text">
-                      {item.details.rejected_reason}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </div>
-        ) : item.status === "Class Scheduled" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <div style={{ display: "flex", gap: "6px" }}>
-              <p className="customer_history_comments">Schedule Date:</p>
-              <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
-                {moment(item.details.class_start_date).format("DD/MM/YYYY")}
+    return {
+      key: item.id,
+      dot:
+        item.status.includes("Google verified") ||
+        item.status.includes("Google Review Verified") ||
+        item.status.includes("Linkedin verified") ||
+        item.status.includes("Linkedin verified") ? (
+          <PiSealCheckFill size={17} />
+        ) : item.status.includes("Reverted") ? (
+          <SlActionUndo size={16} style={{ color: "gray" }} />
+        ) : item.status.includes("Verified") ||
+          item.status.includes("Form Submitted") ||
+          item.status.includes("Class Completion Acknowledged") ||
+          item.status.includes("Down") ||
+          item.status.includes("Paid") ||
+          item.status.includes("Assigned") ||
+          item.status.includes("Claim") ||
+          item.status.includes("Added") ||
+          item.status.includes("Completed") ||
+          item.status.includes("Approved") ||
+          item.status.includes("created") ||
+          item.status.includes("Generated") ||
+          item.status.includes("Scheduled") ? (
+          <LuCircleCheck size={16} style={{ color: "green" }} />
+        ) : item.status.includes("Going") || item.status.includes("Updated") ? (
+          <GrUpdate size={14} style={{ color: "gray" }} />
+        ) : item.status.includes("Hold") ? (
+          <BsStopCircle size={16} style={{ color: "#ffa502" }} />
+        ) : item.status.includes("Escalated") ||
+          item.status.includes("Partially") ||
+          item.status.includes("Demo") ||
+          item.status.includes("Discontinued") ? (
+          <IoBan size={16} style={{ color: "#d32f2f" }} />
+        ) : item.status.includes("Refund") ? (
+          <RiRefund2Fill style={{ color: "#d32f2f" }} />
+        ) : item.status.includes("Rejected") ? (
+          <FaRegCircleXmark style={{ color: "#d32f2f" }} />
+        ) : item.status.includes("Awaiting") ||
+          item.status.includes("Passedout") ? (
+          <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
+        ) : item.status.includes("Class Completion Acknowledgement Sent") ||
+          item.status.includes("Class Completion Acknowledgeme") ||
+          item.status.includes("Trainer Payment Claim Form Sent") ? (
+          <LuSend size={16} style={{ color: "gray" }} />
+        ) : undefined,
+      label: (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "8px",
+          }}
+        >
+          <span
+            style={{
+              whiteSpace: "nowrap",
+              textWrap: "auto",
+              fontSize: "12.5px",
+              textTransform: "capitalize",
+            }}
+          >
+            {item.status}
+          </span>
+          <span
+            style={{
+              fontSize: "10px",
+              color: "#5b69ca",
+              backgroundColor: "#5b69ca1a",
+              padding: "2px 6px",
+              borderRadius: "10px",
+              border: "1px solid #5b69ca1a",
+              fontWeight: 600,
+              lineHeight: 1,
+            }}
+          >
+            {daysTaken}
+          </span>
+        </div>
+      ),
+      children: (
+        <>
+          {item.status == "Form Submitted" ||
+          item.status == "Class Completion Acknowledged" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>Customer</span>
               </p>
             </div>
-          </div>
-        ) : item.status === "Class Going" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <div style={{ display: "flex", gap: "6px" }}>
-              <p className="customer_history_comments">Class Going:</p>
-              <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
-                {item.details
-                  ? item.details.class_going_percentage
-                    ? item.details.class_going_percentage + "%"
-                    : "0%"
-                  : "0%"}
+          ) : item.status == "Trainer Payment Claim Submitted" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>Trainer</span>
               </p>
             </div>
-          </div>
-        ) : item.status === "Hold" ||
-          item.status === "Trainer Approval Rejected" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-              :
-            </p>
-            <div style={{ display: "flex", gap: "6px" }}>
-              <p className="customer_history_comments">
-                {item.status === "Hold" ? "Comments:" : "Rejected Reason:"}
+          ) : item.status === "Payment Verified" ||
+            item.status === "Part Payment Verified" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
               </p>
-              <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
-                {item.details && item.details.comments
-                  ? item.details.comments
-                  : item.details.rejected_reason
-                    ? item.details.rejected_reason
-                    : "-"}
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
               </p>
-            </div>
-          </div>
-        ) : item.status === "Class Completed" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <div style={{ display: "flex", gap: "6px" }}>
-              <p className="customer_history_comments">100% Class Completed</p>
-            </div>
-          </div>
-        ) : item.status === "Escalated" ||
-          item.status === "Partially Closed" ||
-          item.status === "Discontinued" ||
-          item.status === "Refund" ||
-          item.status === "Videos Given" ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={5}>
-                <p className="customer_history_comments">Comments: </p>
-              </Col>
-              <Col span={18}>
-                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
-                  {item.details.comments}
-                </p>
-              </Col>
-            </Row>
-            <button
-              className="customer_history_viewproofbutton"
-              style={{ marginTop: "12px" }}
-              onClick={() => {
-                getImageTypeFromBase64(item.details.attachment);
-                setProofScreenshotBase64(item.details.attachment);
-                setIsOpenProofViewModal(true);
-              }}
-            >
-              <FaRegEye size={16} /> View Attachment
-            </button>
-          </div>
-        ) : (item.status === "Customer Details Updated" ||
-            item.status === "Welcome Call Details Updated" ||
-            item.status === "Requirement Verification Details Updated" ||
-            item.status === "Trainer Fixation Details Updated" ||
-            item.status === "Trainer Coordination Details Updated" ||
-            item.status === "Certificate Updated" ||
-            item.status === "Certificate Generated" ||
-            item.status === "Google Review Added" ||
-            item.status === "Linkedin Review Added" ||
-            item.status === "Student Verified" ||
-            item.status === "Trainer Assigned" ||
-            item.status === "Trainer Updated" ||
-            item.status === "Trainer Re-Assigned") &&
-          item.details ? (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            {(() => {
-              const isLegacy = Object.values(item.details).every(
-                (val) => typeof val === "string",
-              );
-              if (isLegacy) {
-                return Object.keys(item.details).map((key) => {
-                  const detail = item.details[key];
-                  if (
-                    key === "google_review" ||
-                    key === "linkedin_review" ||
-                    key === "attachment"
-                  ) {
-                    return (
-                      <button
-                        key={key}
-                        className="customer_history_viewproofbutton"
-                        style={{ marginTop: "12px" }}
-                        onClick={() => {
-                          getImageTypeFromBase64(detail);
-                          setProofScreenshotBase64(detail);
-                          setIsOpenProofViewModal(true);
-                        }}
-                      >
-                        <FaRegEye size={16} /> View{" "}
-                        {key
-                          .split("_")
-                          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                          .join(" ")}
-                      </button>
-                    );
-                  }
-                  return null;
-                });
-              }
-
-              return (
-                <div
-                  style={{
-                    marginTop: "12px",
-                    border: "1px solid #f0f0f0",
-                    padding: "8px 10px 10px 10px",
-                    borderRadius: "6px",
-                    backgroundColor: "#fafafa",
-                  }}
-                >
-                  <p
-                    style={{
-                      fontWeight: 500,
-                      fontSize: "12px",
-                      marginBottom: "8px",
-                      borderBottom: "1px solid #e0e0e0",
-                      paddingBottom: "4px",
-                    }}
-                  >
-                    Changes Made:
-                  </p>
-                  {Object.keys(item.details).map((key) => {
-                    const detail = item.details[key];
-                    return (
-                      <div
-                        key={key}
-                        style={{
-                          marginTop: "6px",
-                          fontSize: "12px",
-                          display: "flex",
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontWeight: 600,
-                            textTransform: "capitalize",
-                            minWidth: "120px",
-                          }}
-                        >
-                          {key.replace(/_/g, " ")}:
-                        </span>
-                        {key === "profile_image" ||
-                        key === "signature_image" ||
-                        key === "google_review" ||
-                        key === "linkedin_review" ||
-                        key === "proof_communication" ? (
-                          <>
-                            {detail.previous_value ? (
-                              <img
-                                src={
-                                  detail.previous_value.startsWith("data:") ||
-                                  detail.previous_value.startsWith("http")
-                                    ? detail.previous_value
-                                    : `data:image/png;base64,${detail.previous_value}`
-                                }
-                                alt="Previous"
-                                style={{
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius:
-                                    key === "profile_image" ? "50%" : "4px",
-                                  objectFit: "cover",
-                                  cursor: "pointer",
-                                }}
-                                onClick={() => {
-                                  setPreviewImage(
-                                    detail.previous_value.startsWith("data:") ||
-                                      detail.previous_value.startsWith("http")
-                                      ? detail.previous_value
-                                      : `data:image/png;base64,${detail.previous_value}`,
-                                  );
-                                  setPreviewOpen(true);
-                                }}
-                              />
-                            ) : (
-                              <span style={{ color: "#d9363e" }}>Empty</span>
-                            )}
-                            <span style={{ color: "gray", fontSize: "10px" }}>
-                              ➔
-                            </span>
-                            {detail.new_value ? (
-                              <img
-                                src={
-                                  detail.new_value.startsWith("data:") ||
-                                  detail.new_value.startsWith("http")
-                                    ? detail.new_value
-                                    : `data:image/png;base64,${detail.new_value}`
-                                }
-                                alt="New"
-                                style={{
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius:
-                                    key === "profile_image" ? "50%" : "4px",
-                                  objectFit: "cover",
-                                  cursor: "pointer",
-                                }}
-                                onClick={() => {
-                                  setPreviewImage(
-                                    detail.new_value.startsWith("data:") ||
-                                      detail.new_value.startsWith("http")
-                                      ? detail.new_value
-                                      : `data:image/png;base64,${detail.new_value}`,
-                                  );
-                                  setPreviewOpen(true);
-                                }}
-                              />
-                            ) : (
-                              <span
-                                style={{ color: "#52c41a", fontWeight: 500 }}
-                              >
-                                Empty
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <span style={{ color: "#d9363e" }}>
-                              {detail.previous_value || "Empty"}
-                            </span>
-                            <span style={{ color: "gray", fontSize: "10px" }}>
-                              ➔
-                            </span>
-                            <span style={{ color: "#52c41a", fontWeight: 500 }}>
-                              {detail.new_value || "Empty"}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-          </div>
-        ) : (
-          <div>
-            <p className="customer_history_updateddate">
-              {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
-            </p>
-            <p className="customer_history_updateddate">
-              Updated By:{"  "}
-              <span style={{ color: "gray" }}>
-                {item?.updated_by_id
-                  ? `${item.updated_by_id} - ${item.updated_by}`
-                  : ""}
-              </span>
-            </p>
-            {(item.status === "Certificate Generated" ||
-              item.status === "Certificate Updated") && (
               <button
                 className="customer_history_viewproofbutton"
                 style={{ marginTop: "12px" }}
                 onClick={() => {
-                  handleViewCert();
+                  handleViewIncoice(item?.details?.transaction_id ?? "0");
                 }}
               >
-                <FaRegEye size={16} /> View Certificate
+                <FaRegEye size={16} /> View Payment Invoice
               </button>
-            )}
-          </div>
-        )}
-      </>
-    ),
-  }));
+            </div>
+          ) : item.status === "Student Verified" &&
+            (!item.details || typeof item.details?.comments === "string") ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={5}>
+                  <p className="customer_history_comments">Comments: </p>
+                </Col>
+                <Col span={18}>
+                  <p
+                    style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}
+                  >
+                    {item.details.comments}
+                  </p>
+                </Col>
+              </Row>
+              <button
+                className="customer_history_viewproofbutton"
+                style={{ marginTop: "12px" }}
+                onClick={() => {
+                  getImageTypeFromBase64(item.details.proof_communication);
+                  setProofScreenshotBase64(item.details.proof_communication);
+                  setIsOpenProofViewModal(true);
+                }}
+              >
+                <FaRegEye size={16} /> View Proof Screenshot
+              </button>
+            </div>
+          ) : (item.status === "Trainer Assigned" ||
+              item.status === "Trainer Updated" ||
+              item.status === "Trainer Re-Assigned") &&
+            (!item.details || typeof item.details?.comments === "string") ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Trainer Name
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.trainer_name
+                          ? item.details.trainer_name
+                          : "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Mode Of Training
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.mode_of_class}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">Comments</p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.comments}
+                      </p>
+                    </Col>
+                  </Row>
+                </Col>
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Commercial
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {"₹" + item.details.commercial}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Trainer Type
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.trainer_type}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={24}>
+                      <button
+                        className="customer_history_viewproofbutton"
+                        onClick={() => {
+                          getImageTypeFromBase64(
+                            item.details.proof_communication,
+                          );
+                          setProofScreenshotBase64(
+                            item.details.proof_communication,
+                          );
+                          setIsOpenProofViewModal(true);
+                        }}
+                      >
+                        <FaRegEye size={16} /> View Proof Screenshot
+                      </button>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </div>
+          ) : item.status === "Trainer Rejected" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Trainer Name
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details?.trainer_name || "-"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Commercial%
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="customer_history_details_text"
+                        style={{
+                          color:
+                            item.details &&
+                            item.details.trainer_commercial_percentage !== null
+                              ? item.details.trainer_commercial_percentage < 18
+                                ? "#3c9111" // green
+                                : item.details.trainer_commercial_percentage >
+                                      19 &&
+                                    item.details
+                                      .trainer_commercial_percentage <= 22
+                                  ? "#ffa502" // orange
+                                  : item.details.trainer_commercial_percentage >
+                                      22
+                                    ? "#d32f2f" // red
+                                    : "inherit"
+                              : "inherit", // fallback color if null
+                          fontWeight: 500,
+                        }}
+                      >
+                        {item.details.trainer_commercial_percentage + "%"}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Trainer Type
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.trainer_type}
+                      </p>
+                    </Col>
+                  </Row>
+                </Col>
+
+                <Col span={12}>
+                  <Row>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Commercial
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {"₹" + item.details.trainer_commercial}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Mode Of Training
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.mode_of_class}
+                      </p>
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "12px" }}>
+                    <Col span={12}>
+                      <p className="customer_history_details_label">
+                        Rejection Reason
+                      </p>
+                    </Col>
+                    <Col span={12}>
+                      <p className="customer_history_details_text">
+                        {item.details.rejected_reason}
+                      </p>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </div>
+          ) : item.status === "Class Scheduled" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p className="customer_history_comments">Schedule Date:</p>
+                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+                  {moment(item.details.class_start_date).format("DD/MM/YYYY")}
+                </p>
+              </div>
+            </div>
+          ) : item.status === "Class Going" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p className="customer_history_comments">Class Going:</p>
+                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+                  {item.details
+                    ? item.details.class_going_percentage
+                      ? item.details.class_going_percentage + "%"
+                      : "0%"
+                    : "0%"}
+                </p>
+              </div>
+            </div>
+          ) : item.status === "Hold" ||
+            item.status === "Trainer Approval Rejected" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+                :
+              </p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p className="customer_history_comments">
+                  {item.status === "Hold" ? "Comments:" : "Rejected Reason:"}
+                </p>
+                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+                  {item.details && item.details.comments
+                    ? item.details.comments
+                    : item.details.rejected_reason
+                      ? item.details.rejected_reason
+                      : "-"}
+                </p>
+              </div>
+            </div>
+          ) : item.status === "Class Completed" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <p className="customer_history_comments">
+                  100% Class Completed
+                </p>
+              </div>
+            </div>
+          ) : item.status === "Escalated" ||
+            item.status === "Partially Closed" ||
+            item.status === "Discontinued" ||
+            item.status === "Refund" ||
+            item.status === "Videos Given" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              <Row style={{ marginTop: "12px" }}>
+                <Col span={5}>
+                  <p className="customer_history_comments">Comments: </p>
+                </Col>
+                <Col span={18}>
+                  <p
+                    style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}
+                  >
+                    {item.details.comments}
+                  </p>
+                </Col>
+              </Row>
+              <button
+                className="customer_history_viewproofbutton"
+                style={{ marginTop: "12px" }}
+                onClick={() => {
+                  getImageTypeFromBase64(item.details.attachment);
+                  setProofScreenshotBase64(item.details.attachment);
+                  setIsOpenProofViewModal(true);
+                }}
+              >
+                <FaRegEye size={16} /> View Attachment
+              </button>
+            </div>
+          ) : (item.status === "Customer Details Updated" ||
+              item.status === "Welcome Call Details Updated" ||
+              item.status === "Requirement Verification Details Updated" ||
+              item.status === "Trainer Fixation Details Updated" ||
+              item.status === "Trainer Coordination Details Updated" ||
+              item.status === "Certificate Updated" ||
+              item.status === "Certificate Generated" ||
+              item.status === "Google Review Added" ||
+              item.status === "Linkedin Review Added" ||
+              item.status === "Student Verified" ||
+              item.status === "Trainer Assigned" ||
+              item.status === "Trainer Updated" ||
+              item.status === "Trainer Re-Assigned") &&
+            item.details ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              {(() => {
+                const isLegacy = Object.values(item.details).every(
+                  (val) => typeof val === "string",
+                );
+                if (isLegacy) {
+                  return Object.keys(item.details).map((key) => {
+                    const detail = item.details[key];
+                    if (
+                      key === "google_review" ||
+                      key === "linkedin_review" ||
+                      key === "attachment"
+                    ) {
+                      return (
+                        <button
+                          key={key}
+                          className="customer_history_viewproofbutton"
+                          style={{ marginTop: "12px" }}
+                          onClick={() => {
+                            getImageTypeFromBase64(detail);
+                            setProofScreenshotBase64(detail);
+                            setIsOpenProofViewModal(true);
+                          }}
+                        >
+                          <FaRegEye size={16} /> View{" "}
+                          {key
+                            .split("_")
+                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(" ")}
+                        </button>
+                      );
+                    }
+                    return null;
+                  });
+                }
+
+                return (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      border: "1px solid #f0f0f0",
+                      padding: "8px 10px 10px 10px",
+                      borderRadius: "6px",
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: 500,
+                        fontSize: "12px",
+                        marginBottom: "8px",
+                        borderBottom: "1px solid #e0e0e0",
+                        paddingBottom: "4px",
+                      }}
+                    >
+                      Changes Made:
+                    </p>
+                    {Object.keys(item.details).map((key) => {
+                      const detail = item.details[key];
+                      return (
+                        <div
+                          key={key}
+                          style={{
+                            marginTop: "6px",
+                            fontSize: "12px",
+                            display: "flex",
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              textTransform: "capitalize",
+                              minWidth: "120px",
+                            }}
+                          >
+                            {key.replace(/_/g, " ")}:
+                          </span>
+                          {key === "profile_image" ||
+                          key === "signature_image" ||
+                          key === "google_review" ||
+                          key === "linkedin_review" ||
+                          key === "proof_communication" ? (
+                            <>
+                              {detail.previous_value ? (
+                                <img
+                                  src={
+                                    detail.previous_value.startsWith("data:") ||
+                                    detail.previous_value.startsWith("http")
+                                      ? detail.previous_value
+                                      : `data:image/png;base64,${detail.previous_value}`
+                                  }
+                                  alt="Previous"
+                                  style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius:
+                                      key === "profile_image" ? "50%" : "4px",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {
+                                    setPreviewImage(
+                                      detail.previous_value.startsWith(
+                                        "data:",
+                                      ) ||
+                                        detail.previous_value.startsWith("http")
+                                        ? detail.previous_value
+                                        : `data:image/png;base64,${detail.previous_value}`,
+                                    );
+                                    setPreviewOpen(true);
+                                  }}
+                                />
+                              ) : (
+                                <span style={{ color: "#d9363e" }}>Empty</span>
+                              )}
+                              <span style={{ color: "gray", fontSize: "10px" }}>
+                                ➔
+                              </span>
+                              {detail.new_value ? (
+                                <img
+                                  src={
+                                    detail.new_value.startsWith("data:") ||
+                                    detail.new_value.startsWith("http")
+                                      ? detail.new_value
+                                      : `data:image/png;base64,${detail.new_value}`
+                                  }
+                                  alt="New"
+                                  style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius:
+                                      key === "profile_image" ? "50%" : "4px",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() => {
+                                    setPreviewImage(
+                                      detail.new_value.startsWith("data:") ||
+                                        detail.new_value.startsWith("http")
+                                        ? detail.new_value
+                                        : `data:image/png;base64,${detail.new_value}`,
+                                    );
+                                    setPreviewOpen(true);
+                                  }}
+                                />
+                              ) : (
+                                <span
+                                  style={{ color: "#52c41a", fontWeight: 500 }}
+                                >
+                                  Empty
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ color: "#d9363e" }}>
+                                {detail.previous_value || "Empty"}
+                              </span>
+                              <span style={{ color: "gray", fontSize: "10px" }}>
+                                ➔
+                              </span>
+                              <span
+                                style={{ color: "#52c41a", fontWeight: 500 }}
+                              >
+                                {detail.new_value || "Empty"}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          ) : (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>
+                  {item?.updated_by_id
+                    ? `${item.updated_by_id} - ${item.updated_by}`
+                    : ""}
+                </span>
+              </p>
+              {(item.status === "Certificate Generated" ||
+                item.status === "Certificate Updated") && (
+                <button
+                  className="customer_history_viewproofbutton"
+                  style={{ marginTop: "12px" }}
+                  onClick={() => {
+                    handleViewCert();
+                  }}
+                >
+                  <FaRegEye size={16} /> View Certificate
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      ),
+    };
+  });
 
   return (
     <Drawer

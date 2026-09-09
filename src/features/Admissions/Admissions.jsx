@@ -1078,14 +1078,20 @@ export default function Admissions() {
 
   return (
     <div>
-      <p className="admissions_overall_heading">
-        OverAll{" "}
-        {`( ${
-          (allAdmissionsRegionCounts?.hub_region ?? 0) +
-          (allAdmissionsRegionCounts?.chennai_region ?? 0) +
-          (allAdmissionsRegionCounts?.bangalore_region ?? 0)
-        } )`}
-      </p>
+      <div className="admissions_overall_header">
+        <div className="admissions_overall_indicator"></div>
+
+        <div className="admissions_overall_content">
+          <span className="admissions_overall_label">OverAll</span>
+
+          <span className="admissions_overall_count">
+            {(allAdmissionsRegionCounts?.hub_region ?? 0) +
+              (allAdmissionsRegionCounts?.chennai_region ?? 0) +
+              (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
+          </span>
+        </div>
+      </div>
+
       <Row align="middle">
         <Col
           xs={24}
