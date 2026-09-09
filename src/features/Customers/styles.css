@@ -2185,3 +2185,34 @@
     gap: 80px;
   }
 }
+.customers_verify_trainer_label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.customers_verify_trainer_text {
+  position: relative;
+  display: inline-block;
+}
+
+.customers_rm_label {
+  position: absolute;
+  top: -1px;
+  right: -27px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.customers_verify_trainer_count {
+  margin-left: 30px;
+}
+
+.customers_cfo_label {
+  position: absolute;
+  top: -1px;
+  right: -33px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}

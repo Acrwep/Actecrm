@@ -3109,9 +3109,10 @@ export default function TrainerPayment() {
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1 1 0%">
               <CommonCustomerSingleSelectField
-                label="Trainer"
-                height="30px"
+                label="Select Trainer"
+                height="33px"
                 labelMarginTop="0px"
+                labelFontSize={"11px"}
                 required={false}
                 options={mergedTrainersList}
                 value={selectedTrainerId}

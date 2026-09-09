@@ -894,7 +894,9 @@ const ClassSchedule = forwardRef(
                     error={scheduleIdError}
                     disabled={
                       stepIndex == 1 &&
-                      customerDetails?.status === "Class Going"
+                      (customerDetails?.status === "Class Going" ||
+                        customerDetails?.status === "Passedout process" ||
+                        customerDetails?.status === "Completed")
                     }
                   />
                 </div>
@@ -1076,7 +1078,10 @@ const ClassSchedule = forwardRef(
                 </Button>
               )}
 
-              {stepIndex == 1 && customerDetails?.status === "Class Going" ? (
+              {stepIndex == 1 &&
+              (customerDetails?.status === "Class Going" ||
+                customerDetails?.status === "Passedout process" ||
+                customerDetails?.status === "Completed") ? (
                 ""
               ) : (
                 <>

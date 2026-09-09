@@ -67,7 +67,7 @@ export default function CommonCustomerSingleSelectField({
             fontFamily: "Poppins, sans-serif",
           },
           "& .MuiOutlinedInput-root": {
-            minHeight: height || "36px",
+            height: height || "36px",
           },
         }}
       >

@@ -1162,6 +1162,7 @@ export default function Customers() {
                             display: "flex",
                             alignItems: "center",
                             marginTop: "3px",
+                            marginBottom: "8px",
                           }}
                         >
                           <button
@@ -3290,9 +3291,9 @@ export default function Customers() {
                         Payment Verify{" "}
                         {`(  ${
                           customerStatusCount &&
-                          customerStatusCount.awaiting_verify !== undefined &&
-                          customerStatusCount.awaiting_verify !== null
-                            ? customerStatusCount.awaiting_verify
+                          customerStatusCount.awaiting_finance !== undefined &&
+                          customerStatusCount.awaiting_finance !== null
+                            ? customerStatusCount.awaiting_finance
                             : "-"
                         }
  )`}
@@ -4046,16 +4047,15 @@ export default function Customers() {
               );
             }}
           >
-            <p>
-              Verify Trainer{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_trainer_verify !== undefined &&
-                customerStatusCount.awaiting_trainer_verify !== null
-                  ? customerStatusCount.awaiting_trainer_verify
-                  : "-"
-              }
- )`}
+            <p className="customers_verify_trainer_label">
+              <span className="customers_verify_trainer_text">
+                Verify Trainer
+                <span className="customers_rm_label">(RM)</span>
+              </span>
+
+              <span className="customers_verify_trainer_count">
+                {`( ${customerStatusCount?.awaiting_trainer_verify ?? "-"} )`}
+              </span>
             </p>
           </div>
 
@@ -4136,16 +4136,15 @@ export default function Customers() {
               );
             }}
           >
-            <p>
-              Approval Rejected{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.approval_rejected !== undefined &&
-                customerStatusCount.approval_rejected !== null
-                  ? customerStatusCount.approval_rejected
-                  : "-"
-              }
- )`}
+            <p className="customers_verify_trainer_label">
+              <span className="customers_verify_trainer_text">
+                Approval Rejected
+                <span className="customers_cfo_label">(CFO)</span>
+              </span>
+
+              <span style={{ marginLeft: "36px" }}>
+                {`( ${customerStatusCount?.approval_rejected ?? "-"} )`}
+              </span>
             </p>
           </div>
         </Row>
