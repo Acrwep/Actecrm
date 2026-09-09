@@ -832,7 +832,7 @@ export default function FeeHistory({
               >
                 {/* Search Input */}
                 <CommonOutlinedInput
-                  label={"Search..."}
+                  label={"Candidate Search..."}
                   width="100%"
                   height="33px"
                   labelFontSize="11px"

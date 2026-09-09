@@ -1207,7 +1207,6 @@ export default function AssignTrainerToCustomer({
                     error={selectedTrainerIdError}
                     disableClearable={false}
                     showLabelStatus="Name"
-                    disabled={trainerHistory.length >= 1}
                   />
                 </div>
 
@@ -1247,7 +1246,6 @@ export default function AssignTrainerToCustomer({
                   }
                 }}
                 icon={<LuIndianRupee size={16} />}
-                disabled={trainerHistory.length >= 1}
               />
             </Col>
           </Row>
@@ -1264,7 +1262,6 @@ export default function AssignTrainerToCustomer({
                 }}
                 value={modeOfClass}
                 error={modeOfClassError}
-                disabled={trainerHistory.length >= 1}
               />
             </Col>
             <Col span={12}>
@@ -1291,7 +1288,6 @@ export default function AssignTrainerToCustomer({
                   }}
                   value={assignTrainerComments}
                   error={assignTrainerCommentsError}
-                  disabled={trainerHistory.length >= 1}
                 />
               </div>
 
@@ -1309,7 +1305,6 @@ export default function AssignTrainerToCustomer({
                   value={assignTrainerProofBase64}
                   onChange={(base64) => setAssignTrainerProofBase64(base64)}
                   onErrorChange={setAssignTrainerProofError}
-                  disabled={trainerHistory.length >= 1}
                 />
                 {assignTrainerProofError && (
                   <p

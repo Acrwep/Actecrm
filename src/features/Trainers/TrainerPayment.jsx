@@ -3109,7 +3109,7 @@ export default function TrainerPayment() {
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1 1 0%">
               <CommonCustomerSingleSelectField
-                label="Select Trainer"
+                label={"Trainer Search..."}
                 height="33px"
                 labelMarginTop="0px"
                 labelFontSize={"11px"}

@@ -195,7 +195,7 @@ export default function Admissions() {
       title: "Student Id",
       key: "student_id",
       dataIndex: "student_id",
-      width: 100,
+      width: 120,
       group: "General Info",
       render: (text, record) => (
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

@@ -1434,7 +1434,7 @@ export default function Customers() {
               ) : text === "Completed" ? (
                 <div>
                   <Button className="customers_status_completed_button">
-                    {text}
+                    Course Completed
                   </Button>
                 </div>
               ) : text === "Rejected" ||
@@ -1450,11 +1450,11 @@ export default function Customers() {
                 <Button className="trainers_rejected_button">{text}</Button>
               ) : text === "Demo Completed" ? (
                 <Button className="customers_status_classgoing_button">
-                  {text}
+                  Only Demo
                 </Button>
               ) : text === "Videos Given" ? (
                 <Button className="customers_status_videos_given_button">
-                  {text}
+                  Self-Paced
                 </Button>
               ) : text === "Class Going" ? (
                 <div style={{ display: "flex", gap: "12px" }}>
@@ -3749,7 +3749,7 @@ export default function Customers() {
                     }}
                   >
                     <p>
-                      Completed{" "}
+                      Course Completed{" "}
                       {`(  ${
                         customerStatusCount &&
                         customerStatusCount.completed !== undefined &&
@@ -3793,7 +3793,7 @@ export default function Customers() {
                     }}
                   >
                     <p>
-                      Demo Completed{" "}
+                      Only Demo{" "}
                       {`(  ${
                         customerStatusCount &&
                         customerStatusCount.demo_completed !== undefined &&
@@ -3837,7 +3837,7 @@ export default function Customers() {
                     }}
                   >
                     <p>
-                      Videos Given{" "}
+                      Self-Paced{" "}
                       {`(  ${
                         customerStatusCount &&
                         customerStatusCount.videos_given !== undefined &&
@@ -4091,16 +4091,15 @@ export default function Customers() {
               );
             }}
           >
-            <p>
-              Trainer Approval{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.trainer_approval !== undefined &&
-                customerStatusCount.trainer_approval !== null
-                  ? customerStatusCount.trainer_approval
-                  : "-"
-              }
- )`}
+            <p className="customers_verify_trainer_label">
+              <span className="customers_verify_trainer_text">
+                Trainer Approval
+                <span className="customers_cfo_label">(CFO)</span>
+              </span>
+
+              <span style={{ marginLeft: "36px" }}>
+                {`( ${customerStatusCount?.trainer_approval ?? "-"} )`}
+              </span>
             </p>
           </div>
 

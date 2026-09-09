@@ -115,7 +115,7 @@ export default function CommonPayslipViewer({ htmlTemplate, trainerName }) {
         style={{
           width: "794px",
           margin: "0 auto",
-          padding: "40px",
+          padding: "40px 40px 12px 40px",
           boxSizing: "border-box",
           position: "relative",
           backgroundColor: "#ffffff",
@@ -126,7 +126,6 @@ export default function CommonPayslipViewer({ htmlTemplate, trainerName }) {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          marginTop: "16px",
           marginRight: "20px",
         }}
       >

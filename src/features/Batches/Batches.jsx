@@ -10,6 +10,7 @@ import {
   Flex,
   Radio,
 } from "antd";
+import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { RedoOutlined } from "@ant-design/icons";
 import { AiOutlineEdit } from "react-icons/ai";
@@ -45,6 +46,7 @@ export default function Batches() {
   const addBatchRef = useRef();
   const updateBatchCustomersRef = useRef();
   // ----------usestates----------------
+  const [searchValue, setSearchValue] = useState("");
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [branchOptions, setBranchOptions] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
@@ -249,6 +251,7 @@ export default function Batches() {
           null,
           null,
           null,
+          null,
           PreviousAndCurrentDate[0],
           PreviousAndCurrentDate[1],
           true,
@@ -259,6 +262,7 @@ export default function Batches() {
 
   const getBatchesData = async (
     trainerId,
+    customerSearch,
     regionId,
     branchId,
     startDate,
@@ -267,6 +271,7 @@ export default function Batches() {
     setLoading(true);
     const payload = {
       ...(trainerId && { trainer_id: trainerId }),
+      ...(customerSearch && { customer_search_filter: customerSearch }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
       start_date: startDate,
@@ -310,6 +315,7 @@ export default function Batches() {
       });
       getBatchesData(
         selectedId,
+        searchValue,
         selectedRegionId,
         selectedBranchId,
         selectedDates[0],
@@ -322,6 +328,7 @@ export default function Batches() {
       getTrainersData(null, 1);
       getBatchesData(
         null,
+        searchValue,
         selectedRegionId,
         selectedBranchId,
         selectedDates[0],
@@ -376,12 +383,30 @@ export default function Batches() {
     });
   };
 
+  const handleSearch = (e) => {
+    setSearchValue(e.target.value);
+    setTimeout(() => {
+      // setPagination({
+      //   page: 1,
+      // });
+      getBatchesData(
+        selectedTrainerId,
+        e.target.value,
+        selectedRegionId,
+        selectedBranchId,
+        selectedDates[0],
+        selectedDates[1],
+      );
+    }, 300);
+  };
+
   const handleSelectRegionId = (e) => {
     const regionId = e.target.value;
     setSelectedRegionId(regionId);
     getBranchesData(regionId);
     getBatchesData(
       selectedTrainerId,
+      searchValue,
       regionId,
       null,
       selectedDates[0],
@@ -426,10 +451,12 @@ export default function Batches() {
     setSelectedTrainerId(null);
     setSelectedTrainerObject(null);
     setTrainerSearchText("");
+    setSearchValue("");
     setSelectedRegionId(null);
     setSelectedBranchId(null);
     getTrainersData(null, 1);
     getBatchesData(
+      null,
       null,
       null,
       null,
@@ -440,15 +467,16 @@ export default function Batches() {
 
   return (
     <div>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={24} lg={19} xl={19}>
-          <Row gutter={12}>
-            <Col xs={24} sm={12} md={6} lg={5} xl={5}>
+      <Row align="middle">
+        <Col xs={24} sm={24} md={24} lg={20} xxl={18}>
+          <Row gutter={12} align="middle" wrap={false}>
+            {/* Trainer */}
+            <Col flex="0.9 1 0%">
               <CommonCustomerSingleSelectField
-                label="Select Trainer"
-                height="34px"
-                labelFontSize={"11px"}
-                labelMarginTop="0.5px"
+                label="Search Trainer"
+                height="33px"
+                labelFontSize="11px"
+                labelMarginTop="0px"
                 required={false}
                 options={mergedTrainersList}
                 value={selectedTrainerId}
@@ -458,17 +486,63 @@ export default function Batches() {
                 onDropdownOpen={handleTrainerDropdownOpen}
                 onDropdownScroll={handleTrainerScroll}
                 loading={trainerSelectloading}
-                // renderOption={renderTrainerOption}
                 error={selectedTrainerIdError}
                 disableClearable={false}
               />
             </Col>
-            <Col xs={24} sm={12} md={5} lg={5} xl={5}>
+
+            {/* Candidate Search */}
+            <Col flex="0.9 1 0%">
+              <div
+                className="overallduecustomers_filterContainer"
+                style={{ marginBottom: "0px" }}
+              >
+                <CommonOutlinedInput
+                  label="Candidate Search..."
+                  width="100%"
+                  height="33px"
+                  labelFontSize="11px"
+                  icon={
+                    searchValue ? (
+                      <div
+                        className="users_filter_closeIconContainer"
+                        onClick={() => {
+                          setSearchValue("");
+                          getBatchesData(
+                            selectedTrainerId,
+                            null,
+                            selectedRegionId,
+                            selectedBranchId,
+                            selectedDates[0],
+                            selectedDates[1],
+                          );
+                        }}
+                      >
+                        <IoIosClose size={11} />
+                      </div>
+                    ) : (
+                      <CiSearch size={16} />
+                    )
+                  }
+                  labelMarginTop="0px"
+                  style={{
+                    padding: searchValue
+                      ? "0px 26px 0px 0px"
+                      : "0px 8px 0px 0px",
+                  }}
+                  onChange={handleSearch}
+                  value={searchValue}
+                />
+              </div>
+            </Col>
+
+            {/* Region */}
+            <Col flex="0.8 1 0%">
               <CommonSelectField
                 width="100%"
-                height="34px"
+                height="33px"
                 label="Select Region"
-                labelMarginTop="1px"
+                labelMarginTop="0px"
                 labelFontSize="11px"
                 options={regionOptions}
                 onChange={handleSelectRegionId}
@@ -476,11 +550,13 @@ export default function Batches() {
                 disableClearable={false}
               />
             </Col>
-            <Col xs={24} sm={12} md={5} lg={5} xl={5}>
+
+            {/* Branch */}
+            <Col flex="0.8 1 0%">
               <CommonSelectField
                 label="Branch"
-                height="34px"
-                labelMarginTop="1px"
+                height="33px"
+                labelMarginTop="0px"
                 labelFontSize="11px"
                 options={branchOptions}
                 value={selectedBranchId}
@@ -488,27 +564,33 @@ export default function Batches() {
                   setSelectedBranchId(e.target.value);
                   getBatchesData(
                     selectedTrainerId,
+                    searchValue,
                     selectedRegionId,
                     e.target.value,
                     selectedDates[0],
                     selectedDates[1],
                   );
                 }}
-                error={""}
+                error=""
                 disableClearable={false}
                 disabled={!selectedRegionId || selectedRegionId == 3}
               />
             </Col>
-            <Col xs={24} sm={12} md={8} lg={9} xl={9}>
+
+            {/* Date */}
+            <Col flex="1.4 1 0%">
               <CommonMuiCustomDatePicker
+                width="100%"
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
                   setPagination({
                     page: 1,
                   });
+
                   getBatchesData(
                     selectedTrainerId,
+                    searchValue,
                     selectedRegionId,
                     selectedBranchId,
                     dates[0],
@@ -519,12 +601,14 @@ export default function Batches() {
             </Col>
           </Row>
         </Col>
+
+        {/* Buttons */}
         <Col
           xs={24}
           sm={24}
           md={24}
-          lg={5}
-          xl={5}
+          lg={4}
+          xxl={6}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -537,6 +621,7 @@ export default function Batches() {
             onClick={() => {
               setIsOpenAddDrawer(true);
               setIsOpenAddBatchComponent(true);
+
               setTimeout(() => {
                 inputRef.current?.focus();
               }, 0);
@@ -639,6 +724,7 @@ export default function Batches() {
               formReset();
               getBatchesData(
                 selectedTrainerId,
+                searchValue,
                 selectedRegionId,
                 selectedBranchId,
                 selectedDates[0],
@@ -684,6 +770,7 @@ export default function Batches() {
               formReset();
               getBatchesData(
                 selectedTrainerId,
+                searchValue,
                 selectedRegionId,
                 selectedBranchId,
                 selectedDates[0],
