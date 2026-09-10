@@ -123,10 +123,7 @@ export default function RevertTrainerApproval({
       <div className="customer_classcompletemodal_button_container">
         <Button
           className="customer_classcompletemodal_cancelbutton"
-          onClick={() => {
-            setIsOpenApproveModal(false);
-            setSelectedPaymentDetails(null);
-          }}
+          onClick={onCancel}
         >
           No
         </Button>

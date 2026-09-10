@@ -159,6 +159,203 @@ export default function Customers() {
   const [selectedOrigin, setSelectedOrigin] = useState("");
   const [classGoingSubBucketStatus, setClassGoingSubBucketStatus] =
     useState("");
+  //bucket configuration
+  const bucketConfigs = {
+    "Student Onboarding": [
+      {
+        label: "Form Pending",
+        value: "Form Pending",
+        countKey: "form_pending",
+        activeClass: "customers_active_formpending_container",
+        inactiveClass: "customers_formpending_container",
+      },
+
+      // Special Payment Verify / Payment Rejected button
+      {
+        type: "payment",
+      },
+
+      {
+        label: "Student Verify",
+        value: "Awaiting Verify",
+        countKey: "awaiting_verify",
+        activeClass: "customers_active_studentvefity_container",
+        inactiveClass: "customers_studentvefity_container",
+      },
+
+      {
+        label: "Assign Trainer",
+        value: "assign_trainer",
+        countKey: "assign_trainer",
+        activeClass: "customers_active_assigntrainers_container",
+        inactiveClass: "customers_assigntrainers_container",
+
+        onClick: () => {
+          setTrainerSubbucketsStatus("");
+        },
+      },
+    ],
+
+    "Training Coordination": [
+      {
+        label: "Awaiting Class",
+        value: "Awaiting Class",
+        countKey: "awaiting_class",
+        activeClass: "customers_active_awaitingclass_container",
+        inactiveClass: "customers_awaitingclass_container",
+      },
+    ],
+
+    "Progress Monitoring": [
+      {
+        label: "Class Scheduled",
+        value: "Class Scheduled",
+        countKey: "class_scheduled",
+        activeClass: "customers_active_classschedule_container",
+        inactiveClass: "customers_classschedule_container",
+      },
+
+      {
+        label: "Class Going",
+        value: "Class Going",
+        countKey: "class_going",
+        activeClass: "customers_active_classgoing_container",
+        inactiveClass: "customers_classgoing_container",
+
+        onClick: () => {
+          setClassGoingSubBucketStatus("");
+
+          return {
+            classGoingSubBucketStatus: null,
+          };
+        },
+      },
+
+      {
+        label: "Escalated",
+        value: "Escalated",
+        countKey: "escalated",
+        activeClass: "customers_active_escalated_container",
+        inactiveClass: "customers_escalated_container",
+      },
+
+      {
+        label: "Others",
+        value: "Others",
+        countKey: "Others",
+        activeClass: "customers_active_others_container",
+        inactiveClass: "customers_others_container",
+      },
+    ],
+
+    "Course completion": [
+      {
+        label: "Passedout Process",
+        value: "Passedout process",
+        countKey: "passedout_process",
+        activeClass: "customers_active_feedback_container",
+        inactiveClass: "customers_feedback_container",
+      },
+    ],
+
+    "Reviews & Certification": [
+      {
+        label: "Course Completed",
+        value: "Completed",
+        countKey: "completed",
+        activeClass: "customers_active_completed_container",
+        inactiveClass: "customers_completed_container",
+      },
+
+      {
+        label: "Only Demo",
+        value: "Demo Completed",
+        countKey: "demo_completed",
+        activeClass: "customers_active_classgoing_container",
+        inactiveClass: "customers_classgoing_container",
+      },
+
+      {
+        label: "Self-Paced",
+        value: "Videos Given",
+        countKey: "videos_given",
+        activeClass: "trainers_active_stage4_container",
+        inactiveClass: "trainers_stage4_container",
+      },
+    ],
+  };
+  const currentBucketConfigs = bucketConfigs[bucketStatus] || [];
+
+  const trainerSubbucketConfigs = [
+    {
+      label: "Awaiting Trainer",
+      value: "Awaiting Trainer",
+      countKey: "awaiting_trainer",
+      activeClass: "customers_active_awaitingclass_container",
+      inactiveClass: "customers_awaitingclass_container",
+    },
+    {
+      label: "Trainer Rejected",
+      value: "Trainer Rejected",
+      countKey: "trainer_rejected",
+      activeClass: "customers_active_paymentreject_container",
+      inactiveClass: "customers_paymentreject_container",
+    },
+    {
+      label: "Verify Trainer",
+      value: "Awaiting Trainer Verify",
+      countKey: "awaiting_trainer_verify",
+      activeClass: "customers_active_verifytrainers_container",
+      inactiveClass: "customers_verifytrainers_container",
+      role: "RM",
+    },
+    {
+      label: "Trainer Approval",
+      value: "Trainer Approval",
+      countKey: "trainer_approval",
+      activeClass: "customers_active_trainerapproval_container",
+      inactiveClass: "customers_trainerapproval_container",
+      role: "CFO",
+    },
+    {
+      label: "Approval Rejected",
+      value: "Approval Rejected",
+      countKey: "approval_rejected",
+      activeClass: "customers_active_paymentreject_container",
+      inactiveClass: "customers_paymentreject_container",
+      role: "CFO",
+    },
+  ];
+  const classGoingSubbucketConfigs = [
+    {
+      label: "25 & Below",
+      value: "under_25",
+      countKey: "under_25",
+      activeClass: "trainers_active_stage1_container",
+      inactiveClass: "trainers_stage1_container",
+    },
+    {
+      label: "50 & Below",
+      value: "under_50",
+      countKey: "under_50",
+      activeClass: "trainers_active_stage2_container",
+      inactiveClass: "trainers_stage2_container",
+    },
+    {
+      label: "75 & Below",
+      value: "under_75",
+      countKey: "under_75",
+      activeClass: "trainers_active_stage4_container",
+      inactiveClass: "trainers_stage4_container",
+    },
+    {
+      label: "99 & Below",
+      value: "under_99",
+      countKey: "under_99",
+      activeClass: "customers_active_trainer_coordination_container",
+      inactiveClass: "customers_trainer_coordination_container",
+    },
+  ];
   //-------------------------------------------------------------------
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
@@ -1640,7 +1837,7 @@ export default function Customers() {
     }, 300);
 
     setTableColumns(nonChangeColumns);
-  }, [permissions, isSwap, status]);
+  }, [permissions]);
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -1727,30 +1924,30 @@ export default function Customers() {
       setIsSwap(receivedSwapFromNotification);
     }
 
-    getCustomersData(
-      receivedStartDateFromDashboard
+    fetchCustomersData({
+      startDate: receivedStartDateFromDashboard
         ? receivedStartDateFromDashboard
         : PreviousAndCurrentDate[0],
-      receivedEndDateFromDashboard
+      endDate: receivedEndDateFromDashboard
         ? receivedEndDateFromDashboard
         : PreviousAndCurrentDate[1],
-      "Updated",
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      receivedValueFromDashboard
+      dateType: "Updated",
+      search: null,
+      regionId: null,
+      branchId: null,
+      modeOfTraining: null,
+      origin: null,
+      bucketStatus: null,
+      status: receivedValueFromDashboard
         ? receivedValueFromDashboard === "Trainer Rejected"
           ? ["Trainer Rejected"]
           : receivedValueFromDashboard
         : null,
-      null,
-      downliners,
-      1,
-      10,
-    );
+      classGoingSubBucketStatus: null,
+      downliners: downliners,
+      page: 1,
+      limit: 10,
+    });
   };
 
   const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
@@ -1770,6 +1967,38 @@ export default function Customers() {
     } catch (error) {
       console.log("all downlines error", error);
     }
+  };
+
+  const fetchCustomersData = (overrides = {}) => {
+    getCustomersData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.dateType !== undefined ? overrides.dateType : dateFilterType,
+      overrides.search !== undefined ? overrides.search : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.modeOfTraining !== undefined
+        ? overrides.modeOfTraining
+        : modeOfTrainingFilterId,
+      overrides.origin !== undefined ? overrides.origin : selectedOrigin,
+      overrides.bucketStatus !== undefined
+        ? overrides.bucketStatus
+        : bucketStatus,
+      overrides.status !== undefined ? overrides.status : status,
+      overrides.classGoingSubBucketStatus !== undefined
+        ? overrides.classGoingSubBucketStatus
+        : classGoingSubBucketStatus,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.page !== undefined ? overrides.page : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+      overrides.is_generate_certificate !== undefined
+        ? overrides.is_generate_certificate
+        : undefined,
+    );
   };
 
   const getCustomersData = async (
@@ -1978,22 +2207,7 @@ export default function Customers() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getCustomersData(
-      selectedDates[0],
-      selectedDates[1],
-      dateFilterType,
-      searchValue,
-      selectedRegionId,
-      selectedBranchId,
-      modeOfTrainingFilterId,
-      selectedOrigin,
-      bucketStatus,
-      status,
-      classGoingSubBucketStatus,
-      allDownliners,
-      page,
-      limit,
-    );
+    fetchCustomersData({ page: page, limit: limit });
   };
 
   const handleSearch = (e) => {
@@ -2003,22 +2217,7 @@ export default function Customers() {
       page: 1,
     });
     setTimeout(() => {
-      getCustomersData(
-        selectedDates[0],
-        selectedDates[1],
-        dateFilterType,
-        e.target.value,
-        selectedRegionId,
-        selectedBranchId,
-        modeOfTrainingFilterId,
-        selectedOrigin,
-        bucketStatus,
-        status,
-        classGoingSubBucketStatus,
-        allDownliners,
-        1,
-        pagination.limit,
-      );
+      fetchCustomersData({ search: e.target.value, page: 1 });
     }, 300);
   };
 
@@ -2051,22 +2250,7 @@ export default function Customers() {
       setPagination({
         page: 1,
       });
-      getCustomersData(
-        selectedDates[0],
-        selectedDates[1],
-        dateFilterType,
-        searchValue,
-        selectedRegionId,
-        selectedBranchId,
-        modeOfTrainingFilterId,
-        selectedOrigin,
-        bucketStatus,
-        status,
-        classGoingSubBucketStatus,
-        downliners_ids,
-        1,
-        pagination.limit,
-      );
+      fetchCustomersData({ downliners: downliners_ids, page: 1 });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -2122,6 +2306,125 @@ export default function Customers() {
     setIsOpenEditDrawer(true);
   };
 
+  const handleBucketClick = (config) => {
+    // Already selected
+    if (status === config.value) {
+      return;
+    }
+
+    // Run any additional action
+    const extraOverrides = config.onClick?.() || {};
+
+    // API parameters
+    const overrides = {
+      status: config.value,
+      page: 1,
+      ...extraOverrides,
+    };
+
+    // Update selected status
+    setStatus(config.value);
+
+    // Reset pagination
+    setPagination({
+      page: 1,
+    });
+
+    // Fetch customers
+    fetchCustomersData(overrides);
+  };
+
+  // ============================================================
+  // PAYMENT VERIFY / PAYMENT REJECTED CLICK
+  // ============================================================
+
+  const handlePaymentStatusClick = () => {
+    // Don't do anything if already selected
+    if (status === "Awaiting Finance" || status === "Payment Rejected") {
+      return;
+    }
+
+    const newStatus = isSwap ? "Payment Rejected" : "Awaiting Finance";
+
+    setStatus(newStatus);
+
+    setPagination({
+      page: 1,
+    });
+
+    fetchCustomersData({
+      status: newStatus,
+      page: 1,
+    });
+  };
+
+  // ============================================================
+  // PAYMENT SWAP ICON CLICK
+  // ============================================================
+
+  const handlePaymentSwap = (e) => {
+    // Prevent parent div click
+    e.stopPropagation();
+
+    const newSwap = !isSwap;
+
+    const newStatus = newSwap ? "Payment Rejected" : "Awaiting Finance";
+
+    // Update swap state
+    setIsSwap(newSwap);
+
+    // Update status
+    setStatus(newStatus);
+
+    // Reset pagination
+    setPagination({
+      page: 1,
+    });
+
+    // Fetch customers
+    fetchCustomersData({
+      status: newStatus,
+      page: 1,
+    });
+  };
+
+  // Assign Trainer Sub Buckets Handling
+  const handleTrainerSubbucketClick = (config) => {
+    if (trainerSubbucketStatus === config.value) {
+      return;
+    }
+
+    setTrainerSubbucketsStatus(config.value);
+
+    setPagination({
+      page: 1,
+    });
+
+    fetchCustomersData({
+      status: config.value,
+      page: 1,
+    });
+  };
+  //=============================
+
+  // Class Going Sub Buckets Handling
+  const handleClassGoingSubbucketClick = (config) => {
+    if (classGoingSubBucketStatus === config.value) {
+      return;
+    }
+
+    setClassGoingSubBucketStatus(config.value);
+
+    setPagination({
+      page: 1,
+    });
+
+    fetchCustomersData({
+      classGoingSubBucketStatus: config.value,
+      page: 1,
+    });
+  };
+  //================================================
   const formReset = () => {
     setIsOpenDetailsDrawer(false);
     setIsOpenFilterDrawer(false);
@@ -2234,22 +2537,7 @@ export default function Customers() {
         setReviewModalTitle("");
         setVerifyButtonLoading(false);
         CommonMessage("success", "Review Verified");
-        getCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          dateFilterType,
-          searchValue,
-          selectedRegionId,
-          selectedBranchId,
-          modeOfTrainingFilterId,
-          selectedOrigin,
-          bucketStatus,
-          status,
-          classGoingSubBucketStatus,
-          allDownliners,
-          pagination.page,
-          pagination.limit,
-        );
+        fetchCustomersData({});
       }, 300);
     } catch (error) {
       setVerifyButtonLoading(false);
@@ -2283,22 +2571,7 @@ export default function Customers() {
               setPagination({
                 page: 1,
               });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                null,
-                null,
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
+              fetchCustomersData({ bucketStatus: null, status: null, page: 1 });
             }}
           >
             <p>
@@ -2328,22 +2601,11 @@ export default function Customers() {
               setPagination({
                 page: 1,
               });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                "Student Onboarding",
-                null,
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
+              fetchCustomersData({
+                bucketStatus: "Student Onboarding",
+                status: null,
+                page: 1,
+              });
             }}
           >
             <p>
@@ -2373,22 +2635,11 @@ export default function Customers() {
               setPagination({
                 page: 1,
               });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                "Training Coordination",
-                null,
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
+              fetchCustomersData({
+                bucketStatus: "Training Coordination",
+                status: null,
+                page: 1,
+              });
             }}
           >
             <p>
@@ -2419,22 +2670,11 @@ export default function Customers() {
               setPagination({
                 page: 1,
               });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                "Progress Monitoring",
-                null,
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
+              fetchCustomersData({
+                bucketStatus: "Progress Monitoring",
+                status: null,
+                page: 1,
+              });
             }}
           >
             <p>
@@ -2465,22 +2705,11 @@ export default function Customers() {
               setPagination({
                 page: 1,
               });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                "Course completion",
-                null,
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
+              fetchCustomersData({
+                bucketStatus: "Course completion",
+                status: null,
+                page: 1,
+              });
             }}
           >
             <p>
@@ -2511,22 +2740,11 @@ export default function Customers() {
               setPagination({
                 page: 1,
               });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                "Reviews & Certification",
-                null,
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
+              fetchCustomersData({
+                bucketStatus: "Reviews & Certification",
+                status: null,
+                page: 1,
+              });
             }}
           >
             <p>
@@ -2594,22 +2812,7 @@ export default function Customers() {
                           setPagination({
                             page: 1,
                           });
-                          getCustomersData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            dateFilterType,
-                            null,
-                            selectedRegionId,
-                            selectedBranchId,
-                            modeOfTrainingFilterId,
-                            selectedOrigin,
-                            bucketStatus,
-                            status,
-                            classGoingSubBucketStatus,
-                            allDownliners,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchCustomersData({ search: null, page: 1 });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -2648,22 +2851,12 @@ export default function Customers() {
                         page: 1,
                         limit: pagination.limit,
                       });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        value,
-                        null,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        status,
-                        classGoingSubBucketStatus,
-                        defaultAllDownliners,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchCustomersData({
+                        regionId: value,
+                        branchId: null,
+                        downliners: defaultAllDownliners,
+                        page: 1,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -2692,22 +2885,11 @@ export default function Customers() {
                         page: 1,
                         limit: pagination.limit,
                       });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        value,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        status,
-                        classGoingSubBucketStatus,
-                        defaultAllDownliners,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchCustomersData({
+                        branchId: value,
+                        downliners: defaultAllDownliners,
+                        page: 1,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -2748,22 +2930,11 @@ export default function Customers() {
                       setPagination({
                         page: 1,
                       });
-                      getCustomersData(
-                        dates[0],
-                        dates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        status,
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchCustomersData({
+                        startDate: dates[0],
+                        endDate: dates[1],
+                        page: 1,
+                      });
                     }}
                   />
                 </div>
@@ -2786,22 +2957,10 @@ export default function Customers() {
                             setPagination({
                               page: 1,
                             });
-                            getCustomersData(
-                              selectedDates[0],
-                              selectedDates[1],
-                              e.target.value,
-                              searchValue,
-                              selectedRegionId,
-                              selectedBranchId,
-                              modeOfTrainingFilterId,
-                              selectedOrigin,
-                              bucketStatus,
-                              status,
-                              classGoingSubBucketStatus,
-                              allDownliners,
-                              1,
-                              pagination.limit,
-                            );
+                            fetchCustomersData({
+                              dateType: e.target.value,
+                              page: 1,
+                            });
                           }}
                         >
                           <Radio
@@ -2910,22 +3069,10 @@ export default function Customers() {
                           setPagination({
                             page: 1,
                           });
-                          getCustomersData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            dateFilterType,
-                            searchValue,
-                            selectedRegionId,
-                            selectedBranchId,
-                            value,
-                            selectedOrigin,
-                            bucketStatus,
-                            status,
-                            classGoingSubBucketStatus,
-                            allDownliners,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchCustomersData({
+                            modeOfTraining: value,
+                            page: 1,
+                          });
                         }}
                         value={modeOfTrainingFilterId}
                         disableClearable={false}
@@ -2971,22 +3118,10 @@ export default function Customers() {
                           setPagination({
                             page: 1,
                           });
-                          getCustomersData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            dateFilterType,
-                            searchValue,
-                            selectedRegionId,
-                            selectedBranchId,
-                            modeOfTrainingFilterId,
-                            e.target.value,
-                            bucketStatus,
-                            status,
-                            classGoingSubBucketStatus,
-                            allDownliners,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchCustomersData({
+                            origin: e.target.value,
+                            page: 1,
+                          });
                         }}
                         value={selectedOrigin}
                         disableClearable={false}
@@ -3184,672 +3319,84 @@ export default function Customers() {
               className="customers_status_mainContainer"
               ref={scrollRef}
               onScroll={checkScrollButtons}
-              style={{ flex: "0 1 auto", minWidth: 0 }}
+              style={{
+                flex: "0 1 auto",
+                minWidth: 0,
+              }}
             >
-              {bucketStatus === "Student Onboarding" && (
-                <>
-                  <div
-                    className={
-                      status == "Form Pending"
-                        ? "customers_active_formpending_container"
-                        : "customers_formpending_container"
-                    }
-                    onClick={() => {
-                      if (status == "Form Pending") {
-                        return;
-                      }
-                      setStatus("Form Pending");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Form Pending",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Form Pending{" "}
-                      {`( ${
-                        customerStatusCount &&
-                        customerStatusCount.form_pending !== undefined &&
-                        customerStatusCount.form_pending !== null
-                          ? customerStatusCount.form_pending
-                          : "-"
-                      } )`}
-                    </p>
-                  </div>
+              {currentBucketConfigs.map((config, index) => {
+                // ========================================================
+                // PAYMENT VERIFY / PAYMENT REJECTED
+                // ========================================================
 
-                  <div
-                    className={
-                      status === "Awaiting Finance"
-                        ? "customers_active_awaitfinance_container"
-                        : status === "Payment Rejected"
-                          ? "customers_active_paymentreject_container"
-                          : isSwap
-                            ? "customers_paymentreject_container"
-                            : "customers_awaitfinance_container"
-                    }
-                    onClick={() => {
-                      if (
-                        status === "Awaiting Finance" ||
-                        status === "Payment Rejected"
-                      ) {
-                        return;
-                      }
-                      setStatus(
-                        isSwap ? "Payment Rejected" : "Awaiting Finance",
-                      );
+                if (config.type === "payment") {
+                  const isPaymentRejected = isSwap;
 
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Awaiting Finance",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    {isSwap ? (
-                      <p>
-                        Payment Rejected{" "}
-                        {`(  ${
-                          customerStatusCount &&
-                          customerStatusCount.payment_rejected !== undefined &&
-                          customerStatusCount.payment_rejected !== null
-                            ? customerStatusCount.payment_rejected
-                            : "-"
-                        }
- )`}
-                      </p>
-                    ) : (
-                      <p>
-                        Payment Verify{" "}
-                        {`(  ${
-                          customerStatusCount &&
-                          customerStatusCount.awaiting_finance !== undefined &&
-                          customerStatusCount.awaiting_finance !== null
-                            ? customerStatusCount.awaiting_finance
-                            : "-"
-                        }
- )`}
-                      </p>
-                    )}
-                    <MdOutlineSwapVert
-                      size={19}
-                      style={{
-                        cursor: "pointer",
-                        transition: "transform 0.3s ease",
-                        transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
-                      }}
-                      onClick={() => {
-                        console.log("staaaaaaaaaaaaaaaa", status);
-                        setTimeout(() => {
-                          const newSwap = !isSwap;
-                          const newStatus = newSwap
-                            ? "Payment Rejected"
-                            : "Awaiting Finance";
+                  const paymentLabel = isPaymentRejected
+                    ? "Payment Rejected"
+                    : "Payment Verify";
 
-                          console.log("newStatus:", newStatus);
+                  const paymentCount = isPaymentRejected
+                    ? customerStatusCount?.payment_rejected
+                    : customerStatusCount?.awaiting_finance;
 
-                          setIsSwap(newSwap);
-                          setStatus(newStatus);
+                  const isPaymentActive =
+                    status === "Awaiting Finance" ||
+                    status === "Payment Rejected";
 
-                          getCustomersData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            dateFilterType,
-                            searchValue,
-                            selectedRegionId,
-                            selectedBranchId,
-                            modeOfTrainingFilterId,
-                            selectedOrigin,
-                            bucketStatus,
-                            newStatus,
-                            classGoingSubBucketStatus,
-                            allDownliners,
-                            1,
-                            pagination.limit,
-                          );
-                        }, 200);
-                      }}
-                    />
-                  </div>
+                  const activeClass = isPaymentRejected
+                    ? "customers_active_paymentreject_container"
+                    : "customers_active_awaitfinance_container";
 
-                  <div
-                    className={
-                      status === "Awaiting Verify"
-                        ? "customers_active_studentvefity_container"
-                        : "customers_studentvefity_container"
-                    }
-                    onClick={() => {
-                      if (status === "Awaiting Verify") {
-                        return;
-                      }
-                      setStatus("Awaiting Verify");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Awaiting Verify",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Student Verify{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.awaiting_verify !== undefined &&
-                        customerStatusCount.awaiting_verify !== null
-                          ? customerStatusCount.awaiting_verify
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
+                  const inactiveClass = isPaymentRejected
+                    ? "customers_paymentreject_container"
+                    : "customers_awaitfinance_container";
 
-                  <div
-                    className={
-                      status === "assign_trainer"
-                        ? "customers_active_assigntrainers_container"
-                        : "customers_assigntrainers_container"
-                    }
-                  >
+                  return (
                     <div
-                      onClick={() => {
-                        if (status === "assign_trainer") {
-                          return;
-                        }
-                        setStatus("assign_trainer");
-                        setTrainerSubbucketsStatus("");
-                        setPagination({
-                          page: 1,
-                        });
-                        getCustomersData(
-                          selectedDates[0],
-                          selectedDates[1],
-                          dateFilterType,
-                          searchValue,
-                          selectedRegionId,
-                          selectedBranchId,
-                          modeOfTrainingFilterId,
-                          selectedOrigin,
-                          bucketStatus,
-                          "assign_trainer",
-                          classGoingSubBucketStatus,
-                          allDownliners,
-                          1,
-                          pagination.limit,
-                        );
-                      }}
+                      key={index}
+                      className={isPaymentActive ? activeClass : inactiveClass}
+                      onClick={handlePaymentStatusClick}
                     >
                       <p>
-                        Assign Trainer{" "}
-                        {`(  ${
-                          customerStatusCount &&
-                          customerStatusCount.assign_trainer !== undefined &&
-                          customerStatusCount.assign_trainer !== null
-                            ? customerStatusCount.assign_trainer
-                            : "-"
-                        } )`}
+                        {paymentLabel} ({paymentCount ?? "-"})
                       </p>
+
+                      <MdOutlineSwapVert
+                        size={19}
+                        style={{
+                          cursor: "pointer",
+                          transition: "transform 0.3s ease",
+                          transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
+                        }}
+                        onClick={handlePaymentSwap}
+                      />
                     </div>
-                  </div>
-                </>
-              )}
+                  );
+                }
 
-              {bucketStatus === "Training Coordination" && (
-                <>
-                  <div
-                    className={
-                      status === "Awaiting Class"
-                        ? "customers_active_awaitingclass_container"
-                        : "customers_awaitingclass_container"
-                    }
-                    onClick={() => {
-                      if (status === "Awaiting Class") {
-                        return;
-                      }
-                      setStatus("Awaiting Class");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Awaiting Class",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Awaiting Class{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.awaiting_class !== undefined &&
-                        customerStatusCount.awaiting_class !== null
-                          ? customerStatusCount.awaiting_class
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                </>
-              )}
+                // ========================================================
+                // NORMAL BUCKETS
+                // ========================================================
 
-              {bucketStatus === "Progress Monitoring" && (
-                <>
-                  <div
-                    className={
-                      status === "Class Scheduled"
-                        ? "customers_active_classschedule_container"
-                        : "customers_classschedule_container"
-                    }
-                    onClick={() => {
-                      if (status === "Class Scheduled") {
-                        return;
-                      }
-                      setStatus("Class Scheduled");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Class Scheduled",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Class Scheduled{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.class_scheduled !== undefined &&
-                        customerStatusCount.class_scheduled !== null
-                          ? customerStatusCount.class_scheduled
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                  <div
-                    className={
-                      status === "Class Going"
-                        ? "customers_active_classgoing_container"
-                        : "customers_classgoing_container"
-                    }
-                    onClick={() => {
-                      if (status === "Class Going") {
-                        return;
-                      }
-                      setStatus("Class Going");
-                      setClassGoingSubBucketStatus("");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Class Going",
-                        null,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Class Going{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.class_going !== undefined &&
-                        customerStatusCount.class_going !== null
-                          ? customerStatusCount.class_going
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                  <div
-                    className={
-                      status === "Escalated"
-                        ? "customers_active_escalated_container"
-                        : "customers_escalated_container"
-                    }
-                    onClick={() => {
-                      if (status === "Escalated") {
-                        return;
-                      }
-                      setStatus("Escalated");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Escalated",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Escalated{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.escalated !== undefined &&
-                        customerStatusCount.escalated !== null
-                          ? customerStatusCount.escalated
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
+                const isActive = status === config.value;
 
-                  <div
-                    className={
-                      status === "Others"
-                        ? "customers_active_others_container"
-                        : "customers_others_container"
-                    }
-                    onClick={() => {
-                      if (status === "Others") {
-                        return;
-                      }
-                      setStatus("Others");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Others",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Others{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.Others !== undefined &&
-                        customerStatusCount.Others !== null
-                          ? customerStatusCount.Others
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                </>
-              )}
+                const count = customerStatusCount?.[config.countKey] ?? "-";
 
-              {bucketStatus === "Course completion" && (
-                <div
-                  className={
-                    status === "Passedout process"
-                      ? "customers_active_feedback_container"
-                      : "customers_feedback_container"
-                  }
-                  onClick={() => {
-                    if (status === "Passedout process") {
-                      return;
-                    }
-                    setStatus("Passedout process");
-                    setPagination({
-                      page: 1,
-                    });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      "Passedout Process",
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      1,
-                      pagination.limit,
-                    );
-                  }}
-                >
-                  <p>
-                    Passedout Process{" "}
-                    {`(  ${
-                      customerStatusCount &&
-                      customerStatusCount.passedout_process !== undefined &&
-                      customerStatusCount.passedout_process !== null
-                        ? customerStatusCount.passedout_process
-                        : "-"
-                    }
- )`}
-                  </p>
-                </div>
-              )}
-
-              {bucketStatus === "Reviews & Certification" && (
-                <>
+                return (
                   <div
+                    key={index}
                     className={
-                      status === "Completed"
-                        ? "customers_active_completed_container"
-                        : "customers_completed_container"
+                      isActive ? config.activeClass : config.inactiveClass
                     }
-                    onClick={() => {
-                      if (status === "Completed") {
-                        return;
-                      }
-                      setStatus("Completed");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Completed",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
+                    onClick={() => handleBucketClick(config)}
                   >
                     <p>
-                      Course Completed{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.completed !== undefined &&
-                        customerStatusCount.completed !== null
-                          ? customerStatusCount.completed
-                          : "-"
-                      }
- )`}
+                      {config.label} ({count})
                     </p>
                   </div>
-                  <div
-                    className={
-                      status === "Demo Completed"
-                        ? "customers_active_classgoing_container"
-                        : "customers_classgoing_container"
-                    }
-                    onClick={() => {
-                      if (status === "Demo Completed") {
-                        return;
-                      }
-                      setStatus("Demo Completed");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Demo Completed",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Only Demo{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.demo_completed !== undefined &&
-                        customerStatusCount.demo_completed !== null
-                          ? customerStatusCount.demo_completed
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                  <div
-                    className={
-                      status === "Videos Given"
-                        ? "trainers_active_stage4_container"
-                        : "trainers_stage4_container"
-                    }
-                    onClick={() => {
-                      if (status === "Videos Given") {
-                        return;
-                      }
-                      setStatus("Videos Given");
-                      setPagination({
-                        page: 1,
-                      });
-                      getCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        modeOfTrainingFilterId,
-                        selectedOrigin,
-                        bucketStatus,
-                        "Videos Given",
-                        classGoingSubBucketStatus,
-                        allDownliners,
-                        1,
-                        pagination.limit,
-                      );
-                    }}
-                  >
-                    <p>
-                      Self-Paced{" "}
-                      {`(  ${
-                        customerStatusCount &&
-                        customerStatusCount.videos_given !== undefined &&
-                        customerStatusCount.videos_given !== null
-                          ? customerStatusCount.videos_given
-                          : "-"
-                      }
- )`}
-                    </p>
-                  </div>
-                </>
-              )}
+                );
+              })}
             </div>
             <button
               onClick={() => scroll(350)}
@@ -3926,226 +3473,51 @@ export default function Customers() {
             paddingLeft: "12px",
           }}
         >
-          <div
-            className={
-              trainerSubbucketStatus === "Awaiting Trainer"
-                ? "customers_active_awaitingclass_container"
-                : "customers_awaitingclass_container"
-            }
-            onClick={() => {
-              if (trainerSubbucketStatus === "Awaiting Trainer") {
-                return;
-              }
-              setTrainerSubbucketsStatus("Awaiting Trainer");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                "Awaiting Trainer",
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Awaiting Trainer{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.awaiting_trainer !== undefined &&
-                customerStatusCount.awaiting_trainer !== null
-                  ? customerStatusCount.awaiting_trainer
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
+          {trainerSubbucketConfigs.map((config) => {
+            const isActive = trainerSubbucketStatus === config.value;
 
-          <div
-            className={
-              trainerSubbucketStatus === "Trainer Rejected"
-                ? "customers_active_paymentreject_container"
-                : "customers_paymentreject_container"
-            }
-            onClick={() => {
-              if (trainerSubbucketStatus === "Trainer Rejected") {
-                return;
-              }
-              setTrainerSubbucketsStatus("Trainer Rejected");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                "Trainer Rejected",
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p>
-              Trainer Rejected{" "}
-              {`(  ${
-                customerStatusCount &&
-                customerStatusCount.trainer_rejected !== undefined &&
-                customerStatusCount.trainer_rejected !== null
-                  ? customerStatusCount.trainer_rejected
-                  : "-"
-              }
- )`}
-            </p>
-          </div>
-          <div
-            className={
-              trainerSubbucketStatus === "Awaiting Trainer Verify"
-                ? "customers_active_verifytrainers_container"
-                : "customers_verifytrainers_container"
-            }
-            onClick={() => {
-              if (trainerSubbucketStatus === "Awaiting Trainer Verify") {
-                return;
-              }
-              setTrainerSubbucketsStatus("Awaiting Trainer Verify");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                "Awaiting Trainer Verify",
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p className="customers_verify_trainer_label">
-              <span className="customers_verify_trainer_text">
-                Verify Trainer
-                <span className="customers_rm_label">(RM)</span>
-              </span>
+            const count = customerStatusCount?.[config.countKey] ?? "-";
 
-              <span className="customers_verify_trainer_count">
-                {`( ${customerStatusCount?.awaiting_trainer_verify ?? "-"} )`}
-              </span>
-            </p>
-          </div>
+            return (
+              <div
+                key={config.value}
+                className={isActive ? config.activeClass : config.inactiveClass}
+                onClick={() => handleTrainerSubbucketClick(config)}
+              >
+                <p className="customers_verify_trainer_label">
+                  <span className="customers_verify_trainer_text">
+                    {config.label}
 
-          <div
-            className={
-              trainerSubbucketStatus === "Trainer Approval"
-                ? "customers_active_trainerapproval_container"
-                : "customers_trainerapproval_container"
-            }
-            onClick={() => {
-              if (trainerSubbucketStatus === "Trainer Approval") {
-                return;
-              }
-              setTrainerSubbucketsStatus("Trainer Approval");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                "Trainer Approval",
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p className="customers_verify_trainer_label">
-              <span className="customers_verify_trainer_text">
-                Trainer Approval
-                <span className="customers_cfo_label">(CFO)</span>
-              </span>
+                    {config.role && (
+                      <span
+                        className={
+                          config.role === "RM"
+                            ? "customers_rm_label"
+                            : "customers_cfo_label"
+                        }
+                      >
+                        ({config.role})
+                      </span>
+                    )}
+                  </span>
 
-              <span style={{ marginLeft: "36px" }}>
-                {`( ${customerStatusCount?.trainer_approval ?? "-"} )`}
-              </span>
-            </p>
-          </div>
-
-          <div
-            className={
-              trainerSubbucketStatus === "Approval Rejected"
-                ? "customers_active_paymentreject_container"
-                : "customers_paymentreject_container"
-            }
-            onClick={() => {
-              if (trainerSubbucketStatus === "Approval Rejected") {
-                return;
-              }
-              setTrainerSubbucketsStatus("Approval Rejected");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                "Approval Rejected",
-                classGoingSubBucketStatus,
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-          >
-            <p className="customers_verify_trainer_label">
-              <span className="customers_verify_trainer_text">
-                Approval Rejected
-                <span className="customers_cfo_label">(CFO)</span>
-              </span>
-
-              <span style={{ marginLeft: "36px" }}>
-                {`( ${customerStatusCount?.approval_rejected ?? "-"} )`}
-              </span>
-            </p>
-          </div>
+                  <span
+                    className={
+                      config.role ? "customers_verify_trainer_count" : ""
+                    }
+                    style={
+                      config.label === "Trainer Approval" ||
+                      config.label === "Approval Rejected"
+                        ? { marginLeft: "36px" }
+                        : {}
+                    }
+                  >
+                    {`( ${count} )`}
+                  </span>
+                </p>
+              </div>
+            );
+          })}
         </Row>
       )}
 
@@ -4157,148 +3529,26 @@ export default function Customers() {
             paddingLeft: "12px",
           }}
         >
-          <div
-            className={
-              classGoingSubBucketStatus === "under_25"
-                ? "trainers_active_stage1_container"
-                : "trainers_stage1_container"
-            }
-            onClick={() => {
-              if (classGoingSubBucketStatus === "under_25") return;
-              setClassGoingSubBucketStatus("under_25");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                status,
-                "under_25",
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <p>
-              {`25 & Below`} {`( ${classGoingCounts?.under_25 ?? 0} )`}
-            </p>
-          </div>
+          {classGoingSubbucketConfigs.map((config) => {
+            const isActive = classGoingSubBucketStatus === config.value;
 
-          <div
-            className={
-              classGoingSubBucketStatus === "under_50"
-                ? "trainers_active_stage2_container"
-                : "trainers_stage2_container"
-            }
-            onClick={() => {
-              if (classGoingSubBucketStatus === "under_50") return;
-              setClassGoingSubBucketStatus("under_50");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                status,
-                "under_50",
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <p>
-              {`50 & Below`} {`( ${classGoingCounts?.under_50 ?? 0} )`}
-            </p>
-          </div>
+            const count = classGoingCounts?.[config.countKey] ?? 0;
 
-          <div
-            className={
-              classGoingSubBucketStatus === "under_75"
-                ? "trainers_active_stage4_container"
-                : "trainers_stage4_container"
-            }
-            onClick={() => {
-              if (classGoingSubBucketStatus === "under_75") return;
-              setClassGoingSubBucketStatus("under_75");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                status,
-                "under_75",
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <p>
-              {`75 & Below`} {`( ${classGoingCounts?.under_75 ?? 0} )`}
-            </p>
-          </div>
-          <div
-            className={
-              classGoingSubBucketStatus === "under_99"
-                ? "customers_active_trainer_coordination_container"
-                : "customers_trainer_coordination_container"
-            }
-            onClick={() => {
-              if (classGoingSubBucketStatus === "under_99") return;
-              setClassGoingSubBucketStatus("under_99");
-              setPagination({
-                page: 1,
-              });
-              getCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                modeOfTrainingFilterId,
-                selectedOrigin,
-                bucketStatus,
-                status,
-                "under_99",
-                allDownliners,
-                1,
-                pagination.limit,
-              );
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <p>
-              {`99 & Below`} {`( ${classGoingCounts?.under_99 ?? 0} )`}
-            </p>
-          </div>
+            return (
+              <div
+                key={config.value}
+                className={isActive ? config.activeClass : config.inactiveClass}
+                onClick={() => handleClassGoingSubbucketClick(config)}
+                style={{
+                  cursor: "pointer",
+                }}
+              >
+                <p>
+                  {config.label} ({count})
+                </p>
+              </div>
+            );
+          })}
         </Row>
       )}
 
@@ -4367,22 +3617,7 @@ export default function Customers() {
             setPagination({
               page: 1,
             });
-            getCustomersData(
-              selectedDates[0],
-              selectedDates[1],
-              dateFilterType,
-              searchValue,
-              selectedRegionId,
-              selectedBranchId,
-              modeOfTrainingFilterId,
-              selectedOrigin,
-              bucketStatus,
-              status,
-              classGoingSubBucketStatus,
-              allDownliners,
-              pagination.page,
-              pagination.limit,
-            );
+            fetchCustomersData({});
           }} // pass function as prop
         />
 
@@ -4843,22 +4078,7 @@ export default function Customers() {
                   setPagination({
                     page: 1,
                   });
-                  getCustomersData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    dateFilterType,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    modeOfTrainingFilterId,
-                    selectedOrigin,
-                    bucketStatus,
-                    status,
-                    classGoingSubBucketStatus,
-                    allDownliners,
-                    pagination.page,
-                    pagination.limit,
-                  );
+                  fetchCustomersData({});
                 }}
               />
             ) : drawerContentStatus === "Student Verify" ? (
@@ -4874,22 +4094,7 @@ export default function Customers() {
                     setPagination({
                       page: 1,
                     });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      status,
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      pagination.page,
-                      pagination.limit,
-                    );
+                    fetchCustomersData({});
                   }}
                 />
               </>
@@ -4902,22 +4107,7 @@ export default function Customers() {
                   setPagination({
                     page: 1,
                   });
-                  getCustomersData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    dateFilterType,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    modeOfTrainingFilterId,
-                    selectedOrigin,
-                    bucketStatus,
-                    status,
-                    classGoingSubBucketStatus,
-                    allDownliners,
-                    pagination.page,
-                    pagination.limit,
-                  );
+                  fetchCustomersData({});
                 }}
               />
             ) : drawerContentStatus === "Trainer Verify" ||
@@ -4935,22 +4125,7 @@ export default function Customers() {
                     setPagination({
                       page: 1,
                     });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      status,
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      pagination.page,
-                      pagination.limit,
-                    );
+                    fetchCustomersData({});
                   }}
                 />
               </>
@@ -4966,22 +4141,7 @@ export default function Customers() {
                     setPagination({
                       page: 1,
                     });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      status,
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      pagination.page,
-                      pagination.limit,
-                    );
+                    fetchCustomersData({});
                   }}
                 />
               </>
@@ -4998,22 +4158,7 @@ export default function Customers() {
                     setPagination({
                       page: 1,
                     });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      status,
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      pagination.page,
-                      pagination.limit,
-                    );
+                    fetchCustomersData({});
                   }}
                 />
               </>
@@ -5038,23 +4183,7 @@ export default function Customers() {
                     setPagination({
                       page: 1,
                     });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      status,
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      pagination.page,
-                      pagination.limit,
-                      cert_gen,
-                    );
+                    fetchCustomersData({ is_generate_certificate: cert_gen });
                   }}
                 />
               </>
@@ -5069,22 +4198,7 @@ export default function Customers() {
                     setPagination({
                       page: 1,
                     });
-                    getCustomersData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      dateFilterType,
-                      searchValue,
-                      selectedRegionId,
-                      selectedBranchId,
-                      modeOfTrainingFilterId,
-                      selectedOrigin,
-                      bucketStatus,
-                      status,
-                      classGoingSubBucketStatus,
-                      allDownliners,
-                      pagination.page,
-                      pagination.limit,
-                    );
+                    fetchCustomersData({});
                   }}
                 />
               </>
@@ -5410,22 +4524,7 @@ export default function Customers() {
                   column_names: columns,
                 };
                 // setBranchOptions(duplicateBranchOptions);
-                getCustomersData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  dateFilterType,
-                  searchValue,
-                  selectedRegionId,
-                  selectedBranchId,
-                  modeOfTrainingFilterId,
-                  selectedOrigin,
-                  bucketStatus,
-                  status,
-                  classGoingSubBucketStatus,
-                  allDownliners,
-                  pagination.page,
-                  pagination.limit,
-                );
+                fetchCustomersData({});
                 try {
                   await updateTableColumns(payload);
                   setTimeout(() => {
@@ -5646,22 +4745,7 @@ export default function Customers() {
         callgetCustomersApi={() => {
           setIsOpenRevertModal(false);
           setCustomerDetails(null);
-          getCustomersData(
-            selectedDates[0],
-            selectedDates[1],
-            dateFilterType,
-            searchValue,
-            selectedRegionId,
-            selectedBranchId,
-            modeOfTrainingFilterId,
-            selectedOrigin,
-            bucketStatus,
-            status,
-            classGoingSubBucketStatus,
-            allDownliners,
-            pagination.page,
-            pagination.limit,
-          );
+          fetchCustomersData({});
         }}
       />
     </div>
