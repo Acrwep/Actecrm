@@ -192,7 +192,7 @@ const AddTicket = forwardRef(
       setTrainerSelectloading(true);
       const payload = {
         status: "Verified",
-        ...buildTrainerSearchPayload(searchvalue),
+        ...(searchvalue && { keyword: searchvalue }),
         page: pageNumber,
         limit: 10,
       };
@@ -236,7 +236,7 @@ const AddTicket = forwardRef(
       setCustomerSelectloading(true);
 
       const payload = {
-        ...buildCustomerSearchPayload(searchvalue),
+        ...(searchvalue && { search_filter: searchvalue }),
         page: pageNumber,
         limit: 10,
       };
@@ -622,6 +622,10 @@ const AddTicket = forwardRef(
               }}
               value={createdAt}
               error={createdAtError}
+              height={"36px"}
+              labelFontSize={"11.5px"}
+              labelMarginTop={"0.2px"}
+              iconSize={"18px"}
             />
           </Col>
 
@@ -657,7 +661,7 @@ const AddTicket = forwardRef(
             <Col xs={24} sm={24} md={24} lg={8} style={{ marginTop: "20px" }}>
               <CommonCustomerSingleSelectField
                 label="Trainer"
-                labelMarginTop="1px"
+                labelMarginTop="0px"
                 required={false}
                 options={mergedTrainersList}
                 value={selectedTrainerId}
@@ -704,12 +708,12 @@ const AddTicket = forwardRef(
                       <CommonSpinner color="#333" />
                     ) : (
                       <Tooltip
-                        placement="top"
+                        placement="topLeft"
                         title="View Student Details"
                         trigger={["hover", "click"]}
                       >
                         <FaRegEye
-                          size={16}
+                          size={14}
                           className="trainers_action_icons"
                           onClick={() => {
                             getParticularCustomerDetails(selectedCustomerId);

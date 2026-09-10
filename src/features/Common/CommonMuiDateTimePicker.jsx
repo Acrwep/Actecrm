@@ -280,6 +280,10 @@ export default function CommonMuiDateTimePicker({
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca",
               },
+              "& .MuiSvgIcon-root": {
+                fontSize: iconSize || "20px",
+                marginTop: "-1px",
+              },
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
                 fontSize: fontSize || "13px",
