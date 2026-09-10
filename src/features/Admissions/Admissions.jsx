@@ -719,20 +719,40 @@ export default function Admissions() {
       });
       setAllDownliners(downliners_ids);
       setDefaultAllDownliners(downliners_ids);
-      getAdmissionsData(
-        PreviousAndCurrentDate[0],
-        PreviousAndCurrentDate[1],
-        null,
-        null,
-        null,
-        null,
-        downliners_ids,
-        1,
-        10,
-      );
+      fetchAdmissionsData({
+        startDate: PreviousAndCurrentDate[0],
+        endDate: PreviousAndCurrentDate[1],
+        searchvalue: null,
+        bucket: null,
+        regionId: null,
+        branchId: null,
+        downliners: downliners_ids,
+        pageNumber: 1,
+        limit: 10,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
+  };
+
+  const fetchAdmissionsData = (overrides = {}) => {
+    getAdmissionsData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.bucket !== undefined ? overrides.bucket : modeStatus,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+    );
   };
 
   const getAdmissionsData = async (
@@ -747,23 +767,11 @@ export default function Admissions() {
     limit,
   ) => {
     setLoading(true);
-    console.log(
-      startDate,
-      endDate,
-      searchvalue,
-      bucket,
-      regionId,
-      branchId,
-      downliners,
-      pageNumber,
-      limit,
-    );
-
     const payload = {
       ...(searchvalue && { search_filter: searchvalue }),
       from_date: startDate,
       to_date: endDate,
-      bucket: bucket,
+      ...(bucket && { bucket: bucket }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
       user_ids: downliners,
@@ -929,17 +937,10 @@ export default function Admissions() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getAdmissionsData(
-      selectedDates[0],
-      selectedDates[1],
-      searchValue,
-      modeStatus,
-      selectedRegionId,
-      selectedBranchId,
-      allDownliners,
-      page,
-      limit,
-    );
+    fetchAdmissionsData({
+      pageNumber: page,
+      limit: limit,
+    });
   };
 
   const handleSearch = (e) => {
@@ -949,17 +950,10 @@ export default function Admissions() {
       page: 1,
     });
     setTimeout(() => {
-      getAdmissionsData(
-        selectedDates[0],
-        selectedDates[1],
-        e.target.value,
-        modeStatus,
-        selectedRegionId,
-        selectedBranchId,
-        allDownliners,
-        1,
-        pagination.limit,
-      );
+      fetchAdmissionsData({
+        searchvalue: e.target.value,
+        pageNumber: 1,
+      });
     }, 300);
   };
 
@@ -992,17 +986,10 @@ export default function Admissions() {
       setPagination({
         page: 1,
       });
-      getAdmissionsData(
-        selectedDates[0],
-        selectedDates[1],
-        searchValue,
-        modeStatus,
-        selectedRegionId,
-        selectedBranchId,
-        downliners_ids,
-        1,
-        pagination.limit,
-      );
+      fetchAdmissionsData({
+        downliners: downliners_ids,
+        pageNumber: 1,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -1121,17 +1108,10 @@ export default function Admissions() {
                           setPagination({
                             page: 1,
                           });
-                          getAdmissionsData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            null,
-                            modeStatus,
-                            selectedRegionId,
-                            selectedBranchId,
-                            allDownliners,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchAdmissionsData({
+                            searchvalue: null,
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -1167,19 +1147,13 @@ export default function Admissions() {
                       setSelectedUserId([]);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      getAdmissionsData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        modeStatus,
-                        value,
-                        null,
-                        defaultAllDownliners,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchAdmissionsData({
+                        regionId: value,
+                        branchId: null,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -1207,19 +1181,12 @@ export default function Admissions() {
                       getUsersData(selectedRegionId, value);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      getAdmissionsData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        modeStatus,
-                        selectedRegionId,
-                        value,
-                        defaultAllDownliners,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchAdmissionsData({
+                        branchId: value,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -1266,17 +1233,11 @@ export default function Admissions() {
                         setPagination({
                           page: 1,
                         });
-                        getAdmissionsData(
-                          dates[0],
-                          dates[1],
-                          searchValue,
-                          modeStatus,
-                          selectedRegionId,
-                          selectedBranchId,
-                          allDownliners,
-                          1,
-                          pagination.limit,
-                        );
+                        fetchAdmissionsData({
+                          startDate: dates[0],
+                          endDate: dates[1],
+                          pageNumber: 1,
+                        });
                       }}
                     />
                   </div>
@@ -1398,17 +1359,13 @@ export default function Admissions() {
                     return;
                   }
                   setModeStatus("Online");
-                  getAdmissionsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    searchValue,
-                    "Online",
-                    selectedRegionId,
-                    selectedBranchId,
-                    allDownliners,
-                    1,
-                    pagination.limit,
-                  );
+                  setPagination({
+                    page: 1,
+                  });
+                  fetchAdmissionsData({
+                    bucket: "Online",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1427,17 +1384,13 @@ export default function Admissions() {
                     return;
                   }
                   setModeStatus("Classroom");
-                  getAdmissionsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    searchValue,
-                    "Classroom",
-                    selectedRegionId,
-                    selectedBranchId,
-                    allDownliners,
-                    1,
-                    pagination.limit,
-                  );
+                  setPagination({
+                    page: 1,
+                  });
+                  fetchAdmissionsData({
+                    bucket: "Classroom",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1566,17 +1519,13 @@ export default function Admissions() {
                       return;
                     }
                     setModeStatus("Online");
-                    getAdmissionsData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      searchValue,
-                      "Online",
-                      selectedRegionId,
-                      selectedBranchId,
-                      allDownliners,
-                      1,
-                      pagination.limit,
-                    );
+                    setPagination({
+                      page: 1,
+                    });
+                    fetchAdmissionsData({
+                      bucket: "Online",
+                      pageNumber: 1,
+                    });
                   }}
                 >
                   <p>
@@ -1596,17 +1545,13 @@ export default function Admissions() {
                       return;
                     }
                     setModeStatus("Classroom");
-                    getAdmissionsData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      searchValue,
-                      "Classroom",
-                      selectedRegionId,
-                      selectedBranchId,
-                      allDownliners,
-                      1,
-                      pagination.limit,
-                    );
+                    setPagination({
+                      page: 1,
+                    });
+                    fetchAdmissionsData({
+                      bucket: "Classroom",
+                      pageNumber: 1,
+                    });
                   }}
                 >
                   <p>
@@ -1826,17 +1771,7 @@ export default function Admissions() {
                   page_name: "Admissions",
                   column_names: columns,
                 };
-                getAdmissionsData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  searchValue,
-                  modeStatus,
-                  selectedRegionId,
-                  selectedBranchId,
-                  allDownliners,
-                  pagination.page,
-                  pagination.limit,
-                );
+                fetchAdmissionsData({});
                 try {
                   await updateTableColumns(payload);
                   setTimeout(() => {
