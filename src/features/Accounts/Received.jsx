@@ -1895,9 +1895,6 @@ export default function Received({
                 drawerContentStatus={drawerContentStatus}
                 callgetCustomersApi={() => {
                   formReset();
-                  setPagination({
-                    page: 1,
-                  });
                   fetchReceivedPaymentsData({});
                   window.dispatchEvent(new CustomEvent("refreshReceivables"));
                   window.dispatchEvent(new CustomEvent("refreshFeesHistory"));

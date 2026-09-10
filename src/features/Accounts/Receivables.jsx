@@ -1205,9 +1205,6 @@ export default function Receivables({
             setButtonLoading={setButtonLoading}
             callgetCustomersApi={() => {
               formReset();
-              setPagination({
-                page: 1,
-              });
               fetchPendingFeesCustomersData({});
               window.dispatchEvent(new CustomEvent("refreshReceived"));
             }}
