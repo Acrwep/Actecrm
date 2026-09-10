@@ -558,16 +558,7 @@ export default function Receivables({
   useEffect(() => {
     const handleRefreshReceivables = () => {
       if (allDownliners.length > 0) {
-        getPendingFeesCustomersData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          allDownliners,
-          selectedRegionId,
-          selectedBranchId,
-          pagination.page,
-          pagination.limit,
-        );
+        fetchPendingFeesCustomersData({});
       }
     };
     window.addEventListener("refreshReceivables", handleRefreshReceivables);
@@ -597,16 +588,17 @@ export default function Receivables({
       setDefaultAllDownliners(downliners_ids);
       const PreviousYearDec26ToCurrentDate =
         getPreviousYearDec26ToCurrentYearDec25();
-      getPendingFeesCustomersData(
-        PreviousYearDec26ToCurrentDate[0],
-        PreviousYearDec26ToCurrentDate[1],
-        null,
-        downliners_ids,
-        null,
-        null,
-        1,
-        10,
-      );
+
+      fetchPendingFeesCustomersData({
+        startDate: PreviousYearDec26ToCurrentDate[0],
+        endDate: PreviousYearDec26ToCurrentDate[1],
+        searchvalue: "",
+        regionId: null,
+        branchId: null,
+        downliners: downliners_ids,
+        pageNumber: 1,
+        limit: 10,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     } finally {
@@ -614,13 +606,32 @@ export default function Receivables({
     }
   };
 
+  const fetchPendingFeesCustomersData = (overrides = {}) => {
+    getPendingFeesCustomersData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+    );
+  };
+
   const getPendingFeesCustomersData = async (
     startDate,
     endDate,
     searchvalue,
-    downliners,
     regionId,
     branchId,
+    downliners,
     pageNumber,
     limit,
   ) => {
@@ -633,9 +644,9 @@ export default function Receivables({
       from_date: moment(from_date).format("YYYY-MM-DD"),
       to_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
-      user_ids: downliners,
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
     };
@@ -667,16 +678,7 @@ export default function Receivables({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getPendingFeesCustomersData(
-      selectedDates[0],
-      selectedDates[1],
-      searchValue,
-      allDownliners,
-      selectedRegionId,
-      selectedBranchId,
-      page,
-      limit,
-    );
+    fetchPendingFeesCustomersData({ pageNumber: page, limit: limit });
   };
 
   const handleSearch = (e) => {
@@ -685,16 +687,10 @@ export default function Receivables({
     setPagination({
       page: 1,
     });
-    getPendingFeesCustomersData(
-      selectedDates[0],
-      selectedDates[1],
-      e.target.value,
-      allDownliners,
-      selectedRegionId,
-      selectedBranchId,
-      1,
-      pagination.limit,
-    );
+    fetchPendingFeesCustomersData({
+      searchvalue: e.target.value,
+      pageNumber: 1,
+    });
   };
 
   const handleSelectUser = async (e) => {
@@ -724,16 +720,10 @@ export default function Receivables({
       setPagination({
         page: 1,
       });
-      getPendingFeesCustomersData(
-        selectedDates[0],
-        selectedDates[1],
-        searchValue,
-        downliners_ids,
-        selectedRegionId,
-        selectedBranchId,
-        1,
-        pagination.limit,
-      );
+      fetchPendingFeesCustomersData({
+        downliners: downliners_ids,
+        pageNumber: 1,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -925,16 +915,10 @@ export default function Receivables({
                           setPagination({
                             page: 1,
                           });
-                          getPendingFeesCustomersData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            null,
-                            allDownliners,
-                            selectedRegionId,
-                            selectedBranchId,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchPendingFeesCustomersData({
+                            searchvalue: "",
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -984,18 +968,13 @@ export default function Receivables({
                       setSelectedUserId([]);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      getPendingFeesCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        defaultAllDownliners,
-                        value,
-                        null,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchPendingFeesCustomersData({
+                        regionId: value,
+                        branchId: null,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -1023,18 +1002,12 @@ export default function Receivables({
                       getUsersData(selectedRegionId, value);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      getPendingFeesCustomersData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        defaultAllDownliners,
-                        selectedRegionId,
-                        value,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchPendingFeesCustomersData({
+                        branchId: value,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -1068,16 +1041,11 @@ export default function Receivables({
                     setPagination({
                       page: 1,
                     });
-                    getPendingFeesCustomersData(
-                      dates[0],
-                      dates[1],
-                      searchValue,
-                      allDownliners,
-                      selectedRegionId,
-                      selectedBranchId,
-                      1,
-                      pagination.limit,
-                    );
+                    fetchPendingFeesCustomersData({
+                      startDate: dates[0],
+                      endDate: dates[1],
+                      pageNumber: 1,
+                    });
                   }}
                 />
               </div>
@@ -1240,16 +1208,7 @@ export default function Receivables({
               setPagination({
                 page: 1,
               });
-              getPendingFeesCustomersData(
-                selectedDates[0],
-                selectedDates[1],
-                searchValue,
-                allDownliners,
-                selectedRegionId,
-                selectedBranchId,
-                pagination.page,
-                pagination.limit,
-              );
+              fetchPendingFeesCustomersData({});
               window.dispatchEvent(new CustomEvent("refreshReceived"));
             }}
           />

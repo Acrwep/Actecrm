@@ -445,62 +445,16 @@ export default function FeeHistory({
       const endDate = filterData?.endDate
         ? new Date(filterData.endDate)
         : PreviousYearDec26ToCurrentDate[1];
-      fetchFeeHistoryData(
-        "joining_date",
-        startDate,
-        endDate,
-        null,
-        downliners_ids,
-        null,
-        null,
-        1,
-        10,
-      );
-    } catch (error) {
-      console.log("all downlines error", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSelectUser = async (e) => {
-    const value = e.target.value;
-    setLoading(true);
-    setSelectedUserId(value);
-  };
-
-  const handleSelectUserBlur = async () => {
-    const value = selectedUserId;
-
-    const stringifiedValue = JSON.stringify(value || []);
-    if (prevSelectedUserIdRef.current === stringifiedValue) {
-      return;
-    }
-    prevSelectedUserIdRef.current = stringifiedValue;
-
-    try {
-      const response = await getAllDownlineUsers(
-        Array.isArray(value) && value.length > 0 ? value : loginUserId,
-      );
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
+      fetchFeeHistoryData({
+        dateType: "joining_date",
+        startDate: startDate,
+        endDate: endDate,
+        regionId: null,
+        branchId: null,
+        downliners: downliners_ids,
+        pageNumber: 1,
+        limit: 10,
       });
-      setAllDownliners(downliners_ids);
-
-      fetchFeeHistoryData(
-        dateFilterType,
-        selectedDates[0],
-        selectedDates[1],
-        searchValue,
-        downliners_ids,
-        selectedRegionId,
-        selectedBranchId,
-        1,
-        pagination.limit,
-      );
-      setPagination({ ...pagination, page: 1 });
     } catch (error) {
       console.log("all downlines error", error);
     } finally {
@@ -511,17 +465,7 @@ export default function FeeHistory({
   useEffect(() => {
     const handleRefreshFeesHistory = () => {
       if (allDownliners.length > 0) {
-        fetchFeeHistoryData(
-          dateFilterType,
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          allDownliners,
-          selectedRegionId,
-          selectedBranchId,
-          pagination.page,
-          pagination.limit,
-        );
+        fetchFeeHistoryData({});
       }
     };
     window.addEventListener("refreshFeesHistory", handleRefreshFeesHistory);
@@ -558,14 +502,34 @@ export default function FeeHistory({
     }
   }, [childUsers]);
 
-  const fetchFeeHistoryData = async (
+  const fetchFeeHistoryData = (overrides = {}) => {
+    getFeeHistoryData(
+      overrides.dateType !== undefined ? overrides.dateType : dateFilterType,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+    );
+  };
+
+  const getFeeHistoryData = async (
     dateType,
     startDate,
     endDate,
     searchvalue,
-    downliners,
     regionId,
     branchId,
+    downliners,
     pageNumber,
     limit,
   ) => {
@@ -579,9 +543,9 @@ export default function FeeHistory({
       start_date: moment(from_date).format("YYYY-MM-DD"),
       end_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
-      user_ids: downliners,
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
       // bucket: "FeeHistory",
@@ -621,17 +585,44 @@ export default function FeeHistory({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    fetchFeeHistoryData(
-      dateFilterType,
-      selectedDates[0],
-      selectedDates[1],
-      searchValue,
-      allDownliners,
-      selectedRegionId,
-      selectedBranchId,
-      page,
-      limit,
-    );
+    fetchFeeHistoryData({ pageNumber: page, limit: limit });
+  };
+
+  const handleSelectUser = async (e) => {
+    const value = e.target.value;
+    setLoading(true);
+    setSelectedUserId(value);
+  };
+
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+
+    try {
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) && value.length > 0 ? value : loginUserId,
+      );
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      fetchFeeHistoryData({
+        downliners: downliners_ids,
+        pageNumber: 1,
+      });
+      setPagination({ ...pagination, page: 1 });
+    } catch (error) {
+      console.log("all downlines error", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = (e) => {
@@ -640,17 +631,7 @@ export default function FeeHistory({
     setPagination({
       page: 1,
     });
-    fetchFeeHistoryData(
-      dateFilterType,
-      selectedDates[0],
-      selectedDates[1],
-      e.target.value,
-      allDownliners,
-      selectedRegionId,
-      selectedBranchId,
-      1,
-      pagination.limit,
-    );
+    fetchFeeHistoryData({ searchvalue: e.target.value, pageNumber: 1 });
   };
 
   const drawerColumns = columns.filter((col) =>
@@ -845,17 +826,10 @@ export default function FeeHistory({
                           setPagination({
                             page: 1,
                           });
-                          fetchFeeHistoryData(
-                            dateFilterType,
-                            selectedDates[0],
-                            selectedDates[1],
-                            null,
-                            allDownliners,
-                            selectedRegionId,
-                            selectedBranchId,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchFeeHistoryData({
+                            searchvalue: "",
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -905,19 +879,13 @@ export default function FeeHistory({
                       setSelectedUserId([]);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      fetchFeeHistoryData(
-                        dateFilterType,
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        defaultAllDownliners,
-                        value,
-                        null,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchFeeHistoryData({
+                        regionId: value,
+                        branchId: null,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -945,19 +913,12 @@ export default function FeeHistory({
                       getUsersData(selectedRegionId, value);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      fetchFeeHistoryData(
-                        dateFilterType,
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        defaultAllDownliners,
-                        selectedRegionId,
-                        value,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchFeeHistoryData({
+                        branchId: value,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -1016,17 +977,11 @@ export default function FeeHistory({
                         setPagination({
                           page: 1,
                         });
-                        fetchFeeHistoryData(
-                          dateFilterType,
-                          dates[0],
-                          dates[1],
-                          searchValue,
-                          allDownliners,
-                          selectedRegionId,
-                          selectedBranchId,
-                          1,
-                          pagination.limit,
-                        );
+                        fetchFeeHistoryData({
+                          startDate: dates[0],
+                          endDate: dates[1],
+                          pageNumber: 1,
+                        });
                       }}
                     />
                   </div>
@@ -1049,17 +1004,10 @@ export default function FeeHistory({
                               setPagination({
                                 page: 1,
                               });
-                              fetchFeeHistoryData(
-                                e.target.value,
-                                selectedDates[0],
-                                selectedDates[1],
-                                searchValue,
-                                allDownliners,
-                                selectedRegionId,
-                                selectedBranchId,
-                                1,
-                                pagination.limit,
-                              );
+                              fetchFeeHistoryData({
+                                dateType: e.target.value,
+                                pageNumber: 1,
+                              });
                             }}
                           >
                             <Radio

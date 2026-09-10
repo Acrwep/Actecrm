@@ -13,6 +13,7 @@ import {
   Skeleton,
   Tooltip,
   Button,
+  Upload,
 } from "antd";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { FaRegUser } from "react-icons/fa";
@@ -120,6 +121,9 @@ const InsertPendingFees = forwardRef(
     const [isOpenRevertModal, setIsOpenRevertModal] = useState("");
     const [revertItem, setRevertItem] = useState(null);
     const [revertButtonLoading, setRevertButtonLoading] = useState(false);
+    //preview usestates
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState("");
 
     useEffect(() => {
       setLoading(true);
@@ -193,6 +197,24 @@ const InsertPendingFees = forwardRef(
     useImperativeHandle(ref, () => ({
       handlePaymentSubmit,
     }));
+
+    const handlePreview = async (file) => {
+      if (file.url) {
+        setPreviewImage(file.url);
+        setPreviewOpen(true);
+        return;
+      }
+      setPreviewOpen(true);
+      const rawFile = file.originFileObj || file;
+      const reader = new FileReader();
+      reader.readAsDataURL(rawFile);
+      reader.onload = () => {
+        const dataUrl = reader.result; // Full base64 data URL like "data:image/jpeg;base64,..."
+        console.log("urlllll", dataUrl);
+        setPreviewImage(dataUrl); // Show in Modal
+        setPreviewOpen(true);
+      };
+    };
 
     const handlePaidNow = (e) => {
       const input = e.target.value;
@@ -679,12 +701,30 @@ const InsertPendingFees = forwardRef(
           </div>
         ) : (
           <>
-            <div className="customer_statusupdate_drawer_profileContainer">
+            <div
+              className="customer_statusupdate_drawer_profileContainer"
+              id="customer_history_profilecontainer"
+            >
               {customerDetails && customerDetails.profile_image ? (
-                <img
-                  src={customerDetails.profile_image}
-                  className="cutomer_profileimage"
-                />
+                <Upload
+                  listType="picture-circle"
+                  fileList={[
+                    {
+                      uid: "-1",
+                      name: "profile.jpg",
+                      status: "done",
+                      url: customerDetails && customerDetails.profile_image,
+                    },
+                  ]}
+                  onPreview={handlePreview}
+                  onRemove={false}
+                  showUploadList={{
+                    showRemoveIcon: false,
+                  }}
+                  beforeUpload={() => false}
+                  style={{ width: 90, height: 90 }}
+                  accept=".png,.jpg,.jpeg"
+                ></Upload>
               ) : (
                 <FaRegUser size={50} color="#333" />
               )}
@@ -696,40 +736,47 @@ const InsertPendingFees = forwardRef(
                     ? customerDetails.name
                     : "-"}
                 </p>
+                {customerDetails?.student_id && (
+                  <p className="customer_coursenametext">
+                    {customerDetails && customerDetails.student_id
+                      ? customerDetails.student_id
+                      : "-"}
+                  </p>
+                )}
                 <p className="customer_coursenametext">
                   {" "}
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
+                  Date Of Joining:{" "}
+                  {customerDetails && customerDetails.date_of_joining
+                    ? moment(customerDetails.date_of_joining).format(
+                        "DD/MM/YYYY",
+                      )
                     : "-"}
+                </p>
+
+                <p className="customer_coursenametext">
+                  Sale Executive:{" "}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </div>
             </div>
 
             <Row
               gutter={16}
-              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+              style={{
+                marginTop: "20px",
+                padding: "0px 0px 0px 24px",
+              }}
             >
               <Col span={12}>
                 <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegAddressCard size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Student Id</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.student_id
-                          ? customerDetails.student_id
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <FaRegCircleUser size={15} color="gray" />
@@ -747,7 +794,6 @@ const InsertPendingFees = forwardRef(
                     />
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -766,7 +812,6 @@ const InsertPendingFees = forwardRef(
                     />
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -776,13 +821,18 @@ const InsertPendingFees = forwardRef(
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.phone
-                        ? customerDetails.phone
+                      {customerDetails?.phone
+                        ? `${
+                            customerDetails?.phonecode
+                              ? customerDetails.phonecode.startsWith("+")
+                                ? customerDetails.phonecode
+                                : `+${customerDetails.phonecode}`
+                              : ""
+                          } ${customerDetails.phone}`
                         : "-"}
                     </p>
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -792,28 +842,16 @@ const InsertPendingFees = forwardRef(
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.whatsapp
-                        ? customerDetails.whatsapp
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      {customerDetails && customerDetails.gender === "Male" ? (
-                        <BsGenderMale size={15} color="gray" />
-                      ) : (
-                        <BsGenderFemale size={15} color="gray" />
-                      )}
-                      <p className="customerdetails_rowheading">Gender</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.gender
-                        ? customerDetails.gender
+                      {customerDetails?.whatsapp
+                        ? `${
+                            customerDetails?.whatsapp_phone_code
+                              ? customerDetails.whatsapp_phone_code.startsWith(
+                                  "+",
+                                )
+                                ? customerDetails.whatsapp_phone_code
+                                : `+${customerDetails.whatsapp_phone_code}`
+                              : ""
+                          } ${customerDetails.whatsapp}`
                         : "-"}
                     </p>
                   </Col>
@@ -823,44 +861,24 @@ const InsertPendingFees = forwardRef(
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
+                      <p className="customerdetails_rowheading">Address</p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.current_location
-                        ? customerDetails.current_location
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.address
+                          ? customerDetails.address
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
               </Col>
 
               <Col span={12}>
                 <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Lead Executive
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {`${
-                        customerDetails && customerDetails.lead_assigned_to_id
-                          ? customerDetails.lead_assigned_to_id
-                          : "-"
-                      } (${
-                        customerDetails && customerDetails.lead_assigned_to_name
-                          ? customerDetails.lead_assigned_to_name
-                          : "-"
-                      })`}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Course</p>
@@ -877,67 +895,85 @@ const InsertPendingFees = forwardRef(
                     />
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Branch</p>
+                      <p className="customerdetails_rowheading">Course Fees</p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.branch_name
-                        ? customerDetails.branch_name
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
                         : "-"}
                     </p>
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Track</p>
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_tracking
-                        ? customerDetails.batch_tracking
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.total_amount
+                        ? "₹" + customerDetails.total_amount
                         : "-"}
                     </p>
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Type</p>
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_timing
-                        ? customerDetails.batch_timing
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
                       {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
                         : "-"}
                     </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Mode Of Class
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails?.mode_of_class_name
+                          ? `${customerDetails.mode_of_class_name}${
+                              customerDetails?.place_of_service_name
+                                ? ` (${customerDetails.place_of_service_name})`
+                                : ""
+                            }`
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
               </Col>
@@ -1773,6 +1809,16 @@ const InsertPendingFees = forwardRef(
                   </Button>
                 )}
               </div>
+            </Modal>
+
+            {/* profile preview modal */}
+            <Modal
+              open={previewOpen}
+              title="Preview Profile"
+              footer={null}
+              onCancel={() => setPreviewOpen(false)}
+            >
+              <img alt="preview" style={{ width: "100%" }} src={previewImage} />
             </Modal>
           </>
         )}

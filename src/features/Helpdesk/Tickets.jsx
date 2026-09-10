@@ -666,7 +666,7 @@ export default function Tickets() {
 
       setLoginUserId(convertAsJson?.user_id);
       setSubUsers(downlineUsers);
-      rerunTicketsFilters(location.state, convertAsJson?.user_id);
+      rerunTicketsFilters(location.state);
     }
   }, [permissions]);
 
@@ -679,7 +679,7 @@ export default function Tickets() {
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
       // Re-run your existing logic
-      rerunTicketsFilters(data, convertAsJson?.user_id);
+      rerunTicketsFilters(data);
     };
 
     window.addEventListener("serverNotificationFilter", handler);
@@ -687,7 +687,7 @@ export default function Tickets() {
       window.removeEventListener("serverNotificationFilter", handler);
   }, []);
 
-  const rerunTicketsFilters = (stateData, userId) => {
+  const rerunTicketsFilters = (stateData) => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
 
     const receivedStartDateFromNotification = stateData?.startDate || null;
@@ -702,18 +702,36 @@ export default function Tickets() {
       setSelectedDates(PreviousAndCurrentDate);
     }
 
-    getTicketsData(
-      receivedStartDateFromNotification
+    fetchTicketsData({
+      startDate: receivedStartDateFromNotification
         ? receivedStartDateFromNotification
         : PreviousAndCurrentDate[0],
-      receivedEndDateFromNotification
+      endDate: receivedEndDateFromNotification
         ? receivedEndDateFromNotification
         : PreviousAndCurrentDate[1],
-      userId,
-      "",
-      null,
-      1,
-      10,
+      user_id: null,
+      status: "",
+      categoryId: null,
+      pageNumber: 1,
+      limit: 10,
+    });
+  };
+
+  const fetchTicketsData = (overrides = {}) => {
+    getTicketsData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.user_id !== undefined ? overrides.user_id : selectedUserId,
+      overrides.status !== undefined ? overrides.status : status,
+      overrides.categoryId !== undefined ? overrides.categoryId : categoryId,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
     );
   };
 
@@ -725,7 +743,6 @@ export default function Tickets() {
     categoryId,
     pageNumber,
     limit,
-    isSearch = false,
   ) => {
     setLoading(true);
     const payload = {
@@ -733,7 +750,7 @@ export default function Tickets() {
       end_date: endDate,
       user_id: user_id ? user_id : loginUserId,
       status: status,
-      show_all: isSearch
+      show_all: user_id
         ? false
         : permissions.includes("Show All Tickets")
           ? true
@@ -796,15 +813,7 @@ export default function Tickets() {
       page: page,
       limit: limit,
     });
-    getTicketsData(
-      selectedDates[0],
-      selectedDates[1],
-      loginUserId,
-      status,
-      categoryId,
-      page,
-      limit,
-    );
+    fetchTicketsData({ pageNumber: page, limit: limit });
   };
 
   const handleStatusMismatch = () => {
@@ -845,15 +854,7 @@ export default function Tickets() {
         CommonMessage("success", "Updated");
         drawerReset();
         handleTicketTrack(updateStatus);
-        getTicketsData(
-          selectedDates[0],
-          selectedDates[1],
-          loginUserId,
-          status,
-          categoryId,
-          pagination.page,
-          pagination.limit,
-        );
+        fetchTicketsData({});
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -974,16 +975,7 @@ export default function Tickets() {
   const handleSelectUser = async (e) => {
     const value = e.target.value;
     setSelectedUserId(value);
-    getTicketsData(
-      selectedDates[0],
-      selectedDates[1],
-      value,
-      status,
-      categoryId,
-      1,
-      pagination.limit,
-      value ? true : false,
-    );
+    fetchTicketsData({ user_id: value });
   };
 
   const getParticularCustomerDetails = async (customer_id) => {
@@ -1008,21 +1000,23 @@ export default function Tickets() {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
+    setSelectedUserId(null);
+    setCategoryId(null);
     setPagination({
       page: 1,
       limit: 10,
       total: 0,
       totalPages: 0,
     });
-    getTicketsData(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      loginUserId,
-      "",
-      null,
-      1,
-      10,
-    );
+    fetchTicketsData({
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+      user_id: null,
+      status: "",
+      categoryId: null,
+      pageNumber: 1,
+      limit: 10,
+    });
   };
 
   return (
@@ -1048,15 +1042,11 @@ export default function Tickets() {
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    dates[0],
-                    dates[1],
-                    loginUserId,
-                    status,
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                    pageNumber: 1,
+                  });
                 }}
               />
             </Col>
@@ -1151,15 +1141,11 @@ export default function Tickets() {
                         setStatus("");
                         setCategoryId(null);
                         setPagination({ ...pagination, page: 1 });
-                        getTicketsData(
-                          selectedDates[0],
-                          selectedDates[1],
-                          loginUserId,
-                          "",
-                          null,
-                          1,
-                          pagination.limit,
-                        );
+                        fetchTicketsData({
+                          status: "",
+                          categoryId: null,
+                          pageNumber: 1,
+                        });
                       },
                     },
                     ...categoryOptions.map((item, index) => ({
@@ -1179,15 +1165,11 @@ export default function Tickets() {
                         setCategoryId(item.id);
                         setStatus("");
                         setPagination({ ...pagination, page: 1 });
-                        getTicketsData(
-                          selectedDates[0],
-                          selectedDates[1],
-                          loginUserId,
-                          "",
-                          item.id,
-                          1,
-                          pagination.limit,
-                        );
+                        fetchTicketsData({
+                          status: "",
+                          categoryId: item.id,
+                          pageNumber: 1,
+                        });
                       },
                     })),
                   ],
@@ -1202,15 +1184,10 @@ export default function Tickets() {
                   onClick={() => {
                     setStatus("");
                     setPagination({ ...pagination, page: 1 });
-                    getTicketsData(
-                      selectedDates[0],
-                      selectedDates[1],
-                      loginUserId,
-                      "",
-                      categoryId,
-                      1,
-                      pagination.limit,
-                    );
+                    fetchTicketsData({
+                      status: "",
+                      pageNumber: 1,
+                    });
                   }}
                   style={{ cursor: "pointer" }}
                 >
@@ -1247,15 +1224,10 @@ export default function Tickets() {
                   }
                   setStatus("Awaiting Employee");
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    loginUserId,
-                    "Awaiting Employee",
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    status: "Awaiting Employee",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1282,15 +1254,10 @@ export default function Tickets() {
                   }
                   setStatus("Assigned");
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    loginUserId,
-                    "Assigned",
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    status: "Assigned",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1317,15 +1284,10 @@ export default function Tickets() {
                   }
                   setStatus("Hold");
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    loginUserId,
-                    "Hold",
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    status: "Hold",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1351,15 +1313,10 @@ export default function Tickets() {
                   }
                   setStatus("Close Request");
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    loginUserId,
-                    "Close Request",
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    status: "Close Request",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1385,15 +1342,10 @@ export default function Tickets() {
                   }
                   setStatus("Overdue");
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    loginUserId,
-                    "Overdue",
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    status: "Overdue",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1419,15 +1371,10 @@ export default function Tickets() {
                   }
                   setStatus("Closed");
                   setPagination({ ...pagination, page: 1 });
-                  getTicketsData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    loginUserId,
-                    "Closed",
-                    categoryId,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTicketsData({
+                    status: "Closed",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -1514,15 +1461,7 @@ export default function Tickets() {
               setIsOpenAddDrawer(false);
               setButtonLoading(false);
               setTicketDetails(null);
-              getTicketsData(
-                selectedDates[0],
-                selectedDates[1],
-                loginUserId,
-                status,
-                categoryId,
-                pagination.page,
-                pagination.limit,
-              );
+              fetchTicketsData({});
             }}
           />
         ) : (
@@ -1690,15 +1629,7 @@ export default function Tickets() {
               setButtonLoading={setButtonLoading}
               callgetTicketsApi={() => {
                 drawerReset();
-                getTicketsData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  loginUserId,
-                  status,
-                  categoryId,
-                  1,
-                  pagination.limit,
-                );
+                fetchTicketsData({});
               }}
             />
           ) : drawerStatus == "Ticket History" ? (

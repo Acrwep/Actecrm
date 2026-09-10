@@ -80,19 +80,9 @@ export default function Received({
       const startDate = new Date(filterData.startDate);
       const endDate = new Date(filterData.endDate);
       setSelectedDates([startDate, endDate]);
-      getPaymentRecievedData(
-        startDate,
-        endDate,
-        searchValue,
-        allDownliners,
-        selectedRegionId,
-        selectedBranchId,
-        1,
-        pagination.limit,
-        paymentType,
-      );
+      fetchReceivedPaymentsData({});
     }
-  }, [filterData, paymentType]);
+  }, [filterData]);
 
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
@@ -559,17 +549,7 @@ export default function Received({
   useEffect(() => {
     const handleRefreshReceived = () => {
       if (allDownliners.length > 0) {
-        getPaymentRecievedData(
-          selectedDates[0],
-          selectedDates[1],
-          searchValue,
-          allDownliners,
-          selectedRegionId,
-          selectedBranchId,
-          pagination.page,
-          pagination.limit,
-          paymentType,
-        );
+        fetchReceivedPaymentsData({});
       }
     };
     window.addEventListener("refreshReceived", handleRefreshReceived);
@@ -603,32 +583,54 @@ export default function Received({
       const endDate = filterData?.endDate
         ? new Date(filterData.endDate)
         : PreviousYearDec26ToCurrentDate[1];
-      getPaymentRecievedData(
-        startDate,
-        endDate,
-        null,
-        downliners_ids,
-        null,
-        null,
-        1,
-        10,
-        paymentType,
-      );
+      fetchReceivedPaymentsData({
+        payment_type: "NEW",
+        startDate: startDate,
+        endDate: endDate,
+        searchvalue: "",
+        regionId: null,
+        branchId: null,
+        downliners: downliners_ids,
+        pageNumber: 1,
+        limit: 10,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
   };
 
+  const fetchReceivedPaymentsData = (overrides = {}) => {
+    getPaymentRecievedData(
+      overrides.payment_type !== undefined
+        ? overrides.payment_type
+        : paymentType,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+    );
+  };
+
   const getPaymentRecievedData = async (
+    payment_type,
     startDate,
     endDate,
     searchvalue,
-    downliners,
     regionId,
     branchId,
+    downliners,
     pageNumber,
     limit,
-    payment_type,
   ) => {
     setLoading(true);
 
@@ -636,15 +638,15 @@ export default function Received({
     const to_date = formatToBackendIST(endDate);
 
     const payload = {
+      ...(payment_type && { payment_type }),
       start_date: moment(from_date).format("YYYY-MM-DD"),
       end_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
-      user_ids: downliners,
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
+      user_ids: downliners,
       page: pageNumber,
       limit: limit,
-      ...(payment_type && { payment_type }),
     };
     try {
       const response = await getPaymentRecievedList(payload);
@@ -675,17 +677,7 @@ export default function Received({
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getPaymentRecievedData(
-      selectedDates[0],
-      selectedDates[1],
-      searchValue,
-      allDownliners,
-      selectedRegionId,
-      selectedBranchId,
-      page,
-      limit,
-      paymentType,
-    );
+    fetchReceivedPaymentsData({ pageNumber: page, limit: limit });
   };
 
   const handleSearch = (e) => {
@@ -694,17 +686,7 @@ export default function Received({
     setPagination({
       page: 1,
     });
-    getPaymentRecievedData(
-      selectedDates[0],
-      selectedDates[1],
-      e.target.value,
-      allDownliners,
-      selectedRegionId,
-      selectedBranchId,
-      1,
-      pagination.limit,
-      paymentType,
-    );
+    fetchReceivedPaymentsData({ searchvalue: e.target.value, pageNumber: 1 });
   };
 
   const handleSelectUser = async (e) => {
@@ -736,17 +718,7 @@ export default function Received({
       setPagination({
         page: 1,
       });
-      getPaymentRecievedData(
-        selectedDates[0],
-        selectedDates[1],
-        searchValue,
-        downliners_ids,
-        selectedRegionId,
-        selectedBranchId,
-        1,
-        pagination.limit,
-        paymentType,
-      );
+      fetchReceivedPaymentsData({ downliners: downliners_ids, pageNumber: 1 });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -910,6 +882,7 @@ export default function Received({
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
+    setPaymentType("NEW");
     const PreviousYearDec26ToCurrentDate =
       getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
@@ -961,17 +934,10 @@ export default function Received({
                           setPagination({
                             page: 1,
                           });
-                          getPaymentRecievedData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            null,
-                            allDownliners,
-                            selectedRegionId,
-                            selectedBranchId,
-                            1,
-                            pagination.limit,
-                            paymentType,
-                          );
+                          fetchReceivedPaymentsData({
+                            searchvalue: "",
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -1021,19 +987,13 @@ export default function Received({
                       setSelectedUserId([]);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      getPaymentRecievedData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        defaultAllDownliners,
-                        value,
-                        null,
-                        1,
-                        pagination.limit,
-                        paymentType,
-                      );
+                      fetchReceivedPaymentsData({
+                        regionId: value,
+                        branchId: null,
+                        downliners: defaultAllDownliners,
+                        page: 1,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -1061,19 +1021,12 @@ export default function Received({
                       getUsersData(selectedRegionId, value);
                       setPagination({
                         page: 1,
-                        limit: pagination.limit,
                       });
-                      getPaymentRecievedData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        defaultAllDownliners,
-                        selectedRegionId,
-                        value,
-                        1,
-                        pagination.limit,
-                        paymentType,
-                      );
+                      fetchReceivedPaymentsData({
+                        branchId: value,
+                        downliners: defaultAllDownliners,
+                        page: 1,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -1107,17 +1060,11 @@ export default function Received({
                     setPagination({
                       page: 1,
                     });
-                    getPaymentRecievedData(
-                      dates[0],
-                      dates[1],
-                      searchValue,
-                      allDownliners,
-                      selectedRegionId,
-                      selectedBranchId,
-                      1,
-                      pagination.limit,
-                      paymentType,
-                    );
+                    fetchReceivedPaymentsData({
+                      startDate: dates[0],
+                      endDate: dates[1],
+                      pageNumber: 1,
+                    });
                   }}
                 />
               </div>
@@ -1204,17 +1151,10 @@ export default function Received({
                         }
                         setPaymentType(bucket.value);
                         setPagination({ ...pagination, page: 1 });
-                        getPaymentRecievedData(
-                          selectedDates[0],
-                          selectedDates[1],
-                          searchValue,
-                          allDownliners,
-                          selectedRegionId,
-                          selectedBranchId,
-                          1,
-                          pagination.limit,
-                          bucket.value,
-                        );
+                        fetchReceivedPaymentsData({
+                          payment_type: bucket.value,
+                          pageNumber: 1,
+                        });
                       }}
                       className={`leadmanager_bucket ${isActive ? "active" : ""}`}
                       style={{
@@ -1355,17 +1295,10 @@ export default function Received({
                       }
                       setPaymentType(bucket.value);
                       setPagination({ ...pagination, page: 1 });
-                      getPaymentRecievedData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        searchValue,
-                        allDownliners,
-                        selectedRegionId,
-                        selectedBranchId,
-                        1,
-                        pagination.limit,
-                        bucket.value,
-                      );
+                      fetchReceivedPaymentsData({
+                        payment_type: bucket.value,
+                        pageNumber: 1,
+                      });
                     }}
                     className={`leadmanager_bucket ${isActive ? "active" : ""}`}
                     style={{
@@ -1674,7 +1607,10 @@ export default function Received({
           </div>
         ) : (
           <>
-            <div className="customer_statusupdate_drawer_profileContainer">
+            <div
+              className="customer_statusupdate_drawer_profileContainer"
+              id="customer_history_profilecontainer"
+            >
               {customerDetails && customerDetails.profile_image ? (
                 <Upload
                   listType="picture-circle"
@@ -1683,7 +1619,7 @@ export default function Received({
                       uid: "-1",
                       name: "profile.jpg",
                       status: "done",
-                      url: customerDetails.profile_image, // Base64 string directly usable
+                      url: customerDetails && customerDetails.profile_image,
                     },
                   ]}
                   onPreview={handlePreview}
@@ -1691,8 +1627,8 @@ export default function Received({
                   showUploadList={{
                     showRemoveIcon: false,
                   }}
-                  beforeUpload={() => false} // prevent auto upload
-                  style={{ width: 90, height: 90 }} // reduce size
+                  beforeUpload={() => false}
+                  style={{ width: 90, height: 90 }}
                   accept=".png,.jpg,.jpeg"
                 ></Upload>
               ) : (
@@ -1706,48 +1642,47 @@ export default function Received({
                     ? customerDetails.name
                     : "-"}
                 </p>
+                {customerDetails?.student_id && (
+                  <p className="customer_coursenametext">
+                    {customerDetails && customerDetails.student_id
+                      ? customerDetails.student_id
+                      : "-"}
+                  </p>
+                )}
                 <p className="customer_coursenametext">
                   {" "}
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
+                  Date Of Joining:{" "}
+                  {customerDetails && customerDetails.date_of_joining
+                    ? moment(customerDetails.date_of_joining).format(
+                        "DD/MM/YYYY",
+                      )
                     : "-"}
+                </p>
+
+                <p className="customer_coursenametext">
+                  Sale Executive:{" "}
+                  {`${
+                    customerDetails && customerDetails.lead_assigned_to_id
+                      ? customerDetails.lead_assigned_to_id
+                      : "-"
+                  } (${
+                    customerDetails && customerDetails.lead_assigned_to_name
+                      ? customerDetails.lead_assigned_to_name
+                      : "-"
+                  })`}
                 </p>
               </div>
             </div>
 
             <Row
               gutter={16}
-              style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
+              style={{
+                marginTop: "20px",
+                padding: "0px 0px 0px 24px",
+              }}
             >
               <Col span={12}>
                 <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <LiaIdCardSolid
-                        size={19}
-                        color="gray"
-                        style={{
-                          flexShrink: 0,
-                          marginLeft: "-2.3px",
-                          marginRight: "-2px",
-                        }}
-                      />
-                      <p className="customerdetails_rowheading">Student Id</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={
-                        customerDetails && customerDetails.student_id
-                          ? customerDetails.student_id
-                          : "-"
-                      }
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <FaRegCircleUser size={15} color="gray" />
@@ -1765,7 +1700,6 @@ export default function Received({
                     />
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -1784,7 +1718,6 @@ export default function Received({
                     />
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -1794,13 +1727,18 @@ export default function Received({
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.phone
-                        ? customerDetails.phone
+                      {customerDetails?.phone
+                        ? `${
+                            customerDetails?.phonecode
+                              ? customerDetails.phonecode.startsWith("+")
+                                ? customerDetails.phonecode
+                                : `+${customerDetails.phonecode}`
+                              : ""
+                          } ${customerDetails.phone}`
                         : "-"}
                     </p>
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
@@ -1810,28 +1748,16 @@ export default function Received({
                   </Col>
                   <Col span={12}>
                     <p className="customerdetails_text">
-                      {customerDetails && customerDetails.whatsapp
-                        ? customerDetails.whatsapp
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      {customerDetails && customerDetails.gender === "Male" ? (
-                        <BsGenderMale size={15} color="gray" />
-                      ) : (
-                        <BsGenderFemale size={15} color="gray" />
-                      )}
-                      <p className="customerdetails_rowheading">Gender</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.gender
-                        ? customerDetails.gender
+                      {customerDetails?.whatsapp
+                        ? `${
+                            customerDetails?.whatsapp_phone_code
+                              ? customerDetails.whatsapp_phone_code.startsWith(
+                                  "+",
+                                )
+                                ? customerDetails.whatsapp_phone_code
+                                : `+${customerDetails.whatsapp_phone_code}`
+                              : ""
+                          } ${customerDetails.whatsapp}`
                         : "-"}
                     </p>
                   </Col>
@@ -1841,45 +1767,24 @@ export default function Received({
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
+                      <p className="customerdetails_rowheading">Address</p>
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.current_location
-                        ? customerDetails.current_location
-                        : "-"}
-                    </p>
+                    <EllipsisTooltip
+                      text={
+                        customerDetails && customerDetails.address
+                          ? customerDetails.address
+                          : "-"
+                      }
+                      smallText={true}
+                    />
                   </Col>
                 </Row>
               </Col>
 
               <Col span={12}>
                 <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Lead Executive
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <EllipsisTooltip
-                      text={`${
-                        customerDetails && customerDetails.lead_assigned_to_id
-                          ? customerDetails.lead_assigned_to_id
-                          : "-"
-                      } (${
-                        customerDetails && customerDetails.lead_assigned_to_name
-                          ? customerDetails.lead_assigned_to_name
-                          : "-"
-                      })`}
-                      smallText={true}
-                    />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
                       <p className="customerdetails_rowheading">Course</p>
@@ -1896,70 +1801,85 @@ export default function Received({
                     />
                   </Col>
                 </Row>
-
                 <Row style={{ marginTop: "12px" }}>
                   <Col span={12}>
                     <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Branch</p>
+                      <p className="customerdetails_rowheading">Course Fees</p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.primary_fees
+                        ? "₹" + customerDetails.primary_fees
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Course Fees
+                        <span className="customerdetails_coursegst">{` (+Gst)`}</span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ fontWeight: 700 }}
+                    >
+                      {customerDetails && customerDetails.total_amount
+                        ? "₹" + customerDetails.total_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Balance Amount
+                      </p>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <p
+                      className="customerdetails_text"
+                      style={{ color: "#d32f2f", fontWeight: 700 }}
+                    >
+                      {customerDetails &&
+                      customerDetails.balance_amount !== undefined &&
+                      customerDetails.balance_amount !== null
+                        ? "₹" + customerDetails.balance_amount
+                        : "-"}
+                    </p>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: "12px" }}>
+                  <Col span={12}>
+                    <div className="customerdetails_rowheadingContainer">
+                      <p className="customerdetails_rowheading">
+                        Mode Of Class
+                      </p>
                     </div>
                   </Col>
                   <Col span={12}>
                     <EllipsisTooltip
                       text={
-                        customerDetails && customerDetails.branch_name
-                          ? customerDetails.branch_name
+                        customerDetails?.mode_of_class_name
+                          ? `${customerDetails.mode_of_class_name}${
+                              customerDetails?.place_of_service_name
+                                ? ` (${customerDetails.place_of_service_name})`
+                                : ""
+                            }`
                           : "-"
                       }
                       smallText={true}
                     />
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Track</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_tracking
-                        ? customerDetails.batch_tracking
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Batch Type</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails && customerDetails.batch_timing
-                        ? customerDetails.batch_timing
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Server</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {customerDetails &&
-                      customerDetails.is_server_required !== undefined
-                        ? customerDetails.is_server_required === 1
-                          ? "Required"
-                          : "Not Required"
-                        : "-"}
-                    </p>
                   </Col>
                 </Row>
               </Col>
@@ -1978,17 +1898,7 @@ export default function Received({
                   setPagination({
                     page: 1,
                   });
-                  getPaymentRecievedData(
-                    selectedDates[0],
-                    selectedDates[1],
-                    searchValue,
-                    allDownliners,
-                    selectedRegionId,
-                    selectedBranchId,
-                    pagination.page,
-                    pagination.limit,
-                    paymentType,
-                  );
+                  fetchReceivedPaymentsData({});
                   window.dispatchEvent(new CustomEvent("refreshReceivables"));
                   window.dispatchEvent(new CustomEvent("refreshFeesHistory"));
                 }}
