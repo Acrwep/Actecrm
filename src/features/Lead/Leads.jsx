@@ -924,25 +924,16 @@ export default function Leads({
             pageLimit: pagination.limit,
           }),
         );
-        getAllLeadData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          allDownliners,
-          modeOfTrainingFilterId,
-          leadSourceFilterId,
-          leadSubSourceFilterId,
-          leadStatusId,
-          selectedOrigin,
-          targetBucket === "all" ? "" : targetBucket,
-          1,
-          pagination.limit,
-          targetBucket === "Followup Leads"
-            ? "all"
-            : targetBucket === "Interested Leads"
-              ? "super_hot"
-              : "all",
-        );
+        fetchAllLeadsData({
+          bucket: targetBucket === "all" ? "" : targetBucket,
+          pageNumber: 1,
+          actionOverride:
+            targetBucket === "Followup Leads"
+              ? "all"
+              : targetBucket === "Interested Leads"
+                ? "super_hot"
+                : "all",
+        });
       }
     }
   }, [activePage, mounted]);
@@ -954,21 +945,10 @@ export default function Leads({
     }
     if (mounted.current && triggerApi !== undefined) {
       setLoading(true);
-      getAllLeadData(
-        searchValue,
-        selectedDates[0],
-        selectedDates[1],
-        allDownliners,
-        modeOfTrainingFilterId,
-        leadSourceFilterId,
-        leadSubSourceFilterId,
-        leadStatusId,
-        selectedOrigin,
-        leadBucketName === "All" ? "" : leadBucketName,
-        pagination.page,
-        pagination.limit,
-        leadActionFilter,
-      );
+      fetchAllLeadsData({
+        bucket: leadBucketName === "All" ? "" : leadBucketName,
+        actionOverride: leadActionFilter,
+      });
     }
   }, [triggerApi]);
 
@@ -1528,32 +1508,77 @@ export default function Leads({
       });
       setAllDownliners(downliners_ids);
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getAllLeadData(
-        filterValuesFromRedux.searchValue,
-        filterValuesFromRedux.start_date
+      fetchAllLeadsData({
+        searchvalue: filterValuesFromRedux.searchValue,
+        startDate: filterValuesFromRedux.start_date
           ? filterValuesFromRedux.start_date
           : PreviousAndCurrentDate[0],
-        filterValuesFromRedux.end_date
+        endDate: filterValuesFromRedux.end_date
           ? filterValuesFromRedux.end_date
           : PreviousAndCurrentDate[1],
-        downliners_ids,
-        filterValuesFromRedux.mode_of_training,
-        filterValuesFromRedux.lead_source,
-        filterValuesFromRedux.lead_sub_source,
-        filterValuesFromRedux.lead_status_id,
-        filterValuesFromRedux?.origin,
-        bucketOverride !== undefined
-          ? bucketOverride
-          : filterValuesFromRedux.bucket == "all"
-            ? ""
-            : filterValuesFromRedux.bucket,
-        filterValuesFromRedux.pageNumber,
-        filterValuesFromRedux.pageLimit,
-        actionOverride,
-      );
+        downliners: downliners_ids,
+        mode_of_training: filterValuesFromRedux.mode_of_training,
+        leadsource: filterValuesFromRedux.lead_source,
+        lead_sub_source: filterValuesFromRedux.lead_sub_source,
+        leadStatusId: filterValuesFromRedux.lead_status_id,
+        origin: filterValuesFromRedux?.origin,
+        bucket:
+          bucketOverride !== undefined
+            ? bucketOverride
+            : filterValuesFromRedux.bucket == "all"
+              ? ""
+              : filterValuesFromRedux.bucket,
+        pageNumber: filterValuesFromRedux.pageNumber,
+        limit: filterValuesFromRedux.pageLimit,
+        actionOverride: actionOverride,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
+  };
+
+  const fetchAllLeadsData = (overrides = {}) => {
+    getAllLeadData(
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.mode_of_training !== undefined
+        ? overrides.mode_of_training
+        : modeOfTrainingFilterId,
+      overrides.leadsource !== undefined
+        ? overrides.leadsource
+        : leadSourceFilterId,
+      overrides.lead_sub_source !== undefined
+        ? overrides.lead_sub_source
+        : leadSubSourceFilterId,
+      overrides.leadStatusId !== undefined
+        ? overrides.leadStatusId
+        : leadStatusId,
+      overrides.origin !== undefined ? overrides.origin : selectedOrigin,
+      overrides.bucket !== undefined
+        ? overrides.bucket
+        : filterValuesFromRedux.bucket,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+      overrides.actionOverride !== undefined
+        ? overrides.actionOverride
+        : undefined,
+      overrides.sortFieldParam !== undefined
+        ? overrides.sortFieldParam
+        : undefined,
+      overrides.sortOrderParam !== undefined
+        ? overrides.sortOrderParam
+        : undefined,
+      overrides.regionParam !== undefined ? overrides.regionParam : undefined,
+      overrides.branchParam !== undefined ? overrides.branchParam : undefined,
+    );
   };
 
   const getAllLeadData = async (
@@ -1815,20 +1840,10 @@ export default function Leads({
       setPagination({
         page: 1,
       });
-      getAllLeadData(
-        e.target.value,
-        selectedDates[0],
-        selectedDates[1],
-        allDownliners,
-        modeOfTrainingFilterId,
-        leadSourceFilterId,
-        leadSubSourceFilterId,
-        leadStatusId,
-        selectedOrigin,
-        filterValuesFromRedux.bucket,
-        1,
-        pagination.limit,
-      );
+      fetchAllLeadsData({
+        searchvalue: e.target.value,
+        pageNumber: 1,
+      });
     }, 300);
   };
 
@@ -1881,20 +1896,7 @@ export default function Leads({
       try {
         await leadReEntry(payload);
         setTimeout(() => {
-          getAllLeadData(
-            searchValue,
-            selectedDates[0],
-            selectedDates[1],
-            allDownliners,
-            modeOfTrainingFilterId,
-            leadSourceFilterId,
-            leadSubSourceFilterId,
-            leadStatusId,
-            selectedOrigin,
-            filterValuesFromRedux.bucket,
-            pagination.page,
-            pagination.limit,
-          );
+          fetchAllLeadsData();
           handleAssignLeadCancel();
           setIsShowEdit(true);
           setSelectedRowKeys([]);
@@ -1934,23 +1936,10 @@ export default function Leads({
         pageLimit: limit,
       }),
     );
-    getAllLeadData(
-      searchValue,
-      selectedDates[0],
-      selectedDates[1],
-      allDownliners,
-      modeOfTrainingFilterId,
-      leadSourceFilterId,
-      leadSubSourceFilterId,
-      leadStatusId,
-      selectedOrigin,
-      filterValuesFromRedux.bucket,
-      page,
-      limit,
-      undefined,
-      currentSortField,
-      currentSortOrder,
-    );
+    fetchAllLeadsData({
+      pageNumber: page,
+      limit: limit,
+    });
   };
 
   const getBranchesData = async (regionid) => {
@@ -2019,25 +2008,11 @@ export default function Leads({
           pageLimit: pagination.limit,
         }),
       );
-      getAllLeadData(
-        searchValue,
-        selectedDates[0],
-        selectedDates[1],
-        downliners_ids,
-        modeOfTrainingFilterId,
-        leadSourceFilterId,
-        leadSubSourceFilterId,
-        leadStatusId,
-        selectedOrigin,
-        filterValuesFromRedux.bucket,
-        1,
-        pagination.limit,
-        undefined,
-        undefined,
-        undefined,
-        selectedRegion,
-        selectedBranchId,
-      );
+      fetchAllLeadsData({
+        downliners: downliners_ids,
+        pageNumber: 1,
+        branchParam: selectedBranchId,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -2180,20 +2155,7 @@ export default function Leads({
       CommonMessage("success", "Re-Assigned Successfully");
       openLeadsFormReset();
 
-      getAllLeadData(
-        searchValue,
-        selectedDates[0],
-        selectedDates[1],
-        allDownliners,
-        modeOfTrainingFilterId,
-        leadSourceFilterId,
-        leadSubSourceFilterId,
-        leadStatusId,
-        selectedOrigin,
-        filterValuesFromRedux.bucket,
-        pagination.page,
-        pagination.limit,
-      );
+      fetchAllLeadsData();
     } catch (error) {
       setButtonLoading(false);
       console.log("self reassign error", error);
@@ -2306,20 +2268,10 @@ export default function Leads({
                               pageLimit: pagination.limit,
                             }),
                           );
-                          getAllLeadData(
-                            null,
-                            selectedDates[0],
-                            selectedDates[1],
-                            allDownliners,
-                            modeOfTrainingFilterId,
-                            leadSourceFilterId,
-                            leadSubSourceFilterId,
-                            leadStatusId,
-                            selectedOrigin,
-                            filterValuesFromRedux.bucket,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchAllLeadsData({
+                            searchvalue: null,
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -2355,25 +2307,11 @@ export default function Leads({
                       setSelectedBranchId(null);
                       setSelectedUserId([]);
                       setPagination({ page: 1, limit: pagination.limit });
-                      getAllLeadData(
-                        searchValue,
-                        selectedDates[0],
-                        selectedDates[1],
-                        allDownliners,
-                        modeOfTrainingFilterId,
-                        leadSourceFilterId,
-                        leadSubSourceFilterId,
-                        leadStatusId,
-                        selectedOrigin,
-                        filterValuesFromRedux.bucket,
-                        1,
-                        pagination.limit,
-                        undefined,
-                        undefined,
-                        undefined,
-                        value,
-                        null,
-                      );
+                      fetchAllLeadsData({
+                        pageNumber: 1,
+                        regionParam: value,
+                        branchParam: null,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -2399,25 +2337,10 @@ export default function Leads({
                       setSelectedUserId([]);
                       getUsersData(selectedRegion, value);
                       setPagination({ page: 1, limit: pagination.limit });
-                      getAllLeadData(
-                        searchValue,
-                        selectedDates[0],
-                        selectedDates[1],
-                        allDownliners,
-                        modeOfTrainingFilterId,
-                        leadSourceFilterId,
-                        leadSubSourceFilterId,
-                        leadStatusId,
-                        selectedOrigin,
-                        filterValuesFromRedux.bucket,
-                        1,
-                        pagination.limit,
-                        undefined,
-                        undefined,
-                        undefined,
-                        selectedRegion,
-                        value,
-                      );
+                      fetchAllLeadsData({
+                        pageNumber: 1,
+                        branchParam: value,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -2541,20 +2464,11 @@ export default function Leads({
                   setPagination({
                     page: 1,
                   });
-                  getAllLeadData(
-                    searchValue,
-                    dates[0],
-                    dates[1],
-                    allDownliners,
-                    modeOfTrainingFilterId,
-                    leadSourceFilterId,
-                    leadSubSourceFilterId,
-                    leadStatusId,
-                    selectedOrigin,
-                    filterValuesFromRedux.bucket,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchAllLeadsData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                    pageNumber: 1,
+                  });
                 }}
               />
             </Col>
@@ -2634,20 +2548,10 @@ export default function Leads({
                                 pageLimit: pagination.limit,
                               }),
                             );
-                            getAllLeadData(
-                              searchValue,
-                              selectedDates[0],
-                              selectedDates[1],
-                              allDownliners,
-                              value,
-                              leadSourceFilterId,
-                              leadSubSourceFilterId,
-                              leadStatusId,
-                              selectedOrigin,
-                              filterValuesFromRedux.bucket,
-                              1,
-                              pagination.limit,
-                            );
+                            fetchAllLeadsData({
+                              mode_of_training: value,
+                              pageNumber: 1,
+                            });
                           }}
                           value={modeOfTrainingFilterId}
                           disableClearable={false}
@@ -2676,20 +2580,12 @@ export default function Leads({
                                 pageLimit: pagination.limit,
                               }),
                             );
-                            getAllLeadData(
-                              searchValue,
-                              selectedDates[0],
-                              selectedDates[1],
-                              allDownliners,
-                              modeOfTrainingFilterId,
-                              e.target.value,
-                              null,
-                              leadStatusId,
-                              null,
-                              filterValuesFromRedux.bucket,
-                              1,
-                              pagination.limit,
-                            );
+                            fetchAllLeadsData({
+                              leadsource: e.target.value,
+                              lead_sub_source: null,
+                              origin: null,
+                              pageNumber: 1,
+                            });
                             if (value == 2 || value == 3 || value == 6) {
                               setLeadSubSourceOptions([]);
                               setLeadSubSourceFilterId(null);
@@ -2724,20 +2620,11 @@ export default function Leads({
                                 pageLimit: pagination.limit,
                               }),
                             );
-                            getAllLeadData(
-                              searchValue,
-                              selectedDates[0],
-                              selectedDates[1],
-                              allDownliners,
-                              modeOfTrainingFilterId,
-                              leadSourceFilterId,
-                              e.target.value,
-                              leadStatusId,
-                              null,
-                              filterValuesFromRedux.bucket,
-                              1,
-                              pagination.limit,
-                            );
+                            fetchAllLeadsData({
+                              lead_sub_source: e.target.value,
+                              origin: null,
+                              pageNumber: 1,
+                            });
                           }}
                           value={leadSubSourceFilterId}
                           disableClearable={false}
@@ -2796,20 +2683,10 @@ export default function Leads({
                                   pageLimit: pagination.limit,
                                 }),
                               );
-                              getAllLeadData(
-                                searchValue,
-                                selectedDates[0],
-                                selectedDates[1],
-                                allDownliners,
-                                modeOfTrainingFilterId,
-                                leadSourceFilterId,
-                                leadSubSourceFilterId,
-                                leadStatusId,
-                                e.target.value,
-                                filterValuesFromRedux.bucket,
-                                1,
-                                pagination.limit,
-                              );
+                              fetchAllLeadsData({
+                                origin: e.target.value,
+                                pageNumber: 1,
+                              });
                             }}
                             value={selectedOrigin}
                             disableClearable={false}
@@ -2837,20 +2714,10 @@ export default function Leads({
                           ]}
                           onChange={(e) => {
                             setLeadStatusId(e.target.value);
-                            getAllLeadData(
-                              searchValue,
-                              selectedDates[0],
-                              selectedDates[1],
-                              allDownliners,
-                              modeOfTrainingFilterId,
-                              leadSourceFilterId,
-                              leadSubSourceFilterId,
-                              e.target.value,
-                              selectedOrigin,
-                              filterValuesFromRedux.bucket,
-                              1,
-                              pagination.limit,
-                            );
+                            fetchAllLeadsData({
+                              leadStatusId: e.target.value,
+                              pageNumber: 1,
+                            });
                           }}
                           value={leadStatusId}
                           disableClearable={false}
@@ -3168,21 +3035,11 @@ export default function Leads({
                             pageLimit: pagination.limit,
                           }),
                         );
-                        getAllLeadData(
-                          searchValue,
-                          selectedDates[0],
-                          selectedDates[1],
-                          allDownliners,
-                          modeOfTrainingFilterId,
-                          leadSourceFilterId,
-                          leadSubSourceFilterId,
-                          leadStatusId,
-                          selectedOrigin,
-                          "Interested Leads",
-                          1,
-                          pagination.limit,
-                          key,
-                        );
+                        fetchAllLeadsData({
+                          bucket: "Interested Leads",
+                          pageNumber: 1,
+                          actionOverride: key,
+                        });
                       }}
                       className={`leadmanager_bucket ${key} ${isActive ? "active" : ""}`}
                     >
@@ -3260,21 +3117,11 @@ export default function Leads({
                           pageLimit: pagination.limit,
                         }),
                       );
-                      getAllLeadData(
-                        searchValue,
-                        selectedDates[0],
-                        selectedDates[1],
-                        allDownliners,
-                        modeOfTrainingFilterId,
-                        leadSourceFilterId,
-                        leadSubSourceFilterId,
-                        leadStatusId,
-                        selectedOrigin,
-                        "Followup Leads",
-                        1,
-                        pagination.limit,
-                        key,
-                      );
+                      fetchAllLeadsData({
+                        bucket: "Followup Leads",
+                        pageNumber: 1,
+                        actionOverride: key,
+                      });
                     }}
                     className={`leadmanager_bucket ${key} ${isActive ? "active" : ""}`}
                   >
@@ -3323,21 +3170,11 @@ export default function Leads({
                             pageLimit: pagination.limit,
                           }),
                         );
-                        getAllLeadData(
-                          searchValue,
-                          selectedDates[0],
-                          selectedDates[1],
-                          allDownliners,
-                          modeOfTrainingFilterId,
-                          leadSourceFilterId,
-                          leadSubSourceFilterId,
-                          leadStatusId,
-                          selectedOrigin,
-                          "Valid Leads",
-                          1,
-                          pagination.limit,
-                          key,
-                        );
+                        fetchAllLeadsData({
+                          bucket: "Valid Leads",
+                          pageNumber: 1,
+                          actionOverride: key,
+                        });
                       }}
                       className={`leadmanager_bucket ${isActive ? "active" : ""}`}
                       style={{
@@ -3396,21 +3233,11 @@ export default function Leads({
                             pageLimit: pagination.limit,
                           }),
                         );
-                        getAllLeadData(
-                          searchValue,
-                          selectedDates[0],
-                          selectedDates[1],
-                          allDownliners,
-                          modeOfTrainingFilterId,
-                          leadSourceFilterId,
-                          leadSubSourceFilterId,
-                          leadStatusId,
-                          selectedOrigin,
-                          "Eligible Leads",
-                          1,
-                          pagination.limit,
-                          key,
-                        );
+                        fetchAllLeadsData({
+                          bucket: "Eligible Leads",
+                          pageNumber: 1,
+                          actionOverride: key,
+                        });
                       }}
                       className={`leadmanager_bucket ${isActive ? "active" : ""}`}
                       style={{
@@ -3663,20 +3490,7 @@ export default function Leads({
           callgetLeadsApi={() => {
             setUpdateLeadItem(null);
             setIsReEntry(false);
-            getAllLeadData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              allDownliners,
-              modeOfTrainingFilterId,
-              leadSourceFilterId,
-              leadSubSourceFilterId,
-              leadStatusId,
-              selectedOrigin,
-              filterValuesFromRedux.bucket,
-              pagination.page,
-              pagination.limit,
-            );
+            fetchAllLeadsData();
             refreshLeadFollowUp();
           }}
         />
@@ -3830,20 +3644,7 @@ export default function Leads({
             allBranchesData={allBranchesData}
             callgetLeadsApi={() => {
               formReset();
-              getAllLeadData(
-                searchValue,
-                selectedDates[0],
-                selectedDates[1],
-                allDownliners,
-                modeOfTrainingFilterId,
-                leadSourceFilterId,
-                leadSubSourceFilterId,
-                leadStatusId,
-                selectedOrigin,
-                filterValuesFromRedux.bucket,
-                pagination.page,
-                pagination.limit,
-              );
+              fetchAllLeadsData();
               refreshLeadFollowUp();
             }}
             setButtonLoading={setButtonLoading}
@@ -3972,20 +3773,7 @@ export default function Leads({
           // if (refreshLeadFollowUp) refreshLeadFollowUp();
           if (refreshToggle !== undefined) setRefreshToggle(!refreshToggle);
 
-          getAllLeadData(
-            searchValue,
-            selectedDates[0],
-            selectedDates[1],
-            allDownliners,
-            modeOfTrainingFilterId,
-            leadSourceFilterId,
-            leadSubSourceFilterId,
-            leadStatusId,
-            selectedOrigin,
-            filterValuesFromRedux.bucket,
-            pagination.page,
-            pagination.limit,
-          );
+          fetchAllLeadsData();
         }}
       />
       {/* move to interested */}
@@ -4002,20 +3790,7 @@ export default function Leads({
           // if (refreshLeadFollowUp) refreshLeadFollowUp();
           if (refreshToggle !== undefined) setRefreshToggle(!refreshToggle);
 
-          getAllLeadData(
-            searchValue,
-            selectedDates[0],
-            selectedDates[1],
-            allDownliners,
-            modeOfTrainingFilterId,
-            leadSourceFilterId,
-            leadSubSourceFilterId,
-            leadStatusId,
-            selectedOrigin,
-            filterValuesFromRedux.bucket,
-            pagination.page,
-            pagination.limit,
-          );
+          fetchAllLeadsData();
         }}
       />
       {/* Self Re-Assign Confirmation Modal */}

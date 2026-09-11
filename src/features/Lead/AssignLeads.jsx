@@ -736,6 +736,30 @@ export default function AssignLeads({
     }
   };
 
+  const fetchAllManualAssignLeadsData = (overrides = {}) => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    getManualAssignLeadsData(
+      overrides.searchvalue !== undefined
+        ? overrides.searchvalue
+        : filterValuesFromRedux.searchValue,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : filterValuesFromRedux.start_date || PreviousAndCurrentDate[0],
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : filterValuesFromRedux.end_date || PreviousAndCurrentDate[1],
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : filterValuesFromRedux.pageNumber || 1,
+      overrides.limit !== undefined
+        ? overrides.limit
+        : filterValuesFromRedux.pageLimit || 10,
+      overrides.bucketName !== undefined
+        ? overrides.bucketName
+        : selectedBucket,
+    );
+  };
+
   const getManualAssignLeadsData = async (
     searchvalue,
     startDate,
@@ -811,17 +835,7 @@ export default function AssignLeads({
     if (tabName !== "assign_leads") return;
     if (permissions.length >= 1) {
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getManualAssignLeadsData(
-        filterValuesFromRedux.searchValue,
-        filterValuesFromRedux.start_date
-          ? filterValuesFromRedux.start_date
-          : PreviousAndCurrentDate[0],
-        filterValuesFromRedux.end_date
-          ? filterValuesFromRedux.end_date
-          : PreviousAndCurrentDate[1],
-        filterValuesFromRedux.pageNumber,
-        filterValuesFromRedux.pageLimit,
-      );
+      fetchAllManualAssignLeadsData();
     }
   }, [refreshToggle, tabName]);
 
@@ -865,13 +879,14 @@ export default function AssignLeads({
       setIsOpenAcknowledgeModal(false);
       setAcknowledgeLeadItem(null);
       const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-      getManualAssignLeadsData(
-        searchValue,
-        selectedDates[0] ? selectedDates[0] : PreviousAndCurrentDate[0],
-        selectedDates[1] ? selectedDates[1] : PreviousAndCurrentDate[1],
-        pagination.page,
-        pagination.limit,
-      );
+      fetchAllManualAssignLeadsData({
+        startDate: selectedDates[0]
+          ? selectedDates[0]
+          : PreviousAndCurrentDate[0],
+        endDate: selectedDates[1]
+          ? selectedDates[1]
+          : PreviousAndCurrentDate[1],
+      });
       if (refreshLeads) {
         refreshLeads();
       }
@@ -908,13 +923,7 @@ export default function AssignLeads({
         setLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
-        getManualAssignLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
-        );
+        fetchAllManualAssignLeadsData();
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -933,13 +942,10 @@ export default function AssignLeads({
         pageLimit: limit,
       }),
     );
-    getManualAssignLeadsData(
-      searchValue,
-      selectedDates[0],
-      selectedDates[1],
-      page,
-      limit,
-    );
+    fetchAllManualAssignLeadsData({
+      pageNumber: page,
+      limit: limit,
+    });
   };
 
   const handleSearch = (e) => {
@@ -956,13 +962,9 @@ export default function AssignLeads({
       setPagination({
         page: 1,
       });
-      getManualAssignLeadsData(
-        e.target.value,
-        selectedDates[0],
-        selectedDates[1],
-        1,
-        pagination.limit,
-      );
+      fetchAllManualAssignLeadsData({
+        searchvalue: e.target.value,
+      });
     }, 300);
   };
 
@@ -1019,13 +1021,7 @@ export default function AssignLeads({
             setAssignIdError("");
             setSelectedRows([]);
             setSelectedRowKeys([]);
-            getManualAssignLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              pagination.page,
-              pagination.limit,
-            );
+            fetchAllManualAssignLeadsData();
           }, 300);
         }, 300);
       } catch (error) {
@@ -1058,13 +1054,7 @@ export default function AssignLeads({
           setAssignIdError("");
           setSelectedRows([]);
           setSelectedRowKeys([]);
-          getManualAssignLeadsData(
-            searchValue,
-            selectedDates[0],
-            selectedDates[1],
-            pagination.page,
-            pagination.limit,
-          );
+          fetchAllManualAssignLeadsData();
         }, 300);
       } catch (error) {
         setButtonLoading(false);
@@ -1105,13 +1095,7 @@ export default function AssignLeads({
         setSelectedRows([]);
         setSelectedRowKeys([]);
         setJunkComments("");
-        getManualAssignLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
-        );
+        fetchAllManualAssignLeadsData();
         refreshJunkLeads();
       }, 300);
     } catch (error) {
@@ -1231,13 +1215,9 @@ export default function AssignLeads({
                               pageLimit: pagination.limit,
                             }),
                           );
-                          getManualAssignLeadsData(
-                            null,
-                            selectedDates[0],
-                            selectedDates[1],
-                            1,
-                            pagination.limit,
-                          );
+                          fetchAllManualAssignLeadsData({
+                            searchvalue: null,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -1291,13 +1271,9 @@ export default function AssignLeads({
                               setPagination({
                                 page: 1,
                               });
-                              getManualAssignLeadsData(
-                                null,
-                                selectedDates[0],
-                                selectedDates[1],
-                                1,
-                                pagination.limit,
-                              );
+                              fetchAllManualAssignLeadsData({
+                                searchvalue: null,
+                              });
                             }
                           }}
                         >
@@ -1343,13 +1319,7 @@ export default function AssignLeads({
                   setPagination({
                     page: 1,
                   });
-                  getManualAssignLeadsData(
-                    searchValue,
-                    dates[0],
-                    dates[1],
-                    1,
-                    pagination.limit,
-                  );
+                  fetchAllManualAssignLeadsData();
                 }}
               />
             </Col>
@@ -1440,14 +1410,19 @@ export default function AssignLeads({
               return;
             }
             setSelectedBucket("Assigned");
-            getManualAssignLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              1,
-              pagination.limit,
-              "Assigned",
+            dispatch(
+              storeAssignLeadFilterValues({
+                pageNumber: 1,
+                pageLimit: pagination.limit,
+              }),
             );
+            setPagination({
+              page: 1,
+            });
+            fetchAllManualAssignLeadsData({
+              bucketName: "Assigned",
+              pageNumber: 1,
+            });
           }}
           style={{
             border: `1px solid ${selectedBucket === "Assigned" ? "#1890ff" : "#1890ff66"}`,
@@ -1466,14 +1441,19 @@ export default function AssignLeads({
               return;
             }
             setSelectedBucket("Reassigned");
-            getManualAssignLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              1,
-              pagination.limit,
-              "Reassigned",
+            dispatch(
+              storeAssignLeadFilterValues({
+                pageNumber: 1,
+                pageLimit: pagination.limit,
+              }),
             );
+            setPagination({
+              page: 1,
+            });
+            fetchAllManualAssignLeadsData({
+              bucketName: "Reassigned",
+              pageNumber: 1,
+            });
           }}
           style={{
             border: `1px solid ${selectedBucket === "Reassigned" ? "#722ed1" : "#722ed166"}`,
@@ -1492,14 +1472,19 @@ export default function AssignLeads({
               return;
             }
             setSelectedBucket("Awaiting");
-            getManualAssignLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              1,
-              pagination.limit,
-              "Awaiting",
+            dispatch(
+              storeAssignLeadFilterValues({
+                pageNumber: 1,
+                pageLimit: pagination.limit,
+              }),
             );
+            setPagination({
+              page: 1,
+            });
+            fetchAllManualAssignLeadsData({
+              bucketName: "Awaiting",
+              pageNumber: 1,
+            });
           }}
           style={{
             border: `1px solid ${selectedBucket === "Awaiting" ? "#faad14" : "#faad1466"}`,
@@ -1518,14 +1503,19 @@ export default function AssignLeads({
               return;
             }
             setSelectedBucket("Consigned");
-            getManualAssignLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              1,
-              pagination.limit,
-              "Consigned",
+            dispatch(
+              storeAssignLeadFilterValues({
+                pageNumber: 1,
+                pageLimit: pagination.limit,
+              }),
             );
+            setPagination({
+              page: 1,
+            });
+            fetchAllManualAssignLeadsData({
+              bucketName: "Consigned",
+              pageNumber: 1,
+            });
           }}
           style={{
             border: `1px solid ${selectedBucket === "Consigned" ? "#ff7a45" : "#ff7a4566"}`,

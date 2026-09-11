@@ -497,14 +497,13 @@ export default function LiveLead({
 
     // Initial API call
     const fetchAndUpdate = async () => {
-      await getLiveLeadsData(
-        searchRef.current,
-        datesRef.current[0],
-        datesRef.current[1],
-        paginationRef.current.page,
-        paginationRef.current.limit,
-        selectedBucketRef.current,
-      );
+      fetchAllLiveLeadsData({
+        searchvalue: searchRef.current,
+        startDate: datesRef.current[0],
+        endDate: datesRef.current[1],
+        pageNumber: paginationRef.current.page,
+        limit: paginationRef.current.limit,
+      });
     };
 
     // Initial call
@@ -552,13 +551,14 @@ export default function LiveLead({
   //   if (tabName !== "live_leads") return; // Stop polling
 
   //   // Initial Call
-  //   getLiveLeadsData(
-  //     null,
-  //     PreviousAndCurrentDate[0],
-  //     PreviousAndCurrentDate[1],
-  //     1,
-  //     10
-  //   );
+  //   // Initial Call
+  //   fetchAllLiveLeadsData({
+  //     searchvalue: null,
+  //     startDate: PreviousAndCurrentDate[0],
+  //     endDate: PreviousAndCurrentDate[1],
+  //     pageNumber: 1,
+  //     limit: 10
+  //   });
   //   setTimeout(() => {
   //     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
   //     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -567,13 +567,13 @@ export default function LiveLead({
   //   }, 300);
   //   // Call every 5 seconds
   //   const interval = setInterval(() => {
-  //     getLiveLeadsData(
-  //       searchRef.current,
-  //       datesRef.current[0],
-  //       datesRef.current[1],
-  //       paginationRef.current.page,
-  //       paginationRef.current.limit
-  //     );
+  //     fetchAllLiveLeadsData({
+  //       searchvalue: searchRef.current,
+  //       startDate: datesRef.current[0],
+  //       endDate: datesRef.current[1],
+  //       pageNumber: paginationRef.current.page,
+  //       limit: paginationRef.current.limit
+  //     });
   //   }, 1000);
 
   //   // Cleanup interval when component unmounts
@@ -592,6 +592,25 @@ export default function LiveLead({
     } catch (error) {
       console.log("all downlines error", error);
     }
+  };
+
+  const fetchAllLiveLeadsData = (overrides = {}) => {
+    getLiveLeadsData(
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+      overrides.bucketName !== undefined
+        ? overrides.bucketName
+        : selectedBucketRef.current,
+    );
   };
 
   const getLiveLeadsData = async (
@@ -1030,25 +1049,19 @@ export default function LiveLead({
       setPagination({
         page: 1,
       });
-      getLiveLeadsData(
-        e.target.value,
-        selectedDates[0],
-        selectedDates[1],
-        1,
-        pagination.limit,
-      );
+      fetchAllLiveLeadsData({
+        searchvalue: e.target.value,
+        pageNumber: 1,
+      });
     }, 300);
   };
 
   const handlePaginationChange = ({ page, limit }) => {
     paginationRef.current = { page: page, limit: limit };
-    getLiveLeadsData(
-      searchValue,
-      selectedDates[0],
-      selectedDates[1],
-      page,
-      limit,
-    );
+    fetchAllLiveLeadsData({
+      pageNumber: page,
+      limit: limit,
+    });
   };
 
   const handlePick = async (item) => {
@@ -1147,13 +1160,7 @@ export default function LiveLead({
         setLiveLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
-        getLiveLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
-        );
+        fetchAllLiveLeadsData();
         refreshAssignLeads();
       }, 300);
     } catch (error) {
@@ -1194,13 +1201,7 @@ export default function LiveLead({
         setSelectedRows([]);
         setSelectedRowKeys([]);
         setJunkComments("");
-        getLiveLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
-        );
+        fetchAllLiveLeadsData();
         refreshJunkLeads();
       }, 300);
     } catch (error) {
@@ -1231,13 +1232,7 @@ export default function LiveLead({
         setLiveLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
-        getLiveLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
-        );
+        fetchAllLiveLeadsData();
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -1265,13 +1260,7 @@ export default function LiveLead({
         setLiveLeadId(null);
         setSelectedRows([]);
         setSelectedRowKeys([]);
-        getLiveLeadsData(
-          searchValue,
-          selectedDates[0],
-          selectedDates[1],
-          pagination.page,
-          pagination.limit,
-        );
+        fetchAllLiveLeadsData();
         refreshJunkLeads();
       }, 300);
     } catch (error) {
@@ -1318,13 +1307,10 @@ export default function LiveLead({
                           setPagination({
                             page: 1,
                           });
-                          getLiveLeadsData(
-                            null,
-                            selectedDates[0],
-                            selectedDates[1],
-                            1,
-                            pagination.limit,
-                          );
+                          fetchAllLiveLeadsData({
+                            searchvalue: null,
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -1370,13 +1356,10 @@ export default function LiveLead({
                               setPagination({
                                 page: 1,
                               });
-                              getLiveLeadsData(
-                                null,
-                                selectedDates[0],
-                                selectedDates[1],
-                                1,
-                                pagination.limit,
-                              );
+                              fetchAllLiveLeadsData({
+                                searchvalue: null,
+                                pageNumber: 1,
+                              });
                             }
                           }}
                         >
@@ -1417,13 +1400,11 @@ export default function LiveLead({
                   setPagination({
                     page: 1,
                   });
-                  getLiveLeadsData(
-                    searchValue,
-                    dates[0],
-                    dates[1],
-                    1,
-                    pagination.limit,
-                  );
+                  fetchAllLiveLeadsData({
+        startDate: dates[0],
+        endDate: dates[1],
+        pageNumber: 1
+      });
                 }}
               /> */}
             </Col>
@@ -1497,14 +1478,14 @@ export default function LiveLead({
             const newBucket = selectedBucket === "Lead" ? "" : "Lead";
             setSelectedBucket(newBucket);
             selectedBucketRef.current = newBucket;
-            getLiveLeadsData(
-              searchRef.current,
-              datesRef.current[0],
-              datesRef.current[1],
-              1,
-              paginationRef.current.limit,
-              newBucket,
-            );
+            fetchAllLiveLeadsData({
+              searchvalue: searchRef.current,
+              startDate: datesRef.current[0],
+              endDate: datesRef.current[1],
+              pageNumber: 1,
+              limit: paginationRef.current.limit,
+              bucketName: newBucket,
+            });
           }}
           style={{
             border: `1px solid ${selectedBucket === "Lead" ? "#1890ff" : "#1890ff66"}`,
@@ -1523,14 +1504,14 @@ export default function LiveLead({
             const newBucket = selectedBucket === "Trash" ? "" : "Trash";
             setSelectedBucket(newBucket);
             selectedBucketRef.current = newBucket;
-            getLiveLeadsData(
-              searchRef.current,
-              datesRef.current[0],
-              datesRef.current[1],
-              1,
-              paginationRef.current.limit,
-              newBucket,
-            );
+            fetchAllLiveLeadsData({
+              searchvalue: searchRef.current,
+              startDate: datesRef.current[0],
+              endDate: datesRef.current[1],
+              pageNumber: 1,
+              limit: paginationRef.current.limit,
+              bucketName: newBucket,
+            });
           }}
           style={{
             border: `1px solid ${selectedBucket === "Trash" ? "#ff4d4f" : "#ff4d4f66"}`,
@@ -1848,13 +1829,7 @@ export default function LiveLead({
               return;
             }
             setPickLeadItem(null);
-            getLiveLeadsData(
-              searchValue,
-              selectedDates[0],
-              selectedDates[1],
-              pagination.page,
-              pagination.limit,
-            );
+            fetchAllLiveLeadsData();
             refreshLeadFollowUp();
             refreshLeads();
           }}
