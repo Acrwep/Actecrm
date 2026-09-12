@@ -54,13 +54,11 @@ const DownloadTableAsCSV = (
           const phone = row[column.dataIndex];
           if (!phone) return "-";
 
-          return `${
-            phone
-              ? row.phonecode.startsWith("+")
-                ? row.phonecode
-                : `+${row.phonecode}`
-              : ""
-          } ${phone}`;
+          const phoneCode = row.phonecode ?? row.phone_code;
+
+          return phoneCode
+            ? `${phoneCode.startsWith("+") ? phoneCode : `+${phoneCode}`} ${phone}`
+            : phone;
         }
 
         if (column.dataIndex === "last_updated_at") {

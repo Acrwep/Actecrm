@@ -160,6 +160,50 @@ export default function Customers() {
   const [classGoingSubBucketStatus, setClassGoingSubBucketStatus] =
     useState("");
   //bucket configuration
+  const mainBuckets = [
+    {
+      value: "",
+      label: "All",
+      countKey: "total_count",
+      activeClass: "addlead_tab_activebutton",
+      inactiveClass: "addlead_tab_inactivebutton",
+    },
+    {
+      value: "Student Onboarding",
+      label: "Student Onboarding",
+      countKey: "student_onboarding_count",
+      activeClass: "customers_active_student_onboarding_container",
+      inactiveClass: "customers_student_onboarding_container",
+    },
+    {
+      value: "Training Coordination",
+      label: "Training Coordination",
+      countKey: "training_coordination_count",
+      activeClass: "customers_active_trainer_coordination_container",
+      inactiveClass: "customers_trainer_coordination_container",
+    },
+    {
+      value: "Progress Monitoring",
+      label: "Progress Monitoring",
+      countKey: "progress_monitoring_count",
+      activeClass: "customers_active_progress_monitoring_container",
+      inactiveClass: "customers_progress_monitoring_container",
+    },
+    {
+      value: "Course completion",
+      label: "Course Completion",
+      countKey: "course_completion_count",
+      activeClass: "customers_active_course_completion_container",
+      inactiveClass: "customers_course_completion_container",
+    },
+    {
+      value: "Reviews & Certification",
+      label: "Reviews & Certification",
+      countKey: "reviews_certification_count",
+      activeClass: "customers_active_review_and_cert_container",
+      inactiveClass: "customers_review_and_cert_container",
+    },
+  ];
   const bucketConfigs = {
     "Student Onboarding": [
       {
@@ -597,6 +641,15 @@ export default function Customers() {
       title: "Comments",
       key: "trainer_mapping_comments",
       dataIndex: "trainer_mapping_comments",
+      width: 140,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Rejected Reason",
+      key: "approval_rejected_reason",
+      dataIndex: "approval_rejected_reason",
       width: 140,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
@@ -2320,6 +2373,27 @@ export default function Customers() {
     setIsOpenEditDrawer(true);
   };
 
+  //main bucket handling
+  const handleMainBucketChange = (bucketValue) => {
+    if (bucketStatus === bucketValue) {
+      return;
+    }
+
+    setBucketStatus(bucketValue);
+    setStatus("");
+    setTrainerSubbucketsStatus("");
+    setPagination({
+      page: 1,
+    });
+
+    fetchCustomersData({
+      bucketStatus: bucketValue || null,
+      status: null,
+      page: 1,
+    });
+  };
+
+  //status bucket handling
   const handleBucketClick = (config) => {
     // Already selected
     if (status === config.value) {
@@ -2579,7 +2653,6 @@ export default function Customers() {
     "Trainer Rejected",
     "Awaiting Trainer Verify",
     "Trainer Approval",
-    "Approval Rejected",
   ];
 
   const getFilteredColumns = (columns) => {
@@ -2619,15 +2692,20 @@ export default function Customers() {
           return false;
         }
 
+        if (
+          col.key === "approval_rejected_reason" &&
+          trainerSubbucketStatus !== "Approval Rejected"
+        ) {
+          return false;
+        }
+
         return true;
       })
       .map((col) => {
         // Change title for rejected cases
         if (
           col.key === "trainer_mapping_comments" &&
-          ["Trainer Rejected", "Approval Rejected"].includes(
-            trainerSubbucketStatus,
-          )
+          ["Trainer Rejected"].includes(trainerSubbucketStatus)
         ) {
           return {
             ...col,
@@ -2734,214 +2812,28 @@ export default function Customers() {
         style={{ marginBottom: "0px" }}
       >
         <ScrollableTabContainer>
-          <div
-            className={
-              bucketStatus === ""
-                ? "addlead_tab_activebutton"
-                : "addlead_tab_inactivebutton"
-            }
-            onClick={() => {
-              if (bucketStatus === "") {
-                return;
-              }
-              setBucketStatus("");
-              setStatus("");
-              setTrainerSubbucketsStatus("");
-              setPagination({
-                page: 1,
-              });
-              fetchCustomersData({ bucketStatus: null, status: null, page: 1 });
-            }}
-          >
-            <p>
-              All{" "}
-              {`( ${
-                customerStatusCount &&
-                customerStatusCount.total_count !== undefined &&
-                customerStatusCount.total_count !== null
-                  ? customerStatusCount.total_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
+          {mainBuckets.map((bucket) => {
+            const isActive = bucketStatus === bucket.value;
 
-          <div
-            className={
-              bucketStatus === "Student Onboarding"
-                ? "customers_active_student_onboarding_container"
-                : "customers_student_onboarding_container"
-            }
-            onClick={() => {
-              if (bucketStatus === "Student Onboarding") {
-                return;
-              }
-              setBucketStatus("Student Onboarding");
-              setStatus("");
-              setTrainerSubbucketsStatus("");
-              setPagination({
-                page: 1,
-              });
-              fetchCustomersData({
-                bucketStatus: "Student Onboarding",
-                status: null,
-                page: 1,
-              });
-            }}
-          >
-            <p>
-              Student Onboarding{" "}
-              {`( ${
-                customerStatusCount &&
-                customerStatusCount.student_onboarding_count !== undefined &&
-                customerStatusCount.student_onboarding_count !== null
-                  ? customerStatusCount.student_onboarding_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
+            const countSource =
+              bucket.value === ""
+                ? customerStatusCount
+                : customerBucketStatusCount;
 
-          <div
-            className={
-              bucketStatus === "Training Coordination"
-                ? "customers_active_trainer_coordination_container"
-                : "customers_trainer_coordination_container"
-            }
-            onClick={() => {
-              if (bucketStatus === "Training Coordination") {
-                return;
-              }
-              setBucketStatus("Training Coordination");
-              setStatus("");
-              setTrainerSubbucketsStatus("");
-              setPagination({
-                page: 1,
-              });
-              fetchCustomersData({
-                bucketStatus: "Training Coordination",
-                status: null,
-                page: 1,
-              });
-            }}
-          >
-            <p>
-              Training Coordination{" "}
-              {`( ${
-                customerBucketStatusCount &&
-                customerBucketStatusCount.training_coordination_count !==
-                  undefined &&
-                customerBucketStatusCount.training_coordination_count !== null
-                  ? customerBucketStatusCount.training_coordination_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
+            const count = countSource?.[bucket.countKey] ?? "-";
 
-          <div
-            className={
-              bucketStatus === "Progress Monitoring"
-                ? "customers_active_progress_monitoring_container"
-                : "customers_progress_monitoring_container"
-            }
-            onClick={() => {
-              if (bucketStatus === "Progress Monitoring") {
-                return;
-              }
-              setBucketStatus("Progress Monitoring");
-              setStatus("");
-              setTrainerSubbucketsStatus("");
-              setPagination({
-                page: 1,
-              });
-              fetchCustomersData({
-                bucketStatus: "Progress Monitoring",
-                status: null,
-                page: 1,
-              });
-            }}
-          >
-            <p>
-              Progress Monitoring{" "}
-              {`( ${
-                customerBucketStatusCount &&
-                customerBucketStatusCount.progress_monitoring_count !==
-                  undefined &&
-                customerBucketStatusCount.progress_monitoring_count !== null
-                  ? customerBucketStatusCount.progress_monitoring_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              bucketStatus === "Course completion"
-                ? "customers_active_course_completion_container"
-                : "customers_course_completion_container"
-            }
-            onClick={() => {
-              if (bucketStatus === "Course completion") {
-                return;
-              }
-              setBucketStatus("Course completion");
-              setStatus("");
-              setTrainerSubbucketsStatus("");
-              setPagination({
-                page: 1,
-              });
-              fetchCustomersData({
-                bucketStatus: "Course completion",
-                status: null,
-                page: 1,
-              });
-            }}
-          >
-            <p>
-              Course Completion{" "}
-              {`( ${
-                customerBucketStatusCount &&
-                customerBucketStatusCount.course_completion_count !==
-                  undefined &&
-                customerBucketStatusCount.course_completion_count !== null
-                  ? customerBucketStatusCount.course_completion_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
-
-          <div
-            className={
-              bucketStatus === "Reviews & Certification"
-                ? "customers_active_review_and_cert_container"
-                : "customers_review_and_cert_container"
-            }
-            onClick={() => {
-              if (bucketStatus === "Reviews & Certification") {
-                return;
-              }
-              setBucketStatus("Reviews & Certification");
-              setStatus("");
-              setPagination({
-                page: 1,
-              });
-              fetchCustomersData({
-                bucketStatus: "Reviews & Certification",
-                status: null,
-                page: 1,
-              });
-            }}
-          >
-            <p>
-              Reviews & Certification{" "}
-              {`( ${
-                customerBucketStatusCount &&
-                customerBucketStatusCount.reviews_certification_count !==
-                  undefined &&
-                customerBucketStatusCount.reviews_certification_count !== null
-                  ? customerBucketStatusCount.reviews_certification_count
-                  : "-"
-              } )`}
-            </p>
-          </div>
+            return (
+              <div
+                key={bucket.value || "all"}
+                className={isActive ? bucket.activeClass : bucket.inactiveClass}
+                onClick={() => handleMainBucketChange(bucket.value)}
+              >
+                <p>
+                  {bucket.label} ( {count} )
+                </p>
+              </div>
+            );
+          })}
         </ScrollableTabContainer>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>

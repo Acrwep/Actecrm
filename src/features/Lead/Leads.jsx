@@ -1698,6 +1698,7 @@ export default function Leads({
       const eligible_actions =
         response?.data?.data?.eligible_lead_actions || {};
       const followup_actions = response?.data?.data?.followup_actions || {};
+      delete followup_actions.not_interested_leads;
       console.log("leads data", apiData);
 
       setInterestedLeadActions(interested_actions);
@@ -2212,7 +2213,9 @@ export default function Leads({
       const response = await downloadLeads(payload);
       console.log("leads download response", response);
       const data = response?.data?.data || [];
-      const alterColumns = columns.filter((f) => f.title != "Action");
+      const alterColumns = columns.filter(
+        (f) => f.title != "Action" && f.title != "Sl. No",
+      );
       DownloadTableAsCSV(
         data,
         alterColumns,
