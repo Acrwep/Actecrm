@@ -151,13 +151,13 @@ export default function Receivables({
     ...(permissions.includes("Show Lead Executive Id")
       ? [
           {
-            title: "Lead Executive",
+            title: "Sale Executive",
             key: "lead_assigned_to_name",
             dataIndex: "lead_assigned_to_name",
-            width: 150,
+            width: 140,
             render: (text, record) => {
-              const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-              return <EllipsisTooltip text={lead_executive} />;
+              const salse_executive = `${record.lead_assigned_to_id} - ${text}`;
+              return <EllipsisTooltip text={salse_executive} />;
             },
           },
         ]

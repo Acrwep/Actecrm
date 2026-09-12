@@ -393,7 +393,6 @@ export default function Customers() {
   const [previewImage, setPreviewImage] = useState("");
 
   //form usesates
-  const [isOpenFormModal, setIsOpenFormModal] = useState(false);
   //awaiting finance
   const [isSwap, setIsSwap] = useState(false);
   //student verify usestates
@@ -454,111 +453,120 @@ export default function Customers() {
 
   const nonChangeColumns = [
     {
-      title: "Lead Executive",
-      key: "lead_assigned_to_name",
-      dataIndex: "lead_assigned_to_name",
-      width: 150,
-      render: (text, record) => {
-        const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
-      },
-    },
-    {
-      title: "Cr.Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 115,
-      render: (text, record) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
-    {
-      title: "Student Id",
-      key: "student_id",
-      dataIndex: "student_id",
+      title: "Joined On",
+      key: "date_of_joining",
+      dataIndex: "date_of_joining",
       width: 100,
-      render: (text, record) => {
-        return <p>{text ? text : "-"}</p>;
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     {
-      title: "Candidate Name",
+      title: "Candidate Name / ID",
       key: "name",
       dataIndex: "name",
-      width: 170,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      width: 160,
+      render: (text, record) => {
+        return (
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
+          </div>
+        );
       },
     },
     {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 200,
+      width: 160,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 140 },
+    {
+      title: "Mobile",
+      key: "phone",
+      dataIndex: "phone",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <EllipsisTooltip
+            text={
+              text
+                ? `${
+                    text
+                      ? record.phonecode.startsWith("+")
+                        ? record.phonecode
+                        : `+${record.phonecode}`
+                      : ""
+                  } ${text}`
+                : "-"
+            }
+          />
+        );
+      },
+    },
     {
       title: "Course ",
       key: "course_name",
       dataIndex: "course_name",
-      width: 180,
+      width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Joined ",
-      key: "date_of_joining",
-      dataIndex: "date_of_joining",
-      width: 140,
-      render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
-      },
-    },
-    {
-      title: "Fees",
-      key: "total_amount",
-      dataIndex: "total_amount",
-      width: 140,
-      render: (text) => {
-        return <p>{"₹" + text}</p>;
       },
     },
     {
       title: "Balance",
       key: "balance_amount",
       dataIndex: "balance_amount",
-      width: 140,
+      width: 80,
       render: (text) => {
-        return <p>{"₹" + text}</p>;
+        const amount = Number(text);
+
+        return (
+          <p
+            style={{
+              color: amount === 0 ? "green" : "#D32F2F",
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {text !== null && text !== undefined
+              ? amount.toLocaleString("en-IN")
+              : "-"}
+          </p>
+        );
       },
     },
     {
       title: "HR Name",
       key: "trainer_hr_name",
       dataIndex: "trainer_hr_name",
-      width: 170,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      width: 120,
+      render: (text, record) => {
+        const hr = `${record.trainer_hr_id} - ${text}`;
+        return <EllipsisTooltip text={hr} />;
       },
     },
     {
-      title: "Trainer",
+      title: "Trainer Name",
       key: "trainer_name",
       dataIndex: "trainer_name",
-      width: 170,
+      width: 140,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
     {
-      title: "Trainer Commercial%",
+      title: "Trainer Comm. %",
       key: "commercial_percentage",
       dataIndex: "commercial_percentage",
-      width: 170,
+      width: 130,
       render: (text) => {
         return (
           <p
@@ -583,10 +591,22 @@ export default function Customers() {
       },
     },
     {
-      title: "TR Number",
-      key: "trainer_mobile",
-      dataIndex: "trainer_mobile",
-      width: 150,
+      title: "Comments",
+      key: "trainer_mapping_comments",
+      dataIndex: "trainer_mapping_comments",
+      width: 140,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Class Scheduled At",
+      key: "class_scheduled_at",
+      dataIndex: "class_scheduled_at",
+      width: 140,
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+      },
     },
     {
       title: "Review Status",
@@ -645,36 +665,23 @@ export default function Customers() {
       },
     },
     {
-      title: "Form Status",
-      key: "is_customer_updated",
-      dataIndex: "is_customer_updated",
+      title: "Sale Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 140,
+      render: (text, record) => {
+        const salse_executive = `${record.lead_assigned_to_id} - ${text}`;
+        return <EllipsisTooltip text={salse_executive} />;
+      },
+    },
+    {
+      title: "Last Updated At",
+      key: "last_updated_at",
+      dataIndex: "last_updated_at",
       width: 120,
       fixed: "right",
-      render: (text, record) => {
-        return (
-          <>
-            {record.is_customer_updated === 1 ? (
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p>Completed</p>
-                {permissions.includes("Download Registration Form") && (
-                  <Tooltip placement="top" title="Customer Registration Form">
-                    <FiFileText
-                      size={14}
-                      className="customers_formlink_copybutton"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setIsOpenFormModal(true);
-                        getParticularCustomerDetails(record?.id);
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            ) : (
-              <p>Pending</p>
-            )}
-          </>
-        );
+      render: (text) => {
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     {
@@ -1988,7 +1995,11 @@ export default function Customers() {
       overrides.bucketStatus !== undefined
         ? overrides.bucketStatus
         : bucketStatus,
-      overrides.status !== undefined ? overrides.status : status,
+      overrides.status !== undefined
+        ? overrides.status
+        : trainerSubbucketStatus
+          ? trainerSubbucketStatus
+          : status,
       overrides.classGoingSubBucketStatus !== undefined
         ? overrides.classGoingSubBucketStatus
         : classGoingSubBucketStatus,
@@ -2324,6 +2335,7 @@ export default function Customers() {
 
     // Update selected status
     setStatus(config.value);
+    setTrainerSubbucketsStatus("");
 
     // Reset pagination
     setPagination({
@@ -2347,6 +2359,7 @@ export default function Customers() {
     const newStatus = isSwap ? "Payment Rejected" : "Awaiting Finance";
 
     setStatus(newStatus);
+    setTrainerSubbucketsStatus("");
 
     setPagination({
       page: 1,
@@ -2375,6 +2388,7 @@ export default function Customers() {
 
     // Update status
     setStatus(newStatus);
+    setTrainerSubbucketsStatus("");
 
     // Reset pagination
     setPagination({
@@ -2443,6 +2457,7 @@ export default function Customers() {
     setSubUsers(downlineUsers);
     setSelectedOrigin("");
     setModeOfTrainingFilterId(null);
+    setTrainerSubbucketsStatus("");
     setClassGoingSubBucketStatus("");
     setDateFilterType("Updated");
     setIsSwap(false);
@@ -2549,6 +2564,73 @@ export default function Customers() {
     }
   };
 
+  const showComments = [
+    "Trainer Rejected",
+    "Awaiting Trainer Verify",
+    "Trainer Approval",
+    "Approval Rejected",
+  ];
+
+  const filteredTableColumns = tableColumns
+    .filter((col) => {
+      const hideTrainerStatuses = [
+        "Form Pending",
+        "Awaiting Finance",
+        "Payment Rejected",
+        "Awaiting Verify",
+      ];
+
+      if (
+        ["trainer_hr_name", "trainer_name", "commercial_percentage"].includes(
+          col.key,
+        ) &&
+        (bucketStatus === "" ||
+          bucketStatus === null ||
+          (bucketStatus === "Student Onboarding" && status === "") ||
+          hideTrainerStatuses.includes(status) ||
+          trainerSubbucketStatus === "Awaiting Trainer")
+      ) {
+        return false;
+      }
+
+      // Review Status
+      if (
+        col.key === "review_status" &&
+        (bucketStatus === null ||
+          bucketStatus === "" ||
+          bucketStatus === "Student Onboarding")
+      ) {
+        return false;
+      }
+
+      // Trainer Mapping Comments
+      if (col.key === "trainer_mapping_comments") {
+        return showComments.includes(trainerSubbucketStatus);
+      }
+
+      //Class Scheduled Date
+      if (col.key === "class_scheduled_at" && status != "Class Scheduled") {
+        return false;
+      }
+
+      return true;
+    })
+    .map((col) => {
+      if (
+        col.key === "trainer_mapping_comments" &&
+        ["Trainer Rejected", "Approval Rejected"].includes(
+          trainerSubbucketStatus,
+        )
+      ) {
+        return {
+          ...col,
+          title: "Rejected Reason",
+        };
+      }
+
+      return col;
+    });
+
   return (
     <div>
       <div
@@ -2568,6 +2650,7 @@ export default function Customers() {
               }
               setBucketStatus("");
               setStatus("");
+              setTrainerSubbucketsStatus("");
               setPagination({
                 page: 1,
               });
@@ -2598,6 +2681,7 @@ export default function Customers() {
               }
               setBucketStatus("Student Onboarding");
               setStatus("");
+              setTrainerSubbucketsStatus("");
               setPagination({
                 page: 1,
               });
@@ -2632,6 +2716,7 @@ export default function Customers() {
               }
               setBucketStatus("Training Coordination");
               setStatus("");
+              setTrainerSubbucketsStatus("");
               setPagination({
                 page: 1,
               });
@@ -2667,6 +2752,7 @@ export default function Customers() {
               }
               setBucketStatus("Progress Monitoring");
               setStatus("");
+              setTrainerSubbucketsStatus("");
               setPagination({
                 page: 1,
               });
@@ -2702,6 +2788,7 @@ export default function Customers() {
               }
               setBucketStatus("Course completion");
               setStatus("");
+              setTrainerSubbucketsStatus("");
               setPagination({
                 page: 1,
               });
@@ -3243,6 +3330,9 @@ export default function Customers() {
             <div
               className="livelead_today_summary_container"
               style={{ marginTop: "18px", marginBottom: "0px", flexShrink: 0 }}
+              onClick={() => {
+                console.log("statttt", status);
+              }}
             >
               <p
                 className="livelead_today_label"
@@ -3556,12 +3646,12 @@ export default function Customers() {
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{
-            x: tableColumns.reduce(
+            x: filteredTableColumns.reduce(
               (total, col) => total + (col.width || 150),
               0,
             ),
           }}
-          columns={tableColumns}
+          columns={filteredTableColumns}
           dataSource={customersData}
           dataPerPage={10}
           loading={loading}
@@ -4596,33 +4686,6 @@ export default function Customers() {
         onCancel={() => setPreviewOpen(false)}
       >
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
-      </Modal>
-
-      {/* form modal */}
-      <Modal
-        open={isOpenFormModal}
-        onCancel={() => {
-          setIsOpenFormModal(false);
-          setCustomerDetails(null);
-        }}
-        footer={false}
-        width="64%"
-        style={{ marginBottom: "20px", top: 10 }}
-        className="customer_downloadform_modal"
-        zIndex={1100}
-        // centered={true}
-        closeIcon={
-          <span
-            style={{
-              fontSize: "18px",
-              fontWeight: "bold",
-            }}
-          >
-            <CloseOutlined />
-          </span>
-        }
-      >
-        <DownloadRegistrationForm customerDetails={customerDetails} />
       </Modal>
 
       {/* email template drawer */}

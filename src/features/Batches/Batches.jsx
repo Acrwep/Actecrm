@@ -473,7 +473,7 @@ export default function Batches() {
             {/* Trainer */}
             <Col flex="0.9 1 0%">
               <CommonCustomerSingleSelectField
-                label="Search Trainer"
+                label="Trainer Search..."
                 height="33px"
                 labelFontSize="11px"
                 labelMarginTop="0px"

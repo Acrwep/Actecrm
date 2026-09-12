@@ -90,28 +90,12 @@ const AddBatch = forwardRef(
       getTrainersData(null, 1);
     }, []);
 
-    /* ---------------- SEARCH PAYLOAD ---------------- */
-    const buildCustomerSearchPayload = (value) => {
-      if (!value) return {};
-      const trimmed = value.trim();
-
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-        return { email: trimmed };
-      }
-
-      if (/^\d{6,15}$/.test(trimmed)) {
-        return { mobile: trimmed };
-      }
-
-      return { name: trimmed };
-    };
-
     /* ---------------- FETCH CUSTOMERS ---------------- */
     const getCustomersData = async (searchvalue, pageNumber = 1) => {
       setCustomerSelectloading(true);
 
       const payload = {
-        ...buildCustomerSearchPayload(searchvalue),
+        ...(searchvalue && { search_filter: searchvalue }),
         page: pageNumber,
         limit: 10,
       };

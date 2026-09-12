@@ -207,31 +207,31 @@ export default function ParticularCustomerDetails({ customerId }) {
             {customerDetails?.name || "-"}
           </h2>
           {customerDetails?.student_id && (
-            <Text
+            <p
               style={{
                 color: "#64748b",
-                fontSize: "13px",
+                fontSize: "12px",
                 display: "block",
                 fontWeight: 500,
               }}
             >
               ID: {customerDetails.student_id}
-            </Text>
+            </p>
           )}
-          <Text
+          <p
             style={{
               color: "#64748b",
-              fontSize: "13px",
+              fontSize: "12px",
               display: "block",
               fontWeight: 500,
-              marginTop: "0.5px",
+              marginTop: "1px",
             }}
           >
             Date Of Joining:{" "}
             {customerDetails?.date_of_joining
               ? formatDateTime(customerDetails?.date_of_joining)
               : "-"}
-          </Text>
+          </p>
         </div>
       </div>
 
@@ -250,10 +250,32 @@ export default function ParticularCustomerDetails({ customerId }) {
           </Col>
           <Col span={6}>{renderField("Email", customerDetails?.email)}</Col>
           <Col span={6}>
-            {renderField("Mobile Number", customerDetails?.phone)}
+            {renderField(
+              "Mobile Number",
+              customerDetails?.phone
+                ? `${
+                    customerDetails?.phonecode
+                      ? customerDetails.phonecode.startsWith("+")
+                        ? customerDetails.phonecode
+                        : `+${customerDetails.phonecode}`
+                      : ""
+                  } ${customerDetails.phone}`
+                : "-",
+            )}
           </Col>
           <Col span={6}>
-            {renderField("WhatsApp Number", customerDetails?.whatsapp)}
+            {renderField(
+              "WhatsApp Number",
+              customerDetails?.whatsapp
+                ? `${
+                    customerDetails?.whatsapp_phone_code
+                      ? customerDetails.whatsapp_phone_code.startsWith("+")
+                        ? customerDetails.whatsapp_phone_code
+                        : `+${customerDetails.whatsapp_phone_code}`
+                      : ""
+                  } ${customerDetails.whatsapp}`
+                : "-",
+            )}
           </Col>
           <Col span={6}>
             {renderField(

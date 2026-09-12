@@ -2216,3 +2216,29 @@
   font-weight: 600;
   letter-spacing: 0.2px;
 }
+
+/* Candidate Name and ID Badge Styles */
+.customers_candidatename_container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customers_studentid_badge {
+  font-size: 11px;
+  color: #1d39c4;
+  background-color: #f0f5ff;
+  border: 1px solid #adc6ff;
+  /* color: rgb(71, 85, 105);
+  background-color: rgb(241, 245, 249);
+  border: 1px solid rgba(71, 85, 105, 0.356); */
+  /* color: #5b69ca;
+  background-color: #5b69ca1a;
+  border: 1px solid #5b6aca65; */
+  padding: 0px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.5;
+  font-weight: 500;
+}

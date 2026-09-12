@@ -703,7 +703,6 @@ const StudentVerify = forwardRef(
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    fontSize: "13px",
                   }}
                 >
                   Welcome Call
@@ -721,7 +720,6 @@ const StudentVerify = forwardRef(
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    fontSize: "13px",
                   }}
                 >
                   Requirement Verification
@@ -739,7 +737,6 @@ const StudentVerify = forwardRef(
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    fontSize: "13px",
                   }}
                 >
                   Trainer Fixation

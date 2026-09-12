@@ -178,10 +178,10 @@ export default function FeeHistory({
     ...(permissions.includes("Show Lead Executive Id")
       ? [
           {
-            title: "Lead Executive",
+            title: "Sale Executive",
             key: "assigned_to_name",
             dataIndex: "assigned_to_name",
-            width: 150,
+            width: 140,
             render: (text, record) => {
               const lead_executive = `${record.assigned_to} - ${text}`;
               return <EllipsisTooltip text={lead_executive} />;

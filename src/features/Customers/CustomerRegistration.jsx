@@ -509,6 +509,7 @@ export default function CustomerRegistration() {
       email: email,
       phonecode: mobileCountryCode,
       phone: mobile,
+      whatsapp_phone_code: whatsAppCountryCode,
       whatsapp: whatsApp,
       date_of_birth: formatToBackendIST(dateOfBirth),
       gender: gender,

@@ -40,6 +40,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonInvoiceViewer from "../Common/CommonInvoiceViewer";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonSpinner from "../Common/CommonSpinner";
+import DownloadRegistrationForm from "./DownloadRegistrationForm";
 
 export default function CustomerHistory({ customerId, isOpen, onClose }) {
   const [customerDetails, setCustomerDetails] = useState(null);
@@ -60,6 +61,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
   //payment usestates
   const [paymentFullDetails, setPaymentFullDetails] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  // form usestates
+  const [isOpenFormModal, setIsOpenFormModal] = useState(false);
 
   useEffect(() => {
     if (isOpen && customerId) {
@@ -374,8 +377,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
       ),
       children: (
         <>
-          {item.status == "Form Submitted" ||
-          item.status == "Class Completion Acknowledged" ? (
+          {item.status == "Class Completion Acknowledged" ? (
             <div>
               <p className="customer_history_updateddate">
                 {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
@@ -384,6 +386,26 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>Customer</span>
               </p>
+            </div>
+          ) : item.status === "Form Submitted" ? (
+            <div>
+              <p className="customer_history_updateddate">
+                {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}
+              </p>
+              <p className="customer_history_updateddate">
+                Updated By:{"  "}
+                <span style={{ color: "gray" }}>Customer</span>
+              </p>
+
+              <button
+                className="customer_history_viewproofbutton"
+                style={{ marginTop: "12px" }}
+                onClick={() => {
+                  setIsOpenFormModal(true);
+                }}
+              >
+                <FaRegEye size={16} /> View Registration Form
+              </button>
             </div>
           ) : item.status == "Trainer Payment Claim Submitted" ? (
             <div>
@@ -1440,6 +1462,32 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           <Timeline mode="left" items={items} />
         </Skeleton>
       </div>
+
+      {/* form modal */}
+      <Modal
+        open={isOpenFormModal}
+        onCancel={() => {
+          setIsOpenFormModal(false);
+        }}
+        footer={false}
+        width="64%"
+        style={{ marginBottom: "20px", top: 10 }}
+        className="customer_downloadform_modal"
+        zIndex={1100}
+        // centered={true}
+        closeIcon={
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+          >
+            <CloseOutlined />
+          </span>
+        }
+      >
+        <DownloadRegistrationForm customerDetails={customerDetails} />
+      </Modal>
 
       <Modal
         title="Preview"
