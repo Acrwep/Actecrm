@@ -190,35 +190,32 @@ export default function FeeHistory({
         ]
       : []),
     {
-      title: "Student Id",
-      key: "student_id",
-      dataIndex: "student_id",
-      width: 100,
+      title: "Candidate Name / ID",
+      key: "customer_name",
+      dataIndex: "customer_name",
+      width: 170,
       render: (text, record) => {
-        const user_id = text
-          ? text
-          : record?.customer_name
-            ? record?.customer_name
-            : "-";
         const isLoading = customerDetailsLoading == record.customer_id;
+
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <EllipsisTooltip text={user_id} />
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
             {isLoading ? (
               <CommonSpinner color="#333" size={14} />
             ) : (
-              <>
-                {user_id && (
-                  <FaRegEye
-                    size={13}
-                    className="trainers_action_icons"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      getParticularCustomerDetails(record?.customer_id, true);
-                    }}
-                  />
-                )}
-              </>
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer", flexShrink: 0 }}
+                onClick={() => {
+                  getParticularCustomerDetails(record?.customer_id, true);
+                }}
+              />
             )}
           </div>
         );
@@ -743,10 +740,16 @@ export default function FeeHistory({
       console.log("fee history response", response);
       const download_data =
         response?.data?.result?.data || response?.data?.data || [];
+
+      // Remove Action column for download
+      const downloadColumns = nonChangeColumns.filter(
+        (col) => col.key !== "action",
+      );
+
       if (download_data.length >= 1) {
         DownloadTableAsCSV(
           download_data,
-          nonChangeColumns,
+          downloadColumns,
           `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
             selectedDates[1],
           ).format("DD-MM-YYYY")} Fees History.csv`,

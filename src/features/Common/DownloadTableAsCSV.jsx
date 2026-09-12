@@ -7,6 +7,7 @@ const DownloadTableAsCSV = (
   columns,
   fileName,
   isTrainerPayment = false,
+  isCustomers = false,
 ) => {
   // Create a new workbook
   const workbook = XLSX.utils.book_new();
@@ -18,7 +19,6 @@ const DownloadTableAsCSV = (
       columns.map((column) => {
         // Handle nested in/out times
         const columnData = column.dataIndex;
-        console.log(columnData, "columnData");
         if (Array.isArray(columnData)) {
           const dateKey = columnData[0];
           const timeType = columnData[1];
@@ -35,6 +35,40 @@ const DownloadTableAsCSV = (
         }
 
         // Format time fields using moment
+        if (column.dataIndex === "name" && isCustomers) {
+          const cName = row[column.dataIndex];
+          if (!cName) return "-";
+          return row.student_id ? `${cName} - ${row.student_id}` : cName;
+        }
+
+        if (
+          column.dataIndex === "cus_name" ||
+          column.dataIndex === "customer_name"
+        ) {
+          const cName = row[column.dataIndex];
+          if (!cName) return "-";
+          return row.student_id ? `${cName} - ${row.student_id}` : cName;
+        }
+
+        if (column.dataIndex === "phone") {
+          const phone = row[column.dataIndex];
+          if (!phone) return "-";
+
+          return `${
+            phone
+              ? row.phonecode.startsWith("+")
+                ? row.phonecode
+                : `+${row.phonecode}`
+              : ""
+          } ${phone}`;
+        }
+
+        if (column.dataIndex === "last_updated_at") {
+          const date = row[column.dataIndex];
+          if (!date) return "-";
+          return moment(date).format("DD-MM-YYYY");
+        }
+
         if (
           column.dataIndex === "created_on" ||
           column.dataIndex === "end_date" ||
@@ -104,6 +138,7 @@ const DownloadTableAsCSV = (
           column.dataIndex === "total_course_fees" ||
           column.dataIndex === "paid_amount" ||
           column.dataIndex === "balance_due" ||
+          column.dataIndex === "balance_amount" ||
           column.dataIndex === "request_amount" ||
           column.dataIndex === "total"
         ) {
@@ -166,6 +201,14 @@ const DownloadTableAsCSV = (
           return stateName;
         }
         //customers table handling
+        if (column.dataIndex === "trainer_hr_name") {
+          const hrName = row[column.dataIndex];
+          if (!hrName) return "-";
+          return row.trainer_hr_id
+            ? `${row.trainer_hr_id} - ${hrName}`
+            : hrName;
+        }
+
         if (column.dataIndex === "lead_assigned_to_name") {
           const lName = row[column.dataIndex];
           if (!lName) return "-";
@@ -173,6 +216,21 @@ const DownloadTableAsCSV = (
             ? `${row.lead_assigned_to_id} - ${lName}`
             : lName;
         }
+
+        if (column.dataIndex === "collected_by") {
+          const lName = row[column.dataIndex];
+          if (!lName) return "-";
+          return row.collected_user_id
+            ? `${row.collected_user_id} - ${lName}`
+            : lName;
+        }
+
+        if (column.dataIndex === "assigned_to_name") {
+          const lName = row[column.dataIndex];
+          if (!lName) return "-";
+          return row.assigned_to ? `${row.assigned_to} - ${lName}` : lName;
+        }
+
         if (column.dataIndex === "lead_assigned_to_id") {
           const l_id = row[column.dataIndex];
           if (!l_id) return "-";

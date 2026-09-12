@@ -648,38 +648,33 @@ export default function TrainerPayment() {
       render: (text, record) => <EllipsisTooltip text={text} />,
     },
     {
-      title: "Student Name",
+      title: "Candidate Name / ID",
       key: "customer_name",
       dataIndex: "customer_name",
-      width: 150,
+      width: 170,
       render: (text, record) => {
         const isLoading =
           customerDetailsLoadingRef.current == record?.customer_id;
 
         return (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <EllipsisTooltip text={text || "-"} />
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
             {isLoading ? (
               <CommonSpinner color="#333" size={14} />
             ) : (
-              <>
-                {text && (
-                  <FaRegEye
-                    size={14}
-                    className="trainers_action_icons"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      getParticularCustomerDetails(record?.customer_id);
-                    }}
-                  />
-                )}
-              </>
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer", flexShrink: 0 }}
+                onClick={() => {
+                  getParticularCustomerDetails(record?.customer_id);
+                }}
+              />
             )}
           </div>
         );
@@ -1387,7 +1382,7 @@ export default function TrainerPayment() {
             case "customer_name":
               return {
                 ...col,
-                width: 150,
+                width: 170,
                 render: (text, record) => {
                   const isLoading =
                     customerDetailsLoadingRef.current == record?.customer_id;

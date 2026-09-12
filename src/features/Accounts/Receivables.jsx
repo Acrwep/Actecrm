@@ -163,21 +163,21 @@ export default function Receivables({
         ]
       : []),
     {
-      title: "Student Name",
+      title: "Candidate Name / ID",
       key: "name",
       dataIndex: "name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Student Mobile",
-      key: "phone",
-      dataIndex: "phone",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      width: 160,
+      render: (text, record) => {
+        return (
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -208,10 +208,10 @@ export default function Receivables({
       },
     },
     {
-      title: "Balance Amount",
+      title: "Balance",
       key: "balance_amount",
       dataIndex: "balance_amount",
-      width: 130,
+      width: 95,
       render: (text) => {
         const amount = Number(text);
 
@@ -832,13 +832,21 @@ export default function Receivables({
       const response = await getPendingFeesCustomers(payload);
       console.log("pending fee customers response", response);
       const download_data = response?.data?.data?.data || [];
+
+      // Remove Action column for download
+      const downloadColumns = nonChangeColumns.filter(
+        (col) => col.key !== "action",
+      );
+
       if (download_data.length >= 1) {
         DownloadTableAsCSV(
           download_data,
-          nonChangeColumns,
+          downloadColumns,
           `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
             selectedDates[1],
           ).format("DD-MM-YYYY")} Receivable Payments.csv`,
+          false,
+          true,
         );
       } else {
         CommonMessage("error", "No Data Found");

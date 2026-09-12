@@ -261,21 +261,21 @@ export default function Received({
     //   },
     // },
     {
-      title: "Student Name",
+      title: "Candidate Name / ID",
       key: "cus_name",
       dataIndex: "cus_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Student Mobile",
-      key: "cus_phone",
-      dataIndex: "cus_phone",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      width: 160,
+      render: (text, record) => {
+        return (
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -306,10 +306,10 @@ export default function Received({
       },
     },
     {
-      title: "Balance Amount",
+      title: "Balance",
       key: "balance_due",
       dataIndex: "balance_due",
-      width: 130,
+      width: 95,
       render: (text) => {
         const amount = Number(text);
 

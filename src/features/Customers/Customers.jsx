@@ -446,6 +446,9 @@ export default function Customers() {
     total: 0,
     totalPages: 0,
   });
+  //download usestates
+  const [downloadLoading, setDownloadLoading] = useState(false);
+
   //table dnd
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
@@ -524,7 +527,7 @@ export default function Customers() {
       title: "Balance",
       key: "balance_amount",
       dataIndex: "balance_amount",
-      width: 80,
+      width: 95,
       render: (text) => {
         const amount = Number(text);
 
@@ -2564,6 +2567,14 @@ export default function Customers() {
     }
   };
 
+  //table column filteration
+  const hideTrainerStatuses = [
+    "Form Pending",
+    "Awaiting Finance",
+    "Payment Rejected",
+    "Awaiting Verify",
+  ];
+
   const showComments = [
     "Trainer Rejected",
     "Awaiting Trainer Verify",
@@ -2571,65 +2582,150 @@ export default function Customers() {
     "Approval Rejected",
   ];
 
-  const filteredTableColumns = tableColumns
-    .filter((col) => {
-      const hideTrainerStatuses = [
-        "Form Pending",
-        "Awaiting Finance",
-        "Payment Rejected",
-        "Awaiting Verify",
-      ];
+  const getFilteredColumns = (columns) => {
+    return columns
+      .filter((col) => {
+        // Trainer-related columns
+        if (
+          ["trainer_hr_name", "trainer_name", "commercial_percentage"].includes(
+            col.key,
+          ) &&
+          (bucketStatus === "" ||
+            bucketStatus === null ||
+            (bucketStatus === "Student Onboarding" && status === "") ||
+            hideTrainerStatuses.includes(status) ||
+            trainerSubbucketStatus === "Awaiting Trainer")
+        ) {
+          return false;
+        }
 
-      if (
-        ["trainer_hr_name", "trainer_name", "commercial_percentage"].includes(
-          col.key,
-        ) &&
-        (bucketStatus === "" ||
-          bucketStatus === null ||
-          (bucketStatus === "Student Onboarding" && status === "") ||
-          hideTrainerStatuses.includes(status) ||
-          trainerSubbucketStatus === "Awaiting Trainer")
-      ) {
-        return false;
+        // Review Status
+        if (
+          col.key === "review_status" &&
+          (bucketStatus === null ||
+            bucketStatus === "" ||
+            bucketStatus === "Student Onboarding")
+        ) {
+          return false;
+        }
+
+        // Trainer Mapping Comments
+        if (col.key === "trainer_mapping_comments") {
+          return showComments.includes(trainerSubbucketStatus);
+        }
+
+        // Class Scheduled Date
+        if (col.key === "class_scheduled_at" && status !== "Class Scheduled") {
+          return false;
+        }
+
+        return true;
+      })
+      .map((col) => {
+        // Change title for rejected cases
+        if (
+          col.key === "trainer_mapping_comments" &&
+          ["Trainer Rejected", "Approval Rejected"].includes(
+            trainerSubbucketStatus,
+          )
+        ) {
+          return {
+            ...col,
+            title: "Rejected Reason",
+          };
+        }
+
+        return col;
+      });
+  };
+
+  const filteredTableColumns = getFilteredColumns(tableColumns);
+
+  //download handling
+  const handleDownload = async () => {
+    setDownloadLoading(true);
+
+    const googleReview = {
+      title: "Google Review",
+      key: "google_review",
+      dataIndex: "google_review",
+    };
+
+    const linkedinReview = {
+      title: "Linkedin Review",
+      key: "linkedin_review",
+      dataIndex: "linkedin_review",
+    };
+
+    // Apply the same column visibility logic
+    const filteredDownloadColumns = getFilteredColumns(nonChangeColumns);
+
+    const alterColumns = filteredDownloadColumns
+      // Remove Action and Review Status columns
+      .filter((col) => col.title !== "Action" && col.title !== "Review Status")
+      // Insert Google Review & Linkedin Review after TR Number
+      .flatMap((col) => {
+        if (col.key === "commercial_percentage") {
+          return [col, googleReview, linkedinReview];
+        }
+
+        return [col];
+      });
+
+    console.log("alterColumns", alterColumns);
+
+    const payload = {
+      ...(searchValue && { search_filter: searchValue }),
+      from_date: selectedDates[0],
+      to_date: selectedDates[1],
+      date_type: dateFilterType,
+      ...(selectedRegionId && { region_id: selectedRegionId }),
+      ...(selectedBranchId && { branch_id: selectedBranchId }),
+      ...(modeOfTrainingFilterId && {
+        bucket: modeOfTrainingFilterId == 1 ? "Online" : "Classroom",
+      }),
+      ...(selectedOrigin && { domain: selectedOrigin }),
+      ...(status && {
+        status: status,
+      }),
+      ...(classGoingSubBucketStatus &&
+        status === "Class Going" && {
+          class_going_sub_bucket: classGoingSubBucketStatus,
+        }),
+      user_ids:
+        selectedRegionId || selectedBranchId
+          ? defaultAllDownliners
+          : allDownliners,
+      ...(bucketStatus && { bucket_status: bucketStatus }),
+    };
+
+    try {
+      const response = await getCustomers(payload);
+
+      console.log("customers download response", response);
+
+      const download_data = response?.data?.data?.customers || [];
+
+      if (download_data.length >= 1) {
+        DownloadTableAsCSV(
+          download_data,
+          alterColumns,
+          `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
+            selectedDates[1],
+          ).format("DD-MM-YYYY")} Customers.csv`,
+          false,
+          true,
+        );
+      } else {
+        CommonMessage("error", "No Data Found");
       }
 
-      // Review Status
-      if (
-        col.key === "review_status" &&
-        (bucketStatus === null ||
-          bucketStatus === "" ||
-          bucketStatus === "Student Onboarding")
-      ) {
-        return false;
-      }
-
-      // Trainer Mapping Comments
-      if (col.key === "trainer_mapping_comments") {
-        return showComments.includes(trainerSubbucketStatus);
-      }
-
-      //Class Scheduled Date
-      if (col.key === "class_scheduled_at" && status != "Class Scheduled") {
-        return false;
-      }
-
-      return true;
-    })
-    .map((col) => {
-      if (
-        col.key === "trainer_mapping_comments" &&
-        ["Trainer Rejected", "Approval Rejected"].includes(
-          trainerSubbucketStatus,
-        )
-      ) {
-        return {
-          ...col,
-          title: "Rejected Reason",
-        };
-      }
-
-      return col;
-    });
+      setDownloadLoading(false);
+    } catch (error) {
+      setDownloadLoading(false);
+      console.log("received payments error", error);
+    }
+  };
 
   return (
     <div>
@@ -3266,56 +3362,8 @@ export default function Customers() {
             <Tooltip placement="top" title="Download">
               <Button
                 className="reports_download_button"
-                onClick={() => {
-                  const isWithIn30days = isWithin30Days(
-                    selectedDates[0],
-                    selectedDates[1],
-                  );
-                  console.log("isWithIn30days", isWithIn30days);
-                  // if (isWithIn30days == false) {
-                  //   CommonMessage(
-                  //     "error",
-                  //     "Please choose a date range within 30 days.",
-                  //   );
-                  //   return;
-                  // }
-                  const googleReview = {
-                    title: "Google Review",
-                    key: "google_review",
-                    dataIndex: "google_review",
-                  };
-
-                  const linkedinReview = {
-                    title: "Linkedin Review",
-                    key: "linkedin_review",
-                    dataIndex: "linkedin_review",
-                  };
-
-                  const alterColumns = columns
-                    // Remove Action and Review Status columns
-                    .filter(
-                      (f) =>
-                        f.title !== "Action" && f.title !== "Review Status",
-                    )
-                    // Insert Google Review & Linkedin Review after TR Number
-                    .flatMap((col) => {
-                      if (col.title === "TR Number") {
-                        return [col, googleReview, linkedinReview];
-                      }
-
-                      return [col];
-                    });
-                  console.log("alterColumns", alterColumns);
-                  DownloadTableAsCSV(
-                    customersData,
-                    alterColumns,
-                    `${moment(selectedDates[0]).format(
-                      "DD-MM-YYYY",
-                    )} to ${moment(selectedDates[1]).format("DD-MM-YYYY")} ${
-                      status == "" ? "All" : status
-                    } Customers.csv`,
-                  );
-                }}
+                onClick={handleDownload}
+                disabled={downloadLoading}
               >
                 <DownloadOutlined size={10} className="download_icon" />
               </Button>
