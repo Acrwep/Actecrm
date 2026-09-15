@@ -247,17 +247,33 @@ export default function Batches() {
       console.log("response status error", error);
     } finally {
       setTimeout(() => {
-        getBatchesData(
-          null,
-          null,
-          null,
-          null,
-          PreviousAndCurrentDate[0],
-          PreviousAndCurrentDate[1],
-          true,
-        );
+        fetchBatchesData({
+          trainerId: null,
+          searchvalue: "",
+          regionId: null,
+          branchId: null,
+          startDate: PreviousAndCurrentDate[0],
+          endDate: PreviousAndCurrentDate[1],
+        });
       }, 300);
     }
+  };
+
+  const fetchBatchesData = (overrides = {}) => {
+    getBatchesData(
+      overrides.trainerId !== undefined
+        ? overrides.trainerId
+        : selectedTrainerId,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+    );
   };
 
   const getBatchesData = async (
@@ -313,27 +329,17 @@ export default function Batches() {
       setPagination({
         page: 1,
       });
-      getBatchesData(
-        selectedId,
-        searchValue,
-        selectedRegionId,
-        selectedBranchId,
-        selectedDates[0],
-        selectedDates[1],
-      );
+      fetchBatchesData({
+        trainerId: selectedId,
+      });
     } else {
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
       setTrainerSearchText("");
       getTrainersData(null, 1);
-      getBatchesData(
-        null,
-        searchValue,
-        selectedRegionId,
-        selectedBranchId,
-        selectedDates[0],
-        selectedDates[1],
-      );
+      fetchBatchesData({
+        trainerId: null,
+      });
       setPagination({
         page: 1,
       });
@@ -389,14 +395,9 @@ export default function Batches() {
       // setPagination({
       //   page: 1,
       // });
-      getBatchesData(
-        selectedTrainerId,
-        e.target.value,
-        selectedRegionId,
-        selectedBranchId,
-        selectedDates[0],
-        selectedDates[1],
-      );
+      fetchBatchesData({
+        searchvalue: e.target.value,
+      });
     }, 300);
   };
 
@@ -404,14 +405,10 @@ export default function Batches() {
     const regionId = e.target.value;
     setSelectedRegionId(regionId);
     getBranchesData(regionId);
-    getBatchesData(
-      selectedTrainerId,
-      searchValue,
-      regionId,
-      null,
-      selectedDates[0],
-      selectedDates[1],
-    );
+    fetchBatchesData({
+      regionId: regionId,
+      branchId: null,
+    });
   };
 
   const getBranchesData = async (regionid) => {
@@ -455,14 +452,14 @@ export default function Batches() {
     setSelectedRegionId(null);
     setSelectedBranchId(null);
     getTrainersData(null, 1);
-    getBatchesData(
-      null,
-      null,
-      null,
-      null,
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-    );
+    fetchBatchesData({
+      trainerId: null,
+      searchvalue: "",
+      regionId: null,
+      branchId: null,
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+    });
   };
 
   return (
@@ -508,14 +505,9 @@ export default function Batches() {
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
-                          getBatchesData(
-                            selectedTrainerId,
-                            null,
-                            selectedRegionId,
-                            selectedBranchId,
-                            selectedDates[0],
-                            selectedDates[1],
-                          );
+                          fetchBatchesData({
+                            searchvalue: "",
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -562,14 +554,9 @@ export default function Batches() {
                 value={selectedBranchId}
                 onChange={(e) => {
                   setSelectedBranchId(e.target.value);
-                  getBatchesData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    e.target.value,
-                    selectedDates[0],
-                    selectedDates[1],
-                  );
+                  fetchBatchesData({
+                    branchId: e.target.value,
+                  });
                 }}
                 error=""
                 disableClearable={false}
@@ -587,15 +574,10 @@ export default function Batches() {
                   setPagination({
                     page: 1,
                   });
-
-                  getBatchesData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    dates[0],
-                    dates[1],
-                  );
+                  fetchBatchesData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                  });
                 }}
               />
             </Col>
@@ -722,14 +704,7 @@ export default function Batches() {
             setButtonLoading={setButtonLoading}
             callgetBatchesApi={() => {
               formReset();
-              getBatchesData(
-                selectedTrainerId,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                selectedDates[0],
-                selectedDates[1],
-              );
+              fetchBatchesData({});
             }}
           />
         ) : (
@@ -768,14 +743,7 @@ export default function Batches() {
             editBatchItem={editBatchItem}
             callgetBatchesApi={() => {
               formReset();
-              getBatchesData(
-                selectedTrainerId,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                selectedDates[0],
-                selectedDates[1],
-              );
+              fetchBatchesData({});
             }}
           />
         </Drawer>
