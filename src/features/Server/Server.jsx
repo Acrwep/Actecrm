@@ -665,8 +665,10 @@ export default function Server() {
 
     const receivedSearchValueFromNotification = stateData?.searchValue || null;
     const receivedStatusValueFromNotification = stateData?.status || "";
-    const receivedStartDateFromNotification = stateData?.startDate || null;
-    const receivedEndDateFromNotification = stateData?.endDate || null;
+    const receivedStartDateFromNotification =
+      stateData?.startDate || PreviousAndCurrentDate[0];
+    const receivedEndDateFromNotification =
+      stateData?.endDate || PreviousAndCurrentDate[1];
 
     if (receivedSearchValueFromNotification) {
       setSearchValue(receivedSearchValueFromNotification);
@@ -687,22 +689,38 @@ export default function Server() {
     } else {
       setSelectedDates(PreviousAndCurrentDate);
     }
+    fetchServerRequestsData({
+      startDate: receivedStartDateFromNotification,
+      endDate: receivedEndDateFromNotification,
+      dateType: "Raise Date",
+      regionId: null,
+      branchId: null,
+      downliners: downliners,
+      serverStatus: "",
+      searchvalue: receivedSearchValueFromNotification,
+      pageNumber: 1,
+      limit: 10,
+    });
+  };
 
+  const fetchServerRequestsData = (overrides = {}) => {
     getServerRequestData(
-      receivedStartDateFromNotification
-        ? receivedStartDateFromNotification
-        : PreviousAndCurrentDate[0],
-      receivedEndDateFromNotification
-        ? receivedEndDateFromNotification
-        : PreviousAndCurrentDate[1],
-      "Raise Date",
-      null,
-      null,
-      downliners,
-      null,
-      receivedSearchValueFromNotification,
-      1,
-      10,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.dateType !== undefined ? overrides.dateType : dateFilterType,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.serverStatus !== undefined ? overrides.downliners : status,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
     );
   };
 
@@ -1306,18 +1324,10 @@ export default function Server() {
       setPagination({
         page: 1,
       });
-      getServerRequestData(
-        selectedDates[0],
-        selectedDates[1],
-        dateFilterType,
-        selectedRegionId,
-        selectedBranchId,
-        allDownliners,
-        status,
-        e.target.value,
-        1,
-        pagination.limit,
-      );
+      fetchServerRequestsData({
+        searchvalue: e.target.value,
+        pageNumber: 1,
+      });
     }, 300);
   };
 
@@ -1350,18 +1360,10 @@ export default function Server() {
       setPagination({
         page: 1,
       });
-      getServerRequestData(
-        selectedDates[0],
-        selectedDates[1],
-        dateFilterType,
-        selectedRegionId,
-        selectedBranchId,
-        downliners_ids,
-        status,
-        searchValue,
-        1,
-        pagination.limit,
-      );
+      fetchServerRequestsData({
+        downliners: downliners_ids,
+        pageNumber: 1,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -1413,18 +1415,10 @@ export default function Server() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getServerRequestData(
-      selectedDates[0],
-      selectedDates[1],
-      dateFilterType,
-      selectedRegionId,
-      selectedBranchId,
-      allDownliners,
-      status,
-      searchValue,
-      page,
-      limit,
-    );
+    fetchServerRequestsData({
+      pageNumber: page,
+      limit: limit,
+    });
   };
 
   const getCustomerData = async (customer_id) => {
@@ -1474,18 +1468,7 @@ export default function Server() {
         setVerifyButtonLoading(false);
         handleServerTrack(updateStatus);
         drawerReset();
-        getServerRequestData(
-          selectedDates[0],
-          selectedDates[1],
-          dateFilterType,
-          selectedRegionId,
-          selectedBranchId,
-          allDownliners,
-          status,
-          searchValue,
-          1,
-          pagination.limit,
-        );
+        fetchServerRequestsData({});
       }, 300);
     } catch (error) {
       setVerifyButtonLoading(false);
@@ -1681,18 +1664,10 @@ export default function Server() {
                           setPagination({
                             page: 1,
                           });
-                          getServerRequestData(
-                            selectedDates[0],
-                            selectedDates[1],
-                            dateFilterType,
-                            selectedRegionId,
-                            selectedBranchId,
-                            allDownliners,
-                            status,
-                            null,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchServerRequestsData({
+                            searchvalue: "",
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -1748,18 +1723,12 @@ export default function Server() {
                         page: 1,
                         limit: pagination.limit,
                       });
-                      getServerRequestData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        value,
-                        null,
-                        defaultAllDownliners,
-                        status,
-                        searchValue,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchServerRequestsData({
+                        regionId: value,
+                        branchId: null,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                       if (value) {
                         getUsersData(value, null);
                         getBranchesData(value);
@@ -1789,18 +1758,11 @@ export default function Server() {
                         page: 1,
                         limit: pagination.limit,
                       });
-                      getServerRequestData(
-                        selectedDates[0],
-                        selectedDates[1],
-                        dateFilterType,
-                        selectedRegionId,
-                        value,
-                        defaultAllDownliners,
-                        status,
-                        searchValue,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchServerRequestsData({
+                        branchId: value,
+                        downliners: defaultAllDownliners,
+                        pageNumber: 1,
+                      });
                     }}
                     value={selectedBranchId}
                     disableClearable={false}
@@ -1840,18 +1802,11 @@ export default function Server() {
                       setPagination({
                         page: 1,
                       });
-                      getServerRequestData(
-                        dates[0],
-                        dates[1],
-                        dateFilterType,
-                        selectedRegionId,
-                        selectedBranchId,
-                        allDownliners,
-                        status,
-                        searchValue,
-                        1,
-                        pagination.limit,
-                      );
+                      fetchServerRequestsData({
+                        startDate: dates[0],
+                        endDate: dates[1],
+                        pageNumber: 1,
+                      });
                     }}
                   />
                 </div>
@@ -1871,18 +1826,10 @@ export default function Server() {
                           onChange={(e) => {
                             console.log(e.target.value);
                             setDateFilterType(e.target.value);
-                            getServerRequestData(
-                              selectedDates[0],
-                              selectedDates[1],
-                              e.target.value,
-                              selectedRegionId,
-                              selectedBranchId,
-                              allDownliners,
-                              status,
-                              searchValue,
-                              1,
-                              pagination.limit,
-                            );
+                            fetchServerRequestsData({
+                              dateType: e.target.value,
+                              pageNumber: 1,
+                            });
                           }}
                         >
                           <Radio
@@ -1975,18 +1922,10 @@ export default function Server() {
                 return;
               }
               setStatus("");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                null,
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2009,18 +1948,10 @@ export default function Server() {
                 return;
               }
               setStatus("Requested");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Requested",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Requested",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2046,18 +1977,10 @@ export default function Server() {
               setPagination({
                 page: 1,
               });
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Server Raised",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Server Raised",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2083,18 +2006,10 @@ export default function Server() {
                 return;
               }
               setStatus("Awaiting Verify");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Awaiting Verify",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Awaiting Verify",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2117,18 +2032,10 @@ export default function Server() {
                 return;
               }
               setStatus("Awaiting Approval");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Awaiting Approval",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Awaiting Approval",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2154,18 +2061,10 @@ export default function Server() {
               setPagination({
                 page: 1,
               });
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Approved",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Approved",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2191,18 +2090,10 @@ export default function Server() {
                 return;
               }
               setStatus("Issued");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Issued",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Issued",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2223,16 +2114,6 @@ export default function Server() {
                 return;
               }
               setStatus("Support");
-              // getServerRequestData(
-              //   selectedDates[0],
-              //   selectedDates[1],
-              //   dateFilterType,
-              //   allDownliners,
-              //   "Issued",
-              //   searchValue,
-              //   1,
-              //   pagination.limit,
-              // );
             }}
           >
             <p>
@@ -2253,18 +2134,10 @@ export default function Server() {
                 return;
               }
               setStatus("Expired");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Expired",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Expired",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2285,18 +2158,10 @@ export default function Server() {
                 return;
               }
               setStatus("Hold");
-              getServerRequestData(
-                selectedDates[0],
-                selectedDates[1],
-                dateFilterType,
-                selectedRegionId,
-                selectedBranchId,
-                allDownliners,
-                "Hold",
-                searchValue,
-                1,
-                pagination.limit,
-              );
+              fetchServerRequestsData({
+                serverStatus: "Hold",
+                pageNumber: 1,
+              });
             }}
           >
             <p>
@@ -2769,18 +2634,7 @@ export default function Server() {
               verifyHistory={verifyHistory}
               callgetServerApi={() => {
                 drawerReset();
-                getServerRequestData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  dateFilterType,
-                  selectedRegionId,
-                  selectedBranchId,
-                  allDownliners,
-                  status,
-                  searchValue,
-                  1,
-                  pagination.limit,
-                );
+                fetchServerRequestsData({});
               }}
             />
           ) : drawerStatus == "Verify" ? (
@@ -2790,18 +2644,7 @@ export default function Server() {
               setRejectButtonLoading={setRejectButtonLoading}
               callgetServerApi={() => {
                 drawerReset();
-                getServerRequestData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  dateFilterType,
-                  selectedRegionId,
-                  selectedBranchId,
-                  allDownliners,
-                  status,
-                  searchValue,
-                  1,
-                  pagination.limit,
-                );
+                fetchServerRequestsData({});
               }}
             />
           ) : drawerStatus == "Approve" ? (
@@ -2811,18 +2654,7 @@ export default function Server() {
               setRejectButtonLoading={setRejectButtonLoading}
               callgetServerApi={() => {
                 drawerReset();
-                getServerRequestData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  dateFilterType,
-                  selectedRegionId,
-                  selectedBranchId,
-                  allDownliners,
-                  status,
-                  searchValue,
-                  1,
-                  pagination.limit,
-                );
+                fetchServerRequestsData({});
               }}
             />
           ) : drawerStatus == "Issue" ? (
@@ -2832,18 +2664,7 @@ export default function Server() {
               setButtonLoading={setButtonLoading}
               callgetServerApi={() => {
                 drawerReset();
-                getServerRequestData(
-                  selectedDates[0],
-                  selectedDates[1],
-                  dateFilterType,
-                  selectedRegionId,
-                  selectedBranchId,
-                  allDownliners,
-                  status,
-                  searchValue,
-                  1,
-                  pagination.limit,
-                );
+                fetchServerRequestsData({});
               }}
             />
           ) : (
