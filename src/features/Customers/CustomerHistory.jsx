@@ -747,6 +747,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               </div>
             </div>
           ) : item.status === "Hold" ||
+            item.status === "Demo Completed" ||
+            item.status === "Videos Given" ||
             item.status === "Trainer Approval Rejected" ? (
             <div>
               <p className="customer_history_updateddate">
@@ -763,7 +765,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               </p>
               <div style={{ display: "flex", gap: "6px" }}>
                 <p className="customer_history_comments">
-                  {item.status === "Hold" ? "Comments:" : "Rejected Reason:"}
+                  {item.status === "Trainer Approval Rejected"
+                    ? "Rejected Reason:"
+                    : "Comments:"}
                 </p>
                 <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
                   {item.details && item.details.comments
@@ -796,8 +800,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           ) : item.status === "Escalated" ||
             item.status === "Partially Closed" ||
             item.status === "Discontinued" ||
-            item.status === "Refund" ||
-            item.status === "Videos Given" ? (
+            item.status === "Refund" ? (
             <div>
               <p className="customer_history_updateddate">
                 {moment(item.status_date).format("DD/MM/YYYY hh:mm A")}

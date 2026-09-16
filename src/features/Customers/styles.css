@@ -871,6 +871,18 @@
   align-items: center;
   font-weight: 500;
 }
+.customers_reviews_updatebutton {
+  background-color: #4285f4 !important;
+  color: #fff !important;
+  width: 90%;
+  height: 24px;
+  border-radius: 4px !important;
+  font-size: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+}
 .customers_reassigntrainer_button {
   background-color: #5b69ca !important;
   color: #fff !important;
@@ -1215,12 +1227,11 @@
   border-color: #5b69ca !important;
 }
 .customer_linkedin_update_button {
-  font-size: 13px !important;
+  font-size: 12px !important;
   background-color: #5b69ca !important;
   color: #fff !important;
   border-color: #5b69ca !important;
   font-weight: 500;
-  margin-right: 12px;
   width: 140px;
 }
 .customer_linkedin_update_button:hover {
@@ -1228,7 +1239,7 @@
   color: #fff !important;
 }
 .customer_loading_linkedin_update_button {
-  font-size: 13px !important;
+  font-size: 12px !important;
   background-color: #5b69ca !important;
   color: #fff !important;
   border-color: #5b69ca !important;

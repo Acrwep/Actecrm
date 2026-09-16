@@ -61,7 +61,10 @@ import {
   FaPhoneSlash,
   FaHandshake,
 } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { LuFileClock } from "react-icons/lu";
+import { PiSealCheckFill } from "react-icons/pi";
+import { TbStack3 } from "react-icons/tb";
 import CommonDnd from "../Common/CommonDnd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
@@ -71,6 +74,8 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSelectField from "../Common/CommonSelectField";
 import CustomerHistory from "../Customers/CustomerHistory";
+import CommonSpinner from "../Common/CommonSpinner";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Admissions() {
   const mounted = useRef(false);
@@ -79,6 +84,11 @@ export default function Admissions() {
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
+
+  //======eye icon loading
+  const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
+  const customerDetailsLoadingRef = useRef(customerDetailsLoading);
+  //======
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
@@ -89,8 +99,6 @@ export default function Admissions() {
     useState(null);
   const [customerId, setCustomerId] = useState(null);
   const [modeStatus, setModeStatus] = useState("");
-  const [isStatusUpdateDrawerLoading, setIsStatusUpdateDrawerLoading] =
-    useState(false);
   const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
     useState(false);
   const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
@@ -172,6 +180,30 @@ export default function Admissions() {
     };
   };
 
+  const renderServerStatus = (isRequired, serverStatus) => {
+    if (!isRequired) {
+      return "-";
+    }
+
+    const isIssued = serverStatus === "Issued";
+
+    return (
+      <div
+        style={{
+          color: isIssued ? "#2e7d32" : "#8b8b8b",
+          fontWeight: "bold",
+          textAlign: "center",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+        }}
+      >
+        <GiCheckMark size={14} />
+      </div>
+    );
+  };
+
   const nonChangeColumns = [
     {
       title: "Sl. No",
@@ -192,26 +224,38 @@ export default function Admissions() {
       },
     },
     {
-      title: "Student Id",
-      key: "student_id",
-      dataIndex: "student_id",
-      width: 120,
+      title: "Candidate Name / ID",
+      key: "customer_name",
+      dataIndex: "customer_name",
+      width: 170,
       group: "General Info",
-      render: (text, record) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <EllipsisTooltip text={text || "-"} />
-          {text && (
-            <FaRegEye
-              size={14}
-              className="trainers_action_icons"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                getParticularCustomerDetails(record?.customer_id);
-              }}
-            />
-          )}
-        </div>
-      ),
+      render: (text, record) => {
+        const isLoading =
+          customerDetailsLoadingRef.current == record?.customer_id;
+
+        return (
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
+            {isLoading ? (
+              <CommonSpinner color="#333" size={14} />
+            ) : (
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                style={{ cursor: "pointer", flexShrink: 0 }}
+                onClick={() => {
+                  getParticularCustomerDetails(record?.customer_id);
+                }}
+              />
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Course ",
@@ -227,23 +271,29 @@ export default function Admissions() {
       title: "Sale Executive",
       key: "sale_executive",
       dataIndex: "sale_executive",
-      width: 140,
+      width: 120,
       group: "General Info",
       render: (text, record) => {
         const lead_executive = `${record.assigned_to} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
+        return (
+          <OverflowTooltip
+            title={lead_executive}
+            children={record.assigned_to}
+          />
+        );
       },
     },
     {
       title: "RA",
       key: "ra_user_name",
       dataIndex: "ra_user_name",
-      width: 140,
+      width: 100,
       group: "General Info",
+      align: "center",
       render: (text, record) => {
         if (text) {
           const ra = `${record.ra_user_id} - ${text}`;
-          return <EllipsisTooltip text={ra} />;
+          return <OverflowTooltip title={ra} children={record.ra_user_id} />;
         } else {
           return "-";
         }
@@ -253,12 +303,13 @@ export default function Admissions() {
       title: "HR",
       key: "hr_user_name",
       dataIndex: "hr_user_name",
-      width: 140,
+      width: 100,
+      align: "center",
       group: "General Info",
       render: (text, record) => {
         if (text) {
           const hr = `${record.hr_user_id} - ${text}`;
-          return <EllipsisTooltip text={hr} />;
+          return <OverflowTooltip title={hr} children={record.hr_user_id} />;
         } else {
           return "-";
         }
@@ -440,6 +491,21 @@ export default function Admissions() {
     },
     {
       title: (
+        <Tooltip title="Server Status" placement="top">
+          <div className="admissions_table_icons_container">
+            <TbStack3 size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "is_server_required",
+      dataIndex: "is_server_required",
+      width: 80,
+      group: "Progress Monitoring",
+      render: (text, record) =>
+        renderServerStatus(text, record.server_master_status),
+    },
+    {
+      title: (
         <Tooltip title="Class completion Confirmation" placement="top">
           <div className="admissions_table_icons_container">
             <FaCheckDouble size={16} style={{ flexShrink: 0 }} />
@@ -482,9 +548,9 @@ export default function Admissions() {
     },
     {
       title: (
-        <Tooltip title="Google review Collection" placement="top">
+        <Tooltip title="Google Review Collection" placement="top">
           <div className="admissions_table_icons_container">
-            <FaStar size={15} style={{ flexShrink: 0 }} />
+            <FcGoogle size={15} style={{ flexShrink: 0 }} />
           </div>
         </Tooltip>
       ),
@@ -496,28 +562,28 @@ export default function Admissions() {
     },
     {
       title: (
-        <Tooltip title="LinkedIn Recommendation" placement="top">
+        <Tooltip title="LinkedIn Review Collection" placement="top">
           <div className="admissions_table_icons_container">
             <FaLinkedin size={15} style={{ flexShrink: 0 }} />
           </div>
         </Tooltip>
       ),
-      key: "linkedin_recommendation",
-      dataIndex: "linkedin_recommendation",
+      key: "linkedin_review_collection",
+      dataIndex: "linkedin_review_collection",
       width: 80,
       group: "Review & Certifications",
       render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
-        <Tooltip title="Cerificate Verification" placement="top">
+        <Tooltip title="Review Verification" placement="top">
           <div className="admissions_table_icons_container">
-            <FaCertificate size={15} style={{ flexShrink: 0 }} />
+            <PiSealCheckFill size={15} style={{ flexShrink: 0 }} />
           </div>
         </Tooltip>
       ),
-      key: "certificate_verification",
-      dataIndex: "certificate_verification",
+      key: "review_verification_status",
+      dataIndex: "review_verification_status",
       width: 80,
       group: "Review & Certifications",
       render: (text) => renderCellWithBackground(text ?? false),
@@ -526,12 +592,26 @@ export default function Admissions() {
       title: (
         <Tooltip title="Course Completion Certificate" placement="top">
           <div className="admissions_table_icons_container">
-            <FaGraduationCap size={16} style={{ flexShrink: 0 }} />
+            <FaCertificate size={15} style={{ flexShrink: 0 }} />
           </div>
         </Tooltip>
       ),
       key: "course_completion_certificate",
       dataIndex: "course_completion_certificate",
+      width: 80,
+      group: "Review & Certifications",
+      render: (text) => renderCellWithBackground(text ?? false),
+    },
+    {
+      title: (
+        <Tooltip title="Course Completed" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaGraduationCap size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "is_course_completed",
+      dataIndex: "is_course_completed",
       width: 80,
       group: "Review & Certifications",
       render: (text) => renderCellWithBackground(text ?? false),
@@ -646,6 +726,10 @@ export default function Admissions() {
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
   const [customersData, setCustomersData] = useState([]);
+
+  useEffect(() => {
+    customerDetailsLoadingRef.current = customerDetailsLoading;
+  }, [customerDetailsLoading]);
 
   useEffect(() => {
     if (columns.length > 0) {
@@ -921,18 +1005,19 @@ export default function Admissions() {
 
   //get particular customer full details
   const getParticularCustomerDetails = async (customer_Id) => {
-    setIsStatusUpdateDrawerLoading(true);
+    setCustomerDetailsLoading(customer_Id);
+
     try {
       const response = await getCustomerById(customer_Id);
       console.log("particular customer response", response);
       const customer_details = response?.data?.data;
       setCustomerDetails(customer_details);
       setIsOpenCustomerDetailsModal(true);
+      setCustomerDetailsLoading("");
     } catch (error) {
       console.log("getcustomer by id error", error);
       setCustomerDetails(null);
-    } finally {
-      setIsStatusUpdateDrawerLoading(false);
+      setCustomerDetailsLoading("");
     }
   };
 

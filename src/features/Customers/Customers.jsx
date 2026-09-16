@@ -47,7 +47,6 @@ import {
   regionOptions,
 } from "../Common/Validation";
 import { FcGoogle } from "react-icons/fc";
-import { FaLinkedin } from "react-icons/fa";
 import CommonSpinner from "../Common/CommonSpinner";
 import { DownloadOutlined } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa";
@@ -96,6 +95,7 @@ import PrismaZoom from "react-prismazoom";
 import RevertTrainerApproval from "./RevertTrainerApproval";
 import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 import AssignTrainerToCustomer from "./AssignTrainerToCustomer";
+import UpdateReviews from "./UpdateReviews";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -105,7 +105,6 @@ export default function Customers() {
   const assignAndVerifyTrainerRef = useRef();
   const reAssignTrainerRef = useRef();
   const classScheduleRef = useRef();
-  const passedOutProcessRef = useRef();
   const othersHandlingRef = useRef();
   const preCertificateRef = useRef();
   const emailTemplateRef = useRef();
@@ -284,11 +283,11 @@ export default function Customers() {
       },
 
       {
-        label: "Others",
-        value: "Others",
-        countKey: "Others",
-        activeClass: "customers_active_others_container",
-        inactiveClass: "customers_others_container",
+        label: "Hold",
+        value: "Hold",
+        countKey: "hold",
+        activeClass: "customers_active_studentvefity_container",
+        inactiveClass: "customers_studentvefity_container",
       },
     ],
 
@@ -325,6 +324,22 @@ export default function Customers() {
         countKey: "videos_given",
         activeClass: "trainers_active_stage4_container",
         inactiveClass: "trainers_stage4_container",
+      },
+
+      {
+        label: "Refund",
+        value: "Refund",
+        countKey: "refund",
+        activeClass: "customers_active_escalated_container",
+        inactiveClass: "customers_escalated_container",
+      },
+
+      {
+        label: "Others",
+        value: "Others",
+        countKey: "Others",
+        activeClass: "customers_active_others_container",
+        inactiveClass: "customers_others_container",
       },
     ],
   };
@@ -447,14 +462,10 @@ export default function Customers() {
   //class schedule usestates
   //class going usestates
   //feedback usestates
-  const [isCertGenerated, setIsCertGenerated] = useState(false);
-  const [generateCertLoading, setGenerateCertLoading] = useState(false);
+  const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
   const [certHtmlContent, setCertHtmlContent] = useState("");
   const [isOpenViewCertModal, setIsOpenViewCertModal] = useState(false);
   const [certificateName, setCertificateName] = useState("");
-  const [stepIndex, setStepIndex] = useState(0);
-  const [linkedinLoading, setLinkedinLoading] = useState(false);
-  const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
 
   //customer history usestates
   const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
@@ -462,7 +473,6 @@ export default function Customers() {
   const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] =
     useState(null);
 
-  const prev = () => setStepIndex(stepIndex - 1);
   const [loading, setLoading] = useState(true);
   //email template usestates
   const [isOpenEmailTemplateDrawer, setIsOpenEmailTemplateDrawer] =
@@ -1486,6 +1496,39 @@ export default function Customers() {
                       ""
                     )}
 
+                    {classPercent > 50 &&
+                      (record.status === "Class Going" ||
+                        record.status === "Passedout process" ||
+                        record.status === "Completed") && (
+                        <Col span={12}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <button
+                              className="customers_reviews_updatebutton"
+                              onClick={() => {
+                                if (
+                                  !permissions.includes(
+                                    "Update Passedout Process",
+                                  )
+                                ) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                getParticularCustomerDetails(record?.id);
+                                setDrawerContentStatus("Update Reviews");
+                                setIsStatusUpdateDrawer(true);
+                              }}
+                            >
+                              Update Reviews
+                            </button>
+                          </div>
+                        </Col>
+                      )}
+
                     {record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <>
@@ -1507,22 +1550,8 @@ export default function Customers() {
                                 return;
                               }
                               getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Add G-Review");
+                              setDrawerContentStatus("Passedout Process");
                               setIsStatusUpdateDrawer(true);
-                              if (record.google_review === null) {
-                                setStepIndex(0);
-                              } else if (
-                                record.is_certificate_generated === 0
-                              ) {
-                                setStepIndex(1);
-                              } else {
-                                setStepIndex(2);
-                              }
-                              setIsCertGenerated(
-                                record.is_certificate_generated === 1
-                                  ? true
-                                  : false,
-                              );
                             }}
                           >
                             {record.status === "Completed"
@@ -1536,7 +1565,7 @@ export default function Customers() {
                             <div className="customers_classcompleted_container">
                               <BsPatchCheckFill color="#3c9111" />
                               <p className="customers_classgoing_completedtext">
-                                Certificate Issued
+                                Course Completed
                               </p>
                             </div>
                           </Col>
@@ -2062,9 +2091,6 @@ export default function Customers() {
       overrides.downliners !== undefined ? overrides.downliners : allDownliners,
       overrides.page !== undefined ? overrides.page : pagination?.page || 1,
       overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
-      overrides.is_generate_certificate !== undefined
-        ? overrides.is_generate_certificate
-        : undefined,
     );
   };
 
@@ -2083,7 +2109,6 @@ export default function Customers() {
     downliners,
     pageNumber,
     limit,
-    is_generate_certificate,
   ) => {
     setLoading(true);
 
@@ -2145,25 +2170,6 @@ export default function Customers() {
       setClassGoingCounts(
         response?.data?.data?.class_going_sub_bucket_count || null,
       );
-      if (is_generate_certificate === true) {
-        if (customers.length >= 1) {
-          const findCurrentCustomer = customers.find(
-            (f) => f.id === customerDetails.id,
-          );
-
-          if (findCurrentCustomer) {
-            setCustomerDetails(findCurrentCustomer);
-            setIsCertGenerated(
-              findCurrentCustomer.is_certificate_generated === 1 ? true : false,
-            );
-            setGenerateCertLoading(false);
-          } else {
-            setGenerateCertLoading(false);
-          }
-        } else {
-          setGenerateCertLoading(false);
-        }
-      }
     } catch (error) {
       setRegionCounts(null);
       setCustomerStatusCount(null);
@@ -2547,7 +2553,6 @@ export default function Customers() {
   };
 
   const handleViewCert = async (customer_id) => {
-    setGenerateCertLoading(true);
     const payload = {
       customer_id: customer_id ? customer_id : customerDetails.id,
     };
@@ -2557,11 +2562,9 @@ export default function Customers() {
       const htmlTemplate = response?.data?.data?.html_template;
       setCertHtmlContent(htmlTemplate);
       setTimeout(() => {
-        setGenerateCertLoading(false);
         setIsOpenViewCertModal(true);
       }, 300);
     } catch (error) {
-      setGenerateCertLoading(false);
       CommonMessage(
         "error",
         error?.response?.data?.details ||
@@ -2606,9 +2609,6 @@ export default function Customers() {
     //class schedule
     //class going
     //feedback
-    setStepIndex(0);
-    //cert usestaes
-    setIsCertGenerated(false);
     setCertificateName("");
   };
 
@@ -4192,28 +4192,20 @@ export default function Customers() {
                   }}
                 />
               </>
-            ) : drawerContentStatus === "Add G-Review" ? (
+            ) : drawerContentStatus === "Update Reviews" ? (
+              <>
+                <UpdateReviews customer_details={customerDetails} />
+              </>
+            ) : drawerContentStatus === "Passedout Process" ? (
               <>
                 <PassesOutProcess
-                  ref={passedOutProcessRef}
-                  customerDetails={customerDetails}
-                  setLinkedinLoading={setLinkedinLoading}
-                  setUpdateButtonLoading={setUpdateButtonLoading}
-                  stepIndex={stepIndex}
-                  setStepIndex={setStepIndex}
-                  isCertGenerated={isCertGenerated}
-                  generateCertLoading={generateCertLoading}
-                  setGenerateCertLoading={setGenerateCertLoading}
-                  callgetCustomersApi={(reset = true, cert_gen = false) => {
-                    console.log("resetttt", reset);
-                    if (reset != false) {
-                      console.log("oooooooooooooooo", reset);
-                      updateStatusDrawerReset();
-                    }
+                  customer_details={customerDetails}
+                  callgetCustomersApi={() => {
+                    updateStatusDrawerReset();
                     setPagination({
                       page: 1,
                     });
-                    fetchCustomersData({ is_generate_certificate: cert_gen });
+                    fetchCustomersData({});
                   }}
                 />
               </>
@@ -4254,7 +4246,9 @@ export default function Customers() {
         drawerContentStatus === "Update Payment" ||
         drawerContentStatus === "Student Verify" ||
         drawerContentStatus === "Assign Trainer" ||
-        drawerContentStatus === "Class Schedule" ? (
+        drawerContentStatus === "Class Schedule" ||
+        drawerContentStatus === "Update Reviews" ||
+        drawerContentStatus === "Passedout Process" ? (
           ""
         ) : (
           <div className="leadmanager_tablefiler_footer">
@@ -4281,176 +4275,66 @@ export default function Customers() {
                 ""
               )}
 
-              {drawerContentStatus === "Add L-Review" ? (
-                <>
-                  {updateButtonLoading ? (
-                    <button className="customer_issuecert_loadingbutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="customer_issuecert_button"
-                      onClick={() =>
-                        passedOutProcessRef.current?.handleCompleteProcess()
-                      }
-                    >
-                      Update And Issue Certificate
-                    </button>
-                  )}
-                </>
-              ) : drawerContentStatus === "Add G-Review" ? (
-                <>
-                  {stepIndex > 0 && (
-                    <Button
-                      onClick={prev}
-                      style={{ marginRight: 12 }}
-                      className="customer_stepperbuttons"
-                    >
-                      Previous
-                    </Button>
-                  )}
-                  {stepIndex == 0 && (
-                    <>
-                      {linkedinLoading ? (
-                        <Button className="customer_loading_linkedin_update_button">
-                          <CommonSpinner />
-                        </Button>
-                      ) : (
-                        <Button
-                          className="customer_linkedin_update_button"
-                          onClick={() =>
-                            passedOutProcessRef.current?.handleGoogleReview(
-                              true,
-                            )
-                          }
-                        >
-                          Update G-Review
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {stepIndex == 2 && (
-                    <>
-                      {linkedinLoading ? (
-                        <Button className="customer_loading_linkedin_update_button">
-                          <CommonSpinner />
-                        </Button>
-                      ) : (
-                        <Button
-                          className="customer_linkedin_update_button"
-                          onClick={() =>
-                            passedOutProcessRef.current?.handleLinkedinReview()
-                          }
-                        >
-                          Update Linkedin
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {stepIndex < 3 && (
-                    <>
-                      {updateButtonLoading ? (
-                        <Button
-                          className={
-                            stepIndex == 2
-                              ? "customer_complete_loadingpassedoutbutton"
-                              : "customer_stepperbuttons"
-                          }
-                        >
-                          <CommonSpinner />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={
-                            stepIndex == 0
-                              ? () =>
-                                  passedOutProcessRef.current?.handleGoogleReview()
-                              : stepIndex == 1
-                                ? () =>
-                                    passedOutProcessRef.current?.handleCertificateDetails()
-                                : stepIndex == 2
-                                  ? () =>
-                                      passedOutProcessRef.current?.handleCompleteProcess()
-                                  : ""
-                          }
-                          className={
-                            stepIndex == 2
-                              ? "customer_complete_passedoutbutton"
-                              : "customer_stepperbuttons"
-                          }
-                        >
-                          {stepIndex == 2 ? "Move to Completed" : "Next"}
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  {updateButtonLoading ? (
-                    <button
-                      className={
-                        drawerContentStatus === "Update Assigned Trainer"
-                          ? "customers_drawer_update_trainer_loading_button"
-                          : "users_adddrawer_loadingcreatebutton"
-                      }
-                    >
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className={
-                        drawerContentStatus === "Update Assigned Trainer"
-                          ? "customers_drawer_update_trainer_button"
-                          : "users_adddrawer_createbutton"
-                      }
-                      onClick={
-                        drawerContentStatus === "Update Assigned Trainer"
+              <>
+                {updateButtonLoading ? (
+                  <button
+                    className={
+                      drawerContentStatus === "Update Assigned Trainer"
+                        ? "customers_drawer_update_trainer_loading_button"
+                        : "users_adddrawer_loadingcreatebutton"
+                    }
+                  >
+                    <CommonSpinner />
+                  </button>
+                ) : (
+                  <button
+                    className={
+                      drawerContentStatus === "Update Assigned Trainer"
+                        ? "customers_drawer_update_trainer_button"
+                        : "users_adddrawer_createbutton"
+                    }
+                    onClick={
+                      drawerContentStatus === "Update Assigned Trainer"
+                        ? () =>
+                            assignAndVerifyTrainerRef.current?.handleAssignTrainer()
+                        : drawerContentStatus === "Re-Assign Trainer"
                           ? () =>
-                              assignAndVerifyTrainerRef.current?.handleAssignTrainer()
-                          : drawerContentStatus === "Re-Assign Trainer"
+                              reAssignTrainerRef.current?.handleReAssignTrainer()
+                          : drawerContentStatus === "Trainer Verify" ||
+                              drawerContentStatus === "Trainer Approval"
                             ? () =>
-                                reAssignTrainerRef.current?.handleReAssignTrainer()
-                            : drawerContentStatus === "Trainer Verify" ||
-                                drawerContentStatus === "Trainer Approval"
+                                assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
+                            : drawerContentStatus === "Class Schedule"
                               ? () =>
-                                  assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
-                              : drawerContentStatus === "Class Schedule"
+                                  classScheduleRef.current?.handleClassSchedule()
+                              : drawerContentStatus === "Class Going"
                                 ? () =>
-                                    classScheduleRef.current?.handleClassSchedule()
-                                : drawerContentStatus === "Class Going"
+                                    classScheduleRef.current?.handleUpdateClassGoing()
+                                : drawerContentStatus === "Pre Certificate"
                                   ? () =>
-                                      classScheduleRef.current?.handleUpdateClassGoing()
-                                  : drawerContentStatus === "Add G-Review"
+                                      preCertificateRef.current?.handleGeneratePreCert()
+                                  : drawerContentStatus === "Others"
                                     ? () =>
-                                        passedOutProcessRef.current?.handleGoogleReview()
-                                    : drawerContentStatus === "Pre Certificate"
-                                      ? () =>
-                                          preCertificateRef.current?.handleGeneratePreCert()
-                                      : drawerContentStatus === "Others"
-                                        ? () =>
-                                            othersHandlingRef.current?.handleSubmit()
-                                        : handleStatusMismatch
-                      }
-                    >
-                      {drawerContentStatus === "Update Assigned Trainer"
-                        ? "Update Trainer"
-                        : drawerContentStatus === "Trainer Approval"
-                          ? "Approve"
-                          : drawerContentStatus === "Re-Assign Trainer"
-                            ? "Re-Assign"
-                            : drawerContentStatus === "Class Going" ||
-                                drawerContentStatus === "Class Schedule" ||
-                                drawerContentStatus === "Add G-Review" ||
-                                drawerContentStatus === "Others"
-                              ? "Update"
-                              : drawerContentStatus == "Pre Certificate"
-                                ? "Generate"
-                                : "Verify"}
-                    </button>
-                  )}
-                </>
-              )}
+                                        othersHandlingRef.current?.handleSubmit()
+                                    : handleStatusMismatch
+                    }
+                  >
+                    {drawerContentStatus === "Update Assigned Trainer"
+                      ? "Update Trainer"
+                      : drawerContentStatus === "Trainer Approval"
+                        ? "Approve"
+                        : drawerContentStatus === "Re-Assign Trainer"
+                          ? "Re-Assign"
+                          : drawerContentStatus === "Class Going" ||
+                              drawerContentStatus === "Class Schedule" ||
+                              drawerContentStatus === "Others"
+                            ? "Update"
+                            : drawerContentStatus == "Pre Certificate"
+                              ? "Generate"
+                              : "Verify"}
+                  </button>
+                )}
+              </>
             </div>
           </div>
         )}
