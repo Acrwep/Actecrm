@@ -71,6 +71,7 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 import MakeAsCustomer from "./MakeAsCustomer";
 import CommonInputField from "../Common/CommonInputField";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -296,10 +297,22 @@ export default function Leads({
     ...(permissions.includes("Show Lead Executive Id")
       ? [
           {
-            title: "Lead Executive",
+            title: (
+              <Tooltip title="Lead Executive" placement="top">
+                <div
+                  style={{
+                    cursor: "pointer",
+                    width: "100%",
+                    textAlign: "center",
+                  }}
+                >
+                  LE
+                </div>
+              </Tooltip>
+            ),
             key: "lead_assigned_to_name",
             dataIndex: "lead_assigned_to_name",
-            width: 160,
+            width: 80,
             sorter: (a, b) =>
               (a.lead_assigned_to_name || "").localeCompare(
                 b.lead_assigned_to_name || "",
@@ -307,7 +320,14 @@ export default function Leads({
             sortDirections: ["ascend", "descend"],
             render: (text, record) => {
               const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-              return <EllipsisTooltip text={lead_executive} />;
+              return (
+                <div style={{ textAlign: "center", width: "100%" }}>
+                  <OverflowTooltip
+                    title={lead_executive}
+                    children={record.lead_assigned_to_id}
+                  />
+                </div>
+              );
             },
           },
         ]
@@ -984,6 +1004,20 @@ export default function Leads({
             case "lead_assigned_to_name":
               return {
                 ...col,
+                title: (
+                  <Tooltip title="Lead Executive" placement="top">
+                    <div
+                      style={{
+                        cursor: "pointer",
+                        width: "100%",
+                        textAlign: "center",
+                      }}
+                    >
+                      LE
+                    </div>
+                  </Tooltip>
+                ),
+                width: 80,
                 sorter: (a, b) =>
                   (a.lead_assigned_to_name || "").localeCompare(
                     b.lead_assigned_to_name || "",
@@ -991,7 +1025,14 @@ export default function Leads({
                 sortDirections: ["ascend", "descend"],
                 render: (text, record) => {
                   const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
-                  return <EllipsisTooltip text={lead_executive} />;
+                  return (
+                    <div style={{ textAlign: "center", width: "100%" }}>
+                      <OverflowTooltip
+                        title={lead_executive}
+                        children={record.lead_assigned_to_id}
+                      />
+                    </div>
+                  );
                 },
               };
             case "name":

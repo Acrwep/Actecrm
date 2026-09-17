@@ -49,6 +49,7 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { FaCaretDown } from "react-icons/fa";
 import TrainerFullDetailsModal from "../Trainers/TrainerFullDetailsModal";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Tickets() {
   const scrollRef = useRef();
@@ -310,24 +311,41 @@ export default function Tickets() {
       title: "Manager",
       key: "manager_name",
       dataIndex: "manager_name",
-      width: 150,
+      width: 90,
+      align: "center",
       render: (text, record) => {
-        const lead_executive = record.manager_user_id
+        const manager = record.manager_user_id
           ? `${record.manager_user_id} - ${text}`
           : "-";
-        return <EllipsisTooltip text={lead_executive} />;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={manager}
+              children={record.manager_user_id}
+            />
+          </div>
+        );
       },
     },
     {
       title: "Sub User",
       key: "ra_name",
       dataIndex: "ra_name",
-      width: 120,
+      width: 90,
+      align: "center",
       render: (text, record) => {
-        const lead_executive = record.ra_user_id
-          ? `${record.ra_user_id} - ${text}`
-          : "-";
-        return <EllipsisTooltip text={lead_executive} />;
+        if (text) {
+          const sub_user = record.ra_user_id
+            ? `${record.ra_user_id} - ${text}`
+            : "-";
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={sub_user} children={record.ra_user_id} />
+            </div>
+          );
+        } else {
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
+        }
       },
     },
     {

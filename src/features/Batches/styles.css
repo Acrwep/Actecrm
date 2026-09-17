@@ -31,17 +31,18 @@
   align-items: center;
 }
 
-/* Batch UI Layout */
+/* Batch UI Layout Premium Styles */
 .batches_layout_container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .batch_region_block {
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #f0f0f0;
+  background: var(--region-bg, #f8fafc);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
@@ -49,45 +50,48 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
-  background: #fafafa;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 24px;
+  background: transparent;
+  border-bottom: 1px solid var(--region-color, #e2e8f0);
 }
 
 .batch_region_header h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--region-color, #0f172a);
+  letter-spacing: -0.01em;
 }
 
 .batch_count_badge {
-  background: #e6f7ff;
-  color: #1890ff;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 500;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .batch_branches_container {
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .batch_branch_section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .batch_branch_title {
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #4b5563;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -95,21 +99,24 @@
 
 .batch_card {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid var(--region-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: all 0.2s ease-in-out;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   height: 100%;
 }
 
 .batch_card:hover {
-  border-color: #1890ff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transform: translateY(-2px);
+  border-color: var(--region-color, #cbd5e1);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
 }
 
 .batch_card_header {
@@ -119,65 +126,90 @@
 }
 
 .batch_card_number {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
 }
 
 .batch_card_edit_icon {
-  color: #9ca3af;
-  font-size: 16px;
-  transition: color 0.2s;
+  color: #94a3b8;
+  transition: color 0.2s ease;
+  padding: 4px;
+  border-radius: 6px;
 }
 
 .batch_card_edit_icon:hover {
-  color: #1890ff;
+  color: #2563eb;
+  background: #eff6ff;
 }
 
 .batch_card_body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex-grow: 1;
 }
 
 .batch_card_title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.batch_card_trainer {
-  font-size: 13px;
-  color: #4b5563;
+.batch_card_icon {
+  color: #94a3b8;
+  margin-right: 6px;
+  font-size: 14px;
 }
 
+.batch_card_trainer,
 .batch_card_time {
   font-size: 13px;
-  color: #6b7280;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
 }
 
 .batch_card_status {
-  font-size: 13px;
-  font-weight: 500;
-  color: #10b981;
-  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--region-color, #15803d);
+  background: var(--region-bg, #dcfce7);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+
+.status_dot {
+  height: 6px;
+  width: 6px;
+  background-color: var(--region-color, #16a34a);
+  border-radius: 50%;
+  margin-right: 6px;
 }
 
 .batch_card_footer {
-  border-top: 1px solid #f3f4f6;
-  padding-top: 12px;
-  margin-top: auto;
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 16px;
+  margin-top: 4px;
 }
 
 .batch_card_students {
   font-size: 13px;
-  font-weight: 500;
-  color: #374151;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
 }

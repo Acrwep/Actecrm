@@ -75,6 +75,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import TrainerPaymentDirectPaid from "./TrainerPaymentDirectPaid";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
   if (!updatedDate) return null;
@@ -712,27 +713,35 @@ export default function TrainerPayment() {
       title: "RA",
       key: "ra",
       dataIndex: "ra_user_id",
-      width: 110,
-      render: (text, record) => (
-        <EllipsisTooltip
-          text={text ? `${text} - ${record?.ra_user_name}` : "-"}
-        />
-      ),
+      width: 75,
+      align: "center",
+      render: (text, record) => {
+        const ra = text ? `${text} - ${record.ra_user_name}` : "-";
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip title={ra} children={text} />
+          </div>
+        );
+      },
     },
     {
       title: "HR",
       key: "hr_user_id",
       dataIndex: "hr_user_id",
-      width: 110,
-      render: (text, record) => (
-        <EllipsisTooltip
-          text={text ? `${text} - ${record?.hr_user_name}` : "-"}
-        />
-      ),
+      align: "center",
+      width: 75,
+      render: (text, record) => {
+        const hr = text ? `${text} - ${record.hr_user_name}` : "-";
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip title={hr} children={text} />
+          </div>
+        );
+      },
     },
     {
       title: (
-        <Tooltip title="Sales Executive" placement="top">
+        <Tooltip title="Sale Executive" placement="top">
           <div
             style={{ cursor: "pointer", width: "100%", textAlign: "center" }}
           >
@@ -742,10 +751,16 @@ export default function TrainerPayment() {
       ),
       key: "lead_assigned_to_id",
       dataIndex: "lead_assigned_to_id",
-      width: 130,
+      width: 75,
       render: (text, record) => {
-        const lead_executive = `${text} - ${record?.lead_assigned_to_name}`;
-        return <EllipsisTooltip text={lead_executive} />;
+        const sale_executive = text
+          ? `${text} - ${record.lead_assigned_to_name}`
+          : "-";
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip title={sale_executive} children={text} />
+          </div>
+        );
       },
     },
     {

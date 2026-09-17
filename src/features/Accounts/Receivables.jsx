@@ -38,6 +38,7 @@ import InsertPendingFees from "../Customers/Pending Fees/InsertPendingFees";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSelectField from "../Common/CommonSelectField";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Receivables({
   setReceivableCount,
@@ -154,10 +155,17 @@ export default function Receivables({
             title: "Sale Executive",
             key: "lead_assigned_to_name",
             dataIndex: "lead_assigned_to_name",
-            width: 140,
+            width: 110,
             render: (text, record) => {
               const salse_executive = `${record.lead_assigned_to_id} - ${text}`;
-              return <EllipsisTooltip text={salse_executive} />;
+              return (
+                <div style={{ textAlign: "center", width: "100%" }}>
+                  <OverflowTooltip
+                    title={salse_executive}
+                    children={record.lead_assigned_to_id}
+                  />
+                </div>
+              );
             },
           },
         ]

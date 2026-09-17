@@ -34,6 +34,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonSelectField from "../Common/CommonSelectField";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CustomerHistory from "../Customers/CustomerHistory";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function FeeHistory({
   filterData,
@@ -181,10 +182,17 @@ export default function FeeHistory({
             title: "Sale Executive",
             key: "assigned_to_name",
             dataIndex: "assigned_to_name",
-            width: 140,
+            width: 110,
             render: (text, record) => {
               const lead_executive = `${record.assigned_to} - ${text}`;
-              return <EllipsisTooltip text={lead_executive} />;
+              return (
+                <div style={{ textAlign: "center", width: "100%" }}>
+                  <OverflowTooltip
+                    title={lead_executive}
+                    children={record.assigned_to}
+                  />
+                </div>
+              );
             },
           },
         ]

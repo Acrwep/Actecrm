@@ -63,6 +63,7 @@ import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSelectField from "../Common/CommonSelectField";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Received({
   filterData,
@@ -201,13 +202,20 @@ export default function Received({
     ...(permissions.includes("Show Lead Executive Id")
       ? [
           {
-            title: "Sale Executive",
+            title: "Collected By",
             key: "collected_by",
             dataIndex: "collected_by",
-            width: 130,
+            width: 100,
             render: (text, record) => {
               const user = `${record.collected_user_id} - ${text}`;
-              return <EllipsisTooltip text={user} />;
+              return (
+                <div style={{ textAlign: "center", width: "100%" }}>
+                  <OverflowTooltip
+                    title={user}
+                    children={record.collected_user_id}
+                  />
+                </div>
+              );
             },
           },
         ]

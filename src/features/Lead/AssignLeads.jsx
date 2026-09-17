@@ -66,6 +66,7 @@ import { storeAssignLeadFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CustomerHistory from "../Customers/CustomerHistory";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function AssignLeads({
   leadTypeOptions,
@@ -231,10 +232,15 @@ export default function AssignLeads({
       title: "Assign By",
       key: "assigned_by_user",
       dataIndex: "assigned_by_user",
-      width: 130,
+      width: 90,
       render: (text, record) => {
         const lead_executive = `${record.assigned_by} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
+        return (
+          <OverflowTooltip
+            title={lead_executive}
+            children={record.assigned_by}
+          />
+        );
       },
     },
     ...(selectedBucket === "Assigned" || selectedBucket === "Reassigned"
@@ -254,14 +260,15 @@ export default function AssignLeads({
       title: "Assign To",
       key: "assigned_to_user",
       dataIndex: "assigned_to_user",
-      width: 130,
+      width: 90,
       render: (text, record) => {
-        if (text) {
-          const lead_executive = `${record.assigned_to} - ${text}`;
-          return <EllipsisTooltip text={lead_executive} />;
-        } else {
-          return <p>-</p>;
-        }
+        const lead_executive = text ? `${record.assigned_to} - ${text}` : "-";
+        return (
+          <OverflowTooltip
+            title={lead_executive}
+            children={record.assigned_to}
+          />
+        );
       },
     },
     {

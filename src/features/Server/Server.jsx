@@ -74,6 +74,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonDnd from "../Common/CommonDnd";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -182,12 +183,16 @@ export default function Server() {
       title: "Created By",
       key: "created_by_id",
       dataIndex: "created_by_id",
-      width: 150,
+      width: 90,
       render: (text, record) => {
         const lead_executive = `${
           text ? `${text} - ${record.created_by}` : "-"
         }`;
-        return <EllipsisTooltip text={lead_executive} />;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip title={lead_executive} children={text} />
+          </div>
+        );
       },
     },
     {
@@ -834,12 +839,16 @@ export default function Server() {
             case "created_by_id":
               return {
                 ...col,
-                width: 150,
+                width: 90,
                 render: (text, record) => {
                   const lead_executive = `${
                     text ? `${text} - ${record.created_by}` : "-"
                   }`;
-                  return <EllipsisTooltip text={lead_executive} />;
+                  return (
+                    <div style={{ textAlign: "center", width: "100%" }}>
+                      <OverflowTooltip title={lead_executive} children={text} />
+                    </div>
+                  );
                 },
               };
             case "name":

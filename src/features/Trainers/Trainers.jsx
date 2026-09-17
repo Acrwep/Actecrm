@@ -80,6 +80,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import TrainerPaymentRequestForm from "./TrainerPaymentRequestForm";
 import ViewTrainerDetails from "./ViewTrainerDetails";
 import AddTrainer from "./AddTrainer";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 const CustomerList = ({ trainerId, isClassTaken }) => {
   const [data, setData] = useState([]);
@@ -370,13 +371,20 @@ export default function Trainers() {
       title: "HR",
       key: "hr_head",
       dataIndex: "hr_head",
-      width: 150,
+      width: 90,
       fixed: "left",
       render: (text, record) => {
         const lead_executive = `${
           text ? `${record.created_by} - ${text}` : "-"
         }`;
-        return <EllipsisTooltip text={lead_executive} />;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={lead_executive}
+              children={record.created_by}
+            />
+          </div>
+        );
       },
     },
     {
@@ -902,13 +910,21 @@ export default function Trainers() {
             case "hr_head":
               return {
                 ...col,
-                width: 150,
+                width: 90,
                 fixed: "left",
+                align: "center",
                 render: (text, record) => {
                   const lead_executive = `${
                     text ? `${record.created_by} - ${text}` : "-"
                   }`;
-                  return <EllipsisTooltip text={lead_executive} />;
+                  return (
+                    <div style={{ textAlign: "center", width: "100%" }}>
+                      <OverflowTooltip
+                        title={lead_executive}
+                        children={record.created_by}
+                      />
+                    </div>
+                  );
                 },
               };
             case "created_date": {
@@ -1222,7 +1238,17 @@ export default function Trainers() {
                           title="Edit"
                         />
                       )}
-                      {(["OnGoing", "Ongoing", "Onboarded", "New", "Existing", "1", "5", "10", "10+"].includes(statusRef.current)) &&
+                      {[
+                        "OnGoing",
+                        "Ongoing",
+                        "Onboarded",
+                        "New",
+                        "Existing",
+                        "1",
+                        "5",
+                        "10",
+                        "10+",
+                      ].includes(statusRef.current) &&
                       permissions.includes("Update Trainer") ? (
                         <Tooltip
                           placement="top"

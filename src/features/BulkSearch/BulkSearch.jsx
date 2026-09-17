@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonSpinner from "../Common/CommonSpinner";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 const { Dragger } = Upload;
 
@@ -102,8 +103,8 @@ export default function BulkSearch() {
                   text === "On Progress"
                     ? "rgba(255 179 7)"
                     : text === "Success"
-                    ? "#3c9111"
-                    : "",
+                      ? "#3c9111"
+                      : "",
                 fontWeight: text === "Not found" ? 400 : 600,
               }}
             >
@@ -114,12 +115,20 @@ export default function BulkSearch() {
       },
     },
     {
-      title: "Lead Executive",
+      title: "Sale Executive",
       key: "lead_by",
       dataIndex: "lead_by",
       width: 140,
       render: (text, record) => {
-        return <EllipsisTooltip text={`${record.lead_by_id} - ${text}`} />;
+        const lead_executive = `${record.lead_by_id} - ${text}`;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={lead_executive}
+              children={record.lead_by_id}
+            />
+          </div>
+        );
       },
     },
     {
@@ -182,8 +191,8 @@ export default function BulkSearch() {
                 cell !== undefined &&
                 cell !== null &&
                 cell !== "" &&
-                cell !== " "
-            )
+                cell !== " ",
+            ),
         );
         console.log("shetttt", data);
         setExcelData(data);
@@ -545,7 +554,7 @@ export default function BulkSearch() {
                   DownloadTableAsCSV(
                     data,
                     columns,
-                    `${moment(today).format("DD-MM-YYYY")} Bulk Search.csv`
+                    `${moment(today).format("DD-MM-YYYY")} Bulk Search.csv`,
                   );
                 }}
               >

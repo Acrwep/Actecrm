@@ -16,7 +16,8 @@ import { RedoOutlined } from "@ant-design/icons";
 import { AiOutlineEdit } from "react-icons/ai";
 import { IoFilter, IoCallOutline } from "react-icons/io5";
 import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
+import { MdOutlineEmail, MdOutlineLocationOn } from "react-icons/md";
+import { FiUsers, FiUser, FiClock } from "react-icons/fi";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
@@ -80,7 +81,6 @@ export default function Batches() {
     total: 0,
     totalPages: 0,
   });
-
 
   useEffect(() => {
     // getTrainersData(null, 1, true);
@@ -175,7 +175,7 @@ export default function Batches() {
     try {
       const response = await getCustomerBatches(payload);
       console.log("get batches response", response);
-      
+
       const responseData = response?.data?.data?.data || [];
       setBatchesData(responseData);
       setRegionCounts(response?.data?.data?.region_count || null);
@@ -341,6 +341,19 @@ export default function Batches() {
       startDate: PreviousAndCurrentDate[0],
       endDate: PreviousAndCurrentDate[1],
     });
+  };
+
+  const getRegionTheme = (regionName) => {
+    switch (regionName?.toLowerCase()) {
+      case "hub":
+        return { "--region-bg": "#f4fbf0", "--region-color": "#3c9111" };
+      case "chennai":
+        return { "--region-bg": "#f0f8ff", "--region-color": "#1e90ff" };
+      case "bangalore":
+        return { "--region-bg": "#f5f3fa", "--region-color": "#5b69ca" };
+      default:
+        return { "--region-bg": "#f8fafc", "--region-color": "#2563eb" };
+    }
   };
 
   return (
@@ -554,36 +567,64 @@ export default function Batches() {
 
       <div className="batches_layout_container" style={{ marginTop: "20px" }}>
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "50px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "50px",
+            }}
+          >
             <CommonSpinner />
           </div>
         ) : batchesData && batchesData.length > 0 ? (
           batchesData.map((region) => {
-            const totalBatchesInRegion = region.branches?.reduce(
-              (acc, branch) => acc + (branch.batches?.length || 0),
-              0
-            ) || 0;
+            const totalBatchesInRegion =
+              region.branches?.reduce(
+                (acc, branch) => acc + (branch.batches?.length || 0),
+                0,
+              ) || 0;
 
             return (
-              <div key={region.region_id} className="batch_region_block">
+              <div
+                key={region.region_id}
+                className="batch_region_block"
+                style={getRegionTheme(region.region_name)}
+              >
                 <div className="batch_region_header">
                   <h3>{region.region_name} Region</h3>
-                  <span className="batch_count_badge">{totalBatchesInRegion} Batches</span>
+                  <span className="batch_count_badge">
+                    {totalBatchesInRegion} Batches
+                  </span>
                 </div>
 
                 <div className="batch_branches_container">
                   {region.branches?.map((branch) => (
-                    <div key={branch.branch_id} className="batch_branch_section">
+                    <div
+                      key={branch.branch_id}
+                      className="batch_branch_section"
+                    >
                       <h4 className="batch_branch_title">
-                        📍 {branch.branch_name}
+                        <MdOutlineLocationOn size={18} color="#f43f5e" />{" "}
+                        {branch.branch_name}
                       </h4>
                       <Row gutter={[16, 16]}>
                         {branch.batches?.map((batch) => (
-                          <Col xs={24} sm={12} md={8} lg={6} xl={4} key={batch.batch_id}>
+                          <Col
+                            xs={24}
+                            sm={12}
+                            md={8}
+                            lg={6}
+                            xl={6}
+                            xxl={4}
+                            key={batch.batch_id}
+                          >
                             <div className="batch_card">
                               <div className="batch_card_header">
-                                <span className="batch_card_number">{batch.batch_number}</span>
+                                <span className="batch_card_number">
+                                  {batch.batch_number}
+                                </span>
                                 <AiOutlineEdit
+                                  size={22}
                                   className="batch_card_edit_icon"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -593,8 +634,8 @@ export default function Batches() {
                                   }}
                                 />
                               </div>
-                              <div 
-                                className="batch_card_body" 
+                              <div
+                                className="batch_card_body"
                                 onClick={() => {
                                   setEditBatchItem(batch);
                                   setIsOpenAddBatchComponent(true);
@@ -605,12 +646,18 @@ export default function Batches() {
                                   <EllipsisTooltip text={batch.batch_name} />
                                 </div>
                                 <div className="batch_card_trainer">
+                                  <FiUser className="batch_card_icon" />{" "}
                                   {batch.trainer_name || "No Trainer"}
                                 </div>
-                                <div className="batch_card_time">10:00 - 12:00</div>
-                                <div className="batch_card_status">🟢 ONGOING</div>
+                                <div className="batch_card_time">
+                                  <FiClock className="batch_card_icon" /> 10:00
+                                  - 12:00
+                                </div>
+                                <div className="batch_card_status">
+                                  <span className="status_dot"></span> ONGOING
+                                </div>
                               </div>
-                              <div 
+                              <div
                                 className="batch_card_footer"
                                 onClick={() => {
                                   setEditBatchItem(batch);
@@ -618,9 +665,10 @@ export default function Batches() {
                                   setIsOpenBatchDetailsDrawer(true);
                                 }}
                               >
-                                <span className="batch_card_students">
-                                  👥 {batch.customers?.length || 0} Students
-                                </span>
+                                <div className="batch_card_students">
+                                  <FiUsers className="batch_card_icon" />{" "}
+                                  {batch.customers?.length || 0} Students
+                                </div>
                               </div>
                             </div>
                           </Col>
@@ -633,7 +681,15 @@ export default function Batches() {
             );
           })
         ) : (
-          <div style={{ padding: "50px", textAlign: "center", background: "#fff", borderRadius: "8px", border: "1px solid #f0f0f0" }}>
+          <div
+            style={{
+              padding: "50px",
+              textAlign: "center",
+              background: "#fff",
+              borderRadius: "8px",
+              border: "1px solid #f0f0f0",
+            }}
+          >
             <p style={{ color: "#8c8c8c", margin: 0 }}>No batches found</p>
           </div>
         )}
