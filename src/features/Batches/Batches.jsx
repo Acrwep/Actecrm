@@ -9,6 +9,7 @@ import {
   Button,
   Flex,
   Radio,
+  Skeleton,
 } from "antd";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
@@ -565,16 +566,28 @@ export default function Batches() {
         </div>
       )}
 
-      <div className="batches_layout_container" style={{ marginTop: "20px" }}>
+      <div
+        className="batches_layout_container"
+        style={{ marginTop: "20px", marginBottom: "40px" }}
+      >
         {loading ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "50px",
-            }}
-          >
-            <CommonSpinner />
+          <div style={{ padding: "24px" }}>
+            <Row gutter={[24, 24]}>
+              {[1, 2, 3, 4].map((item) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={item}>
+                  <div
+                    style={{
+                      background: "#fff",
+                      padding: "20px",
+                      borderRadius: "12px",
+                      border: "1px solid #e2e8f0",
+                    }}
+                  >
+                    <Skeleton active avatar paragraph={{ rows: 3 }} />
+                  </div>
+                </Col>
+              ))}
+            </Row>
           </div>
         ) : batchesData && batchesData.length > 0 ? (
           batchesData.map((region) => {
@@ -607,15 +620,10 @@ export default function Batches() {
                         <MdOutlineLocationOn size={18} color="#f43f5e" />{" "}
                         {branch.branch_name}
                       </h4>
-                      <Row gutter={[16, 16]}>
+                      <div className="batch_cards_scroll_container">
                         {branch.batches?.map((batch) => (
-                          <Col
-                            xs={24}
-                            sm={12}
-                            md={8}
-                            lg={6}
-                            xl={6}
-                            xxl={4}
+                          <div
+                            className="batch_card_wrapper"
                             key={batch.batch_id}
                           >
                             <div className="batch_card">
@@ -671,9 +679,9 @@ export default function Batches() {
                                 </div>
                               </div>
                             </div>
-                          </Col>
+                          </div>
                         ))}
-                      </Row>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -700,7 +708,7 @@ export default function Batches() {
         title={editBatchItem ? "Update Batch" : "Add Batch"}
         open={isOpenAddDrawer}
         onClose={formReset}
-        width="40%"
+        width="45%"
         style={{ position: "relative" }}
       >
         {isOpenAddBatchComponent ? (

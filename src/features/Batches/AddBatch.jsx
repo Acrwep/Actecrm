@@ -24,6 +24,7 @@ import {
   createBatch,
   getBatchStudents,
   getBranches,
+  getTechnologies,
   getTrainerById,
   getTrainers,
   updateBatch,
@@ -33,6 +34,8 @@ import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelec
 import { CommonMessage } from "../Common/CommonMessage";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
+import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
+import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
 
 const AddBatch = forwardRef(
   (
@@ -48,11 +51,25 @@ const AddBatch = forwardRef(
     /* ---------------- BASIC STATES ---------------- */
     const [batchName, setBatchName] = useState("");
     const [batchNameError, setBatchNameError] = useState("");
+    const [startDate, setStartDate] = useState(null);
+    const [startDateError, setStartDateError] = useState("");
+    const [endDate, setEndDate] = useState(null);
+    const [endDateError, setEndDateError] = useState("");
+    const [startTime, setStartTime] = useState(null);
+    const [startTimeError, setStartTimeError] = useState("");
+    const [endTime, setEndTime] = useState(null);
+    const [endTimeError, setEndTimeError] = useState("");
+    const [courseOptions, setCourseOptions] = useState([]);
+    const [courseId, setCourseId] = useState(null);
+    const [courseIdError, setCourseIdError] = useState("");
+    const [courseLoading, setCourseLoading] = useState(false);
     const [regionId, setRegionId] = useState(null);
     const [regionError, setRegionError] = useState("");
     const [branchOptions, setBranchOptions] = useState([]);
     const [branchId, setBranchId] = useState(null);
     const [branchIdError, setBranchIdError] = useState("");
+    const [batchStatus, setBatchStatus] = useState("");
+    const [batchStatusError, setBatchStatusError] = useState("");
 
     /* ---------------- Trainer STATES ---------------- */
     // const [trainerId, setTrainerId] = useState(null);
@@ -86,9 +103,23 @@ const AddBatch = forwardRef(
 
     /* ---------------- INITIAL LOAD ---------------- */
     useEffect(() => {
+      getCoursesData();
       getCustomersData(null, 1);
       getTrainersData(null, 1);
     }, []);
+
+    const getCoursesData = async () => {
+      setCourseLoading(true);
+      try {
+        const response = await getTechnologies();
+        setCourseOptions(response?.data?.data || []);
+      } catch (error) {
+        setCourseOptions([]);
+        console.log("response status error", error);
+      } finally {
+        setCourseLoading(false);
+      }
+    };
 
     /* ---------------- FETCH CUSTOMERS ---------------- */
     const getCustomersData = async (searchvalue, pageNumber = 1) => {
@@ -141,21 +172,7 @@ const AddBatch = forwardRef(
       try {
         const response = await getBranches({ region_id: regionid });
         const branch_data = response?.data?.result || [];
-
-        if (branch_data.length >= 1) {
-          if (regionid == 1 || regionid == 2) {
-            const reordered = [
-              ...branch_data.filter((b) => b.name !== "Online"),
-              ...branch_data.filter((b) => b.name === "Online"),
-            ];
-            setBranchOptions(reordered);
-          } else {
-            setBranchOptions([]);
-            setBranchId(branch_data[0]?.id);
-          }
-        } else {
-          setBranchOptions([]);
-        }
+        setBranchOptions(branch_data);
       } catch (error) {
         setBranchOptions([]);
         console.log("branch error", error);
@@ -268,7 +285,7 @@ const AddBatch = forwardRef(
               style={{ width: "100%" }}
             >
               <Flex align="center" gap={8}>
-                <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} />
+                {/* <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} /> */}
                 <span
                   style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
                 >
@@ -393,14 +410,37 @@ const AddBatch = forwardRef(
     const handleBatchCreate = async () => {
       console.log("Batch Create Triggered");
       const batchNameValidate = addressValidator(batchName);
+      const courseIdValidate = selectValidator(courseId);
+      const startDateValidate = selectValidator(startDate);
+      const endDateValidate = selectValidator(endDate);
+      const startTimeValidate = selectValidator(startTime);
+      const endTimeValidate = selectValidator(endTime);
       const regionIdValidate = selectValidator(regionId);
       const branchIdValidate = regionId == 3 ? "" : selectValidator(branchId);
+      const statusValidate = selectValidator(batchStatus);
 
       setBatchNameError(batchNameValidate);
+      setCourseIdError(courseIdValidate);
+      setStartDateError(startDateValidate);
+      setEndDateError(endDateValidate);
+      setStartTimeError(startTimeValidate);
+      setEndTimeError(endTimeValidate);
       setRegionError(regionIdValidate);
       setBranchIdError(branchIdValidate);
+      setBatchStatusError(statusValidate);
 
-      if (batchNameValidate || regionIdValidate || branchIdValidate) return;
+      if (
+        batchNameValidate ||
+        courseIdValidate ||
+        startDateValidate ||
+        endDateValidate ||
+        startTimeValidate ||
+        endTimeValidate ||
+        regionIdValidate ||
+        branchIdValidate ||
+        statusValidate
+      )
+        return;
 
       setButtonLoading(true);
       const today = new Date();
@@ -414,6 +454,12 @@ const AddBatch = forwardRef(
         ...(editBatchItem && { batch_id: editBatchItem?.batch_id }),
         batch_name: batchName,
         trainer_id: selectedTrainerId,
+        course_id: courseId,
+        start_date: startDate,
+        end_date: endDate,
+        start_time: startTime,
+        end_time: endTime,
+        status: batchStatus,
         region_id: regionId,
         branch_id: branchId,
         customers: updateCustomerIds,
@@ -463,6 +509,12 @@ const AddBatch = forwardRef(
     const formReset = () => {
       setBatchName("");
       setBatchNameError("");
+      setCourseId(null);
+      setCourseIdError("");
+      setStartDate(null);
+      setStartDateError("");
+      setStartTime(null);
+      setStartTimeError("");
       setRegionId(null);
       setRegionError("");
       setBranchId(null);
@@ -473,57 +525,166 @@ const AddBatch = forwardRef(
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
       setTrainerSearchText("");
+      setBatchStatus("");
+      setBatchStatusError("");
     };
 
     return (
       <div>
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[16, 24]}>
+          <Col span={8}>
             <CommonInputField
               label="Batch Name"
-              value={batchName}
+              required={true}
               onChange={(e) => {
                 setBatchName(e.target.value);
                 setBatchNameError(addressValidator(e.target.value));
               }}
+              value={batchName}
               error={batchNameError}
-              required
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
             />
           </Col>
 
-          <Col span={12}>
+          <Col span={8}>
+            <CommonSelectField
+              label="Course"
+              required={true}
+              options={courseOptions}
+              onChange={(e) => {
+                setCourseId(e.target.value);
+                setCourseIdError(selectValidator(e.target.value));
+              }}
+              value={courseId}
+              error={courseIdError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              loading={courseLoading}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonMuiDatePicker
+              label="Start Date"
+              required={true}
+              onChange={(value) => {
+                setStartDate(value);
+                setStartDateError(selectValidator(value));
+              }}
+              value={startDate}
+              error={startDateError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              allowAllDates={true}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonMuiDatePicker
+              label="End Date"
+              required={true}
+              onChange={(value) => {
+                setEndDate(value);
+                setEndDateError(selectValidator(value));
+              }}
+              value={endDate}
+              error={endDateError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              allowAllDates={true}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonMuiTimePicker
+              label="Start Time"
+              required={true}
+              onChange={(value) => {
+                setStartTime(value);
+                setStartTimeError(selectValidator(value));
+              }}
+              value={startTime}
+              error={startTimeError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              allowAllDates={true}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonMuiTimePicker
+              label="End Time"
+              required={true}
+              onChange={(value) => {
+                setEndTime(value);
+                setEndTimeError(selectValidator(value));
+              }}
+              value={endTime}
+              error={endTimeError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              allowAllDates={true}
+            />
+          </Col>
+
+          <Col span={8}>
             <CommonSelectField
               label="Region"
-              required
+              required={true}
               options={regionOptions}
-              value={regionId}
               onChange={(e) => {
-                setRegionId(e.target.value);
+                const value = e.target.value;
+                setRegionId(value);
                 setBranchId("");
-                getBranchesData(e.target.value);
-                setRegionError(selectValidator(e.target.value));
+                getBranchesData(value);
+                setRegionError(selectValidator(value));
+                if (value == 3) {
+                  setBranchId(10);
+                  setBranchIdError("");
+                }
               }}
+              value={regionId}
               error={regionError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
             />
           </Col>
 
-          {regionId != 3 && (
-            <Col span={12} style={{ marginTop: "30px" }}>
-              <CommonSelectField
-                label="Branch"
-                required
-                options={branchOptions}
-                value={branchId}
-                onChange={(e) => {
-                  setBranchId(e.target.value);
-                  setBranchIdError(selectValidator(e.target.value));
-                }}
-                error={branchIdError}
-              />
-            </Col>
-          )}
+          <Col span={8}>
+            <CommonSelectField
+              label="Branch"
+              required={true}
+              options={branchOptions}
+              onChange={(e) => {
+                setBranchId(e.target.value);
+                setBranchIdError(selectValidator(e.target.value));
+              }}
+              value={branchId}
+              error={branchIdError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              disabled={regionId == 3}
+            />
+          </Col>
 
-          <Col span={12} style={{ marginTop: "30px" }}>
+          <Col span={8}>
             <div
               style={{
                 display: "flex",
@@ -547,16 +708,21 @@ const AddBatch = forwardRef(
                   renderOption={renderTrainerOption}
                   error={selectedTrainerIdError}
                   disableClearable={false}
+                  height={"35px"}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"0.5px"}
+                  errorFontSize={"9.5px"}
                 />
               </div>
               {selectedTrainerId && (
                 <Tooltip
-                  placement="top"
+                  placement="topLeft"
                   title="View Trainer Details"
                   trigger={["hover", "click"]}
                 >
                   <FaRegEye
-                    size={17}
+                    size={14}
+                    style={{ flexShrink: 0 }}
                     className="trainers_action_icons"
                     onClick={() => {
                       console.log(
@@ -572,7 +738,7 @@ const AddBatch = forwardRef(
             </div>
           </Col>
 
-          <Col span={12} style={{ marginTop: "30px" }}>
+          <Col span={8}>
             <CommonCustomerMultiSelectField
               label="Select Customer"
               required={false}
@@ -587,6 +753,33 @@ const AddBatch = forwardRef(
               showLabelStatus="Name"
               error={""}
               disableClearable={false}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonSelectField
+              label="Batch Status"
+              required={true}
+              options={[
+                {
+                  id: "Upcoming",
+                  name: "Upcoming",
+                },
+              ]}
+              onChange={(e) => {
+                setBatchStatus(e.target.value);
+                setBatchStatusError(selectValidator(e.target.value));
+              }}
+              value={batchStatus}
+              error={batchStatusError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
             />
           </Col>
         </Row>

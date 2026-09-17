@@ -12,6 +12,9 @@ export default function CommonMuiTimePicker({
   required,
   onChange,
   value,
+  height,
+  labelFontSize,
+  labelMarginTop,
   error,
   errorFontSize,
   errorLabel,
@@ -92,11 +95,15 @@ export default function CommonMuiTimePicker({
             error: error,
             helperText: error ? (
               <span
-                style={{ fontSize: errorFontSize ? errorFontSize : "11px" }}
+                style={{
+                  position: "absolute",
+                  bottom: "-18px", // adjust distance below the input
+                  left: "0",
+                  fontSize: errorFontSize ? errorFontSize : "10px",
+                  color: "#d32f2f",
+                }}
               >
-                {(errorLabel || label || "") +
-                  (errorLabel || label ? " " : "") +
-                  error}
+                {label + error}
               </span>
             ) : null,
             onClick: () => {
@@ -132,13 +139,13 @@ export default function CommonMuiTimePicker({
               },
               // label font
               "& .MuiPickersInputBase-root": {
-                height: "36px !important",
+                height: height || "36px !important",
                 fontFamily: "Poppins, sans-serif !important",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "12px",
-                marginTop: "0px",
+                fontSize: labelFontSize || "12px",
+                marginTop: labelMarginTop || "0px",
               },
               "& .MuiInputLabel-root.Mui-focused": {
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color
