@@ -50,17 +50,6 @@ const DownloadTableAsCSV = (
           return row.student_id ? `${cName} - ${row.student_id}` : cName;
         }
 
-        if (column.dataIndex === "phone") {
-          const phone = row[column.dataIndex];
-          if (!phone) return "-";
-
-          const phoneCode = row.phonecode ?? row.phone_code;
-
-          return phoneCode
-            ? `${phoneCode.startsWith("+") ? phoneCode : `+${phoneCode}`} ${phone}`
-            : phone;
-        }
-
         if (column.dataIndex === "last_updated_at") {
           const date = row[column.dataIndex];
           if (!date) return "-";

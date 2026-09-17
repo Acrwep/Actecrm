@@ -64,6 +64,7 @@ export default function CommonInputField({
       label == "Brouchures Link" ||
       label == "Syllabus" ||
       label === "Attendance Sheet Link" ||
+      label === "Whatsapp Invite Link" ||
       label === "Reference Id"
     ) {
       if (onChange) {

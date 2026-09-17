@@ -276,6 +276,14 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
     }
   };
 
+  const getWhatsAppLink = (value) => {
+    if (!value) return null;
+
+    return value.startsWith("http://") || value.startsWith("https://")
+      ? value
+      : `https://${value}`;
+  };
+
   const firstHistoryItemDate =
     customerHistory.length > 0
       ? moment(customerHistory[customerHistory.length - 1].status_date)
@@ -1017,6 +1025,53 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                                   Empty
                                 </span>
                               )}
+                            </>
+                          ) : key === "whatsapp_invite_link" ||
+                            key === "attendance_sheet_link" ? (
+                            <>
+                              <span style={{ color: "#d9363e" }}>
+                                {detail.previous_value ? (
+                                  <a
+                                    href={getWhatsAppLink(
+                                      detail.previous_value,
+                                    )}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      color: "#d9363e",
+                                      textDecoration: "underline",
+                                    }}
+                                  >
+                                    {detail.previous_value}
+                                  </a>
+                                ) : (
+                                  "Empty"
+                                )}
+                              </span>
+
+                              <span style={{ color: "gray", fontSize: "10px" }}>
+                                ➔
+                              </span>
+
+                              <span
+                                style={{ color: "#52c41a", fontWeight: 500 }}
+                              >
+                                {detail.new_value ? (
+                                  <a
+                                    href={getWhatsAppLink(detail.new_value)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      color: "#52c41a",
+                                      textDecoration: "underline",
+                                    }}
+                                  >
+                                    {detail.new_value}
+                                  </a>
+                                ) : (
+                                  "Empty"
+                                )}
+                              </span>
                             </>
                           ) : (
                             <>

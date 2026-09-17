@@ -121,6 +121,8 @@ const MakeAsCustomer = forwardRef(
       useState("");
     const [placementSupport, setPlacementSupport] = useState(null);
     const [placementSupportError, setPlacementSupportError] = useState("");
+    const [lmsAccess, setLmsAccess] = useState("");
+    const [lmsAccessError, setLmsAccessError] = useState("");
     const [serverRequired, setServerRequired] = useState(false);
     //gst invoice details
     const [isGstInvoice, setIsGstInvoice] = useState(false);
@@ -324,6 +326,8 @@ const MakeAsCustomer = forwardRef(
       const placeOfServiceValidate = selectValidator(placeOfService);
       const batchTimingValidate = selectValidator(customerBatchTimingId);
       const placementSupportValidate = selectValidator(placementSupport);
+      const lmsAccessValidate = selectValidator(lmsAccess);
+
       //gst invoice
       const contactPersonValidate = isGstInvoice
         ? addressValidator(contactPerson)
@@ -378,6 +382,7 @@ const MakeAsCustomer = forwardRef(
       setDueDateError(dueDateValidate);
       setCustomerBatchTimingIdError(batchTimingValidate);
       setPlacementSupportError(placementSupportValidate);
+      setLmsAccessError(lmsAccessValidate);
       setContactPersonError(contactPersonValidate);
       setCompanyNameError(companyNameValidate);
       setContactNumberError(contactNumberValidate);
@@ -420,6 +425,7 @@ const MakeAsCustomer = forwardRef(
         dueDateValidate ||
         batchTimingValidate ||
         placementSupportValidate ||
+        lmsAccessValidate ||
         contactPersonValidate ||
         companyNameValidate ||
         contactNumberValidate ||
@@ -476,6 +482,7 @@ const MakeAsCustomer = forwardRef(
         location: isGstInvoice ? gstLocation : "",
         gst_address: isGstInvoice ? gstAddress : "",
         placement_support: placementSupport,
+        lms_access: lmsAccess == 1 ? 1 : 0,
         is_server_required: serverRequired,
         updated_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
@@ -1312,6 +1319,7 @@ const MakeAsCustomer = forwardRef(
               <CommonSelectField
                 width="100%"
                 label="Mode of Training"
+                required={true}
                 labelMarginTop={"1px"}
                 labelFontSize={"11px"}
                 options={[
@@ -1341,6 +1349,7 @@ const MakeAsCustomer = forwardRef(
               <CommonSelectField
                 width="100%"
                 label="Place Of Service"
+                required={true}
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
                 options={
@@ -1428,6 +1437,29 @@ const MakeAsCustomer = forwardRef(
                 }}
                 value={placementSupport}
                 error={placementSupportError}
+                errorFontSize={"9px"}
+              />
+            </Col>
+
+            <Col span={8}>
+              <CommonSelectField
+                width="100%"
+                label="LMS Access"
+                required={true}
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+                options={[
+                  { id: 1, name: "Allowed" },
+                  { id: 2, name: "Not Allowed" },
+                ]}
+                onChange={(e) => {
+                  setLmsAccess(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setLmsAccessError(selectValidator(e.target.value));
+                  }
+                }}
+                value={lmsAccess}
+                error={lmsAccessError}
                 errorFontSize={"9px"}
               />
             </Col>

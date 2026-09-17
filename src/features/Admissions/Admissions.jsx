@@ -173,7 +173,8 @@ export default function Admissions() {
       props: {
         ...extraProps,
         style: {
-          backgroundColor: status ? "#e8f5e9" : "#ffebee",
+          // backgroundColor: status ? "#e8f5e9" : "#ffebee",
+          backgroundColor: "#fff",
           ...(extraProps.style || {}),
         },
       },
@@ -182,7 +183,7 @@ export default function Admissions() {
 
   const renderServerStatus = (isRequired, serverStatus) => {
     if (!isRequired) {
-      return "-";
+      return <p style={{ textAlign: "center" }}>-</p>;
     }
 
     const isIssued = serverStatus === "Issued";
@@ -209,9 +210,12 @@ export default function Admissions() {
       title: "Sl. No",
       key: "row_num",
       dataIndex: "row_num",
-      width: 80,
+      width: 70,
       group: "General Info",
       sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (text) => {
+        return <p style={{ margin: 0, textAlign: "center" }}>{text}</p>;
+      },
     },
     {
       title: "Joined Date",
@@ -219,8 +223,13 @@ export default function Admissions() {
       dataIndex: "date_of_joining",
       width: 100,
       group: "General Info",
+      align: "center",
       render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+        return (
+          <p style={{ margin: 0, textAlign: "center" }}>
+            {text ? moment(text).format("DD/MM/YYYY") : "-"}
+          </p>
+        );
       },
     },
     {
@@ -234,7 +243,10 @@ export default function Admissions() {
           customerDetailsLoadingRef.current == record?.customer_id;
 
         return (
-          <div className="customers_candidatename_container">
+          <div
+            className="customers_candidatename_container"
+            style={{ justifyContent: "center" }}
+          >
             <EllipsisTooltip text={text} />
             {record.student_id && (
               <span className="customers_studentid_badge">
@@ -264,7 +276,11 @@ export default function Admissions() {
       width: 140,
       group: "General Info",
       render: (text) => {
-        return <EllipsisTooltip text={text} />;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <EllipsisTooltip text={text} />
+          </div>
+        );
       },
     },
     {
@@ -276,10 +292,12 @@ export default function Admissions() {
       render: (text, record) => {
         const lead_executive = `${record.assigned_to} - ${text}`;
         return (
-          <OverflowTooltip
-            title={lead_executive}
-            children={record.assigned_to}
-          />
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={lead_executive}
+              children={record.assigned_to}
+            />
+          </div>
         );
       },
     },
@@ -293,9 +311,13 @@ export default function Admissions() {
       render: (text, record) => {
         if (text) {
           const ra = `${record.ra_user_id} - ${text}`;
-          return <OverflowTooltip title={ra} children={record.ra_user_id} />;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={ra} children={record.ra_user_id} />
+            </div>
+          );
         } else {
-          return "-";
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
         }
       },
     },
@@ -309,9 +331,13 @@ export default function Admissions() {
       render: (text, record) => {
         if (text) {
           const hr = `${record.hr_user_id} - ${text}`;
-          return <OverflowTooltip title={hr} children={record.hr_user_id} />;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={hr} children={record.hr_user_id} />
+            </div>
+          );
         } else {
-          return "-";
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
         }
       },
     },

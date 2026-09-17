@@ -11,6 +11,7 @@ const urlRegex = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(:\d+)?(\/[^\s]*)?$/i;
 const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 const googleSheetRegex =
   /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[a-zA-Z0-9-_]+/;
+const whatsappInviteRegex = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{5,}$/;
 
 import dayjs from "dayjs";
 import moment from "moment";
@@ -103,6 +104,15 @@ export const selectValidator = (name) => {
   let error = "";
 
   if (!name || name.length <= 0) error = " is required";
+
+  return error;
+};
+
+export const whatsappInviteLinkValidator = (link) => {
+  let error = "";
+
+  if (!link || link.length <= 0) error = " is required";
+  else if (!whatsappInviteRegex.test(link)) error = " is not valid";
 
   return error;
 };

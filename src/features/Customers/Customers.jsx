@@ -1645,120 +1645,123 @@ export default function Customers() {
                 </>
               }
             >
-              {record.is_second_due === 1 && status == "Awaiting Finance" ? (
-                <div>
-                  <Button className="customers_status_awaitfinance_button">
-                    Payment Verify
-                  </Button>
-                </div>
-              ) : record.is_second_due === 1 &&
-                permissions.includes("Finance Verify") ? (
-                <div>
-                  <Button className="customers_status_awaitfinance_button">
-                    Payment Verify
-                  </Button>
-                </div>
-              ) : text === "Form Pending" ? (
-                <div>
-                  <Button className="customers_status_formpending_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : record.is_last_pay_rejected === 1 &&
-                isSwap == true &&
-                status == "Payment Rejected" ? (
-                <div>
-                  <Button className="trainers_rejected_button">
-                    Payment Rejected
-                  </Button>
-                </div>
-              ) : text === "Awaiting Finance" ? (
-                <div>
-                  <Button className="customers_status_awaitfinance_button">
-                    Payment Verify
-                  </Button>
-                </div>
-              ) : text === "Awaiting Verify" ? (
-                <div>
-                  <Button className="customers_status_awaitverify_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Trainer" ? (
-                <div>
-                  <Button className="customers_status_awaittrainer_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Trainer Verify" ? (
-                <div>
-                  <Button className="customers_status_awaittrainerverify_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Trainer Approval" ? (
-                <div>
-                  <Button className="customers_status_trainerapproval_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Awaiting Class" ? (
-                <div>
-                  <Button className="customers_status_awaitingclass_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Class Scheduled" ? (
-                <div>
-                  <Button className="customers_status_classscheduled_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Passedout process" ? (
-                <div>
-                  <Button className="customers_status_awaitfeedback_button">
-                    {text}
-                  </Button>
-                </div>
-              ) : text === "Completed" ? (
-                <div>
-                  <Button className="customers_status_completed_button">
-                    Course Completed
-                  </Button>
-                </div>
-              ) : text === "Rejected" ||
-                text === "REJECTED" ||
-                text === "Payment Rejected" ||
-                text === "Trainer Rejected" ||
-                text === "Approval Rejected" ||
-                text === "Escalated" ||
-                text === "Hold" ||
-                text === "Partially Closed" ||
-                text === "Discontinued" ||
-                text === "Refund" ? (
-                <Button className="trainers_rejected_button">{text}</Button>
-              ) : text === "Demo Completed" ? (
-                <Button className="customers_status_classgoing_button">
-                  Only Demo
-                </Button>
-              ) : text === "Videos Given" ? (
-                <Button className="customers_status_videos_given_button">
-                  Self-Paced
-                </Button>
-              ) : text === "Class Going" ? (
-                <div style={{ display: "flex", gap: "12px" }}>
+              {
+                // record.is_second_due === 1 && status == "Awaiting Finance" ? (
+                //   <div>
+                //     <Button className="customers_status_awaitfinance_button">
+                //       Payment Verify
+                //     </Button>
+                //   </div>
+                // ) : record.is_second_due === 1 &&
+                //   permissions.includes("Finance Verify") ? (
+                //   <div>
+                //     <Button className="customers_status_awaitfinance_button">
+                //       Payment Verify
+                //     </Button>
+                //   </div>
+                // ):
+                text === "Form Pending" ? (
+                  <div>
+                    <Button className="customers_status_formpending_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : record.is_last_pay_rejected === 1 &&
+                  isSwap == true &&
+                  status == "Payment Rejected" ? (
+                  <div>
+                    <Button className="trainers_rejected_button">
+                      Payment Rejected
+                    </Button>
+                  </div>
+                ) : text === "Awaiting Finance" ? (
+                  <div>
+                    <Button className="customers_status_awaitfinance_button">
+                      Payment Verify
+                    </Button>
+                  </div>
+                ) : text === "Awaiting Verify" ? (
+                  <div>
+                    <Button className="customers_status_awaitverify_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Awaiting Trainer" ? (
+                  <div>
+                    <Button className="customers_status_awaittrainer_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Awaiting Trainer Verify" ? (
+                  <div>
+                    <Button className="customers_status_awaittrainerverify_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Trainer Approval" ? (
+                  <div>
+                    <Button className="customers_status_trainerapproval_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Awaiting Class" ? (
+                  <div>
+                    <Button className="customers_status_awaitingclass_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Class Scheduled" ? (
+                  <div>
+                    <Button className="customers_status_classscheduled_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Passedout process" ? (
+                  <div>
+                    <Button className="customers_status_awaitfeedback_button">
+                      {text}
+                    </Button>
+                  </div>
+                ) : text === "Completed" ? (
+                  <div>
+                    <Button className="customers_status_completed_button">
+                      Course Completed
+                    </Button>
+                  </div>
+                ) : text === "Rejected" ||
+                  text === "REJECTED" ||
+                  text === "Payment Rejected" ||
+                  text === "Trainer Rejected" ||
+                  text === "Approval Rejected" ||
+                  text === "Escalated" ||
+                  text === "Hold" ||
+                  text === "Partially Closed" ||
+                  text === "Discontinued" ||
+                  text === "Refund" ? (
+                  <Button className="trainers_rejected_button">{text}</Button>
+                ) : text === "Demo Completed" ? (
                   <Button className="customers_status_classgoing_button">
-                    {text}
+                    Only Demo
                   </Button>
+                ) : text === "Videos Given" ? (
+                  <Button className="customers_status_videos_given_button">
+                    Self-Paced
+                  </Button>
+                ) : text === "Class Going" ? (
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <Button className="customers_status_classgoing_button">
+                      {text}
+                    </Button>
 
-                  <p
-                    className="customer_classgoing_percentage"
-                    style={{ flexShrink: 0 }}
-                  >{`${parseFloat(classPercent)}%`}</p>
-                </div>
-              ) : (
-                <p style={{ marginLeft: "6px" }}>-</p>
-              )}
+                    <p
+                      className="customer_classgoing_percentage"
+                      style={{ flexShrink: 0 }}
+                    >{`${parseFloat(classPercent)}%`}</p>
+                  </div>
+                ) : (
+                  <p style={{ marginLeft: "6px" }}>-</p>
+                )
+              }
             </Tooltip>
             {record.status === "Form Pending" && (
               <Tooltip placement="top" title="Copy form link">
@@ -3323,176 +3326,203 @@ export default function Customers() {
           )}
         </>
       ) : (
-        <div className="customers_buckets_region_gap">
-          <div
-            className="customers_scroll_wrapper"
-            style={{
-              flex: "0 1 auto",
-              width: "auto",
-              minWidth: 0,
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
+        <Row gutter={12} className="customer_regionsummary_row_container">
+          <Col
+            xs={24}
+            sm={24}
+            md={24}
+            lg={permissions.includes("Show Region Summary") ? 13 : 24}
+            xxl={permissions.includes("Show Region Summary") ? 16 : 24}
           >
-            <button
-              onClick={() => scroll(-350)}
-              className="customer_statusscroll_button"
-              style={{
-                flexShrink: 0,
-                display: showLeftScroll ? "flex" : "none",
-              }}
-            >
-              <IoMdArrowDropleft size={25} />
-            </button>
             <div
-              className="customers_status_mainContainer"
-              ref={scrollRef}
-              onScroll={checkScrollButtons}
+              className="customers_scroll_wrapper"
               style={{
                 flex: "0 1 auto",
+                width: "auto",
                 minWidth: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                marginTop: "0px",
+                marginBottom: "0px",
               }}
             >
-              {currentBucketConfigs.map((config, index) => {
-                // ========================================================
-                // PAYMENT VERIFY / PAYMENT REJECTED
-                // ========================================================
+              <button
+                onClick={() => scroll(-350)}
+                className="customer_statusscroll_button"
+                style={{
+                  flexShrink: 0,
+                  display: showLeftScroll ? "flex" : "none",
+                }}
+              >
+                <IoMdArrowDropleft size={25} />
+              </button>
+              <div
+                className="customers_status_mainContainer"
+                ref={scrollRef}
+                onScroll={checkScrollButtons}
+                style={{
+                  flex: "0 1 auto",
+                  minWidth: 0,
+                }}
+              >
+                {currentBucketConfigs.map((config, index) => {
+                  // ========================================================
+                  // PAYMENT VERIFY / PAYMENT REJECTED
+                  // ========================================================
 
-                if (config.type === "payment") {
-                  const isPaymentRejected = isSwap;
+                  if (config.type === "payment") {
+                    const isPaymentRejected = isSwap;
 
-                  const paymentLabel = isPaymentRejected
-                    ? "Payment Rejected"
-                    : "Payment Verify";
+                    const paymentLabel = isPaymentRejected
+                      ? "Payment Rejected"
+                      : "Payment Verify";
 
-                  const paymentCount = isPaymentRejected
-                    ? customerStatusCount?.payment_rejected
-                    : customerStatusCount?.awaiting_finance;
+                    const paymentCount = isPaymentRejected
+                      ? customerStatusCount?.payment_rejected
+                      : customerStatusCount?.awaiting_finance;
 
-                  const isPaymentActive =
-                    status === "Awaiting Finance" ||
-                    status === "Payment Rejected";
+                    const isPaymentActive =
+                      status === "Awaiting Finance" ||
+                      status === "Payment Rejected";
 
-                  const activeClass = isPaymentRejected
-                    ? "customers_active_paymentreject_container"
-                    : "customers_active_awaitfinance_container";
+                    const activeClass = isPaymentRejected
+                      ? "customers_active_paymentreject_container"
+                      : "customers_active_awaitfinance_container";
 
-                  const inactiveClass = isPaymentRejected
-                    ? "customers_paymentreject_container"
-                    : "customers_awaitfinance_container";
+                    const inactiveClass = isPaymentRejected
+                      ? "customers_paymentreject_container"
+                      : "customers_awaitfinance_container";
+
+                    return (
+                      <div
+                        key={index}
+                        className={
+                          isPaymentActive ? activeClass : inactiveClass
+                        }
+                        onClick={handlePaymentStatusClick}
+                      >
+                        <p>
+                          {paymentLabel} ({paymentCount ?? "-"})
+                        </p>
+
+                        <MdOutlineSwapVert
+                          size={19}
+                          style={{
+                            cursor: "pointer",
+                            transition: "transform 0.3s ease",
+                            transform: isSwap
+                              ? "rotate(180deg)"
+                              : "rotate(0deg)",
+                          }}
+                          onClick={handlePaymentSwap}
+                        />
+                      </div>
+                    );
+                  }
+
+                  // ========================================================
+                  // NORMAL BUCKETS
+                  // ========================================================
+
+                  const isActive = status === config.value;
+
+                  const count = customerStatusCount?.[config.countKey] ?? "-";
 
                   return (
                     <div
                       key={index}
-                      className={isPaymentActive ? activeClass : inactiveClass}
-                      onClick={handlePaymentStatusClick}
+                      className={
+                        isActive ? config.activeClass : config.inactiveClass
+                      }
+                      onClick={() => handleBucketClick(config)}
                     >
                       <p>
-                        {paymentLabel} ({paymentCount ?? "-"})
+                        {config.label} ({count})
                       </p>
-
-                      <MdOutlineSwapVert
-                        size={19}
-                        style={{
-                          cursor: "pointer",
-                          transition: "transform 0.3s ease",
-                          transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
-                        }}
-                        onClick={handlePaymentSwap}
-                      />
                     </div>
                   );
-                }
-
-                // ========================================================
-                // NORMAL BUCKETS
-                // ========================================================
-
-                const isActive = status === config.value;
-
-                const count = customerStatusCount?.[config.countKey] ?? "-";
-
-                return (
-                  <div
-                    key={index}
-                    className={
-                      isActive ? config.activeClass : config.inactiveClass
-                    }
-                    onClick={() => handleBucketClick(config)}
-                  >
-                    <p>
-                      {config.label} ({count})
-                    </p>
-                  </div>
-                );
-              })}
+                })}
+              </div>
+              <button
+                onClick={() => scroll(350)}
+                className="customer_statusscroll_button"
+                style={{
+                  flexShrink: 0,
+                  display: showRightScroll ? "flex" : "none",
+                }}
+              >
+                <IoMdArrowDropright size={25} />
+              </button>
             </div>
-            <button
-              onClick={() => scroll(350)}
-              className="customer_statusscroll_button"
-              style={{
-                flexShrink: 0,
-                display: showRightScroll ? "flex" : "none",
-              }}
-            >
-              <IoMdArrowDropright size={25} />
-            </button>
-          </div>
+          </Col>
 
           {permissions.includes("Show Region Summary") && (
-            <div
-              className="livelead_today_summary_container"
-              style={{ marginTop: "0px", marginBottom: "0px", flexShrink: 0 }}
+            <Col
+              xs={24}
+              sm={24}
+              md={24}
+              lg={11}
+              xxl={8}
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
             >
-              <p
-                className="livelead_today_label"
-                style={{ whiteSpace: "nowrap" }}
+              <div
+                className="livelead_today_summary_container"
+                style={{ marginTop: "0px", marginBottom: "0px", flexShrink: 0 }}
               >
-                REGION SUMMARY
-              </p>
-
-              <div className="livelead_badge_item online">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#3c9111" }}
-                />
-                <p className="livelead_badge_text">
-                  Hub{" "}
-                  <span className="livelead_badge_count">
-                    {regionCounts?.hub_region ?? 0}
-                  </span>
+                <p
+                  className="livelead_today_label"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  REGION SUMMARY
                 </p>
-              </div>
 
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#1e90ff" }}
-                />
-                <p className="livelead_badge_text">
-                  Chennai{" "}
-                  <span className="livelead_badge_count">
-                    {regionCounts?.chennai_region ?? 0}
-                  </span>
-                </p>
-              </div>
+                <div className="livelead_badge_item online">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#3c9111" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Hub{" "}
+                    <span className="livelead_badge_count">
+                      {regionCounts?.hub_region ?? 0}
+                    </span>
+                  </p>
+                </div>
 
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#5b69ca" }}
-                />
-                <p className="livelead_badge_text">
-                  Bangalore{" "}
-                  <span className="livelead_badge_count">
-                    {regionCounts?.bangalore_region ?? 0}
-                  </span>
-                </p>
+                <div className="livelead_badge_item classroom">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#1e90ff" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Chennai{" "}
+                    <span className="livelead_badge_count">
+                      {regionCounts?.chennai_region ?? 0}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="livelead_badge_item classroom">
+                  <div
+                    className="livelead_badge_dot"
+                    style={{ backgroundColor: "#5b69ca" }}
+                  />
+                  <p className="livelead_badge_text">
+                    Bangalore{" "}
+                    <span className="livelead_badge_count">
+                      {regionCounts?.bangalore_region ?? 0}
+                    </span>
+                  </p>
+                </div>
               </div>
-            </div>
+            </Col>
           )}
-        </div>
+        </Row>
       )}
 
       {status === "assign_trainer" && (

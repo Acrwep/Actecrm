@@ -175,9 +175,10 @@
   color: #fff !important;
   text-align: center !important;
 }
-/* Remove default splitters in antd v5 headers */
-.admissions_table .ant-table-thead > tr > th::before {
-  display: none !important;
+/* Add splitters directly to th elements */
+.admissions_table .ant-table-thead > tr > th {
+  /* border-right: 1px solid #f0f0f0 !important; */
+  border-right: 1px solid rgba(128, 128, 128, 0.199) !important;
 }
 
 /* Cell background */

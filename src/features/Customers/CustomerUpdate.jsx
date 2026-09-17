@@ -116,6 +116,8 @@ const CustomerUpdate = forwardRef(
     const [gstNumber, setGstNumber] = useState("");
     const [placementSupport, setPlacementSupport] = useState(null);
     const [placementSupportError, setPlacementSupportError] = useState(null);
+    const [lmsAccess, setLmsAccess] = useState("");
+    const [lmsAccessError, setLmsAccessError] = useState("");
     const [server, setServer] = useState("");
     const [branchOptions, setBranchOptions] = useState([]);
     const [branchId, setBranchId] = useState(null);
@@ -349,6 +351,7 @@ const CustomerUpdate = forwardRef(
         setCustomerAddress(customerDetails?.address ?? "");
         setGstNumber(customerDetails?.gst_number ?? "");
         setPlacementSupport(customerDetails.placement_support);
+        setLmsAccess(customerDetails?.lms_access == 1 ? 1 : 2);
         setServer(
           customerDetails.is_server_required === 1 ? "Need" : "Not Need",
         );
@@ -579,6 +582,7 @@ const CustomerUpdate = forwardRef(
       const preferredBatchValidate = selectValidator(preferredBatch);
       const batchTimingValidate = selectValidator(batchTiming);
       const placementSupportValidate = selectValidator(placementSupport);
+      const lmsAccessValidate = selectValidator(lmsAccess);
 
       setModeOfClassError(modeOfClassValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
@@ -595,6 +599,7 @@ const CustomerUpdate = forwardRef(
       setPreferredBatchError(preferredBatchValidate);
       setBatchTimingError(batchTimingValidate);
       setPlacementSupportError(placementSupportValidate);
+      setLmsAccessError(lmsAccessValidate);
 
       if (
         modeOfClassValidate ||
@@ -617,7 +622,8 @@ const CustomerUpdate = forwardRef(
         branchIdValidate ||
         preferredBatchValidate ||
         batchTimingValidate ||
-        placementSupportValidate
+        placementSupportValidate ||
+        lmsAccessValidate
       )
         return;
 
@@ -657,6 +663,7 @@ const CustomerUpdate = forwardRef(
         state_code: "",
         gst_number: gstNumber,
         placement_support: placementSupport,
+        lms_access: lmsAccess == 1 ? 1 : 0,
         is_server_required: server == "Need" ? 1 : 0,
       };
 
@@ -716,6 +723,14 @@ const CustomerUpdate = forwardRef(
           { key: "address", origKey: "address" },
           { key: "gst_number", origKey: "gst_number" },
           { key: "placement_support", origKey: "placement_support" },
+          {
+            key: "lms_access",
+            origKey: "lms_access",
+            options: [
+              { id: 1, name: "Allowed" },
+              { id: 0, name: "Not Allowed" },
+            ],
+          },
         ];
 
         fieldsToCompare.forEach(({ key, origKey, options }) => {
@@ -744,10 +759,17 @@ const CustomerUpdate = forwardRef(
         });
 
         let oldServer = originalCustomerDetails.is_server_required == 1 ? 1 : 0;
+        const serverOptions = [
+          { id: 1, name: "Required" },
+          { id: 0, name: "Not Required" },
+        ];
         if (String(payload.is_server_required) !== String(oldServer)) {
           changedFields["is_server_required"] = {
-            previous_value: oldServer,
-            new_value: payload.is_server_required,
+            previous_value: getNameFromOptions(serverOptions, oldServer),
+            new_value: getNameFromOptions(
+              serverOptions,
+              payload.is_server_required,
+            ),
           };
         }
 
@@ -1397,7 +1419,33 @@ const CustomerUpdate = forwardRef(
               </Col>
             </Row>
 
-            <Row gutter={12} style={{ marginTop: "30px" }}>
+            <Row
+              gutter={12}
+              style={{ marginTop: "30px", marginBottom: "30px" }}
+            >
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  width="100%"
+                  label="LMS Access"
+                  required={true}
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                  options={[
+                    { id: 1, name: "Allowed" },
+                    { id: 2, name: "Not Allowed" },
+                  ]}
+                  onChange={(e) => {
+                    setLmsAccess(e.target.value);
+                    if (paymentValidationTrigger) {
+                      setLmsAccessError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={lmsAccess}
+                  error={lmsAccessError}
+                  errorFontSize={"9px"}
+                />
+              </Col>
+
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
                   label="Server"

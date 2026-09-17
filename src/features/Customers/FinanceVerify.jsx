@@ -290,7 +290,7 @@ const FinanceVerify = forwardRef(
         CommonMessage("success", "Updated Successfully");
         console.log("verifyResponse", verifyResponse);
         const isFullyPaid = verifyResponse?.data?.data?.is_fully_paid === true;
-        if (isFullyPaid) {
+        if (isFullyPaid && customerDetails?.lms_access == 1) {
           console.log("success");
           addUserInLMS();
         }

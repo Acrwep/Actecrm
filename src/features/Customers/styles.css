@@ -2180,22 +2180,11 @@
   opacity: 0.7;
 }
 
-.customers_buckets_region_gap {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.customer_regionsummary_row_container {
+  margin-top: 12px;
+  margin-bottom: 16px;
 }
 
-@media (min-width: 1400px) {
-  .customers_buckets_region_gap {
-    gap: 40px;
-  }
-}
-@media (min-width: 1800px) {
-  .customers_buckets_region_gap {
-    gap: 80px;
-  }
-}
 .customers_verify_trainer_label {
   display: inline-flex;
   align-items: center;

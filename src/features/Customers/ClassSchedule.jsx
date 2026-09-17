@@ -14,8 +14,10 @@ import CommonSpinner from "../Common/CommonSpinner";
 import {
   addressValidator,
   formatToBackendIST,
+  googleSheetValidator,
   percentageValidator,
   selectValidator,
+  whatsappInviteLinkValidator,
 } from "../Common/Validation";
 import {
   classScheduleForCustomer,
@@ -68,8 +70,13 @@ const ClassSchedule = forwardRef(
     //trainer coordination usestates
     const [cus_details, setCus_Details] = useState(null);
     const [whatsappGroupStatus, setWhatsappGroupStatus] = useState(null);
+    const [whatsappInviteLink, setWhatsappInviteLink] = useState("");
+    const [whatsappInviteLinkError, setWhatsappInviteLinkError] = useState("");
     const [welcomeMessageStatus, setWelcomeMessageStatus] = useState(null);
     const [linkStatus, setLinkStatus] = useState(null);
+    const [attendanceSheetLink, setAttendanceSheetLink] = useState("");
+    const [attendanceSheetLinkError, setAttendanceSheetLinkError] =
+      useState("");
     const [classMonitorStatus, setClassMonitorStatus] = useState(null);
     const [trainerConfirmation, setTrainerConfirmation] = useState(null);
     const [buttonLoading, setButtonLoading] = useState(false);
@@ -94,6 +101,8 @@ const ClassSchedule = forwardRef(
       setWhatsappGroupStatus(
         customerDetails?.whatsapp_group_creation === 1 ? 1 : 2,
       );
+      setWhatsappInviteLink(customerDetails?.whatsapp_invite_link);
+      setAttendanceSheetLink(customerDetails?.attendance_sheet_link);
       setWelcomeMessageStatus(
         customerDetails?.hr_welcome_message === 1 ? 1 : 2,
       );
@@ -147,12 +156,28 @@ const ClassSchedule = forwardRef(
     }));
 
     const handleTrainerCoordination = async () => {
+      const whatsappInviteLinkValidate =
+        whatsappGroupStatus == 1
+          ? whatsappInviteLinkValidator(whatsappInviteLink)
+          : "";
+      const attendanceSheetLinkValidate =
+        whatsappGroupStatus == 1
+          ? googleSheetValidator(attendanceSheetLink)
+          : "";
+
+      setWhatsappInviteLinkError(whatsappInviteLinkValidate);
+      setAttendanceSheetLinkError(attendanceSheetLinkValidate);
+
+      if (whatsappInviteLinkValidate || attendanceSheetLinkValidate) return;
+
       const initialWhatsappGroupStatus =
         cus_details?.whatsapp_group_creation === 1 ? 1 : 2;
+      const initialWhatsappInviteLink = cus_details?.whatsapp_invite_link;
       const initialWelcomeMessageStatus =
         cus_details?.hr_welcome_message === 1 ? 1 : 2;
       const initialLinkStatus =
         cus_details?.shared_attendance_link === 1 ? 1 : 2;
+      const initialAttendanceSheetLink = cus_details?.attendance_sheet_link;
       const initialsMonitorStatus =
         cus_details?.first_class_monitoring === 1 ? 1 : 2;
       const initialsTrainerConfirmation =
@@ -160,8 +185,10 @@ const ClassSchedule = forwardRef(
 
       if (
         whatsappGroupStatus == initialWhatsappGroupStatus &&
+        whatsappInviteLink === initialWhatsappInviteLink &&
         welcomeMessageStatus == initialWelcomeMessageStatus &&
         linkStatus == initialLinkStatus &&
+        attendanceSheetLink === initialAttendanceSheetLink &&
         classMonitorStatus == initialsMonitorStatus &&
         trainerConfirmation == initialsTrainerConfirmation
       ) {
@@ -172,8 +199,11 @@ const ClassSchedule = forwardRef(
       setButtonLoading(true);
       const payload = {
         whatsapp_group_creation: whatsappGroupStatus == 1 ? 1 : 0,
+        whatsapp_invite_link:
+          whatsappGroupStatus == 1 ? whatsappInviteLink : "",
         hr_welcome_message: welcomeMessageStatus == 1 ? 1 : 0,
         shared_attendance_link: linkStatus == 1 ? 1 : 0,
+        attendance_sheet_link: linkStatus == 1 ? attendanceSheetLink : "",
         first_class_monitoring: classMonitorStatus == 1 ? 1 : 0,
         trainer_confirmation: trainerConfirmation == 1 ? 1 : 0,
         trainer_mapping_id: customerDetails?.training_map_id,
@@ -212,6 +242,12 @@ const ClassSchedule = forwardRef(
           new_value: getName(whatsappOptions, whatsappGroupStatus),
         };
       }
+      if (whatsappInviteLink != initialWhatsappInviteLink) {
+        changedFields["whatsapp_invite_link"] = {
+          previous_value: initialWhatsappInviteLink,
+          new_value: whatsappInviteLink,
+        };
+      }
       if (welcomeMessageStatus != initialWelcomeMessageStatus) {
         changedFields["hr_welcome_message"] = {
           previous_value: getName(
@@ -225,6 +261,12 @@ const ClassSchedule = forwardRef(
         changedFields["shared_attendance_link"] = {
           previous_value: getName(linkOptions, initialLinkStatus),
           new_value: getName(linkOptions, linkStatus),
+        };
+      }
+      if (attendanceSheetLink != initialAttendanceSheetLink) {
+        changedFields["attendance_sheet_link"] = {
+          previous_value: initialAttendanceSheetLink,
+          new_value: attendanceSheetLink,
         };
       }
       if (classMonitorStatus != initialsMonitorStatus) {
@@ -735,7 +777,7 @@ const ClassSchedule = forwardRef(
 
             {stepIndex == 0 && (
               <Row
-                gutter={[12, 24]}
+                gutter={[12, 30]}
                 style={{ marginTop: "20px", marginBottom: "30px" }}
               >
                 <Col span={8}>
@@ -748,6 +790,8 @@ const ClassSchedule = forwardRef(
                     ]}
                     onChange={(e) => {
                       setWhatsappGroupStatus(e.target.value);
+                      setWhatsappInviteLink("");
+                      setWhatsappInviteLinkError("");
                     }}
                     value={whatsappGroupStatus}
                     error={""}
@@ -757,6 +801,27 @@ const ClassSchedule = forwardRef(
                     errorFontSize="9px"
                   />
                 </Col>
+                {whatsappGroupStatus == 1 && (
+                  <Col span={8}>
+                    <CommonInputField
+                      label={"Whatsapp Invite Link"}
+                      required={true}
+                      onChange={(e) => {
+                        setWhatsappInviteLink(e.target.value);
+                        setWhatsappInviteLinkError(
+                          whatsappInviteLinkValidator(e.target.value),
+                        );
+                      }}
+                      value={whatsappInviteLink}
+                      error={whatsappInviteLinkError}
+                      height={"33px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"0px"}
+                      errorFontSize="9px"
+                    />
+                  </Col>
+                )}
+
                 <Col span={8}>
                   <CommonSelectField
                     label={"Welcome Message Status"}
@@ -786,6 +851,8 @@ const ClassSchedule = forwardRef(
                     ]}
                     onChange={(e) => {
                       setLinkStatus(e.target.value);
+                      setAttendanceSheetLink("");
+                      setAttendanceSheetLinkError("");
                     }}
                     value={linkStatus}
                     error={""}
@@ -795,6 +862,26 @@ const ClassSchedule = forwardRef(
                     errorFontSize="9px"
                   />
                 </Col>
+                {linkStatus == 1 && (
+                  <Col span={8}>
+                    <CommonInputField
+                      label={"Attendance Sheet Link"}
+                      required={true}
+                      onChange={(e) => {
+                        setAttendanceSheetLink(e.target.value);
+                        setAttendanceSheetLinkError(
+                          googleSheetValidator(e.target.value),
+                        );
+                      }}
+                      value={attendanceSheetLink}
+                      error={attendanceSheetLinkError}
+                      height={"33px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"0px"}
+                      errorFontSize="9px"
+                    />
+                  </Col>
+                )}
                 <Col span={8}>
                   <CommonSelectField
                     label={"First Class Monitoring"}
