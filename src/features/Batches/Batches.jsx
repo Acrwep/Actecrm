@@ -80,128 +80,7 @@ export default function Batches() {
     total: 0,
     totalPages: 0,
   });
-  const columns = [
-    {
-      title: "Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 100,
-      render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
-    {
-      title: "Batch Id",
-      key: "batch_number",
-      dataIndex: "batch_number",
-      width: 120,
-    },
-    {
-      title: "Batch Name",
-      key: "batch_name",
-      dataIndex: "batch_name",
-      width: 160,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Branch",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 130,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Customers",
-      key: "customers",
-      dataIndex: "customers",
-      width: 130,
-      render: (text, record) => {
-        return (
-          <div
-            className="leadfollowup_tabledateContainer"
-            style={{ fontWeight: 500 }}
-            onClick={() => {
-              setEditBatchItem(record);
-              setIsOpenAddBatchComponent(true);
-              setIsOpenBatchDetailsDrawer(true);
-            }}
-          >
-            {text.length + " Customers"}
-          </div>
-        );
-      },
-    },
-    {
-      title: "Trainer",
-      key: "trainer_name",
-      dataIndex: "trainer_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Google Review",
-      key: "google_review",
-      dataIndex: "google_review",
-      width: 120,
-      render: (text) => {
-        return (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <p>{text}</p>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Linkedin Review",
-      key: "linkedin_review",
-      dataIndex: "linkedin_review",
-      width: 130,
-      render: (text) => {
-        return (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <p>{text}</p>
-          </div>
-        );
-      },
-    },
-    {
-      title: "Action",
-      key: "action",
-      dataIndex: "action",
-      fixed: "right",
-      width: 120,
-      render: (text, record) => {
-        return (
-          <div className="trainers_actionbuttonContainer">
-            <AiOutlineEdit
-              size={18}
-              className="trainers_action_icons"
-              onClick={() => {
-                setEditBatchItem(record);
-                setIsOpenAddBatchComponent(true);
-                setIsOpenAddDrawer(true);
-              }}
-            />
-          </div>
-        );
-      },
-    },
-  ];
+
 
   useEffect(() => {
     // getTrainersData(null, 1, true);
@@ -296,7 +175,9 @@ export default function Batches() {
     try {
       const response = await getCustomerBatches(payload);
       console.log("get batches response", response);
-      setBatchesData(response?.data?.data?.data || []);
+      
+      const responseData = response?.data?.data?.data || [];
+      setBatchesData(responseData);
       setRegionCounts(response?.data?.data?.region_count || null);
       setLoading(false);
     } catch (error) {
@@ -671,21 +552,91 @@ export default function Batches() {
         </div>
       )}
 
-      <div style={{ marginTop: "20px" }}>
-        <CommonTable
-          scroll={{ x: 1000 }}
-          columns={columns}
-          dataSource={batchesData}
-          dataPerPage={10}
-          loading={loading}
-          checkBox="false"
-          size="small"
-          className="questionupload_table"
-          onPaginationChange={handlePaginationChange} // callback to fetch new data
-          limit={pagination.limit} // page size
-          page_number={pagination.page} // current page
-          totalPageNumber={pagination.total} // total rows
-        />
+      <div className="batches_layout_container" style={{ marginTop: "20px" }}>
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "50px" }}>
+            <CommonSpinner />
+          </div>
+        ) : batchesData && batchesData.length > 0 ? (
+          batchesData.map((region) => {
+            const totalBatchesInRegion = region.branches?.reduce(
+              (acc, branch) => acc + (branch.batches?.length || 0),
+              0
+            ) || 0;
+
+            return (
+              <div key={region.region_id} className="batch_region_block">
+                <div className="batch_region_header">
+                  <h3>{region.region_name} Region</h3>
+                  <span className="batch_count_badge">{totalBatchesInRegion} Batches</span>
+                </div>
+
+                <div className="batch_branches_container">
+                  {region.branches?.map((branch) => (
+                    <div key={branch.branch_id} className="batch_branch_section">
+                      <h4 className="batch_branch_title">
+                        📍 {branch.branch_name}
+                      </h4>
+                      <Row gutter={[16, 16]}>
+                        {branch.batches?.map((batch) => (
+                          <Col xs={24} sm={12} md={8} lg={6} xl={4} key={batch.batch_id}>
+                            <div className="batch_card">
+                              <div className="batch_card_header">
+                                <span className="batch_card_number">{batch.batch_number}</span>
+                                <AiOutlineEdit
+                                  className="batch_card_edit_icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditBatchItem(batch);
+                                    setIsOpenAddBatchComponent(true);
+                                    setIsOpenAddDrawer(true);
+                                  }}
+                                />
+                              </div>
+                              <div 
+                                className="batch_card_body" 
+                                onClick={() => {
+                                  setEditBatchItem(batch);
+                                  setIsOpenAddBatchComponent(true);
+                                  setIsOpenBatchDetailsDrawer(true);
+                                }}
+                              >
+                                <div className="batch_card_title">
+                                  <EllipsisTooltip text={batch.batch_name} />
+                                </div>
+                                <div className="batch_card_trainer">
+                                  {batch.trainer_name || "No Trainer"}
+                                </div>
+                                <div className="batch_card_time">10:00 - 12:00</div>
+                                <div className="batch_card_status">🟢 ONGOING</div>
+                              </div>
+                              <div 
+                                className="batch_card_footer"
+                                onClick={() => {
+                                  setEditBatchItem(batch);
+                                  setIsOpenAddBatchComponent(true);
+                                  setIsOpenBatchDetailsDrawer(true);
+                                }}
+                              >
+                                <span className="batch_card_students">
+                                  👥 {batch.customers?.length || 0} Students
+                                </span>
+                              </div>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div style={{ padding: "50px", textAlign: "center", background: "#fff", borderRadius: "8px", border: "1px solid #f0f0f0" }}>
+            <p style={{ color: "#8c8c8c", margin: 0 }}>No batches found</p>
+          </div>
+        )}
       </div>
 
       {/* add batch drawer */}

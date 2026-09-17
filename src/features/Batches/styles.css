@@ -30,3 +30,154 @@
   justify-content: center;
   align-items: center;
 }
+
+/* Batch UI Layout */
+.batches_layout_container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.batch_region_block {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+
+.batch_region_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.batch_region_header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.batch_count_badge {
+  background: #e6f7ff;
+  color: #1890ff;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.batch_branches_container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.batch_branch_section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.batch_branch_title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.batch_card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  height: 100%;
+}
+
+.batch_card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.batch_card_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.batch_card_number {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.batch_card_edit_icon {
+  color: #9ca3af;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.batch_card_edit_icon:hover {
+  color: #1890ff;
+}
+
+.batch_card_body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.batch_card_title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch_card_trainer {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.batch_card_time {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.batch_card_status {
+  font-size: 13px;
+  font-weight: 500;
+  color: #10b981;
+  margin-top: 4px;
+}
+
+.batch_card_footer {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  margin-top: auto;
+}
+
+.batch_card_students {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
