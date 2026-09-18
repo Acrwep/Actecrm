@@ -269,6 +269,7 @@ export default function TrainerPayment() {
   const navigate = useNavigate();
   const scrollRef = useRef();
   const trainerPayslipRef = useRef();
+  const searchTimeoutRef = useRef(null);
   const emailTemplateRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
   const permissions = useSelector((state) => state.userpermissions);
@@ -2011,37 +2012,13 @@ export default function TrainerPayment() {
       setSelectedTrainerObject(selectedObj);
       setTrainerSearchText(selectedObj?.name || "");
 
-      getTrainerPaymentsData(
-        selectedId,
-        searchValue,
-        selectedRegionId,
-        selectedBranchId,
-        commercialType,
-        dateFilterType,
-        selectedDates[0],
-        selectedDates[1],
-        status || null,
-        1,
-        pagination.limit,
-      );
+      fetchTrainerPaymentsData({ trainerId: selectedId, pageNumber: 1 });
     } else {
       setSelectedTrainerId(null);
       setSelectedTrainerObject(null);
       setTrainerSearchText("");
       getTrainersData(null, 1);
-      getTrainerPaymentsData(
-        null,
-        searchValue,
-        selectedRegionId,
-        selectedBranchId,
-        commercialType,
-        dateFilterType,
-        selectedDates[0],
-        selectedDates[1],
-        status || null,
-        1,
-        pagination.limit,
-      );
+      fetchTrainerPaymentsData({ trainerId: null, pageNumber: 1 });
     }
   };
 
@@ -2132,27 +2109,56 @@ export default function TrainerPayment() {
       setSelectedDates(PreviousAndCurrentDate);
     }
 
-    getTrainerPaymentsData(
-      receivedSearchValueFromNotification
+    fetchTrainerPaymentsData({
+      trainerId: receivedSearchValueFromNotification
         ? receivedSearchValueFromNotification
         : null,
-      null,
-      null,
-      null,
-      null,
-      "RaiseDate",
-      receivedBillRaiseDateFromNotification
+      searchValue: null,
+      regionId: null,
+      branchId: null,
+      commercialType: null,
+      dateType: "RaiseDate",
+      startDate: receivedBillRaiseDateFromNotification
         ? receivedBillRaiseDateFromNotification
         : PreviousAndCurrentDate[0],
-      receivedBillRaiseDateFromNotification
+      endDate: receivedBillRaiseDateFromNotification
         ? receivedBillRaiseDateFromNotification
         : PreviousAndCurrentDate[1],
-      receivedStatusValueFromNotification
+      status: receivedStatusValueFromNotification
         ? receivedStatusValueFromNotification
         : "",
-      1,
-      10,
-      true,
+      pageNumber: 1,
+      pageLimit: 10,
+      callGetBranchApi: true,
+    });
+  };
+
+  const fetchTrainerPaymentsData = (overrides = {}) => {
+    getTrainerPaymentsData(
+      overrides.trainerId !== undefined
+        ? overrides.trainerId
+        : selectedTrainerId,
+      overrides.searchValue !== undefined ? overrides.searchValue : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.commercialType !== undefined
+        ? overrides.commercialType
+        : commercialType,
+      overrides.dateType !== undefined ? overrides.dateType : dateFilterType,
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates[0],
+      overrides.endDate !== undefined ? overrides.endDate : selectedDates[1],
+      overrides.status !== undefined ? overrides.status : status || null,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination.page,
+      overrides.pageLimit !== undefined
+        ? overrides.pageLimit
+        : pagination.limit,
+      overrides.callGetBranchApi !== undefined
+        ? overrides.callGetBranchApi
+        : false,
     );
   };
 
@@ -2279,19 +2285,7 @@ export default function TrainerPayment() {
         CommonMessage("success", "Updated Successfully");
         paymentformReset();
         // Refresh the payment requests data
-        getTrainerPaymentsData(
-          selectedTrainerId,
-          searchValue,
-          selectedRegionId,
-          selectedBranchId,
-          commercialType,
-          dateFilterType,
-          selectedDates[0],
-          selectedDates[1],
-          status || null,
-          pagination.page,
-          pagination.limit,
-        );
+        fetchTrainerPaymentsData({});
       }, 300);
     } catch (error) {
       setApproveButtonLoading(false);
@@ -2310,19 +2304,7 @@ export default function TrainerPayment() {
       setTimeout(() => {
         setIsOpenRequestDeleteModal(false);
         setButtonLoading(false);
-        getTrainerPaymentsData(
-          selectedTrainerId,
-          searchValue,
-          selectedRegionId,
-          selectedBranchId,
-          commercialType,
-          dateFilterType,
-          selectedDates[0],
-          selectedDates[1],
-          status || null,
-          1,
-          pagination.limit,
-        );
+        fetchTrainerPaymentsData({ pageNumber: 1 });
       }, 300);
     } catch (error) {
       setButtonLoading(false);
@@ -2335,24 +2317,30 @@ export default function TrainerPayment() {
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
     setLoading(true);
-    setPagination({
-      page: 1,
-    });
-    getTrainerPaymentsData(
-      selectedTrainerId,
-      e.target.value,
-      selectedRegionId,
-      selectedBranchId,
-      commercialType,
-      dateFilterType,
-      selectedDates[0],
-      selectedDates[1],
-      status || null,
-      1,
-      pagination.limit,
-    );
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchTrainerPaymentsData({
+        searchValue: "",
+        pageNumber: 1,
+      });
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchTrainerPaymentsData({
+        searchValue: input,
+        pageNumber: 1,
+      });
+    }, 400);
   };
 
   const getBranchesData = async (regionid) => {
@@ -2569,19 +2557,7 @@ export default function TrainerPayment() {
     // This will be called when pagination changes
     setPagination({ ...pagination, page, limit });
     // Fetch data with new pagination
-    getTrainerPaymentsData(
-      selectedTrainerId,
-      searchValue,
-      selectedRegionId,
-      selectedBranchId,
-      commercialType,
-      dateFilterType,
-      selectedDates[0],
-      selectedDates[1],
-      status || null,
-      page,
-      limit,
-    );
+    fetchTrainerPaymentsData({ pageNumber: page, pageLimit: limit });
   };
 
   const handleSelectedRow = (row) => {
@@ -2637,19 +2613,7 @@ export default function TrainerPayment() {
         paymentformReset();
         setApproveButtonLoading(false);
         CommonMessage("success", "Review Verified");
-        getTrainerPaymentsData(
-          selectedTrainerId,
-          searchValue,
-          selectedRegionId,
-          selectedBranchId,
-          commercialType,
-          dateFilterType,
-          selectedDates[0],
-          selectedDates[1],
-          status || null,
-          pagination.page,
-          pagination.limit,
-        );
+        fetchTrainerPaymentsData({});
       }, 300);
     } catch (error) {
       setApproveButtonLoading(false);
@@ -2676,19 +2640,19 @@ export default function TrainerPayment() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setCommercialType("");
-    getTrainerPaymentsData(
-      null,
-      null,
-      null,
-      null,
-      null,
-      "RaiseDate",
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-      null,
-      1,
-      10,
-    );
+    fetchTrainerPaymentsData({
+      trainerId: null,
+      searchValue: null,
+      regionId: null,
+      branchId: null,
+      commercialType: null,
+      dateType: "RaiseDate",
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+      status: null,
+      pageNumber: 1,
+      pageLimit: 10,
+    });
   };
 
   const filteredColumns = tableColumns.filter((col) => {
@@ -2905,19 +2869,7 @@ export default function TrainerPayment() {
                   }
                   setStatus("");
                   setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    commercialType,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    null,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({ status: null, pageNumber: 1 });
                 }}
               >
                 <p>
@@ -2943,19 +2895,10 @@ export default function TrainerPayment() {
                   }
                   setStatus("Link Sent");
                   setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    commercialType,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Link Sent",
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({
+                    status: "Link Sent",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -2981,19 +2924,10 @@ export default function TrainerPayment() {
                   }
                   setStatus("Requested");
                   setPagination({ ...pagination, page: 1 });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    commercialType,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    "Requested",
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({
+                    status: "Requested",
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>
@@ -3021,19 +2955,10 @@ export default function TrainerPayment() {
                       }
                       setStatus("Awaiting Finance");
                       setPagination({ ...pagination, page: 1 });
-                      getTrainerPaymentsData(
-                        selectedTrainerId,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        commercialType,
-                        dateFilterType,
-                        selectedDates[0],
-                        selectedDates[1],
-                        "Awaiting Finance",
-                        1,
-                        pagination.limit,
-                      );
+                      fetchTrainerPaymentsData({
+                        status: "Awaiting Finance",
+                        pageNumber: 1,
+                      });
                     }}
                   >
                     <p>
@@ -3060,19 +2985,10 @@ export default function TrainerPayment() {
                       }
                       setStatus("Paid");
                       setPagination({ ...pagination, page: 1 });
-                      getTrainerPaymentsData(
-                        selectedTrainerId,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        commercialType,
-                        dateFilterType,
-                        selectedDates[0],
-                        selectedDates[1],
-                        "Paid",
-                        1,
-                        pagination.limit,
-                      );
+                      fetchTrainerPaymentsData({
+                        status: "Paid",
+                        pageNumber: 1,
+                      });
                     }}
                   >
                     <p>
@@ -3158,19 +3074,10 @@ export default function TrainerPayment() {
                           setPagination({
                             page: 1,
                           });
-                          getTrainerPaymentsData(
-                            selectedTrainerId,
-                            null,
-                            selectedRegionId,
-                            selectedBranchId,
-                            commercialType,
-                            dateFilterType,
-                            selectedDates[0],
-                            selectedDates[1],
-                            status || null,
-                            1,
-                            pagination.limit,
-                          );
+                          fetchTrainerPaymentsData({
+                            searchValue: null,
+                            pageNumber: 1,
+                          });
                         }}
                       >
                         <IoIosClose size={11} />
@@ -3205,19 +3112,7 @@ export default function TrainerPayment() {
                   setPagination({
                     page: 1,
                   });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    value,
-                    selectedBranchId,
-                    commercialType,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    status || null,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({ regionId: value, pageNumber: 1 });
                   if (value) {
                     getBranchesData(value);
                   } else {
@@ -3243,19 +3138,7 @@ export default function TrainerPayment() {
                   setPagination({
                     page: 1,
                   });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    value,
-                    commercialType,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    status || null,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({ branchId: value, pageNumber: 1 });
                 }}
                 value={selectedBranchId}
                 disableClearable={false}
@@ -3271,19 +3154,11 @@ export default function TrainerPayment() {
                   setPagination({
                     page: 1,
                   });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    commercialType,
-                    dateFilterType,
-                    dates[0],
-                    dates[1],
-                    status || null,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                    pageNumber: 1,
+                  });
                 }}
               />
             </Col>
@@ -3389,19 +3264,10 @@ export default function TrainerPayment() {
                   setPagination({
                     page: 1,
                   });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    com_type,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    status || null,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({
+                    commercialType: com_type,
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>{`Pay Per Head ( ${commercialTypeCounts?.Pay_Per_Head_Count ?? 0} )`}</p>
@@ -3425,19 +3291,10 @@ export default function TrainerPayment() {
                   setPagination({
                     page: 1,
                   });
-                  getTrainerPaymentsData(
-                    selectedTrainerId,
-                    searchValue,
-                    selectedRegionId,
-                    selectedBranchId,
-                    com_type,
-                    dateFilterType,
-                    selectedDates[0],
-                    selectedDates[1],
-                    status || null,
-                    1,
-                    pagination.limit,
-                  );
+                  fetchTrainerPaymentsData({
+                    commercialType: com_type,
+                    pageNumber: 1,
+                  });
                 }}
               >
                 <p>{`Batch ( ${commercialTypeCounts?.Batch_Count ?? 0} )`}</p>
@@ -3615,19 +3472,7 @@ export default function TrainerPayment() {
                     setButtonLoading={setButtonLoading}
                     isOnRefresh={() => {
                       paymentformReset();
-                      getTrainerPaymentsData(
-                        selectedTrainerId,
-                        searchValue,
-                        selectedRegionId,
-                        selectedBranchId,
-                        commercialType,
-                        dateFilterType,
-                        selectedDates[0],
-                        selectedDates[1],
-                        status || null,
-                        pagination.page,
-                        pagination.limit,
-                      );
+                      fetchTrainerPaymentsData({});
                     }}
                   />
                 </div>
@@ -4034,19 +3879,7 @@ export default function TrainerPayment() {
             setButtonLoading={setApproveButtonLoading}
             onFormRefresh={() => {
               paymentformReset(false);
-              getTrainerPaymentsData(
-                selectedTrainerId,
-                searchValue,
-                selectedRegionId,
-                selectedBranchId,
-                commercialType,
-                dateFilterType,
-                selectedDates[0],
-                selectedDates[1],
-                status || null,
-                1,
-                pagination.limit,
-              );
+              fetchTrainerPaymentsData({ pageNumber: 1 });
             }}
           />
         ) : (
