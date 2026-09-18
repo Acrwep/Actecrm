@@ -52,6 +52,7 @@ import RequestSuccess from "../Trainers/RequestSuccess";
 import AcknowledgeClassCompletion from "../Trainers/AcknowledgeClassCompletion";
 import Admissions from "../Admissions/Admissions";
 import Accounts from "../Accounts/Accounts";
+import BatchManagement from "../Batches/BatchManagement";
 
 const { Sider, Content, Header } = Layout;
 
@@ -277,7 +278,7 @@ export default function Pages() {
               element={<PendingFeesCustomers />}
               path="/fee-pending-customers"
             />
-            <Route element={<Batches />} path="/batches" />
+            <Route element={<BatchManagement />} path="/batchmanagement" />
             <Route element={<Trainers />} path="/trainers" />
             <Route element={<TrainerPayment />} path="/trainer-payment" />
             <Route element={<Server />} path="/server" />

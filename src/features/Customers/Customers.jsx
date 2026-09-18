@@ -605,7 +605,7 @@ export default function Customers() {
       title: "RA",
       key: "ra_name",
       dataIndex: "ra_name",
-      width: 75,
+      width: 80,
       align: "center",
       render: (text, record) => {
         if (text) {
@@ -624,7 +624,7 @@ export default function Customers() {
       title: "HR",
       key: "trainer_hr_name",
       dataIndex: "trainer_hr_name",
-      width: 75,
+      width: 80,
       align: "center",
       render: (text, record) => {
         if (text) {
@@ -1716,7 +1716,7 @@ export default function Customers() {
                       Payment Verify
                     </Button>
                   </div>
-                ) : text === "Awaiting Verify" ? (
+                ) : text === "Awaiting Verify" || text === "Hold" ? (
                   <div>
                     <Button className="customers_status_awaitverify_button">
                       {text}
@@ -1770,7 +1770,6 @@ export default function Customers() {
                   text === "Trainer Rejected" ||
                   text === "Approval Rejected" ||
                   text === "Escalated" ||
-                  text === "Hold" ||
                   text === "Partially Closed" ||
                   text === "Discontinued" ||
                   text === "Refund" ? (

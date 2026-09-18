@@ -216,8 +216,6 @@
 .batch_card_status {
   font-size: 11px;
   font-weight: 700;
-  color: var(--region-color, #15803d);
-  background: var(--region-bg, #dcfce7);
   padding: 4px 10px;
   border-radius: 9999px;
   display: inline-flex;
@@ -226,15 +224,12 @@
   margin-top: 6px;
   letter-spacing: 0.03em;
 }
-
 .status_dot {
   height: 6px;
   width: 6px;
-  background-color: var(--region-color, #16a34a);
   border-radius: 50%;
   margin-right: 6px;
 }
-
 .batch_card_footer {
   border-top: 1px dashed #e2e8f0;
   padding-top: 16px;

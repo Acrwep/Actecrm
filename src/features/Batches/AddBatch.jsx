@@ -40,6 +40,7 @@ import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
 const AddBatch = forwardRef(
   (
     {
+      mainType,
       regionOptions,
       trainersData,
       editBatchItem,
@@ -93,6 +94,7 @@ const AddBatch = forwardRef(
 
     // ✅ IMPORTANT: keep IDs & Objects separately
     const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
+    const [selectedCustomersError, setSelectedCustomersError] = useState("");
     const [selectedCustomerObjects, setSelectedCustomerObjects] = useState([]);
     const [customerSearchText, setCustomerSearchText] = useState("");
 
@@ -104,9 +106,34 @@ const AddBatch = forwardRef(
     /* ---------------- INITIAL LOAD ---------------- */
     useEffect(() => {
       getCoursesData();
-      getCustomersData(null, 1);
       getTrainersData(null, 1);
     }, []);
+
+    useEffect(() => {
+      if (editBatchItem) {
+        console.log("editBatchItem", editBatchItem);
+        setBranchId(editBatchItem?.branch_id ?? null);
+        setBatchName(editBatchItem?.batch_name ?? "");
+        setCourseId(editBatchItem?.batch_course_id ?? null);
+        setStartDate(editBatchItem?.batch_start_date ?? null);
+        setEndDate(editBatchItem?.batch_end_date ?? null);
+        setStartTime(editBatchItem?.batch_start_time ?? null);
+        setEndTime(editBatchItem?.batch_end_time ?? null);
+        setRegionId(editBatchItem?.region_id ?? null);
+        setBatchStatus(editBatchItem?.batch_status ?? "");
+        getBranchesData(editBatchItem?.region_id ?? null);
+        setSelectedCustomerIds(
+          editBatchItem?.customers.map((c) => String(c.id)),
+        );
+        setSelectedCustomerObjects(editBatchItem?.customers);
+
+        // 🔹 Set trainer from editBatchItem
+        if (editBatchItem.trainer_id) {
+          getTrainerByIdData(editBatchItem.trainer_id);
+          getCustomersData(null, editBatchItem.trainer_id, 1);
+        }
+      }
+    }, [editBatchItem]);
 
     const getCoursesData = async () => {
       setCourseLoading(true);
@@ -122,11 +149,12 @@ const AddBatch = forwardRef(
     };
 
     /* ---------------- FETCH CUSTOMERS ---------------- */
-    const getCustomersData = async (searchvalue, pageNumber = 1) => {
+    const getCustomersData = async (searchvalue, trainerId, pageNumber = 1) => {
       setCustomerSelectloading(true);
 
       const payload = {
         ...(searchvalue && { search_filter: searchvalue }),
+        ...(trainerId && { trainer_id: trainerId }),
         page: pageNumber,
         limit: 10,
       };
@@ -143,23 +171,6 @@ const AddBatch = forwardRef(
 
         setCustomerHasMore(pageNumber < pagination.totalPages);
         setCustomerPage(pageNumber);
-
-        if (editBatchItem) {
-          console.log("editBatchItem", editBatchItem);
-          setBatchName(editBatchItem?.batch_name ?? "");
-          setRegionId(editBatchItem?.region_id ?? null);
-          setBranchId(editBatchItem?.branch_id ?? null);
-          getBranchesData(editBatchItem?.region_id ?? null);
-          setSelectedCustomerIds(
-            editBatchItem?.customers.map((c) => String(c.id)),
-          );
-          setSelectedCustomerObjects(editBatchItem?.customers);
-
-          // 🔹 Set trainer from editBatchItem
-          if (editBatchItem.trainer_id) {
-            getTrainerByIdData(editBatchItem.trainer_id);
-          }
-        }
       } catch (error) {
         console.log("get customers error", error);
       } finally {
@@ -237,6 +248,7 @@ const AddBatch = forwardRef(
       setSelectedTrainerId(selectedId);
       setSelectedTrainerObject(selectedObj);
 
+      getCustomersData(null, selectedId, 1);
       setSelectedTrainerIdError(selectValidator(selectedId));
       setTrainerSearchText(selectedObj?.name || "");
     };
@@ -287,7 +299,7 @@ const AddBatch = forwardRef(
               <Flex align="center" gap={8}>
                 {/* <FaRegCircleUser size={15} style={{ color: "#5b69ca" }} /> */}
                 <span
-                  style={{ fontWeight: 600, fontSize: "14px", color: "#333" }}
+                  style={{ fontWeight: 600, fontSize: "13px", color: "#333" }}
                 >
                   {option.name}
                 </span>
@@ -352,7 +364,7 @@ const AddBatch = forwardRef(
       setCustomerPage(1);
       setCustomerHasMore(true);
       setCustomersData([]);
-      getCustomersData(value, 1);
+      getCustomersData(value, selectedTrainerId, 1);
     };
 
     /* ---------------- SELECT HANDLER (KEY FIX) ---------------- */
@@ -360,6 +372,7 @@ const AddBatch = forwardRef(
       const selectedIds = event.target.value || [];
 
       setSelectedCustomerIds(selectedIds);
+      setSelectedCustomersError(selectValidator(selectedIds));
 
       const selectedObjs = customersData.filter((c) =>
         selectedIds.includes(String(c.id)),
@@ -387,7 +400,7 @@ const AddBatch = forwardRef(
     /* ---------------- DROPDOWN OPEN ---------------- */
     const handleCustomerDropdownOpen = () => {
       if (customersData.length === 0) {
-        getCustomersData(null, 1);
+        getCustomersData(null, null, 1);
       }
     };
 
@@ -399,7 +412,11 @@ const AddBatch = forwardRef(
         customerHasMore &&
         !customerSelectloading
       ) {
-        getCustomersData(customerSearchText, customerPage + 1);
+        getCustomersData(
+          customerSearchText,
+          selectedTrainerId,
+          customerPage + 1,
+        );
       }
     };
 
@@ -418,6 +435,8 @@ const AddBatch = forwardRef(
       const regionIdValidate = selectValidator(regionId);
       const branchIdValidate = regionId == 3 ? "" : selectValidator(branchId);
       const statusValidate = selectValidator(batchStatus);
+      const trainerIdValidate = selectValidator(selectedTrainerId);
+      const customerValidate = selectValidator(selectedCustomerIds);
 
       setBatchNameError(batchNameValidate);
       setCourseIdError(courseIdValidate);
@@ -428,6 +447,8 @@ const AddBatch = forwardRef(
       setRegionError(regionIdValidate);
       setBranchIdError(branchIdValidate);
       setBatchStatusError(statusValidate);
+      setSelectedTrainerIdError(trainerIdValidate);
+      setSelectedCustomersError(customerValidate);
 
       if (
         batchNameValidate ||
@@ -438,7 +459,9 @@ const AddBatch = forwardRef(
         endTimeValidate ||
         regionIdValidate ||
         branchIdValidate ||
-        statusValidate
+        statusValidate ||
+        trainerIdValidate ||
+        customerValidate
       )
         return;
 
@@ -452,6 +475,7 @@ const AddBatch = forwardRef(
       });
       const payload = {
         ...(editBatchItem && { batch_id: editBatchItem?.batch_id }),
+        type: mainType.toLowerCase(),
         batch_name: batchName,
         trainer_id: selectedTrainerId,
         course_id: courseId,
@@ -472,7 +496,7 @@ const AddBatch = forwardRef(
       if (editBatchItem) {
         try {
           await updateBatch(payload);
-          CommonMessage("success", "Updated");
+          CommonMessage("success", "Updated Successfully");
           setTimeout(() => {
             setButtonLoading(false);
             formReset();
@@ -489,7 +513,7 @@ const AddBatch = forwardRef(
       } else {
         try {
           await createBatch(payload);
-          CommonMessage("success", "Batch Created");
+          CommonMessage("success", `${mainType} Created Successfully`);
           setTimeout(() => {
             setButtonLoading(false);
             formReset();
@@ -534,7 +558,7 @@ const AddBatch = forwardRef(
         <Row gutter={[16, 24]}>
           <Col span={8}>
             <CommonInputField
-              label="Batch Name"
+              label={`${mainType} Name`}
               required={true}
               onChange={(e) => {
                 setBatchName(e.target.value);
@@ -741,7 +765,7 @@ const AddBatch = forwardRef(
           <Col span={8}>
             <CommonCustomerMultiSelectField
               label="Select Customer"
-              required={false}
+              required={true}
               options={mergedCustomers}
               value={selectedCustomerIds}
               inputValue={customerSearchText}
@@ -751,23 +775,32 @@ const AddBatch = forwardRef(
               onDropdownScroll={handleCustomerScroll}
               loading={customerSelectloading}
               showLabelStatus="Name"
-              error={""}
+              error={selectedCustomersError}
               disableClearable={false}
               height={"35px"}
               labelFontSize={"11px"}
-              labelMarginTop={"0.5px"}
+              labelMarginTop={"1.5px"}
               errorFontSize={"9.5px"}
+              disabled={selectedTrainerId == null || selectedTrainerId === ""}
             />
           </Col>
 
           <Col span={8}>
             <CommonSelectField
-              label="Batch Status"
+              label={`${mainType} Status`}
               required={true}
               options={[
                 {
                   id: "Upcoming",
                   name: "Upcoming",
+                },
+                {
+                  id: "Ongoing",
+                  name: "Ongoing",
+                },
+                {
+                  id: "Completed",
+                  name: "Completed",
                 },
               ]}
               onChange={(e) => {

@@ -18,7 +18,7 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { IoFilter, IoCallOutline } from "react-icons/io5";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail, MdOutlineLocationOn } from "react-icons/md";
-import { FiUsers, FiUser, FiClock } from "react-icons/fi";
+import { FiUsers, FiUser, FiClock, FiCalendar } from "react-icons/fi";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
@@ -39,7 +39,7 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 import { useSelector } from "react-redux";
 
-export default function Batches() {
+export default function Batches({ mainType }) {
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
@@ -82,6 +82,21 @@ export default function Batches() {
     total: 0,
     totalPages: 0,
   });
+  //css
+  const batchStatusColors = {
+    Upcoming: {
+      color: "#5b69ca",
+      background: "#5b69ca1a",
+    },
+    Ongoing: {
+      color: "#1e90ff",
+      background: "#1e8fff11",
+    },
+    Completed: {
+      color: "#3c9111",
+      background: "#3c911111",
+    },
+  };
 
   useEffect(() => {
     // getTrainersData(null, 1, true);
@@ -166,6 +181,7 @@ export default function Batches() {
   ) => {
     setLoading(true);
     const payload = {
+      type: mainType.toLowerCase(),
       ...(trainerId && { trainer_id: trainerId }),
       ...(customerSearch && { customer_search_filter: customerSearch }),
       ...(regionId && { region_id: regionId }),
@@ -504,7 +520,7 @@ export default function Batches() {
               }, 0);
             }}
           >
-            Add Batch
+            {`Add ${mainType}`}
           </button>
 
           <Tooltip placement="top" title="Refresh">
@@ -629,7 +645,9 @@ export default function Batches() {
                             <div className="batch_card">
                               <div className="batch_card_header">
                                 <span className="batch_card_number">
-                                  {batch.batch_number}
+                                  {mainType === "Batch"
+                                    ? batch.batch_number
+                                    : batch.group_number}
                                 </span>
                                 <AiOutlineEdit
                                   size={22}
@@ -657,13 +675,43 @@ export default function Batches() {
                                   <FiUser className="batch_card_icon" />{" "}
                                   {batch.trainer_name || "No Trainer"}
                                 </div>
-                                <div className="batch_card_time">
-                                  <FiClock className="batch_card_icon" /> 10:00
-                                  - 12:00
-                                </div>
-                                <div className="batch_card_status">
-                                  <span className="status_dot"></span> ONGOING
-                                </div>
+
+                                {batch?.batch_start_date && (
+                                  <div className="batch_card_time">
+                                    <FiCalendar className="batch_card_icon" />
+                                    {`${moment(batch.batch_start_date).format("DD/MM/YYYY")} - ${moment(batch.batch_end_date).format("DD/MM/YYYY")}`}
+                                  </div>
+                                )}
+
+                                {batch?.batch_start_time && (
+                                  <div className="batch_card_time">
+                                    <FiClock className="batch_card_icon" />
+                                    {`${moment(batch.batch_start_time, "HH:mm").format("hh:mm A")} - ${moment(batch.batch_end_time, "HH:mm").format("hh:mm A")}`}
+                                  </div>
+                                )}
+                                {batch?.batch_status && (
+                                  <div
+                                    className="batch_card_status"
+                                    style={{
+                                      color:
+                                        batchStatusColors[batch.batch_status]
+                                          ?.color,
+                                      backgroundColor:
+                                        batchStatusColors[batch.batch_status]
+                                          ?.background,
+                                    }}
+                                  >
+                                    <span
+                                      className="status_dot"
+                                      style={{
+                                        backgroundColor:
+                                          batchStatusColors[batch.batch_status]
+                                            ?.color,
+                                      }}
+                                    ></span>{" "}
+                                    {batch.batch_status.toUpperCase()}
+                                  </div>
+                                )}
                               </div>
                               <div
                                 className="batch_card_footer"
@@ -698,14 +746,16 @@ export default function Batches() {
               border: "1px solid #f0f0f0",
             }}
           >
-            <p style={{ color: "#8c8c8c", margin: 0 }}>No batches found</p>
+            <p
+              style={{ color: "#8c8c8c", margin: 0 }}
+            >{`No ${mainType === "Batch" ? "batches" : "groups"} found`}</p>
           </div>
         )}
       </div>
 
       {/* add batch drawer */}
       <Drawer
-        title={editBatchItem ? "Update Batch" : "Add Batch"}
+        title={editBatchItem ? `Update ${mainType}` : `Add ${mainType}`}
         open={isOpenAddDrawer}
         onClose={formReset}
         width="45%"
@@ -714,6 +764,7 @@ export default function Batches() {
         {isOpenAddBatchComponent ? (
           <AddBatch
             ref={addBatchRef}
+            mainType={mainType}
             regionOptions={regionOptions}
             editBatchItem={editBatchItem}
             setButtonLoading={setButtonLoading}
@@ -746,7 +797,7 @@ export default function Batches() {
 
       {isOpenAddBatchComponent ? (
         <Drawer
-          title="Batch Details"
+          title={`${mainType} Details`}
           open={isOpenBatchDetailsDrawer}
           onClose={formReset}
           width="50%"
@@ -755,6 +806,7 @@ export default function Batches() {
         >
           <UpdateBatchCustomers
             ref={updateBatchCustomersRef}
+            mainType={mainType}
             editBatchItem={editBatchItem}
             callgetBatchesApi={() => {
               formReset();

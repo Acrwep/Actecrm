@@ -57,9 +57,9 @@ export default function SideMenu() {
       path: "postsales",
     },
     5: {
-      title: "Batches",
+      title: "Batch Management",
       icon: <MdOutlineGroupAdd size={17} />,
-      path: "batches",
+      path: "batchmanagement",
     },
     6: {
       title: "Accounts",
@@ -130,9 +130,9 @@ export default function SideMenu() {
       path: "postsales",
     },
     5: {
-      title: "Batches",
+      title: "Batch Management",
       icon: <MdOutlineGroupAdd size={17} />,
-      path: "batches",
+      path: "batchmanagement",
     },
     6: {
       title: "Accounts",

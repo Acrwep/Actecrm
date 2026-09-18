@@ -1,12 +1,6 @@
-import React, {
-  useState,
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from "react";
-import { Row, Col, Divider, Button, Tooltip, Drawer } from "antd";
+import React, { useState, forwardRef, useRef } from "react";
+import { Row, Col, Divider, Button, Tooltip, Drawer, Typography } from "antd";
+import { MdBook, MdAssignment } from "react-icons/md";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 import CommonTable from "../Common/CommonTable";
@@ -24,7 +18,7 @@ import { FaLinkedinIn } from "react-icons/fa";
 import PreCertificate from "../Customers/PreCertificate";
 
 const UpdateBatchCustomers = forwardRef(
-  ({ editBatchItem, callgetBatchesApi }) => {
+  ({ editBatchItem, mainType, callgetBatchesApi }) => {
     //--------------useref----------------------
     const classScheduleRef = useRef();
     const othersHandlingRef = useRef();
@@ -132,7 +126,7 @@ const UpdateBatchCustomers = forwardRef(
                     Payment Verify
                   </Button>
                 </div>
-              ) : text === "Awaiting Verify" ? (
+              ) : text === "Awaiting Verify" || text === "Hold" ? (
                 <div>
                   <Button className="customers_status_awaitverify_button">
                     {text}
@@ -147,6 +141,12 @@ const UpdateBatchCustomers = forwardRef(
               ) : text === "Awaiting Trainer Verify" ? (
                 <div>
                   <Button className="customers_status_awaittrainerverify_button">
+                    {text}
+                  </Button>
+                </div>
+              ) : text === "Trainer Approval" ? (
+                <div>
+                  <Button className="customers_status_trainerapproval_button">
                     {text}
                   </Button>
                 </div>
@@ -178,14 +178,20 @@ const UpdateBatchCustomers = forwardRef(
                 text === "REJECTED" ||
                 text === "Payment Rejected" ||
                 text === "Trainer Rejected" ||
+                text === "Approval Rejected" ||
                 text === "Escalated" ||
-                text === "Hold" ||
                 text === "Partially Closed" ||
                 text === "Discontinued" ||
-                text === "Demo Completed" ||
-                text === "Videos Given" ||
                 text === "Refund" ? (
                 <Button className="trainers_rejected_button">{text}</Button>
+              ) : text === "Demo Completed" ? (
+                <Button className="customers_status_classgoing_button">
+                  Only Demo
+                </Button>
+              ) : text === "Videos Given" ? (
+                <Button className="customers_status_videos_given_button">
+                  Self-Paced
+                </Button>
               ) : text === "Class Going" ? (
                 <div
                   style={{ display: "flex", gap: "6px", alignItems: "center" }}
@@ -402,119 +408,160 @@ const UpdateBatchCustomers = forwardRef(
       }
     };
 
+    const { Text } = Typography;
+
+    const renderField = (label, value) => (
+      <div style={{ marginBottom: "8px" }}>
+        <Text
+          style={{
+            fontFamily: "'Poppins', sans-serif",
+            fontSize: "12px",
+            display: "block",
+            marginBottom: "2px",
+            color: "#64748b",
+            fontWeight: 500,
+          }}
+        >
+          {label}
+        </Text>
+        <EllipsisTooltip isViewLeadDetailsText={true} text={value} />
+      </div>
+    );
+
+    const cardStyle = {
+      borderRadius: "8px",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      background: "#fff",
+      padding: "12px",
+      marginBottom: "16px",
+    };
+
+    const HeaderTitle = ({ icon, title }) => (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginBottom: "12px",
+          borderBottom: "1px solid #f1f5f9",
+          paddingBottom: "6px",
+        }}
+      >
+        {icon}
+        <span
+          style={{
+            fontFamily: "'Poppins', sans-serif",
+            color: "#1e3a8a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          {title}
+        </span>
+      </div>
+    );
+
     return (
       <div>
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Created At</p>
-                </div>
+        <div style={{ padding: "20px 24px 0px 24px" }}>
+          <div style={cardStyle}>
+            <HeaderTitle
+              icon={<MdAssignment size={18} color="#2563eb" />}
+              title={`${mainType} Information`}
+            />
+            <Row gutter={24}>
+              <Col span={6}>
+                {renderField(
+                  `${mainType} Id`,
+                  editBatchItem?.batch_number || "-",
+                )}
               </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    editBatchItem && editBatchItem.created_date
-                      ? moment(editBatchItem.created_date).format("DD/MM/YYYY")
-                      : "-"
-                  }
-                  smallText={true}
-                />
+              <Col span={6}>
+                {renderField(
+                  `${mainType} Name`,
+                  editBatchItem?.batch_name || "-",
+                )}
+              </Col>
+              <Col span={6}>
+                {renderField("Course", editBatchItem?.batch_course_name || "-")}
+              </Col>
+              <Col span={6}>
+                {renderField("Trainer", editBatchItem?.trainer_name || "-")}
+              </Col>
+              <Col span={6}>
+                {renderField(
+                  "Start Date",
+                  editBatchItem?.batch_start_date
+                    ? moment(editBatchItem.batch_start_date).format(
+                        "DD/MM/YYYY",
+                      )
+                    : "-",
+                )}
+              </Col>
+              <Col span={6}>
+                {renderField(
+                  "End Date",
+                  editBatchItem?.batch_end_date
+                    ? moment(editBatchItem.batch_end_date).format("DD/MM/YYYY")
+                    : "-",
+                )}
+              </Col>
+              <Col span={6}>
+                {renderField(
+                  "Customers",
+                  editBatchItem?.customers?.length || 0,
+                )}
               </Col>
             </Row>
+          </div>
 
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Name</p>
-                </div>
+          <div style={cardStyle}>
+            <HeaderTitle
+              icon={<MdBook size={18} color="#2563eb" />}
+              title="Other Details"
+            />
+            <Row gutter={24}>
+              <Col span={6}>
+                {renderField("Region", editBatchItem?.region_name || "-")}
               </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    editBatchItem && editBatchItem.batch_name
-                      ? editBatchItem.batch_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
+              <Col span={6}>
+                {renderField("Branch", editBatchItem?.branch_name || "-")}
               </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Id</p>
-                </div>
+              <Col span={6}>
+                {renderField(
+                  "Start Time",
+                  editBatchItem?.batch_start_time
+                    ? moment(editBatchItem.batch_start_time, "HH:mm").format(
+                        "hh:mm A",
+                      )
+                    : "-",
+                )}
               </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    editBatchItem && editBatchItem.batch_number
-                      ? editBatchItem.batch_number
-                      : "-"
-                  }
-                  smallText={true}
-                />
+              <Col span={6}>
+                {renderField(
+                  "End Time",
+                  editBatchItem?.batch_end_time
+                    ? moment(editBatchItem.batch_end_time, "HH:mm").format(
+                        "hh:mm A",
+                      )
+                    : "-",
+                )}
               </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Region</p>
-                </div>
+              <Col span={6}>
+                {renderField("Status", editBatchItem?.batch_status || "-")}
               </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    editBatchItem && editBatchItem.region_name
-                      ? editBatchItem.region_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
+              <Col span={6}>
+                {renderField(
+                  "Created At",
+                  editBatchItem?.created_date
+                    ? moment(editBatchItem.created_date).format("DD/MM/YYYY")
+                    : "-",
+                )}
               </Col>
             </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    editBatchItem && editBatchItem.branch_name
-                      ? editBatchItem.branch_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Customers</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {editBatchItem && editBatchItem.customers.length}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
+          </div>
+        </div>
 
         <Divider className="customer_statusupdate_divider" />
 
@@ -528,7 +575,7 @@ const UpdateBatchCustomers = forwardRef(
               dataSource={editBatchItem?.customers ?? []}
               dataPerPage={10}
               //   loading={loading}
-              checkBox="true"
+              checkBox="false"
               size="small"
               selectedDatas={handleSelectedRow}
               selectedRowKeys={selectedRowKeys}

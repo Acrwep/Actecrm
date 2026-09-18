@@ -765,8 +765,8 @@ const TrainerPaymentDirectPaid = forwardRef(
             /> */}
             <CommonCustomerSingleSelectField
               label="Trainer"
-              height="32px"
-              labelMarginTop="-1px"
+              height="36px"
+              labelMarginTop="0px"
               required={false}
               options={mergedTrainersList}
               value={selectedTrainerId}
