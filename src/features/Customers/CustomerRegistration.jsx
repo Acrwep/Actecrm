@@ -164,7 +164,7 @@ export default function CustomerRegistration() {
   const [signatureArray, setSignatureArray] = useState([]);
   const [signatureBase64, setSignatureBase64] = useState("");
   const [signatureError, setSignatureError] = useState("");
-  const [isOpenTermsModal, setIsOpenTermsModal] = useState(false);
+  const [isOpenTermsModal, setIsOpenTermsModal] = useState(true);
   const [isCheckedTerms, setIsCheckedTerms] = useState(false);
   const [isCheckedTermsError, setIsCheckedTermsError] = useState("");
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
@@ -552,6 +552,7 @@ export default function CustomerRegistration() {
           ? customerFullDetails.gst_number
           : null,
       placement_support: placementSupport,
+      lms_access: customerFullDetails.lms_access,
       is_server_required: server,
       is_customer_updated: 1,
     };

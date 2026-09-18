@@ -602,13 +602,41 @@ export default function Customers() {
       },
     },
     {
-      title: "HR Name",
+      title: "RA",
+      key: "ra_name",
+      dataIndex: "ra_name",
+      width: 75,
+      align: "center",
+      render: (text, record) => {
+        if (text) {
+          const ra = `${record.ra_id} - ${text}`;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={ra} children={record.ra_id} />
+            </div>
+          );
+        } else {
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
+        }
+      },
+    },
+    {
+      title: "HR",
       key: "trainer_hr_name",
       dataIndex: "trainer_hr_name",
-      width: 120,
+      width: 75,
+      align: "center",
       render: (text, record) => {
-        const hr = `${record.trainer_hr_id} - ${text}`;
-        return <EllipsisTooltip text={hr} />;
+        if (text) {
+          const hr = `${record.trainer_hr_id} - ${text}`;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={hr} children={record.trainer_hr_id} />
+            </div>
+          );
+        } else {
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
+        }
       },
     },
     {
@@ -2669,6 +2697,21 @@ export default function Customers() {
   const getFilteredColumns = (columns) => {
     return columns
       .filter((col) => {
+        // RA column
+        if (
+          col.key === "ra_name" &&
+          (bucketStatus === null ||
+            bucketStatus === "" ||
+            (bucketStatus === "Student Onboarding" &&
+              (status === "" ||
+                status === null ||
+                status === "Form Pending" ||
+                status === "Awaiting Finance" ||
+                status === "Awaiting Verify")))
+        ) {
+          return false;
+        }
+
         // Trainer-related columns
         if (
           ["trainer_hr_name", "trainer_name", "commercial_percentage"].includes(

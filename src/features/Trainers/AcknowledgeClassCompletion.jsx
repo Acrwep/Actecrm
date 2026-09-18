@@ -130,8 +130,6 @@ export default function AcknowledgeClassCompletion() {
   }, [status, isOtpVerified]);
 
   const acknowledgeClass = async () => {
-    // Validation
-    // const status = searchParams.get("status");
     setLoading(true);
 
     if (!customer_id) {
@@ -141,14 +139,6 @@ export default function AcknowledgeClassCompletion() {
       return;
     }
 
-    // Not completed
-    // if (status === "notcompleted") {
-    //   setMessage(
-    //     "Thank you for your response. We will contact you shortly regarding the pending syllabus.",
-    //   );
-    //   setIsSuccess(false);
-    //   return;
-    // }
     try {
       const payload = {
         customer_id: customer_id,
@@ -158,7 +148,13 @@ export default function AcknowledgeClassCompletion() {
       // API Call
       await acknowledgeClassCompletion(payload);
 
-      setMessage("Class acknowledged successfully");
+      if (status === "1") {
+        setMessage("Class acknowledged successfully");
+      } else {
+        setMessage(
+          "Thank you for your response. We will contact you shortly regarding the pending syllabus."
+        );
+      }
 
       setIsSuccess(true);
     } catch (error) {
