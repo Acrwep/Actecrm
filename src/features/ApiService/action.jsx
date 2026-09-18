@@ -57,9 +57,9 @@ export const createUser = async (payload) => {
   }
 };
 
-export const getUsers = async (payload) => {
+export const getUsers = async (payload, config = {}) => {
   try {
-    const response = await api.post("/api/getUsers", payload);
+    const response = await api.post("/api/getUsers", payload, config);
     return response;
   } catch (error) {
     throw error;

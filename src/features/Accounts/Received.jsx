@@ -73,6 +73,7 @@ export default function Received({
 }) {
   const mounted = useRef(false);
   const financeVerifyRef = useRef();
+  const searchTimeoutRef = useRef(null);
   const [paymentType, setPaymentType] = useState("NEW");
   const [statusCount, setStatusCount] = useState({});
 
@@ -689,12 +690,32 @@ export default function Received({
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
     setLoading(true);
-    setPagination({
-      page: 1,
-    });
-    fetchReceivedPaymentsData({ searchvalue: e.target.value, pageNumber: 1 });
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchReceivedPaymentsData({
+        searchvalue: "",
+        pageNumber: 1,
+        limit: pagination.limit,
+      });
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchReceivedPaymentsData({
+        searchvalue: input,
+        pageNumber: 1,
+        limit: pagination.limit,
+      });
+    }, 400);
   };
 
   const handleSelectUser = async (e) => {

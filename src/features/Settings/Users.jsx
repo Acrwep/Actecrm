@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Row,
   Col,
@@ -71,6 +71,10 @@ export default function Users({
   pagination,
   setPagination,
 }) {
+  //search userefs start
+  const searchTimeoutRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  //search userefs end
   // const device = CommonDeviceDetails();
   const dispatch = useDispatch();
   const usersData = useSelector((state) => state.userslist);
@@ -420,7 +424,23 @@ export default function Users({
     setAssignUsersData(allUsersData);
   }, [allUsersData]);
 
+  const fetchUsersData = (overrides = {}) => {
+    getUsersData(
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination.page,
+      overrides.limit !== undefined ? overrides.limit : pagination.limit,
+    );
+  };
+
   const getUsersData = async (searchvalue, pageNumber, limit) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     setUserTableLoading(true);
     const payload = {
       ...(searchvalue && { keyword: searchvalue }),
@@ -429,7 +449,9 @@ export default function Users({
       include_profile_image: true,
     };
     try {
-      const response = await getUsers(payload);
+      const response = await getUsers(payload, {
+        signal: abortController.signal,
+      });
       console.log("users response", response);
       dispatch(storeUsersList(response?.data?.data?.data || []));
       const pagination = response?.data?.data?.pagination;
@@ -440,18 +462,28 @@ export default function Users({
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
+      setTimeout(() => {
+        if (abortControllerRef.current === abortController) {
+          setUserTableLoading(false);
+        }
+      }, 300);
     } catch (error) {
+      if (error?.name === "CanceledError" || error?.message === "canceled") {
+        console.log("API call aborted due to new request");
+        return;
+      }
       dispatch(storeUsersList([]));
       console.log(error);
-    } finally {
       setTimeout(() => {
-        setUserTableLoading(false);
+        if (abortControllerRef.current === abortController) {
+          setUserTableLoading(false);
+        }
       }, 300);
     }
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getUsersData(searchValue, page, limit);
+    fetchUsersData({ pageNumber: page, limit: limit });
   };
 
   const getAllUsersData = async () => {
@@ -577,12 +609,29 @@ export default function Users({
     const input = e.target.value;
     setSearchValue(input);
     dispatch(storeUserSearchValue(input));
-    setTimeout(() => {
-      setPagination({
-        page: 1,
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchUsersData({
+        searchvalue: "",
+        pageNumber: 1,
+        limit: pagination.limit,
       });
-      getUsersData(input, 1, pagination.limit);
-    }, 300);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchUsersData({
+        searchvalue: input,
+        pageNumber: 1,
+        limit: pagination.limit,
+      });
+    }, 400);
   };
 
   const handleSubmit = async () => {
@@ -701,10 +750,7 @@ export default function Users({
         console.log(response);
         CommonMessage("success", "User Updated");
         setTimeout(() => {
-          setPagination({
-            page: 1,
-          });
-          getUsersData(searchValue, pagination.page, pagination.limit);
+          fetchUsersData({});
           getAllUsersData();
           getUserDownlineData();
           formReset();
@@ -723,10 +769,7 @@ export default function Users({
         console.log(response);
         CommonMessage("success", "User Created");
         setTimeout(() => {
-          setPagination({
-            page: 1,
-          });
-          getUsersData(searchValue, 1, pagination.limit);
+          fetchUsersData({});
           getAllUsersData();
           getUserDownlineData();
           formReset();
@@ -866,10 +909,7 @@ export default function Users({
       setTimeout(() => {
         setTargetLoader(false);
         setIsShowAddTarget(false);
-        setPagination({
-          page: 1,
-        });
-        getUsersData(searchValue, pagination.page, pagination.limit);
+        fetchUsersData({});
         getAllUsersData();
         assignTargetReset();
       }, 300);
@@ -918,7 +958,7 @@ export default function Users({
                     setPagination({
                       page: 1,
                     });
-                    getUsersData(null, 1, pagination.limit);
+                    fetchUsersData({ searchvalue: null, pageNumber: 1 });
                   }}
                 >
                   <IoIosClose size={11} />

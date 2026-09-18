@@ -48,6 +48,8 @@ export default function Receivables({
 }) {
   const mounted = useRef(false);
   const insertPendingFeesRef = useRef();
+  const searchTimeoutRef = useRef(null);
+
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -690,15 +692,30 @@ export default function Receivables({
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
     setLoading(true);
-    setPagination({
-      page: 1,
-    });
-    fetchPendingFeesCustomersData({
-      searchvalue: e.target.value,
-      pageNumber: 1,
-    });
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchPendingFeesCustomersData({
+        searchvalue: "",
+        pageNumber: 1,
+      });
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchPendingFeesCustomersData({
+        searchvalue: input,
+        pageNumber: 1,
+      });
+    }, 400);
   };
 
   const handleSelectUser = async (e) => {

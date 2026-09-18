@@ -79,7 +79,9 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Admissions() {
   const mounted = useRef(false);
-
+  //search userefs start
+  const searchTimeoutRef = useRef(null);
+  const abortControllerRef = useRef(null);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -1055,17 +1057,29 @@ export default function Admissions() {
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
     setLoading(true);
-    setPagination({
-      page: 1,
-    });
-    setTimeout(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchAdmissionsData({
+        searchvalue: null,
+        pageNumber: 1,
+      });
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
       fetchAdmissionsData({
         searchvalue: e.target.value,
         pageNumber: 1,
       });
-    }, 300);
+    }, 400);
   };
 
   const handleSelectUser = async (e) => {

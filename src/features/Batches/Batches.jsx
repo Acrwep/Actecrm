@@ -40,6 +40,10 @@ import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelec
 import { useSelector } from "react-redux";
 
 export default function Batches({ mainType }) {
+  //search userefs start
+  const searchTimeoutRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  //search userefs end
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
@@ -288,15 +292,25 @@ export default function Batches({ mainType }) {
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
-    setTimeout(() => {
-      // setPagination({
-      //   page: 1,
-      // });
+    const input = e.target.value;
+    setSearchValue(input);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
       fetchBatchesData({
-        searchvalue: e.target.value,
+        searchvalue: "",
       });
-    }, 300);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchBatchesData({
+        searchvalue: input,
+      });
+    }, 400);
   };
 
   const handleSelectRegionId = (e) => {
@@ -641,6 +655,11 @@ export default function Batches({ mainType }) {
                           <div
                             className="batch_card_wrapper"
                             key={batch.batch_id}
+                            onClick={() => {
+                              setEditBatchItem(batch);
+                              setIsOpenAddBatchComponent(true);
+                              setIsOpenBatchDetailsDrawer(true);
+                            }}
                           >
                             <div className="batch_card">
                               <div className="batch_card_header">
@@ -660,14 +679,7 @@ export default function Batches({ mainType }) {
                                   }}
                                 />
                               </div>
-                              <div
-                                className="batch_card_body"
-                                onClick={() => {
-                                  setEditBatchItem(batch);
-                                  setIsOpenAddBatchComponent(true);
-                                  setIsOpenBatchDetailsDrawer(true);
-                                }}
-                              >
+                              <div className="batch_card_body">
                                 <div className="batch_card_title">
                                   <EllipsisTooltip text={batch.batch_name} />
                                 </div>

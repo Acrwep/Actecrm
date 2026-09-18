@@ -111,6 +111,7 @@ export default function Customers() {
   const emailTemplateRef = useRef();
   const mounted = useRef(false);
   const location = useLocation();
+  const searchTimeoutRef = useRef(null);
 
   const scroll = (scrollOffset) => {
     if (!scrollRef.current) return;
@@ -2322,14 +2323,30 @@ export default function Customers() {
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
     setLoading(true);
-    setPagination({
-      page: 1,
-    });
-    setTimeout(() => {
-      fetchCustomersData({ search: e.target.value, page: 1 });
-    }, 300);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchCustomersData({
+        search: "",
+        pageNumber: 1,
+      });
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchCustomersData({
+        search: input,
+        pageNumber: 1,
+      });
+    }, 400);
   };
 
   const handleSelectUser = async (e) => {
