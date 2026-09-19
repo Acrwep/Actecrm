@@ -764,7 +764,7 @@ const AddBatch = forwardRef(
 
           <Col span={8}>
             <CommonCustomerMultiSelectField
-              label="Select Customer"
+              label="Select Candidates"
               required={true}
               options={mergedCustomers}
               value={selectedCustomerIds}

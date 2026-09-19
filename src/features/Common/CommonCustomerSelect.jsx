@@ -71,7 +71,13 @@ export default function CommonCustomerMultiSelectField({
           },
           "& .MuiOutlinedInput-root": {
             minHeight: height || "32px",
+            paddingTop: "1px",
+            paddingBottom: "1px",
             alignItems: "flex-start",
+          },
+          /* Clear Icon (X) */
+          "& .MuiAutocomplete-clearIndicator .MuiSvgIcon-root": {
+            fontSize: "17px",
           },
         }}
       >
@@ -209,10 +215,12 @@ export default function CommonCustomerMultiSelectField({
           <div style={helperTextContainerStyle}>
             <FormHelperText
               sx={{
-                fontSize: errorFontSize || "11px",
+                fontSize: errorFontSize || "10px",
                 color: "#d32f2f",
                 fontFamily: "Poppins, sans-serif",
                 marginLeft: 0,
+                position: "absolute",
+                left: 13,
               }}
             >
               {label} {error}

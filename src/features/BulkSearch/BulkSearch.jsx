@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Row,
   Col,
@@ -23,7 +23,11 @@ import { DownloadOutlined } from "@ant-design/icons";
 import CommonTable from "../Common/CommonTable";
 import * as XLSX from "xlsx";
 import { CommonMessage } from "../Common/CommonMessage";
-import { emailValidator, mobileValidator } from "../Common/Validation";
+import {
+  emailValidator,
+  mobileValidator,
+  selectValidator,
+} from "../Common/Validation";
 import "./styles.css";
 import { bulkSearch } from "../ApiService/action";
 import moment from "moment";
@@ -40,6 +44,7 @@ export default function BulkSearch() {
   const navigate = useNavigate();
 
   const [searchValue, setSearchValue] = useState("");
+  const searchTimeoutRef = useRef(null);
   const statusOptions = [
     { id: "Success", name: "Success" },
     { id: "On Progress", name: "On Progress" },
@@ -64,6 +69,16 @@ export default function BulkSearch() {
   });
 
   const columns = [
+    {
+      title: "SI.NO",
+      key: "sino",
+      width: 70,
+      render: (text, record, index) => {
+        const page = pagination?.page || 1;
+        const limit = pagination?.limit || 10;
+        return (page - 1) * limit + index + 1;
+      },
+    },
     {
       title: "Candidate Name",
       key: "name",
@@ -93,7 +108,7 @@ export default function BulkSearch() {
       title: "Status",
       key: "status",
       dataIndex: "status",
-      width: 150,
+      width: 120,
       render: (text) => {
         return (
           <>
@@ -119,6 +134,7 @@ export default function BulkSearch() {
       key: "lead_by",
       dataIndex: "lead_by",
       width: 140,
+      align: "center",
       render: (text, record) => {
         const lead_executive = `${record.lead_by_id} - ${text}`;
         return (
@@ -135,9 +151,11 @@ export default function BulkSearch() {
       title: "Created At",
       key: "created_on",
       dataIndex: "created_on",
-      width: 110,
+      width: 150,
       render: (text) => {
-        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
+        return (
+          <p>{text ? moment(text).format("DD/MM/YYYY - HH:mm:ss") : "-"}</p>
+        );
       },
     },
   ];
@@ -183,19 +201,8 @@ export default function BulkSearch() {
         const worksheet = workbook.Sheets[sheetName];
 
         const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        const data = rawData.filter(
-          (row) =>
-            Array.isArray(row) &&
-            row.some(
-              (cell) =>
-                cell !== undefined &&
-                cell !== null &&
-                cell !== "" &&
-                cell !== " ",
-            ),
-        );
-        console.log("shetttt", data);
-        setExcelData(data);
+        console.log("shetttt", rawData);
+        setExcelData(rawData);
       };
       reader.readAsArrayBuffer(file);
       setXlsxArray([file]);
@@ -225,10 +232,28 @@ export default function BulkSearch() {
       error.push({ error: "Email column is required", row: 1 });
     }
 
+    if (error.length > 0) {
+      setExcelErrors(error);
+      setBulkUploadErrorModal(true);
+      return;
+    }
+
     excelData.slice(1).forEach((row, rowIndex) => {
+      const rowNum = rowIndex + 2; // because header is row 1
+
+      if (
+        !row ||
+        !Array.isArray(row) ||
+        !row.some(
+          (cell) =>
+            cell !== undefined && cell !== null && cell !== "" && cell !== " ",
+        )
+      ) {
+        return;
+      }
+
       const raw_mobile = row[mobileIndex];
       const raw_email = row[emailIndex];
-      const rowNum = rowIndex + 2; // because header is row 1
 
       const hasMobile =
         raw_mobile !== undefined && raw_mobile !== null && raw_mobile !== "";
@@ -247,7 +272,7 @@ export default function BulkSearch() {
       // If Mobile exists
       if (hasMobile) {
         const mobile = raw_mobile.toString();
-        const mobileValidate = mobileValidator(mobile);
+        const mobileValidate = selectValidator(mobile);
         updateExcelData[rowIndex + 1].mobile = mobile;
         if (mobileValidate) {
           error.push({
@@ -260,7 +285,7 @@ export default function BulkSearch() {
       // If Email exists
       if (hasEmail) {
         const email = raw_email.toString();
-        const emailValidate = emailValidator(email);
+        const emailValidate = selectValidator(email);
         updateExcelData[rowIndex + 1].email = email;
         if (emailValidate) {
           error.push({
@@ -328,7 +353,20 @@ export default function BulkSearch() {
   };
 
   const convertAsPayloadType = (excelData) => {
-    const rows = excelData.slice(1);
+    const rows = excelData
+      .slice(1)
+      .filter(
+        (row) =>
+          row &&
+          Array.isArray(row) &&
+          row.some(
+            (cell) =>
+              cell !== undefined &&
+              cell !== null &&
+              cell !== "" &&
+              cell !== " ",
+          ),
+      );
 
     const users_data = rows.map((row) => {
       return {
@@ -350,20 +388,28 @@ export default function BulkSearch() {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchValue(value);
-
-    const filterData = duplicateData.filter((f) => {
-      const statusMatch = status?.length ? status.includes(f.status) : true;
-
-      // ✅ Search across all 3 fields
-      const typeMatch =
-        f.mobile?.toLowerCase().includes(value) ||
-        f.name?.toLowerCase().includes(value) ||
-        f.email?.toLowerCase().includes(value);
-
-      return statusMatch && typeMatch;
+    setPagination({
+      page: 1,
     });
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-    setData(filterData);
+    searchTimeoutRef.current = setTimeout(() => {
+      const filterData = duplicateData.filter((f) => {
+        const statusMatch = status?.length ? status.includes(f.status) : true;
+
+        // ✅ Search across all 3 fields
+        const typeMatch =
+          f.mobile?.toLowerCase().includes(value) ||
+          f.name?.toLowerCase().includes(value) ||
+          f.email?.toLowerCase().includes(value);
+
+        return statusMatch && typeMatch;
+      });
+
+      setData(filterData);
+    }, 400);
   };
 
   const formReset = () => {
@@ -374,17 +420,29 @@ export default function BulkSearch() {
 
   return (
     <div>
-      <Row>
-        <Col xs={24} sm={24} md={24} lg={10}>
+      {/* {data.length >= 1 && ( */}
+      <div className="admissions_overall_header">
+        <div className="admissions_overall_indicator"></div>
+
+        <div className="admissions_overall_content">
+          <span className="admissions_overall_label">OverAll</span>
+
+          <span className="admissions_overall_count">{data?.length}</span>
+        </div>
+      </div>
+      {/* )} */}
+
+      <Row style={{ marginTop: "20px" }}>
+        <Col xs={24} sm={24} md={24} lg={9}>
           <Row gutter={16}>
             <Col span={12}>
               <div className="overallduecustomers_filterContainer">
                 {/* Search Input */}
                 <CommonOutlinedInput
-                  label="Search"
+                  label="Search Name / Email / Mobile"
                   width="100%"
                   height="33px"
-                  labelFontSize="12px"
+                  labelFontSize="10px"
                   icon={
                     searchValue ? (
                       <div
@@ -408,7 +466,7 @@ export default function BulkSearch() {
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="1px"
                   style={{
                     padding: searchValue
                       ? "0px 26px 0px 0px"
@@ -493,8 +551,8 @@ export default function BulkSearch() {
 
                     <CommonMultiSelect
                       label="Status"
-                      labelMarginTop="0px"
-                      labelFontSize="13px"
+                      labelMarginTop="0.2px"
+                      labelFontSize="11px"
                       options={statusOptions}
                       value={status} // Only real selected values
                       onChange={(e) => {
@@ -530,7 +588,7 @@ export default function BulkSearch() {
           xs={24}
           sm={24}
           md={24}
-          lg={14}
+          lg={15}
           style={{
             display: "flex",
             justifyContent: "flex-end",
@@ -565,7 +623,7 @@ export default function BulkSearch() {
         </Col>
       </Row>
 
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "18px" }}>
         <CommonTable
           scroll={{ x: 1000 }}
           columns={columns}
@@ -599,7 +657,7 @@ export default function BulkSearch() {
             {loading ? (
               <Button
                 className="bulksearch_bulkmodal_footerimport_button"
-                style={{ opacity: "0.7", cursor: "default" }}
+                style={{ opacity: "0.7", cursor: "not-allowed" }}
               >
                 <CommonSpinner />
               </Button>

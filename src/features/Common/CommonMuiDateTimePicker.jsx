@@ -78,9 +78,9 @@ export default function CommonMuiDateTimePicker({
                 <span
                   style={{
                     position: "absolute",
-                    bottom: "-18px",
-                    left: "0",
-                    fontSize: errorFontSize || "11px",
+                    bottom: "-16px", // adjust distance below the input
+                    left: "12px",
+                    fontSize: errorFontSize || "10px",
                     color: "#d32f2f",
                   }}
                 >

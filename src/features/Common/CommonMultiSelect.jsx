@@ -33,7 +33,7 @@ export default function CommonMultiSelect({
 }) {
   // Map stored ids -> option objects
   const selectedOptions = options.filter((opt) =>
-    value.includes(String(opt.user_id ?? opt.id))
+    value.includes(String(opt.user_id ?? opt.id)),
   );
 
   // Label resolver
@@ -66,7 +66,14 @@ export default function CommonMultiSelect({
           /* Outer border */
           "& .MuiOutlinedInput-root": {
             minHeight: "32px",
-            alignItems: "flex-start",
+            alignItems: "center",
+            paddingTop: "3px !important",
+            paddingBottom: "3px !important",
+          },
+
+          /* Clear Icon (X) */
+          "& .MuiAutocomplete-clearIndicator .MuiSvgIcon-root": {
+            fontSize: "17px",
           },
         }}
       >
@@ -136,6 +143,8 @@ export default function CommonMultiSelect({
               sx={{
                 "& .MuiInputBase-input": {
                   fontSize: fontSize || "14px",
+                  paddingTop: "4px !important",
+                  paddingBottom: "4px !important",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderRight: borderRightNone ? "none" : "",
@@ -181,8 +190,12 @@ export default function CommonMultiSelect({
         {error && (
           <FormHelperText
             sx={{
-              fontSize: errorFontSize || "11px",
+              fontSize: errorFontSize || "10px",
+              color: "#d32f2f",
+              fontFamily: "Poppins, sans-serif",
               marginLeft: 0,
+              position: "absolute",
+              left: 13,
             }}
           >
             {label} {error}

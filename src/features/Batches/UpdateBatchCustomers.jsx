@@ -402,7 +402,7 @@ const UpdateBatchCustomers = forwardRef(
       } else {
         CommonMessage(
           "error",
-          "Cannot select. Update the customer status on the Customers page.",
+          "Cannot select. Update the candidate status on the Post Sale page.",
         );
         resetCustomersTable();
       }
@@ -474,7 +474,9 @@ const UpdateBatchCustomers = forwardRef(
               <Col span={6}>
                 {renderField(
                   `${mainType} Id`,
-                  editBatchItem?.batch_number || "-",
+                  mainType === "Batch"
+                    ? editBatchItem?.batch_number || "-"
+                    : editBatchItem?.group_number || "-",
                 )}
               </Col>
               <Col span={6}>
@@ -509,7 +511,7 @@ const UpdateBatchCustomers = forwardRef(
               </Col>
               <Col span={6}>
                 {renderField(
-                  "Customers",
+                  "Candidates",
                   editBatchItem?.customers?.length || 0,
                 )}
               </Col>
@@ -566,7 +568,7 @@ const UpdateBatchCustomers = forwardRef(
         <Divider className="customer_statusupdate_divider" />
 
         <div className="customer_statusupdate_adddetailsContainer">
-          <p className="customer_statusupdate_adddetails_heading">Customers</p>
+          <p className="customer_statusupdate_adddetails_heading">Candidates</p>
 
           <div style={{ marginTop: "12px" }}>
             <CommonTable
@@ -784,7 +786,7 @@ const UpdateBatchCustomers = forwardRef(
           ""
         )}
         <Drawer
-          title="Customer Details"
+          title="Candidate Details"
           open={isOpenDetailsDrawer}
           onClose={() => {
             setIsOpenDetailsDrawer(false);

@@ -97,8 +97,8 @@ export default function CommonMuiTimePicker({
               <span
                 style={{
                   position: "absolute",
-                  bottom: "-18px", // adjust distance below the input
-                  left: "0",
+                  bottom: "-16px", // adjust distance below the input
+                  left: "12px",
                   fontSize: errorFontSize ? errorFontSize : "10px",
                   color: "#d32f2f",
                 }}
