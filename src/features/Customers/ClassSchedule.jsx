@@ -103,12 +103,20 @@ const ClassSchedule = forwardRef(
         customerDetails?.whatsapp_group_creation === 1 ? 1 : 2,
       );
       setWhatsappInviteLink(customerDetails?.whatsapp_invite_link);
-      setAttendanceSheetLink(customerDetails?.attendance_sheet_link);
-      setAttendanceScreenshot(customerDetails?.attendance_screenshot);
       setWelcomeMessageStatus(
         customerDetails?.hr_welcome_message === 1 ? 1 : 2,
       );
       setLinkStatus(customerDetails?.shared_attendance_link === 1 ? 1 : 2);
+      if (
+        customerDetails?.shared_attendance_link === 1 &&
+        customerDetails?.attendance_screenshot
+      ) {
+        setAttendanceType("Screenshot");
+      } else {
+        setAttendanceType("Link");
+      }
+      setAttendanceSheetLink(customerDetails?.attendance_sheet_link);
+      setAttendanceScreenshot(customerDetails?.attendance_screenshot);
       setClassMonitorStatus(
         customerDetails?.first_class_monitoring === 1 ? 1 : 2,
       );

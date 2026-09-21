@@ -954,7 +954,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                           key === "signature_image" ||
                           key === "google_review" ||
                           key === "linkedin_review" ||
-                          key === "proof_communication" ? (
+                          key === "proof_communication" ||
+                          key === "attendance_screenshot" ? (
                             <>
                               {detail.previous_value ? (
                                 <img
