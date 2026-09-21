@@ -7,14 +7,14 @@ export default function BatchManagement() {
   const navigate = useNavigate();
   const tabItems = [
     {
-      label: "Batch",
+      label: "Group",
       key: "1",
-      children: <Batches mainType={"Batch"} />,
+      children: <Batches mainType={"Group"} />,
     },
     {
-      label: "Group",
+      label: "Batch",
       key: "2",
-      children: <Batches mainType={"Group"} />,
+      children: <Batches mainType={"Batch"} />,
     },
   ];
   return (

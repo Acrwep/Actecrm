@@ -511,6 +511,12 @@ const UpdateBatchCustomers = forwardRef(
               </Col>
               <Col span={6}>
                 {renderField(
+                  "Batch Timing",
+                  editBatchItem?.batch_timing_name || "-",
+                )}
+              </Col>
+              <Col span={6}>
+                {renderField(
                   "Candidates",
                   editBatchItem?.customers?.length || 0,
                 )}

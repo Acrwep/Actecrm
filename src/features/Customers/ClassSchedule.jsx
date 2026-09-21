@@ -74,9 +74,10 @@ const ClassSchedule = forwardRef(
     const [whatsappInviteLinkError, setWhatsappInviteLinkError] = useState("");
     const [welcomeMessageStatus, setWelcomeMessageStatus] = useState(null);
     const [linkStatus, setLinkStatus] = useState(null);
+    const [attendanceType, setAttendanceType] = useState("Link");
     const [attendanceSheetLink, setAttendanceSheetLink] = useState("");
-    const [attendanceSheetLinkError, setAttendanceSheetLinkError] =
-      useState("");
+    const [attendanceScreenshot, setAttendanceScreenshot] = useState("");
+    const [attendanceError, setAttendanceError] = useState("");
     const [classMonitorStatus, setClassMonitorStatus] = useState(null);
     const [trainerConfirmation, setTrainerConfirmation] = useState(null);
     const [buttonLoading, setButtonLoading] = useState(false);
@@ -103,6 +104,7 @@ const ClassSchedule = forwardRef(
       );
       setWhatsappInviteLink(customerDetails?.whatsapp_invite_link);
       setAttendanceSheetLink(customerDetails?.attendance_sheet_link);
+      setAttendanceScreenshot(customerDetails?.attendance_screenshot);
       setWelcomeMessageStatus(
         customerDetails?.hr_welcome_message === 1 ? 1 : 2,
       );
@@ -161,12 +163,14 @@ const ClassSchedule = forwardRef(
           ? whatsappInviteLinkValidator(whatsappInviteLink)
           : "";
       const attendanceSheetLinkValidate =
-        whatsappGroupStatus == 1
-          ? googleSheetValidator(attendanceSheetLink)
-          : "";
+        linkStatus == 2
+          ? ""
+          : attendanceType == "Link"
+            ? googleSheetValidator(attendanceSheetLink)
+            : selectValidator(attendanceScreenshot);
 
       setWhatsappInviteLinkError(whatsappInviteLinkValidate);
-      setAttendanceSheetLinkError(attendanceSheetLinkValidate);
+      setAttendanceError(attendanceSheetLinkValidate);
 
       if (whatsappInviteLinkValidate || attendanceSheetLinkValidate) return;
 
@@ -178,6 +182,7 @@ const ClassSchedule = forwardRef(
       const initialLinkStatus =
         cus_details?.shared_attendance_link === 1 ? 1 : 2;
       const initialAttendanceSheetLink = cus_details?.attendance_sheet_link;
+      const initialAttendanceScreenshot = cus_details?.attendance_screenshot;
       const initialsMonitorStatus =
         cus_details?.first_class_monitoring === 1 ? 1 : 2;
       const initialsTrainerConfirmation =
@@ -189,6 +194,7 @@ const ClassSchedule = forwardRef(
         welcomeMessageStatus == initialWelcomeMessageStatus &&
         linkStatus == initialLinkStatus &&
         attendanceSheetLink === initialAttendanceSheetLink &&
+        attendanceScreenshot === initialAttendanceScreenshot &&
         classMonitorStatus == initialsMonitorStatus &&
         trainerConfirmation == initialsTrainerConfirmation
       ) {
@@ -203,7 +209,18 @@ const ClassSchedule = forwardRef(
           whatsappGroupStatus == 1 ? whatsappInviteLink : "",
         hr_welcome_message: welcomeMessageStatus == 1 ? 1 : 0,
         shared_attendance_link: linkStatus == 1 ? 1 : 0,
-        attendance_sheet_link: linkStatus == 1 ? attendanceSheetLink : "",
+        attendance_sheet_link:
+          linkStatus == 2
+            ? ""
+            : attendanceType === "Link"
+              ? attendanceSheetLink
+              : "",
+        attendance_screenshot:
+          linkStatus == 2
+            ? ""
+            : attendanceType === "Screenshot"
+              ? attendanceScreenshot
+              : "",
         first_class_monitoring: classMonitorStatus == 1 ? 1 : 0,
         trainer_confirmation: trainerConfirmation == 1 ? 1 : 0,
         trainer_mapping_id: customerDetails?.training_map_id,
@@ -267,6 +284,12 @@ const ClassSchedule = forwardRef(
         changedFields["attendance_sheet_link"] = {
           previous_value: initialAttendanceSheetLink,
           new_value: attendanceSheetLink,
+        };
+      }
+      if (attendanceScreenshot != initialAttendanceScreenshot) {
+        changedFields["attendance_screenshot"] = {
+          previous_value: initialAttendanceScreenshot,
+          new_value: attendanceScreenshot,
         };
       }
       if (classMonitorStatus != initialsMonitorStatus) {
@@ -851,8 +874,10 @@ const ClassSchedule = forwardRef(
                     ]}
                     onChange={(e) => {
                       setLinkStatus(e.target.value);
+                      setAttendanceType("Link");
                       setAttendanceSheetLink("");
-                      setAttendanceSheetLinkError("");
+                      setAttendanceScreenshot("");
+                      setAttendanceError("");
                     }}
                     value={linkStatus}
                     error={""}
@@ -863,24 +888,50 @@ const ClassSchedule = forwardRef(
                   />
                 </Col>
                 {linkStatus == 1 && (
-                  <Col span={8}>
-                    <CommonInputField
-                      label={"Attendance Sheet Link"}
-                      required={true}
-                      onChange={(e) => {
-                        setAttendanceSheetLink(e.target.value);
-                        setAttendanceSheetLinkError(
-                          googleSheetValidator(e.target.value),
-                        );
-                      }}
-                      value={attendanceSheetLink}
-                      error={attendanceSheetLinkError}
-                      height={"33px"}
-                      labelFontSize={"11px"}
-                      labelMarginTop={"0px"}
-                      errorFontSize="9px"
-                    />
-                  </Col>
+                  <>
+                    <Col span={8}>
+                      <CommonSelectField
+                        label={"Attendance Type"}
+                        required={true}
+                        options={[
+                          { id: "Link", name: "Link" },
+                          { id: "Screenshot", name: "Screenshot" },
+                        ]}
+                        onChange={(e) => {
+                          setAttendanceType(e.target.value);
+                        }}
+                        value={attendanceType}
+                        error={""}
+                        height={"33px"}
+                        labelFontSize={"11px"}
+                        labelMarginTop={"0px"}
+                        errorFontSize="9px"
+                      />
+                    </Col>
+
+                    {attendanceType === "Link" ? (
+                      <Col span={8}>
+                        <CommonInputField
+                          label={"Attendance Sheet Link"}
+                          required={true}
+                          onChange={(e) => {
+                            setAttendanceSheetLink(e.target.value);
+                            setAttendanceError(
+                              googleSheetValidator(e.target.value),
+                            );
+                          }}
+                          value={attendanceSheetLink}
+                          error={attendanceError}
+                          height={"33px"}
+                          labelFontSize={"11px"}
+                          labelMarginTop={"0px"}
+                          errorFontSize="9px"
+                        />
+                      </Col>
+                    ) : (
+                      ""
+                    )}
+                  </>
                 )}
                 <Col span={8}>
                   <CommonSelectField
@@ -920,6 +971,31 @@ const ClassSchedule = forwardRef(
                     errorFontSize="9px"
                   />
                 </Col>
+
+                {linkStatus == 1 && attendanceType === "Screenshot" && (
+                  <Col span={24} style={{ marginTop: "8px" }}>
+                    <ImageUploadCrop
+                      label="Attendance Screenshot"
+                      aspect={1}
+                      maxSizeMB={1}
+                      required={true}
+                      value={attendanceScreenshot}
+                      onChange={(base64) => setAttendanceScreenshot(base64)}
+                      onErrorChange={setAttendanceError} // ✅ pass setter directly
+                    />
+                    {attendanceError && (
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: "#d32f2f",
+                          marginTop: 4,
+                        }}
+                      >
+                        {`Attendance Screenshot ${attendanceError}`}
+                      </p>
+                    )}
+                  </Col>
+                )}
               </Row>
             )}
 

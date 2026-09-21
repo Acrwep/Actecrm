@@ -2005,6 +2005,24 @@ export const updateBatch = async (payload) => {
   }
 };
 
+export const swapBatchToGroup = async (payload) => {
+  try {
+    const response = await api.put(`/api/swapBatchToGroup`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteBatch = async (batch_id) => {
+  try {
+    const response = await api.delete(`/api/deleteBatch?batch_id=${batch_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getBatchStudents = async (payload) => {
   try {
     const response = await api.post(`/api/batchStudents`, payload);

@@ -15,18 +15,20 @@ import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { RedoOutlined } from "@ant-design/icons";
 import { AiOutlineEdit } from "react-icons/ai";
-import { IoFilter, IoCallOutline } from "react-icons/io5";
-import { FaRegCircleUser } from "react-icons/fa6";
+import { RiDeleteBinLine } from "react-icons/ri";
+import { IoMdSwap } from "react-icons/io";
 import { MdOutlineEmail, MdOutlineLocationOn } from "react-icons/md";
 import { FiUsers, FiUser, FiClock, FiCalendar } from "react-icons/fi";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
 import {
+  deleteBatch,
   getBranches,
   getCustomerBatches,
   getRegions,
   getTrainers,
+  swapBatchToGroup,
 } from "../ApiService/action";
 import AddBatch from "./AddBatch";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -38,6 +40,8 @@ import UpdateBatchCustomers from "./UpdateBatchCustomers";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 import { useSelector } from "react-redux";
+import CommonDeleteModal from "../Common/CommonDeleteModal";
+import { CommonMessage } from "../Common/CommonMessage";
 
 export default function Batches({ mainType }) {
   //search userefs start
@@ -79,6 +83,9 @@ export default function Batches({ mainType }) {
   //-----------batch details usestates-------------
   const [isOpenBatchDetailsDrawer, setIsOpenBatchDetailsDrawer] =
     useState(false);
+  //modal usestates
+  const [isOpenSwapModal, setIsOpenSwapModal] = useState(false);
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -351,6 +358,52 @@ export default function Batches({ mainType }) {
     } catch (error) {
       setBranchOptions([]);
       console.log("branch error", error);
+    }
+  };
+
+  const handleSwap = async () => {
+    console.log(editBatchItem, "editBatchItem");
+    // return;
+    setButtonLoading(true);
+    const payload = {
+      batch_id: editBatchItem?.batch_id,
+    };
+    try {
+      await swapBatchToGroup(payload);
+      CommonMessage("success", "Moved to Group Successfully");
+      setTimeout(() => {
+        setIsOpenSwapModal(false);
+        setButtonLoading(false);
+        fetchBatchesData({});
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleDelete = async () => {
+    console.log("editBatchItem", editBatchItem);
+    setButtonLoading(true);
+    try {
+      await deleteBatch(editBatchItem?.batch_id);
+      CommonMessage("success", "Batch Deleted Successfully");
+      setTimeout(() => {
+        setIsOpenDeleteModal(false);
+        setButtonLoading(false);
+        fetchBatchesData({});
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
     }
   };
 
@@ -668,16 +721,50 @@ export default function Batches({ mainType }) {
                                     ? batch.batch_number
                                     : batch.group_number}
                                 </span>
-                                <AiOutlineEdit
-                                  size={22}
-                                  className="batch_card_edit_icon"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditBatchItem(batch);
-                                    setIsOpenAddBatchComponent(true);
-                                    setIsOpenAddDrawer(true);
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    // alignItems: "center",
+                                    gap: "2px",
                                   }}
-                                />
+                                >
+                                  {mainType === "Batch" && (
+                                    <Tooltip
+                                      placement="top"
+                                      title="Move to Group"
+                                    >
+                                      <IoMdSwap
+                                        size={22}
+                                        className="batch_card_edit_icon"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEditBatchItem(batch);
+                                          setIsOpenSwapModal(true);
+                                        }}
+                                      />
+                                    </Tooltip>
+                                  )}
+
+                                  <AiOutlineEdit
+                                    size={22}
+                                    className="batch_card_edit_icon"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditBatchItem(batch);
+                                      setIsOpenAddBatchComponent(true);
+                                      setIsOpenAddDrawer(true);
+                                    }}
+                                  />
+                                  <RiDeleteBinLine
+                                    size={22}
+                                    className="batch_card_delete_icon"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditBatchItem(batch);
+                                      setIsOpenDeleteModal(true);
+                                    }}
+                                  />
+                                </div>
                               </div>
                               <div className="batch_card_body">
                                 <div className="batch_card_title">
@@ -829,6 +916,71 @@ export default function Batches({ mainType }) {
       ) : (
         ""
       )}
+
+      {/* swap modal */}
+      <Modal
+        open={isOpenSwapModal}
+        onCancel={() => {
+          setIsOpenSwapModal(false);
+          setEditBatchItem(null);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Move The Batch{" "}
+          <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
+            {`(${
+              editBatchItem && editBatchItem.batch_number
+                ? editBatchItem.batch_number
+                : ""
+            })`}
+          </span>{" "}
+          To Group{" "}
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenSwapModal(false);
+              setEditBatchItem(null);
+            }}
+          >
+            No
+          </Button>
+          {buttonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={handleSwap}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
+      {/* delete modal */}
+      <CommonDeleteModal
+        open={isOpenDeleteModal}
+        onCancel={() => {
+          setIsOpenDeleteModal(false);
+          setEditBatchItem(null);
+        }}
+        content={`Are you sure you want to delete the ${mainType} "${mainType === "Batch" ? editBatchItem?.batch_number : editBatchItem?.group_number}"?`}
+        loading={buttonLoading}
+        onClick={handleDelete}
+      />
     </div>
   );
 }

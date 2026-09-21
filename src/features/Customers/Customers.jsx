@@ -812,6 +812,21 @@ export default function Customers() {
           const parsed = parseFloat(record.class_percentage);
           classPercent = isNaN(parsed) ? 0 : parsed;
         }
+        const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+        const convertAsJson = JSON.parse(getLoginUserDetails);
+
+        const isSpecialUser = [
+          "CEO6055",
+          "COO1289",
+          "CFO2514",
+          "ACC0002",
+          "DEV2119",
+          "DEV1920",
+        ].includes(convertAsJson?.user_id);
+
+        const isJoiningDateEligible =
+          record?.date_of_joining &&
+          new Date(record.date_of_joining) <= new Date("2026-08-25");
         return (
           <div
             style={{
@@ -1059,6 +1074,7 @@ export default function Customers() {
                                 marginTop: "3px",
                               }}
                             >
+                              {/* {isSpecialUser || isJoiningDateEligible ? ( */}
                               <button
                                 className="customers_update_trainer_button"
                                 onClick={() => {
@@ -1070,6 +1086,7 @@ export default function Customers() {
                                     CommonMessage("error", "Access Denied");
                                     return;
                                   }
+
                                   getParticularCustomerDetails(record?.id);
                                   setDrawerContentStatus(
                                     "Update Assigned Trainer",
@@ -1079,32 +1096,19 @@ export default function Customers() {
                               >
                                 Update Trainer
                               </button>
+                              {/* ) : (
+                                <div
+                                  className="customers_classcompleted_container"
+                                  style={{ marginBottom: "6px" }}
+                                >
+                                  <BsPatchCheckFill color="#3c9111" />
+                                  <p className="customers_classgoing_completedtext">
+                                    Trainer Assigned
+                                  </p>
+                                </div>
+                              )} */}
                             </div>
                           ) : (
-                            // : permissions.includes("Trainer Assign") ? (
-                            //   <div
-                            //     style={{
-                            //       display: "flex",
-                            //       alignItems: "center",
-                            //       marginTop: "3px",
-                            //     }}
-                            //   >
-                            //     <button
-                            //       className="customers_update_trainer_coordination_button"
-                            //       onClick={() => {
-                            //         if (!permissions.includes("Trainer Assign")) {
-                            //           CommonMessage("error", "Access Denied");
-                            //           return;
-                            //         }
-                            //         getParticularCustomerDetails(record?.id);
-                            //         setDrawerContentStatus("Assign Trainer");
-                            //         setIsStatusUpdateDrawer(true);
-                            //       }}
-                            //     >
-                            //       Update Trnr Coord
-                            //     </button>
-                            //   </div>
-                            // )
                             <div
                               className="customers_classcompleted_container"
                               style={{ marginBottom: "6px" }}

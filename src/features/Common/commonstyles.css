@@ -509,7 +509,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: default;
+  cursor: not-allowed;
   opacity: 0.7;
 }
 
@@ -661,4 +661,3 @@
 .ant-table-sticky-scroll {
   display: none !important;
 }
-

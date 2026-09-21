@@ -176,12 +176,20 @@
   padding: 4px;
   border-radius: 6px;
 }
-
 .batch_card_edit_icon:hover {
   color: #2563eb;
   background: #eff6ff;
 }
-
+.batch_card_delete_icon {
+  color: #94a3b8;
+  transition: color 0.2s ease;
+  padding: 4px;
+  border-radius: 6px;
+}
+.batch_card_delete_icon:hover {
+  color: #d32f2f;
+  background: #d32f2f1f;
+}
 .batch_card_body {
   display: flex;
   flex-direction: column;

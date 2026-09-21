@@ -56,6 +56,8 @@ const AddBatch = forwardRef(
     const [startDateError, setStartDateError] = useState("");
     const [endDate, setEndDate] = useState(null);
     const [endDateError, setEndDateError] = useState("");
+    const [batchTimingId, setBatchTimingId] = useState(null);
+    const [batchTimingIdError, setBatchTimingIdError] = useState("");
     const [startTime, setStartTime] = useState(null);
     const [startTimeError, setStartTimeError] = useState("");
     const [endTime, setEndTime] = useState(null);
@@ -117,6 +119,7 @@ const AddBatch = forwardRef(
         setCourseId(editBatchItem?.batch_course_id ?? null);
         setStartDate(editBatchItem?.batch_start_date ?? null);
         setEndDate(editBatchItem?.batch_end_date ?? null);
+        setBatchTimingId(editBatchItem?.batch_timing_id ?? null);
         setStartTime(editBatchItem?.batch_start_time ?? null);
         setEndTime(editBatchItem?.batch_end_time ?? null);
         setRegionId(editBatchItem?.region_id ?? null);
@@ -430,6 +433,7 @@ const AddBatch = forwardRef(
       const courseIdValidate = selectValidator(courseId);
       const startDateValidate = selectValidator(startDate);
       const endDateValidate = selectValidator(endDate);
+      const batchTimingValidate = selectValidator(batchTimingId);
       const startTimeValidate = selectValidator(startTime);
       const endTimeValidate = selectValidator(endTime);
       const regionIdValidate = selectValidator(regionId);
@@ -442,6 +446,7 @@ const AddBatch = forwardRef(
       setCourseIdError(courseIdValidate);
       setStartDateError(startDateValidate);
       setEndDateError(endDateValidate);
+      setBatchTimingIdError(batchTimingValidate);
       setStartTimeError(startTimeValidate);
       setEndTimeError(endTimeValidate);
       setRegionError(regionIdValidate);
@@ -455,6 +460,7 @@ const AddBatch = forwardRef(
         courseIdValidate ||
         startDateValidate ||
         endDateValidate ||
+        batchTimingValidate ||
         startTimeValidate ||
         endTimeValidate ||
         regionIdValidate ||
@@ -481,6 +487,7 @@ const AddBatch = forwardRef(
         course_id: courseId,
         start_date: startDate,
         end_date: endDate,
+        batch_timing_id: batchTimingId,
         start_time: startTime,
         end_time: endTime,
         status: batchStatus,
@@ -620,6 +627,34 @@ const AddBatch = forwardRef(
               }}
               value={endDate}
               error={endDateError}
+              height={"35px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0.5px"}
+              errorFontSize={"9.5px"}
+              allowAllDates={true}
+            />
+          </Col>
+
+          <Col span={8}>
+            <CommonSelectField
+              label="Batch Timing"
+              required={true}
+              options={[
+                {
+                  id: 1,
+                  name: "Week Day",
+                },
+                {
+                  id: 2,
+                  name: "Week End",
+                },
+              ]}
+              onChange={(e) => {
+                setBatchTimingId(e.target.value);
+                setBatchTimingIdError(selectValidator(e.target.value));
+              }}
+              value={batchTimingId}
+              error={batchTimingIdError}
               height={"35px"}
               labelFontSize={"11px"}
               labelMarginTop={"0.5px"}
