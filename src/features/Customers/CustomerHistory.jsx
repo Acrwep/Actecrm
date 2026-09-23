@@ -325,6 +325,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           item.status.includes("Approved") ||
           item.status.includes("created") ||
           item.status.includes("Generated") ||
+          item.status.includes("Marked") ||
+          item.status.includes("Resent") ||
           item.status.includes("Scheduled") ? (
           <LuCircleCheck size={16} style={{ color: "green" }} />
         ) : item.status.includes("Going") || item.status.includes("Updated") ? (
@@ -857,7 +859,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               item.status === "Student Verified" ||
               item.status === "Trainer Assigned" ||
               item.status === "Trainer Updated" ||
-              item.status === "Trainer Re-Assigned") &&
+              item.status === "Trainer Re-Assigned" ||
+              item.status ===
+                "Marked as Trainer Confirmation Mail Already Sent Outside CRM") &&
             item.details ? (
             <div>
               <p className="customer_history_updateddate">

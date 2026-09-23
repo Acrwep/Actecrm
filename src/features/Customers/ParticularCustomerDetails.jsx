@@ -364,7 +364,40 @@ export default function ParticularCustomerDetails({ customerId }) {
         </Row>
       </div>
 
-      {/* 4. Assignment Details */}
+      {/* 4. Trainer Details */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdAssignment size={18} color="#2563eb" />}
+          title="Trainer Details"
+        />
+        <Row gutter={24}>
+          <Col span={6}>
+            {renderField("Trainer Id", customerDetails?.trainer_code)}
+          </Col>
+          <Col span={6}>
+            {renderField("Trainer Name", customerDetails?.trainer_name)}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Trainer Mobile",
+              customerDetails?.trainer_mobile
+                ? `${
+                    customerDetails?.trainer_mobile_code
+                      ? customerDetails.trainer_mobile_code.startsWith("+")
+                        ? customerDetails.trainer_mobile_code
+                        : `+${customerDetails.trainer_mobile_code}`
+                      : ""
+                  } ${customerDetails.trainer_mobile}`
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField("Trainer Email", customerDetails?.trainer_email)}
+          </Col>
+        </Row>
+      </div>
+
+      {/* 5. Assignment Details */}
       <div style={cardStyle}>
         <HeaderTitle
           icon={<MdAssignment size={18} color="#2563eb" />}
@@ -400,7 +433,7 @@ export default function ParticularCustomerDetails({ customerId }) {
         </Row>
       </div>
 
-      {/* 5. Signature */}
+      {/* 6. Signature */}
       {customerDetails?.signature_image && (
         <div
           style={{

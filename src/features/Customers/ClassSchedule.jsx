@@ -4,7 +4,7 @@ import React, {
   useImperativeHandle,
   useEffect,
 } from "react";
-import { Row, Col, Button, Modal, Steps } from "antd";
+import { Row, Col, Button, Modal, Steps, Input } from "antd";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTextArea from "../Common/CommonTextArea";
@@ -16,6 +16,8 @@ import {
   formatToBackendIST,
   googleSheetValidator,
   percentageValidator,
+  ReactQuillFormats,
+  ReactQuillModules,
   selectValidator,
   whatsappInviteLinkValidator,
 } from "../Common/Validation";
@@ -23,6 +25,7 @@ import {
   classScheduleForCustomer,
   getCustomerById,
   inserCustomerTrack,
+  sendEmailToCustomer,
   updateClassGoingForCustomer,
   updateCustomerStatus,
   updateTrainerCoordination,
@@ -30,7 +33,9 @@ import {
 import { RiCalendarScheduleLine } from "react-icons/ri";
 import { MdOutlineAssignmentInd } from "react-icons/md";
 import { FaPhoneAlt } from "react-icons/fa";
+import { MdOutlineEmail } from "react-icons/md";
 import { CommonMessage } from "../Common/CommonMessage";
+import ReactQuill from "react-quill";
 
 const { Step } = Steps;
 
@@ -67,6 +72,10 @@ const ClassSchedule = forwardRef(
     const [classStartDateError, setClassStartDateError] = useState("");
     const [classHoldComments, setClassHoldComments] = useState("");
     const [classHoldCommentsError, setClassHoldCommentsError] = useState("");
+    //trainer confirmation usestates
+    const [subject, setSubject] = useState("");
+    const [emailContent, setEmailContent] = useState("");
+    const [isAlreadyMailSentModal, setIsAlreadyMailSentModal] = useState(false);
     //trainer coordination usestates
     const [cus_details, setCus_Details] = useState(null);
     const [whatsappGroupStatus, setWhatsappGroupStatus] = useState(null);
@@ -79,7 +88,6 @@ const ClassSchedule = forwardRef(
     const [attendanceScreenshot, setAttendanceScreenshot] = useState("");
     const [attendanceError, setAttendanceError] = useState("");
     const [classMonitorStatus, setClassMonitorStatus] = useState(null);
-    const [trainerConfirmation, setTrainerConfirmation] = useState(null);
     const [buttonLoading, setButtonLoading] = useState(false);
     //class going usestates
     const [classGoingPercentage, setClassGoingPercentage] = useState(0);
@@ -119,9 +127,6 @@ const ClassSchedule = forwardRef(
       setAttendanceScreenshot(customerDetails?.attendance_screenshot);
       setClassMonitorStatus(
         customerDetails?.first_class_monitoring === 1 ? 1 : 2,
-      );
-      setTrainerConfirmation(
-        customerDetails?.trainer_confirmation === 1 ? 1 : 2,
       );
       setCus_Details(customerDetails);
     }, []);
@@ -193,8 +198,6 @@ const ClassSchedule = forwardRef(
       const initialAttendanceScreenshot = cus_details?.attendance_screenshot;
       const initialsMonitorStatus =
         cus_details?.first_class_monitoring === 1 ? 1 : 2;
-      const initialsTrainerConfirmation =
-        cus_details?.trainer_confirmation === 1 ? 1 : 2;
 
       if (
         whatsappGroupStatus == initialWhatsappGroupStatus &&
@@ -203,8 +206,7 @@ const ClassSchedule = forwardRef(
         linkStatus == initialLinkStatus &&
         attendanceSheetLink === initialAttendanceSheetLink &&
         attendanceScreenshot === initialAttendanceScreenshot &&
-        classMonitorStatus == initialsMonitorStatus &&
-        trainerConfirmation == initialsTrainerConfirmation
+        classMonitorStatus == initialsMonitorStatus
       ) {
         CommonMessage("warning", "No changes made to update");
         return;
@@ -230,7 +232,7 @@ const ClassSchedule = forwardRef(
               ? attendanceScreenshot
               : "",
         first_class_monitoring: classMonitorStatus == 1 ? 1 : 0,
-        trainer_confirmation: trainerConfirmation == 1 ? 1 : 0,
+        trainer_confirmation: cus_details.trainer_confirmation,
         trainer_mapping_id: customerDetails?.training_map_id,
       };
 
@@ -306,15 +308,6 @@ const ClassSchedule = forwardRef(
           new_value: getName(classMonitorOptions, classMonitorStatus),
         };
       }
-      if (trainerConfirmation != initialsTrainerConfirmation) {
-        changedFields["trainer_confirmation"] = {
-          previous_value: getName(
-            trainerConfirmOptions,
-            initialsTrainerConfirmation,
-          ),
-          new_value: getName(trainerConfirmOptions, trainerConfirmation),
-        };
-      }
 
       try {
         await updateTrainerCoordination(payload);
@@ -342,6 +335,97 @@ const ClassSchedule = forwardRef(
           "Trainer Coordination Details Updated Successfully",
         );
         getParticularCustomerDetails();
+      } catch (error) {
+        setButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
+      }
+    };
+
+    const handleSendEmail = async (is_resent = false) => {
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = getloginUserDetails
+        ? JSON.parse(getloginUserDetails)
+        : null;
+
+      const subjectValidate = addressValidator(subject);
+      const contentValidate = selectValidator(emailContent);
+      console.log(emailContent);
+
+      if (subjectValidate) {
+        CommonMessage("error", "Subject is required");
+        return;
+      } else if (contentValidate) {
+        CommonMessage("error", "Email Content is required");
+        return;
+      }
+
+      setButtonLoading(true);
+      const payload = {
+        from_email: "admission@acte.in",
+        email: cus_details.trainer_email,
+        subject: subject,
+        content: emailContent,
+      };
+
+      try {
+        await sendEmailToCustomer(payload);
+        CommonMessage("success", "Trainer Confirmation Mail Sent Successfully");
+
+        if (!is_resent) {
+          const trainer_coordination_payload = {
+            whatsapp_group_creation: cus_details.whatsapp_group_creation,
+            whatsapp_invite_link: cus_details.whatsapp_invite_link,
+            hr_welcome_message: cus_details.hr_welcome_message,
+            shared_attendance_link: cus_details.shared_attendance_link,
+            attendance_sheet_link: cus_details.attendance_sheet_link,
+            attendance_screenshot: cus_details.attendance_screenshot,
+            first_class_monitoring: cus_details.first_class_monitoring,
+            trainer_confirmation: 1,
+            trainer_mapping_id: customerDetails?.training_map_id,
+          };
+
+          await updateTrainerCoordination(trainer_coordination_payload);
+          setButtonLoading(false);
+
+          const changedFields = {};
+
+          changedFields["trainer_confirmation"] = {
+            previous_value: "Pending",
+            new_value: "Completed",
+          };
+
+          const trackPayload = {
+            customers: [
+              {
+                customer_id: customerDetails?.id,
+                status: "Trainer Coordination Mail Sent",
+                details: changedFields,
+                status_date: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
+              },
+            ],
+          };
+          await inserCustomerTrack(trackPayload);
+          getParticularCustomerDetails();
+        } else {
+          const trackPayload = {
+            customers: [
+              {
+                customer_id: customerDetails?.id,
+                status: "Trainer Confirmation Mail Resent",
+                details: "",
+                status_date: formatToBackendIST(new Date()),
+                updated_by: converAsJson?.user_id || "",
+              },
+            ],
+          };
+          await inserCustomerTrack(trackPayload);
+          setButtonLoading(false);
+        }
       } catch (error) {
         setButtonLoading(false);
         CommonMessage(
@@ -776,6 +860,25 @@ const ClassSchedule = forwardRef(
                       fontSize: "13px",
                     }}
                   >
+                    Trainer Confirmation
+                    <MdOutlineEmail
+                      color="#2d4191"
+                      size={16}
+                      style={{ marginLeft: 6 }}
+                    />
+                  </span>
+                }
+              />
+
+              <Step
+                title={
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: "13px",
+                    }}
+                  >
                     Trainer Coordination
                     <FaPhoneAlt
                       color="#2d4191"
@@ -807,6 +910,39 @@ const ClassSchedule = forwardRef(
             </Steps>
 
             {stepIndex == 0 && (
+              <div style={{ marginTop: "22px", marginBottom: "40px" }}>
+                <div className="server_email_conatiner">
+                  <p className="server_email_heading">Content</p>
+                  <Input
+                    className="server_email_subjectinput"
+                    placeholder="Subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                  />
+                  <div>
+                    <ReactQuill
+                      theme="snow"
+                      modules={ReactQuillModules}
+                      formats={ReactQuillFormats}
+                      value={emailContent}
+                      placeholder="write your content ...."
+                      onChange={(content, delta, source, editor) => {
+                        const plainText = editor.getText().trim();
+
+                        if (!plainText) {
+                          setEmailContent(""); // fully empty
+                        } else {
+                          setEmailContent(content);
+                        }
+                      }}
+                      className="reactquillnotebook"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stepIndex == 1 && (
               <Row
                 gutter={[12, 30]}
                 style={{ marginTop: "20px", marginBottom: "30px" }}
@@ -960,25 +1096,6 @@ const ClassSchedule = forwardRef(
                     errorFontSize="9px"
                   />
                 </Col>
-                <Col span={8}>
-                  <CommonSelectField
-                    label={"Trainer Confirmation"}
-                    required={true}
-                    options={[
-                      { id: 1, name: "Completed" },
-                      { id: 2, name: "Pending" },
-                    ]}
-                    onChange={(e) => {
-                      setTrainerConfirmation(e.target.value);
-                    }}
-                    value={trainerConfirmation}
-                    error={""}
-                    height={"33px"}
-                    labelFontSize={"11px"}
-                    labelMarginTop={"0px"}
-                    errorFontSize="9px"
-                  />
-                </Col>
 
                 {linkStatus == 1 && attendanceType === "Screenshot" && (
                   <Col span={24} style={{ marginTop: "8px" }}>
@@ -1007,7 +1124,7 @@ const ClassSchedule = forwardRef(
               </Row>
             )}
 
-            {stepIndex == 1 && (
+            {stepIndex == 2 && (
               <>
                 <p
                   className="customer_statusupdate_adddetails_heading"
@@ -1249,36 +1366,75 @@ const ClassSchedule = forwardRef(
                 </Button>
               )}
 
-              {stepIndex == 1 &&
+              {stepIndex == 2 &&
               (customerDetails?.status === "Class Going" ||
                 customerDetails?.status === "Passedout process" ||
                 customerDetails?.status === "Completed") ? (
                 ""
+              ) : stepIndex == 0 ? (
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                >
+                  <>
+                    {buttonLoading ? (
+                      <button className={"users_adddrawer_loadingcreatebutton"}>
+                        <CommonSpinner />
+                      </button>
+                    ) : (
+                      <button
+                        className={"users_adddrawer_createbutton"}
+                        onClick={() => {
+                          handleSendEmail(
+                            cus_details && cus_details.trainer_confirmation == 0
+                              ? false
+                              : true,
+                          );
+                        }}
+                      >
+                        {cus_details && cus_details.trainer_confirmation == 0
+                          ? "Send Mail"
+                          : "Resend Mail"}
+                      </button>
+                    )}
+                  </>
+
+                  {cus_details && cus_details.trainer_confirmation == 0 && (
+                    <>
+                      {buttonLoading ? (
+                        <button
+                          className={"users_adddrawer_loadingcreatebutton"}
+                          style={{ width: "165px" }}
+                        >
+                          <CommonSpinner />
+                        </button>
+                      ) : (
+                        <button
+                          className={"users_adddrawer_createbutton"}
+                          style={{ width: "165px" }}
+                          onClick={() => {
+                            setIsAlreadyMailSentModal(true);
+                          }}
+                        >
+                          Mark as Already Sent
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               ) : (
                 <>
                   {buttonLoading ? (
-                    <button
-                      className={"users_adddrawer_loadingcreatebutton"}
-                      // style={{
-                      //   ...(stepIndex === 0 ? { width: "120px" } : {}),
-                      // }}
-                      // style={{ width: "120px" }}
-                    >
+                    <button className={"users_adddrawer_loadingcreatebutton"}>
                       <CommonSpinner />
                     </button>
                   ) : (
                     <button
                       className={"users_adddrawer_createbutton"}
                       onClick={
-                        stepIndex === 0
+                        stepIndex === 1
                           ? handleTrainerCoordination
                           : handleClassSchedule
                       }
-                      // onClick={handleAssignTrainer}
-                      // style={{ width: "120px" }}
-                      // style={{
-                      //   ...(stepIndex === 0 ? { width: "120px" } : {}),
-                      // }}
                     >
                       Update
                     </button>
@@ -1286,10 +1442,30 @@ const ClassSchedule = forwardRef(
                 </>
               )}
 
-              {stepIndex < 1 && (
+              {stepIndex < 2 && (
                 <Button
                   onClick={() => {
-                    setStepIndex(stepIndex + 1);
+                    if (stepIndex == 1) {
+                      if (
+                        cus_details.whatsapp_group_creation == 0 ||
+                        cus_details.hr_welcome_message == 0 ||
+                        cus_details.shared_attendance_link == 0 ||
+                        (cus_details.shared_attendance_link == 1 &&
+                          !cus_details.attendance_sheet_link &&
+                          !cus_details.attendance_screenshot) ||
+                        // cus_details.first_class_monitoring == 0 ||
+                        cus_details.trainer_confirmation == 0
+                      ) {
+                        CommonMessage(
+                          "error",
+                          "Please enable all mandatory options in the Trainer Coordination section.",
+                        );
+                      } else {
+                        setStepIndex(stepIndex + 1);
+                      }
+                    } else {
+                      setStepIndex(stepIndex + 1);
+                    }
                   }}
                   className={"customer_stepperbuttons"}
                 >
@@ -1300,6 +1476,7 @@ const ClassSchedule = forwardRef(
           </div>
         )}
 
+        {/* class complete confirmation modal */}
         <Modal
           open={isOpenClassCompleteModal}
           onCancel={() => setIsOpenClassCompleteModal(false)}
@@ -1340,6 +1517,105 @@ const ClassSchedule = forwardRef(
                 type="primary"
                 className="customer_classcompletemodal_okbutton"
                 onClick={handleCompleteClass}
+              >
+                Yes
+              </Button>
+            )}
+          </div>
+        </Modal>
+
+        {/* already sent mail trainer confirmation modal */}
+        <Modal
+          open={isAlreadyMailSentModal}
+          onCancel={() => setIsAlreadyMailSentModal(false)}
+          footer={false}
+          width="30%"
+          zIndex={1100}
+        >
+          <p className="customer_classcompletemodal_heading">
+            Mark Confirmation Mail as Sent?
+          </p>
+          <p className="customer_classcompletemodal_text">
+            This will mark the trainer confirmation mail as already sent without
+            sending an email from the CRM.
+          </p>
+          <div className="customer_classcompletemodal_button_container">
+            <Button
+              className="customer_classcompletemodal_cancelbutton"
+              onClick={() => setIsAlreadyMailSentModal(false)}
+            >
+              No
+            </Button>
+            {buttonLoading ? (
+              <Button
+                type="primary"
+                className="customer_classcompletemodal_loading_okbutton"
+              >
+                <CommonSpinner />
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                className="customer_classcompletemodal_okbutton"
+                onClick={async () => {
+                  const getloginUserDetails =
+                    localStorage.getItem("loginUserDetails");
+                  const converAsJson = JSON.parse(getloginUserDetails);
+                  setButtonLoading(true);
+                  const trainer_coordination_payload = {
+                    whatsapp_group_creation:
+                      cus_details.whatsapp_group_creation,
+                    whatsapp_invite_link: cus_details.whatsapp_invite_link,
+                    hr_welcome_message: cus_details.hr_welcome_message,
+                    shared_attendance_link: cus_details.shared_attendance_link,
+                    attendance_sheet_link: cus_details.attendance_sheet_link,
+                    attendance_screenshot: cus_details.attendance_screenshot,
+                    first_class_monitoring: cus_details.first_class_monitoring,
+                    trainer_confirmation: 1,
+                    trainer_mapping_id: customerDetails?.training_map_id,
+                  };
+
+                  try {
+                    await updateTrainerCoordination(
+                      trainer_coordination_payload,
+                    );
+                    setButtonLoading(false);
+                    setIsAlreadyMailSentModal(false);
+                    CommonMessage(
+                      "success",
+                      "Marked as Trainer Confirmation Mail Already Sent",
+                    );
+                    const changedFields = {};
+
+                    changedFields["trainer_confirmation"] = {
+                      previous_value: "Pending",
+                      new_value: "Completed",
+                    };
+
+                    const trackPayload = {
+                      customers: [
+                        {
+                          customer_id: customerDetails?.id,
+                          status:
+                            "Marked as Trainer Confirmation Mail Already Sent Outside CRM",
+                          details: changedFields,
+                          status_date: formatToBackendIST(new Date()),
+                          updated_by: converAsJson?.user_id || "",
+                        },
+                      ],
+                    };
+                    await inserCustomerTrack(trackPayload);
+                    getParticularCustomerDetails();
+                  } catch (error) {
+                    console.log("errorrrr", error);
+
+                    CommonMessage(
+                      "error",
+                      error?.response?.data?.message ||
+                        "Something went wrong. Try again later",
+                    );
+                  }
+                }}
               >
                 Yes
               </Button>

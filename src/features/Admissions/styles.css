@@ -84,7 +84,14 @@
   span {
   font-size: 13px !important;
 }
-
+.admissions_column_status_container {
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
 /* ===============================
    ADMISSION SALE REPORT STYLES
 ================================ */

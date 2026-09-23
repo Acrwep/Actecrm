@@ -1479,7 +1479,7 @@ export default function Customers() {
                           <button
                             className="customers_update_trainer_coordination_button"
                             onClick={() => {
-                              if (!permissions.includes("Trainer Assign")) {
+                              if (!permissions.includes("Class Schedule")) {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }

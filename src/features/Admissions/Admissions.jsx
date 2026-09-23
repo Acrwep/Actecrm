@@ -61,6 +61,7 @@ import {
   FaPhoneSlash,
   FaHandshake,
 } from "react-icons/fa";
+import { FiBookOpen } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { LuFileClock } from "react-icons/lu";
 import { PiSealCheckFill } from "react-icons/pi";
@@ -136,14 +137,9 @@ export default function Admissions() {
     return {
       children: (
         <div
+          className="admissions_column_status_container"
           style={{
             color: status ? "#2e7d32" : "#c62828",
-            fontWeight: "bold",
-            textAlign: "center",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
           }}
         >
           {status ? (
@@ -192,14 +188,39 @@ export default function Admissions() {
 
     return (
       <div
+        className="admissions_column_status_container"
         style={{
           color: isIssued ? "#2e7d32" : "#8b8b8b",
-          fontWeight: "bold",
-          textAlign: "center",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100%",
+        }}
+      >
+        <GiCheckMark size={14} />
+      </div>
+    );
+  };
+
+  const renderClassMonitoring = (text, class_percentage) => {
+    if (!text) {
+      return (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <FaXmark size={14} color="#c62828" style={{ textAlign: "center" }} />
+        </div>
+      );
+    }
+
+    const classPercentage = Number(class_percentage);
+
+    return (
+      <div
+        className="admissions_column_status_container"
+        style={{
+          color:
+            classPercentage <= 25
+              ? "#0984e3"
+              : classPercentage <= 50
+                ? "#6c5ce7"
+                : classPercentage <= 75
+                  ? "#e84393"
+                  : "#047857",
         }}
       >
         <GiCheckMark size={14} />
@@ -487,7 +508,8 @@ export default function Admissions() {
       dataIndex: "class_progress_monitoring",
       width: 80,
       group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text ?? false),
+      render: (text, record) =>
+        renderClassMonitoring(text ?? false, record.class_percentage),
     },
     {
       title: (
@@ -519,6 +541,20 @@ export default function Admissions() {
     },
     {
       title: (
+        <Tooltip title="LMS Access" placement="top">
+          <div className="admissions_table_icons_container">
+            <FiBookOpen size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "lms_access",
+      dataIndex: "lms_access",
+      width: 80,
+      group: "Progress Monitoring",
+      render: (text) => renderCellWithBackground(text ?? false),
+    },
+    {
+      title: (
         <Tooltip title="Server Status" placement="top">
           <div className="admissions_table_icons_container">
             <TbStack3 size={16} style={{ flexShrink: 0 }} />
@@ -531,6 +567,20 @@ export default function Admissions() {
       group: "Progress Monitoring",
       render: (text, record) =>
         renderServerStatus(text, record.server_master_status),
+    },
+    {
+      title: (
+        <Tooltip title="Placement Handover" placement="top">
+          <div className="admissions_table_icons_container">
+            <FaHandshake size={16} style={{ flexShrink: 0 }} />
+          </div>
+        </Tooltip>
+      ),
+      key: "placement_handover",
+      dataIndex: "placement_handover",
+      width: 80,
+      group: "Progress Monitoring",
+      render: (text) => renderCellWithBackground(text ?? false),
     },
     {
       title: (
@@ -654,20 +704,6 @@ export default function Admissions() {
       ),
       key: "course_closure_call",
       dataIndex: "course_closure_call",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Placement Handover" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaHandshake size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "placement_handover",
-      dataIndex: "placement_handover",
       width: 80,
       group: "Review & Certifications",
       render: (text) => renderCellWithBackground(text ?? false),
@@ -905,6 +941,7 @@ export default function Admissions() {
         totalPages: pagination.totalPages,
       });
       setAllAdmissionsRegionCounts({
+        total_count: response?.data?.data?.total_count || 0,
         chennai_region: response?.data?.data?.chennai_region || 0,
         bangalore_region: response?.data?.data?.bangalore_region || 0,
         hub_region: response?.data?.data?.hub_region || 0,
@@ -1197,9 +1234,7 @@ export default function Admissions() {
           <span className="admissions_overall_label">OverAll</span>
 
           <span className="admissions_overall_count">
-            {(allAdmissionsRegionCounts?.hub_region ?? 0) +
-              (allAdmissionsRegionCounts?.chennai_region ?? 0) +
-              (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
+            {allAdmissionsRegionCounts?.total_count ?? 0}
           </span>
         </div>
       </div>
