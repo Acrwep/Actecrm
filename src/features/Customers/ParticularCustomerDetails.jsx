@@ -364,13 +364,29 @@ export default function ParticularCustomerDetails({ customerId }) {
         </Row>
       </div>
 
-      {/* 4. Trainer Details */}
+      {/* 4. Training Team Details */}
       <div style={cardStyle}>
         <HeaderTitle
           icon={<MdAssignment size={18} color="#2563eb" />}
-          title="Trainer Details"
+          title="Training Team Details"
         />
         <Row gutter={24}>
+          <Col span={6}>
+            {renderField(
+              "RA",
+              customerDetails?.ra_id
+                ? `${customerDetails.ra_id} (${customerDetails.ra_name || "-"})`
+                : "-",
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "HR",
+              customerDetails?.hr_id
+                ? `${customerDetails.hr_id} (${customerDetails.hr_name || "-"})`
+                : "-",
+            )}
+          </Col>
           <Col span={6}>
             {renderField("Trainer Id", customerDetails?.trainer_code)}
           </Col>
