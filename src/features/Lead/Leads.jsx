@@ -1843,11 +1843,11 @@ export default function Leads({
     };
     try {
       const response = await getUsersByRole(payload);
-      console.log("get hr users response", response);
+      console.log("get ra users response", response);
       setRaUsers(response?.data?.data?.data || []);
     } catch (error) {
       setRaUsers([]);
-      console.log("get hr users error", error);
+      console.log("get ra users error", error);
     } finally {
       dispatch(
         storeLeadFilterValues({

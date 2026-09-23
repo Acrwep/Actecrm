@@ -848,6 +848,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               </button>
             </div>
           ) : (item.status === "Customer Details Updated" ||
+              item.status === "Candidate Details Updated" ||
               item.status === "Welcome Call Details Updated" ||
               item.status === "Requirement Verification Details Updated" ||
               item.status === "Trainer Fixation Details Updated" ||

@@ -179,18 +179,18 @@ export default function Admissions() {
     };
   };
 
-  const renderServerStatus = (isRequired, serverStatus) => {
+  const renderServerAndTicketStatus = (isRequired, status) => {
     if (!isRequired) {
       return <p style={{ textAlign: "center" }}>-</p>;
     }
 
-    const isIssued = serverStatus === "Issued";
+    const isSuccess = status === "Issued" || status === "Closed";
 
     return (
       <div
         className="admissions_column_status_container"
         style={{
-          color: isIssued ? "#2e7d32" : "#8b8b8b",
+          color: isSuccess ? "#2e7d32" : "#8b8b8b",
         }}
       >
         <GiCheckMark size={14} />
@@ -519,11 +519,12 @@ export default function Admissions() {
           </div>
         </Tooltip>
       ),
-      key: "student_support",
-      dataIndex: "student_support",
+      key: "ticket_raised",
+      dataIndex: "ticket_raised",
       width: 80,
       group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text ?? false),
+      render: (text, record) =>
+        renderServerAndTicketStatus(text, record.ticket_status),
     },
     {
       title: (
@@ -566,7 +567,7 @@ export default function Admissions() {
       width: 80,
       group: "Progress Monitoring",
       render: (text, record) =>
-        renderServerStatus(text, record.server_master_status),
+        renderServerAndTicketStatus(text, record.server_master_status),
     },
     {
       title: (

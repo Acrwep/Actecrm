@@ -929,13 +929,20 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet",
+                                "Payment not verified yet",
                               );
                             } else if (record.status != "Awaiting Verify") {
                               CommonMessage("warning", "Already Verified");
                             } else if (record.status === "Awaiting Verify") {
                               if (!permissions.includes("Student Verify")) {
                                 CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
                                 return;
                               }
                               getParticularCustomerDetails(record?.id);
@@ -961,6 +968,13 @@ export default function Customers() {
                                 onClick={() => {
                                   if (!permissions.includes("Student Verify")) {
                                     CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  if (record.user_edit_access === "no") {
+                                    CommonMessage(
+                                      "error",
+                                      "Candidate is assigned to another branch",
+                                    );
                                     return;
                                   }
                                   getParticularCustomerDetails(record?.id);
@@ -1022,7 +1036,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet",
+                                "Payment not verified yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
@@ -1049,6 +1063,13 @@ export default function Customers() {
                             ) {
                               if (!permissions.includes("Trainer Assign")) {
                                 CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
                                 return;
                               }
                               getParticularCustomerDetails(record?.id);
@@ -1161,7 +1182,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet",
+                                "Payment not verified yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
@@ -1263,7 +1284,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet",
+                                "Payment not verified yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
@@ -1365,7 +1386,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet",
+                                "Payment not verified yet",
                               );
                             } else if (record.status === "Awaiting Verify") {
                               CommonMessage(
@@ -1423,6 +1444,13 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
+                                return;
+                              }
                               getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Class Schedule");
                               setIsStatusUpdateDrawer(true);
@@ -1442,6 +1470,13 @@ export default function Customers() {
                           onClick={() => {
                             if (!permissions.includes("Class Schedule")) {
                               CommonMessage("error", "Access Denied");
+                              return;
+                            }
+                            if (record.user_edit_access === "no") {
+                              CommonMessage(
+                                "error",
+                                "Candidate is assigned to another branch",
+                              );
                               return;
                             }
                             getParticularCustomerDetails(record?.id);
@@ -1479,8 +1514,19 @@ export default function Customers() {
                           <button
                             className="customers_update_trainer_coordination_button"
                             onClick={() => {
-                              if (!permissions.includes("Class Schedule")) {
+                              if (
+                                !permissions.includes(
+                                  "Update Trainer Coordination",
+                                )
+                              ) {
                                 CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
                                 return;
                               }
                               getParticularCustomerDetails(record?.id);
@@ -1514,6 +1560,13 @@ export default function Customers() {
                                   !permissions.includes("Update Class Going")
                                 ) {
                                   CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                if (record.user_edit_access === "no") {
+                                  CommonMessage(
+                                    "error",
+                                    "Candidate is assigned to another branch",
+                                  );
                                   return;
                                 }
                                 getParticularCustomerDetails(record?.id);
@@ -1559,6 +1612,13 @@ export default function Customers() {
                                   CommonMessage("error", "Access Denied");
                                   return;
                                 }
+                                if (record.user_edit_access === "no") {
+                                  CommonMessage(
+                                    "error",
+                                    "Candidate is assigned to another branch",
+                                  );
+                                  return;
+                                }
                                 getParticularCustomerDetails(record?.id);
                                 setDrawerContentStatus("Update Reviews");
                                 setIsStatusUpdateDrawer(true);
@@ -1581,6 +1641,13 @@ export default function Customers() {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
+                                return;
+                              }
                               if (
                                 record.status === "Completed" &&
                                 !permissions.includes(
@@ -1601,7 +1668,7 @@ export default function Customers() {
                           </button>
                         </Col>
 
-                        {record.status === "Completed" ? (
+                        {record.status === "Completed" && (
                           <Col span={12}>
                             <div className="customers_classcompleted_container">
                               <BsPatchCheckFill color="#3c9111" />
@@ -1610,8 +1677,6 @@ export default function Customers() {
                               </p>
                             </div>
                           </Col>
-                        ) : (
-                          ""
                         )}
                       </>
                     ) : (
@@ -1642,6 +1707,18 @@ export default function Customers() {
                           <button
                             className="customers_reassigntrainer_button"
                             onClick={() => {
+                              if (!permissions.includes("Trainer Assign")) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
+                                return;
+                              }
+
                               getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Re-Assign Trainer");
                               setIsStatusUpdateDrawer(true);
@@ -1665,11 +1742,18 @@ export default function Customers() {
                             } else if (record.status === "Awaiting Finance") {
                               CommonMessage(
                                 "warning",
-                                "Finance not Verified Yet",
+                                "Payment not verified yet",
                               );
                             } else {
                               if (!permissions.includes("Others Checkbox")) {
                                 CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              if (record.user_edit_access === "no") {
+                                CommonMessage(
+                                  "error",
+                                  "Candidate is assigned to another branch",
+                                );
                                 return;
                               }
                               getParticularCustomerDetails(record?.id);
@@ -2158,6 +2242,8 @@ export default function Customers() {
     // const region_data = branch_options
     //   .filter((f) => f.checked === true)
     //   .map((f) => f.name);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
 
     const payload = {
       ...(searchvalue && { search_filter: searchvalue }),
@@ -2186,6 +2272,7 @@ export default function Customers() {
       //       ? { region: "Online" }
       //       : {}),
       ...(bucketStatus && { bucket_status: bucketStatus }),
+      logged_in_user_id: convertAsJson?.user_id || "",
       page: pageNumber,
       limit: limit,
     };
@@ -3724,7 +3811,7 @@ export default function Customers() {
       </Drawer>
 
       <Drawer
-        title="Update Customer"
+        title="Update Candidate Details"
         open={isOpenEditDrawer}
         onClose={() => {
           setIsOpenEditDrawer(false);
@@ -3771,7 +3858,7 @@ export default function Customers() {
                 }}
               >
                 {updateDrawerTabKey === "1"
-                  ? "Update Customer Details"
+                  ? "Update Candidate Details"
                   : "Update Payment Master"}
               </button>
             )}

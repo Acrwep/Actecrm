@@ -292,6 +292,7 @@ export default function Settings() {
         "Approve Trainer",
         "Update Assigned Trainer",
         "Class Schedule",
+        "Update Trainer Coordination",
         "Update Class Going",
         "Passedout Process",
         "Update Passedout Process",

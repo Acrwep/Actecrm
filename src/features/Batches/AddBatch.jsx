@@ -472,7 +472,6 @@ const AddBatch = forwardRef(
         return;
 
       setButtonLoading(true);
-      const today = new Date();
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
@@ -485,8 +484,8 @@ const AddBatch = forwardRef(
         batch_name: batchName,
         trainer_id: selectedTrainerId,
         course_id: courseId,
-        start_date: startDate,
-        end_date: endDate,
+        start_date: startDate ? formatToBackendIST(startDate) : null,
+        end_date: endDate ? formatToBackendIST(endDate) : null,
         batch_timing_id: batchTimingId,
         start_time: startTime,
         end_time: endTime,
@@ -495,7 +494,7 @@ const AddBatch = forwardRef(
         branch_id: branchId,
         customers: updateCustomerIds,
         created_by: convertAsJson?.user_id,
-        created_date: formatToBackendIST(today),
+        created_date: formatToBackendIST(new Date()),
       };
       console.log("create batch payload", payload);
       // return;

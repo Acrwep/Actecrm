@@ -720,7 +720,7 @@ export default function Server() {
       overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
       overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
       overrides.downliners !== undefined ? overrides.downliners : allDownliners,
-      overrides.serverStatus !== undefined ? overrides.downliners : status,
+      overrides.serverStatus !== undefined ? overrides.serverStatus : status,
       overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
       overrides.pageNumber !== undefined
         ? overrides.pageNumber

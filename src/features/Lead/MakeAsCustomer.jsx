@@ -20,6 +20,7 @@ import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 import {
   getBanks,
+  getUsersByRole,
   leadPayment,
   sendCustomerFormEmail,
   sendCustomerPaymentVerificationEmail,
@@ -52,6 +53,11 @@ const MakeAsCustomer = forwardRef(
     const courseOptions = useSelector((state) => state.courselist);
 
     const [selectedRA, setSelectedRA] = useState(null);
+    const [selectedRAError, setSelectedRAError] = useState("");
+    const [hrUsers, setHrUsers] = useState([]);
+    const [hrId, setHrId] = useState("");
+    const [hrIdError, setHrIdError] = useState("");
+    const [hrLoading, setHrLoading] = useState(false);
     const [paymentDate, setPaymentDate] = useState(null);
     const [paymentDateError, setPaymentDateError] = useState("");
     const [modeOfClass, setModeOfClass] = useState("");
@@ -146,7 +152,25 @@ const MakeAsCustomer = forwardRef(
       setBalanceAmount(parseFloat(clickedLeadItem.primary_fees));
       setCustomerCourseId(clickedLeadItem.primary_course_id);
       setCustomerBatchTrackId(clickedLeadItem.batch_track_id);
+      getHrUsersData();
     }, []);
+
+    const getHrUsersData = async () => {
+      setHrLoading(true);
+      const payload = {
+        role: "HR",
+      };
+      try {
+        const response = await getUsersByRole(payload);
+        console.log("get hr users response", response);
+        setHrUsers(response?.data?.data?.data || []);
+      } catch (error) {
+        setHrUsers([]);
+        console.log("get hr users error", error);
+      } finally {
+        setHrLoading(false);
+      }
+    };
 
     useEffect(() => {
       const subTotalValue = parseFloat(subTotal) || 0;
@@ -233,13 +257,6 @@ const MakeAsCustomer = forwardRef(
       return stateName;
     };
 
-    const handleSelectRA = async (e) => {
-      const value = e.target.value;
-      console.log("selected raaa", value);
-
-      setSelectedRA(value);
-    };
-
     const handlePaidNow = (e) => {
       const input = e.target.value;
 
@@ -324,6 +341,8 @@ const MakeAsCustomer = forwardRef(
       const paymentDateValidate = selectValidator(paymentDate);
       const modeOfClassValidate = selectValidator(modeOfClass);
       const placeOfServiceValidate = selectValidator(placeOfService);
+      const raValidate = selectValidator(selectedRA);
+      const hrValidate = selectValidator(hrId);
       const batchTimingValidate = selectValidator(customerBatchTimingId);
       const placementSupportValidate = selectValidator(placementSupport);
       const lmsAccessValidate = selectValidator(lmsAccess);
@@ -378,6 +397,8 @@ const MakeAsCustomer = forwardRef(
       setTransactionToError(transactionToValidate);
       setModeOfClassError(modeOfClassValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
+      setSelectedRAError(raValidate);
+      setHrIdError(hrValidate);
       setPaymentScreenShotError(screenshotValidate);
       setDueDateError(dueDateValidate);
       setCustomerBatchTimingIdError(batchTimingValidate);
@@ -423,6 +444,8 @@ const MakeAsCustomer = forwardRef(
         placeOfServiceValidate ||
         screenshotValidate ||
         dueDateValidate ||
+        raValidate ||
+        hrValidate ||
         batchTimingValidate ||
         placementSupportValidate ||
         lmsAccessValidate ||
@@ -465,6 +488,7 @@ const MakeAsCustomer = forwardRef(
         next_due_date: dueDate ? formatToBackendIST(dueDate) : null,
         date_of_joining: formatToBackendIST(paymentDate),
         ra_id: selectedRA,
+        hr_id: hrId,
         created_date: formatToBackendIST(today),
         paid_date: formatToBackendIST(paymentDate),
         place_of_payment: "",
@@ -1376,14 +1400,40 @@ const MakeAsCustomer = forwardRef(
 
             <Col span={8}>
               <CommonSelectField
+                required={true}
                 width="100%"
                 label="Select RA"
                 labelFontSize={"11px"}
                 labelMarginTop={"1px"}
                 options={raUsers}
-                onChange={handleSelectRA}
+                onChange={(e) => {
+                  setSelectedRA(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setSelectedRAError(selectValidator(e.target.value));
+                  }
+                }}
                 value={selectedRA}
-                disableClearable={false}
+                error={selectedRAError}
+              />
+            </Col>
+
+            <Col span={8}>
+              <CommonSelectField
+                required={true}
+                width="100%"
+                label="Select HR"
+                labelFontSize={"11px"}
+                labelMarginTop={"1px"}
+                options={hrUsers}
+                loading={hrLoading}
+                onChange={(e) => {
+                  setHrId(e.target.value);
+                  if (paymentValidationTrigger) {
+                    setHrIdError(selectValidator(e.target.value));
+                  }
+                }}
+                value={hrId}
+                error={hrIdError}
               />
             </Col>
 

@@ -65,6 +65,10 @@ const CustomerUpdate = forwardRef(
     const [previewImage, setPreviewImage] = useState("");
     const [raUsers, setRaUsers] = useState([]);
     const [selectedRA, setSelectedRA] = useState(null);
+    const [selectedRAError, setSelectedRAError] = useState("");
+    const [hrUsers, setHrUsers] = useState([]);
+    const [hrId, setHrId] = useState("");
+    const [hrIdError, setHrIdError] = useState("");
     const [modeOfClass, setModeOfClass] = useState("");
     const [modeOfClassError, setModeOfClassError] = useState("");
     const [placeOfService, setPlaceOfService] = useState("");
@@ -238,6 +242,22 @@ const CustomerUpdate = forwardRef(
         setRaUsers(response?.data?.data?.data || []);
       } catch (error) {
         setRaUsers([]);
+        console.log("get ra users error", error);
+      } finally {
+        getHrUsersData();
+      }
+    };
+
+    const getHrUsersData = async () => {
+      const payload = {
+        role: "HR",
+      };
+      try {
+        const response = await getUsersByRole(payload);
+        console.log("get hr users response", response);
+        setHrUsers(response?.data?.data?.data || []);
+      } catch (error) {
+        setHrUsers([]);
         console.log("get hr users error", error);
       } finally {
         getAllBranchesData();
@@ -286,6 +306,9 @@ const CustomerUpdate = forwardRef(
         setModeOfClass(customerDetails?.mode_of_class);
         setPlaceOfService(customerDetails?.place_of_service);
         setSelectedRA(customerDetails?.ra_id);
+        setSelectedRAError("");
+        setHrId(customerDetails?.hr_id);
+        setHrIdError("");
         setLeadId(customerDetails?.lead_id);
         setName(customerDetails.name);
         setEmail(customerDetails.email);
@@ -569,6 +592,8 @@ const CustomerUpdate = forwardRef(
       setValidationTrigger(true);
       const modeOfClassValidate = selectValidator(modeOfClass);
       const placeOfServiceValidate = selectValidator(placeOfService);
+      const raValidate = selectValidator(selectedRA);
+      const hrValidate = selectValidator(hrId);
       const nameValidate = nameValidator(name);
       const emailValidate = emailValidator(email);
       const mobileValidate = mobileValidator(mobile);
@@ -586,6 +611,8 @@ const CustomerUpdate = forwardRef(
 
       setModeOfClassError(modeOfClassValidate);
       setPlaceOfServiceError(placeOfServiceValidate);
+      setSelectedRAError(raValidate);
+      setHrIdError(hrValidate);
       setNameError(nameValidate);
       setEmailError(emailValidate);
       setMobileError(mobileValidate);
@@ -604,6 +631,8 @@ const CustomerUpdate = forwardRef(
       if (
         modeOfClassValidate ||
         placeOfServiceValidate ||
+        raValidate ||
+        hrValidate ||
         nameValidate ||
         emailValidate ||
         mobileValidate ||
@@ -633,6 +662,7 @@ const CustomerUpdate = forwardRef(
       const payload = {
         id: customerId,
         ra_id: selectedRA ? selectedRA : null,
+        hr_id: hrId ? hrId : null,
         lead_id: leadId,
         name: name,
         email: email,
@@ -677,6 +707,7 @@ const CustomerUpdate = forwardRef(
 
         const fieldsToCompare = [
           { key: "ra_id", origKey: "ra_id", options: raUsers },
+          { key: "hr_id", origKey: "hr_id", options: hrUsers },
           { key: "name", origKey: "name" },
           { key: "email", origKey: "email" },
           { key: "phone", origKey: "phone" },
@@ -809,7 +840,7 @@ const CustomerUpdate = forwardRef(
           customers: [
             {
               customer_id: customerId,
-              status: "Customer Details Updated",
+              status: "Candidate Details Updated",
               details: changedFields,
               status_date: formatToBackendIST(new Date()),
               updated_by: converAsJson?.user_id || "",
@@ -818,7 +849,7 @@ const CustomerUpdate = forwardRef(
         };
         await inserCustomerTrack(trackPayload);
 
-        CommonMessage("success", "Updated");
+        CommonMessage("success", "Candidate Details Updated Successfully");
         setTimeout(() => {
           setUpdateButtonLoading(false);
           setCustomerId(null);
@@ -926,7 +957,7 @@ const CustomerUpdate = forwardRef(
           customers: [
             {
               customer_id: customerId,
-              status: "Customer Details Updated",
+              status: "Candidate Details Updated",
               details: changedFields,
               status_date: formatToBackendIST(new Date()),
               updated_by: converAsJson?.user_id || "",
@@ -1113,14 +1144,37 @@ const CustomerUpdate = forwardRef(
               </Col>
               <Col xs={24} sm={24} md={24} lg={8}>
                 <CommonSelectField
+                  required={true}
                   width="100%"
                   label="Select RA"
                   options={raUsers}
                   onChange={(e) => {
                     setSelectedRA(e.target.value);
+                    if (validationTrigger) {
+                      setSelectedRAError(selectValidator(e.target.value));
+                    }
                   }}
                   value={selectedRA}
-                  disableClearable={false}
+                  error={selectedRAError}
+                />
+              </Col>
+
+              <Col xs={24} sm={24} md={24} lg={8}>
+                <CommonSelectField
+                  required={true}
+                  width="100%"
+                  label="Select HR"
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                  options={hrUsers}
+                  onChange={(e) => {
+                    setHrId(e.target.value);
+                    if (validationTrigger) {
+                      setHrIdError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={hrId}
+                  error={hrIdError}
                 />
               </Col>
 
@@ -1524,7 +1578,7 @@ const CustomerUpdate = forwardRef(
     const tabItems = [
       {
         key: "1",
-        label: <span style={{ fontSize: "13px" }}>Customer Details</span>,
+        label: <span style={{ fontSize: "13px" }}>Candidate Details</span>,
         children: renderPersonalDetails(),
       },
       {
