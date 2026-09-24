@@ -1446,6 +1446,20 @@ const ClassSchedule = forwardRef(
                 <Button
                   onClick={() => {
                     if (stepIndex == 1) {
+                      console.log("Trainer Coordination Values:", {
+                        whatsapp_group_creation:
+                          cus_details?.whatsapp_group_creation,
+                        hr_welcome_message: cus_details?.hr_welcome_message,
+                        shared_attendance_link:
+                          cus_details?.shared_attendance_link,
+                        attendance_sheet_link:
+                          cus_details?.attendance_sheet_link,
+                        attendance_screenshot:
+                          cus_details?.attendance_screenshot,
+                        first_class_monitoring:
+                          cus_details?.first_class_monitoring,
+                        trainer_confirmation: cus_details?.trainer_confirmation,
+                      });
                       if (
                         cus_details.whatsapp_group_creation == 0 ||
                         cus_details.hr_welcome_message == 0 ||
@@ -1453,8 +1467,7 @@ const ClassSchedule = forwardRef(
                         (cus_details.shared_attendance_link == 1 &&
                           !cus_details.attendance_sheet_link &&
                           !cus_details.attendance_screenshot) ||
-                        // cus_details.first_class_monitoring == 0 ||
-                        cus_details.trainer_confirmation == 0
+                        cus_details.first_class_monitoring == 0
                       ) {
                         CommonMessage(
                           "error",

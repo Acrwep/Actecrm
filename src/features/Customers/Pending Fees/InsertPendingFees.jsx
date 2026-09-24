@@ -175,8 +175,8 @@ const InsertPendingFees = forwardRef(
       }
       setConvenienceFees(conve_fees.toFixed(2));
 
-      const actualPaid = (parseFloat(payAmount) || 0) - conve_fees;
-      const amt = parseFloat(pendingAmount) || 0;
+      const actualPaid = parseFloat(((parseFloat(payAmount) || 0) - conve_fees).toFixed(2));
+      const amt = parseFloat((parseFloat(pendingAmount) || 0).toFixed(2));
 
       if (
         actualPaid < amt ||
@@ -270,78 +270,6 @@ const InsertPendingFees = forwardRef(
         setBankLoading(false);
       }
     };
-
-    // const handleConvenienceFeesStatus = (e) => {
-    //   const value = e.target.value;
-    //   setConvenienceFeesStatus(value);
-    //   setConvenienceFees(0);
-    //   setConvenienceFeesStatusError(selectValidator(value));
-    //   // -------------inclusive--------------
-    //   if (value == 1) {
-    //     setPayAmount(duplicatePayAmount);
-    //     const threePercentAmount =
-    //       calculateThreePercentAmount(duplicatePayAmount);
-    //     console.log("threePercentAmount", threePercentAmount);
-
-    //     //handle balance amount
-    //     const pay = parseFloat(duplicatePayAmount); // parse for calculations
-    //     const amt = parseFloat(pendingAmount);
-
-    //     if (
-    //       pay < amt ||
-    //       isNaN(pay) ||
-    //       duplicatePayAmount === "" ||
-    //       duplicatePayAmount === null
-    //     ) {
-    //       setIsShowDueDate(true);
-    //     } else {
-    //       setIsShowDueDate(false);
-    //       setDueDate(null);
-    //       setDueDateError("");
-    //     }
-
-    //     setBalanceAmount(
-    //       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(pay) ? 0 : pay)
-    //     );
-    //   }
-    //   // -------------exclusive--------------
-    //   if (value == 2 && (paymentMode == 2 || paymentMode == 5)) {
-    //     setConvenienceFeesError("");
-    //     const threePercentAmount =
-    //       calculateThreePercentAmount(duplicatePayAmount);
-    //     setConvenienceFees(threePercentAmount);
-    //     //handle payamount
-    //     const updatePayAmount = duplicatePayAmount - threePercentAmount;
-    //     setPayAmount(updatePayAmount);
-
-    //     //handle balance amount
-    //     const pay = parseFloat(updatePayAmount); // parse for calculations
-    //     const amt = parseFloat(pendingAmount);
-
-    //     if (pay < amt || isNaN(pay) || input === "" || input === null) {
-    //       setIsShowDueDate(true);
-    //     } else {
-    //       setIsShowDueDate(false);
-    //       setDueDate(null);
-    //       setDueDateError("");
-    //     }
-
-    //     setBalanceAmount(
-    //       getBalanceAmount(isNaN(amt) ? 0 : amt, isNaN(pay) ? 0 : pay)
-    //     );
-    //   }
-    // };
-
-    // const handleConvenienceFees = (e) => {
-    //   const input = e.target.value;
-
-    //   // Allow numbers, decimal point, or empty string
-    //   if (!/^\d*\.?\d*$/.test(input)) return;
-
-    //   // Keep the input as string
-    //   setConvenienceFees(input);
-    //   setConvenienceFeesError(validateConvenienceFee(payAmount, input));
-    // };
 
     const handlePaymentSubmit = async () => {
       setPaymentValidationTrigger(true);

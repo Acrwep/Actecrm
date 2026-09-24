@@ -204,8 +204,10 @@ const FinanceVerify = forwardRef(
       }
       setConvenienceFees(conve_fees.toFixed(2));
 
-      const actualPaid = (parseFloat(paidNow) || 0) - conve_fees;
-      const amt = parseFloat(pendingAmount) || 0;
+      const actualPaid = parseFloat(
+        ((parseFloat(payAmount) || 0) - conve_fees).toFixed(2),
+      );
+      const amt = parseFloat((parseFloat(pendingAmount) || 0).toFixed(2));
 
       if (
         actualPaid < amt ||
