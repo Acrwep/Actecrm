@@ -754,15 +754,69 @@ const AssignAndVerifyTrainer = forwardRef(
       const converAsJson = JSON.parse(getloginUserDetails);
       console.log("getloginUserDetails", converAsJson);
 
-      const assignTrainerDetails = {
-        trainer_id: selectedTrainerId,
-        trainer_name: selectedTrainerObject?.name || "",
-        commercial: commercial,
-        mode_of_class: modeOfClass,
-        trainer_type: trainerType,
-        comments: assignTrainerComments,
-        proof_communication: assignTrainerProofBase64,
-      };
+      let finalDetails = null;
+
+      if (updatestatus === "Trainer Updated" && trainerHistory && trainerHistory.length > 0) {
+        const previousTrainerDetails = trainerHistory[0];
+        const changedFields = {};
+
+        if (previousTrainerDetails.trainer_name !== selectedTrainerObject?.name) {
+          changedFields["trainer_name"] = {
+            previous_value: previousTrainerDetails.trainer_name || "-",
+            new_value: selectedTrainerObject?.name || "-",
+          };
+        }
+        if (String(previousTrainerDetails.commercial) !== String(commercial)) {
+          changedFields["commercial"] = {
+            previous_value: previousTrainerDetails.commercial || "-",
+            new_value: commercial || "-",
+          };
+        }
+        if (previousTrainerDetails.mode_of_class !== modeOfClass) {
+          changedFields["mode_of_class"] = {
+            previous_value: previousTrainerDetails.mode_of_class || "-",
+            new_value: modeOfClass || "-",
+          };
+        }
+        if (previousTrainerDetails.trainer_type !== trainerType) {
+          changedFields["trainer_type"] = {
+            previous_value: previousTrainerDetails.trainer_type || "-",
+            new_value: trainerType || "-",
+          };
+        }
+        if (previousTrainerDetails.comments !== assignTrainerComments) {
+          changedFields["comments"] = {
+            previous_value: previousTrainerDetails.comments || "-",
+            new_value: assignTrainerComments || "-",
+          };
+        }
+        if (previousTrainerDetails.proof_communication !== assignTrainerProofBase64) {
+          changedFields["proof_communication"] = {
+            previous_value: previousTrainerDetails.proof_communication || "-",
+            new_value: assignTrainerProofBase64 || "-",
+          };
+        }
+
+        finalDetails = Object.keys(changedFields).length > 0 ? changedFields : {
+          trainer_id: selectedTrainerId,
+          trainer_name: selectedTrainerObject?.name || "",
+          commercial: commercial,
+          mode_of_class: modeOfClass,
+          trainer_type: trainerType,
+          comments: assignTrainerComments,
+          proof_communication: assignTrainerProofBase64,
+        };
+      } else {
+        finalDetails = {
+          trainer_id: selectedTrainerId,
+          trainer_name: selectedTrainerObject?.name || "",
+          commercial: commercial,
+          mode_of_class: modeOfClass,
+          trainer_type: trainerType,
+          comments: assignTrainerComments,
+          proof_communication: assignTrainerProofBase64,
+        };
+      }
 
       const verifyOrRejectTrainerDetails = {
         trainer_name:
@@ -813,7 +867,7 @@ const AssignAndVerifyTrainer = forwardRef(
             // details: assignTrainerDetails,
             ...((updatestatus && updatestatus === "Trainer Assigned") ||
             updatestatus === "Trainer Updated"
-              ? { details: assignTrainerDetails }
+              ? { details: finalDetails }
               : updatestatus === "Trainer Approval Rejected"
                 ? { details: approvalRejectedDetails }
                 : { details: verifyOrRejectTrainerDetails }),

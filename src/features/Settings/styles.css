@@ -448,3 +448,57 @@
   padding-bottom: 8px;
   width: 100%;
 }
+
+/* Minimalist Table Dropdowns */
+.regions_minimalist_dropdowns .MuiOutlinedInput-root {
+  border-radius: 6px !important;
+  background-color: transparent !important;
+  transition: all 0.2s ease;
+  padding-right: 32px !important; /* Space for the dropdown icon */
+}
+
+/* Hide default border */
+.regions_minimalist_dropdowns .MuiOutlinedInput-notchedOutline {
+  border-color: transparent !important;
+}
+
+/* Hover state: show subtle background */
+.regions_minimalist_dropdowns .MuiOutlinedInput-root:hover {
+  background-color: #f1f5f9 !important;
+  cursor: pointer;
+}
+
+/* Focused state: look like an actual input when editing */
+.regions_minimalist_dropdowns .MuiOutlinedInput-root.Mui-focused {
+  background-color: #ffffff !important;
+}
+
+.regions_minimalist_dropdowns
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
+  border-color: #5b69ca !important;
+  border-width: 1px !important;
+  box-shadow: 0 0 0 2px rgba(91, 105, 202, 0.1) !important;
+}
+
+/* Dropdown text styling */
+.regions_minimalist_dropdowns .MuiAutocomplete-input {
+  color: #334155 !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+
+/* Hide dropdown arrow until hover or focus for ultra-clean look */
+.regions_minimalist_dropdowns .MuiAutocomplete-endAdornment {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.regions_minimalist_dropdowns
+  .MuiOutlinedInput-root:hover
+  .MuiAutocomplete-endAdornment,
+.regions_minimalist_dropdowns
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiAutocomplete-endAdornment {
+  opacity: 1;
+}

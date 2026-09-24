@@ -9,6 +9,7 @@ import {
   assignBranchManager,
   getUsers,
 } from "../ApiService/action";
+import "./styles.css";
 
 export default function RegionAndBranches() {
   const [allUsersList, setAllUsersList] = useState([]);
@@ -170,7 +171,10 @@ export default function RegionAndBranches() {
 
   return (
     <div>
-      <div style={{ marginTop: "20px" }}>
+      <div
+        style={{ marginTop: "20px" }}
+        className="regions_minimalist_dropdowns"
+      >
         <CommonTable
           scroll={{ x: 600 }}
           columns={columns}

@@ -2242,3 +2242,36 @@
   line-height: 1.5;
   font-weight: 500;
 }
+
+.customer_history_changes_box {
+  margin-top: 12px;
+  border: 1px solid #f0f0f0;
+  padding: 8px 10px 10px 10px;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.customer_history_changes_box_flex {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.customer_history_changes_box_flex_start {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.customer_history_class_completed_badge {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: #52c41a;
+  width: max-content;
+}

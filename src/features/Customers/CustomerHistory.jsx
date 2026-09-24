@@ -466,29 +466,57 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 </span>
               </p>
 
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={5}>
-                  <p className="customer_history_comments">Comments: </p>
-                </Col>
-                <Col span={18}>
-                  <p
-                    style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}
+              <div className="customer_history_changes_box">
+                <p
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "12px",
+                    marginBottom: "8px",
+                    borderBottom: "1px solid #e0e0e0",
+                    paddingBottom: "4px",
+                  }}
+                >
+                  Changes Made:
+                </p>
+                {item.details.comments && (
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "12px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
                   >
-                    {item.details.comments}
-                  </p>
-                </Col>
-              </Row>
-              <button
-                className="customer_history_viewproofbutton"
-                style={{ marginTop: "12px" }}
-                onClick={() => {
-                  getImageTypeFromBase64(item.details.proof_communication);
-                  setProofScreenshotBase64(item.details.proof_communication);
-                  setIsOpenProofViewModal(true);
-                }}
-              >
-                <FaRegEye size={16} /> View Proof Screenshot
-              </button>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        textTransform: "capitalize",
+                        minWidth: "120px",
+                      }}
+                    >
+                      Comments:
+                    </span>
+                    <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                      {item.details.comments}
+                    </span>
+                  </div>
+                )}
+                {item.details.proof_communication && (
+                  <button
+                    className="customer_history_viewproofbutton"
+                    style={{ marginTop: "12px" }}
+                    onClick={() => {
+                      getImageTypeFromBase64(item.details.proof_communication);
+                      setProofScreenshotBase64(item.details.proof_communication);
+                      setIsOpenProofViewModal(true);
+                    }}
+                  >
+                    <FaRegEye size={16} /> View Proof Screenshot
+                  </button>
+                )}
+              </div>
             </div>
           ) : (item.status === "Trainer Assigned" ||
               item.status === "Trainer Updated" ||
@@ -506,94 +534,74 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     : ""}
                 </span>
               </p>
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Trainer Name
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.trainer_name
-                          ? item.details.trainer_name
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Mode Of Training
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.mode_of_class}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">Comments</p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.comments}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Commercial
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {"₹" + item.details.commercial}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Trainer Type
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.trainer_type}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={24}>
-                      <button
-                        className="customer_history_viewproofbutton"
-                        onClick={() => {
-                          getImageTypeFromBase64(
-                            item.details.proof_communication,
-                          );
-                          setProofScreenshotBase64(
-                            item.details.proof_communication,
-                          );
-                          setIsOpenProofViewModal(true);
-                        }}
-                      >
-                        <FaRegEye size={16} /> View Proof Screenshot
-                      </button>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+              <div className="customer_history_changes_box">
+                <p
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "12px",
+                    marginBottom: "8px",
+                    borderBottom: "1px solid #e0e0e0",
+                    paddingBottom: "4px",
+                  }}
+                >
+                  Changes Made:
+                </p>
+                {Object.entries({
+                  trainer_name: item.details.trainer_name || "-",
+                  commercial:
+                    item.details.commercial != null
+                      ? `₹${item.details.commercial}`
+                      : "-",
+                  mode_of_training: item.details.mode_of_class || "-",
+                  trainer_type: item.details.trainer_type || "-",
+                  comments: item.details.comments || "-",
+                }).map(([key, value]) => (
+                  <div
+                    key={key}
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "12px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "flex-start",
+                      gap: "6px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        textTransform: "capitalize",
+                        minWidth: "120px",
+                      }}
+                    >
+                      {key.replace(/_/g, " ")}:
+                    </span>
+                    <span
+                      style={{ color: "#52c41a", fontWeight: 500, flex: 1 }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                ))}
+                {item.details.proof_communication && (
+                  <div style={{ marginTop: "12px" }}>
+                    <button
+                      className="customer_history_viewproofbutton"
+                      onClick={() => {
+                        getImageTypeFromBase64(
+                          item.details.proof_communication,
+                        );
+                        setProofScreenshotBase64(
+                          item.details.proof_communication,
+                        );
+                        setIsOpenProofViewModal(true);
+                      }}
+                    >
+                      <FaRegEye size={16} /> View Proof Screenshot
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : item.status === "Trainer Rejected" ? (
             <div>
@@ -608,109 +616,64 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     : ""}
                 </span>
               </p>
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Trainer Name
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details?.trainer_name || "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Commercial%
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p
-                        className="customer_history_details_text"
-                        style={{
-                          color:
-                            item.details &&
-                            item.details.trainer_commercial_percentage !== null
-                              ? item.details.trainer_commercial_percentage < 18
-                                ? "#3c9111" // green
-                                : item.details.trainer_commercial_percentage >
-                                      19 &&
-                                    item.details
-                                      .trainer_commercial_percentage <= 22
-                                  ? "#ffa502" // orange
-                                  : item.details.trainer_commercial_percentage >
-                                      22
-                                    ? "#d32f2f" // red
-                                    : "inherit"
-                              : "inherit", // fallback color if null
-                          fontWeight: 500,
-                        }}
-                      >
-                        {item.details.trainer_commercial_percentage + "%"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Trainer Type
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.trainer_type}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Commercial
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {"₹" + item.details.trainer_commercial}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Mode Of Training
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.mode_of_class}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <p className="customer_history_details_label">
-                        Rejection Reason
-                      </p>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customer_history_details_text">
-                        {item.details.rejected_reason}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+              <div className="customer_history_changes_box">
+                <p
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "12px",
+                    marginBottom: "8px",
+                    borderBottom: "1px solid #e0e0e0",
+                    paddingBottom: "4px",
+                  }}
+                >
+                  Rejected Trainer Details:
+                </p>
+                {Object.entries({
+                  trainer_name: item.details?.trainer_name || "-",
+                  "commercial_%":
+                    item.details?.trainer_commercial_percentage != null
+                      ? `${item.details.trainer_commercial_percentage}%`
+                      : "-",
+                  trainer_type: item.details?.trainer_type || "-",
+                  commercial:
+                    item.details?.trainer_commercial != null
+                      ? `₹${item.details.trainer_commercial}`
+                      : "-",
+                  mode_of_training: item.details?.mode_of_class || "-",
+                  rejection_reason: item.details?.rejected_reason || "-",
+                }).map(([key, value]) => (
+                  <div
+                    key={key}
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "12px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "flex-start",
+                      gap: "6px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        textTransform: "capitalize",
+                        minWidth: "120px",
+                      }}
+                    >
+                      {key.replace(/_/g, " ")}:
+                    </span>
+                    <span
+                      style={{
+                        color: "#d32f2f",
+                        fontWeight: 500,
+                        flex: 1,
+                      }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : item.status === "Class Scheduled" ? (
             <div>
@@ -725,11 +688,19 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     : ""}
                 </span>
               </p>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p className="customer_history_comments">Schedule Date:</p>
-                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+              <div className="customer_history_changes_box customer_history_changes_box_flex">
+                <span style={{ fontWeight: 600, fontSize: "12px" }}>
+                  Schedule Date:
+                </span>
+                <span
+                  style={{
+                    color: "#52c41a",
+                    fontWeight: 500,
+                    fontSize: "12px",
+                  }}
+                >
                   {moment(item.details.class_start_date).format("DD/MM/YYYY")}
-                </p>
+                </span>
               </div>
             </div>
           ) : item.status === "Class Going" ? (
@@ -745,15 +716,23 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     : ""}
                 </span>
               </p>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p className="customer_history_comments">Class Going:</p>
-                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+              <div className="customer_history_changes_box customer_history_changes_box_flex">
+                <span style={{ fontWeight: 600, fontSize: "12px" }}>
+                  Class Going:
+                </span>
+                <span
+                  style={{
+                    color: "#52c41a",
+                    fontWeight: 500,
+                    fontSize: "12px",
+                  }}
+                >
                   {item.details
                     ? item.details.class_going_percentage
                       ? item.details.class_going_percentage + "%"
                       : "0%"
                     : "0%"}
-                </p>
+                </span>
               </div>
             </div>
           ) : item.status === "Hold" ||
@@ -773,19 +752,32 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 </span>
                 :
               </p>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p className="customer_history_comments">
+              <div className="customer_history_changes_box customer_history_changes_box_flex_start">
+                <span
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "12px",
+                    minWidth: "120px",
+                  }}
+                >
                   {item.status === "Trainer Approval Rejected"
                     ? "Rejected Reason:"
                     : "Comments:"}
-                </p>
-                <p style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}>
+                </span>
+                <span
+                  style={{
+                    color: "#52c41a",
+                    fontWeight: 500,
+                    fontSize: "12px",
+                    flex: 1,
+                  }}
+                >
                   {item.details && item.details.comments
                     ? item.details.comments
                     : item.details.rejected_reason
                       ? item.details.rejected_reason
                       : "-"}
-                </p>
+                </span>
               </div>
             </div>
           ) : item.status === "Class Completed" ? (
@@ -801,10 +793,11 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     : ""}
                 </span>
               </p>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <p className="customer_history_comments">
+              <div className="customer_history_class_completed_badge">
+                <LuCircleCheck size={14} />
+                <span style={{ fontWeight: 600, fontSize: "11px" }}>
                   100% Class Completed
-                </p>
+                </span>
               </div>
             </div>
           ) : item.status === "Escalated" ||
@@ -823,29 +816,50 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     : ""}
                 </span>
               </p>
-              <Row style={{ marginTop: "12px" }}>
-                <Col span={5}>
-                  <p className="customer_history_comments">Comments: </p>
-                </Col>
-                <Col span={18}>
-                  <p
-                    style={{ color: "gray", fontWeight: 400, fontSize: "13px" }}
+              <div className="customer_history_changes_box">
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "6px",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      fontSize: "12px",
+                      minWidth: "120px",
+                    }}
+                  >
+                    Comments:
+                  </span>
+                  <span
+                    style={{
+                      color:
+                        item.status === "Escalated" ? "#d32f2f" : "#52c41a",
+                      fontWeight: 500,
+                      fontSize: "12px",
+                      flex: 1,
+                    }}
                   >
                     {item.details.comments}
-                  </p>
-                </Col>
-              </Row>
-              <button
-                className="customer_history_viewproofbutton"
-                style={{ marginTop: "12px" }}
-                onClick={() => {
-                  getImageTypeFromBase64(item.details.attachment);
-                  setProofScreenshotBase64(item.details.attachment);
-                  setIsOpenProofViewModal(true);
-                }}
-              >
-                <FaRegEye size={16} /> View Attachment
-              </button>
+                  </span>
+                </div>
+                {item.details.attachment && (
+                  <div style={{ marginTop: "12px" }}>
+                    <button
+                      className="customer_history_viewproofbutton"
+                      onClick={() => {
+                        getImageTypeFromBase64(item.details.attachment);
+                        setProofScreenshotBase64(item.details.attachment);
+                        setIsOpenProofViewModal(true);
+                      }}
+                    >
+                      <FaRegEye size={16} /> View Attachment
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (item.status === "Customer Details Updated" ||
               item.status === "Candidate Details Updated" ||
@@ -877,50 +891,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 </span>
               </p>
               {(() => {
-                const isLegacy = Object.values(item.details).every(
-                  (val) => typeof val === "string",
-                );
-                if (isLegacy) {
-                  return Object.keys(item.details).map((key) => {
-                    const detail = item.details[key];
-                    if (
-                      key === "google_review" ||
-                      key === "linkedin_review" ||
-                      key === "attachment"
-                    ) {
-                      return (
-                        <button
-                          key={key}
-                          className="customer_history_viewproofbutton"
-                          style={{ marginTop: "12px" }}
-                          onClick={() => {
-                            getImageTypeFromBase64(detail);
-                            setProofScreenshotBase64(detail);
-                            setIsOpenProofViewModal(true);
-                          }}
-                        >
-                          <FaRegEye size={16} /> View{" "}
-                          {key
-                            .split("_")
-                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                            .join(" ")}
-                        </button>
-                      );
-                    }
-                    return null;
-                  });
-                }
-
                 return (
-                  <div
-                    style={{
-                      marginTop: "12px",
-                      border: "1px solid #f0f0f0",
-                      padding: "8px 10px 10px 10px",
-                      borderRadius: "6px",
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
+                  <div className="customer_history_changes_box">
                     <p
                       style={{
                         fontWeight: 500,
@@ -930,10 +902,45 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                         paddingBottom: "4px",
                       }}
                     >
-                      Changes Made:
+                      {item.status === "Trainer Approval Rejected" || item.status === "Trainer Rejected"
+                        ? "Rejected Trainer Details:"
+                        : "Changes Made:"}
                     </p>
                     {Object.keys(item.details).map((key) => {
                       const detail = item.details[key];
+
+                      // Legacy button handling
+                      if (
+                        typeof detail === "string" &&
+                        (key === "google_review" ||
+                          key === "linkedin_review" ||
+                          key === "attachment")
+                      ) {
+                        return (
+                          <button
+                            key={key}
+                            className="customer_history_viewproofbutton"
+                            style={{ marginTop: "12px", marginRight: "12px" }}
+                            onClick={() => {
+                              getImageTypeFromBase64(detail);
+                              setProofScreenshotBase64(detail);
+                              setIsOpenProofViewModal(true);
+                            }}
+                          >
+                            <FaRegEye size={16} /> View{" "}
+                            {key
+                              .split("_")
+                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                              .join(" ")}
+                          </button>
+                        );
+                      }
+
+                      // Determine values
+                      const isFlat = typeof detail !== "object" || detail === null;
+                      const prevVal = isFlat ? null : detail.previous_value;
+                      const newVal = isFlat ? detail : detail.new_value;
+
                       return (
                         <div
                           key={key}
@@ -962,117 +969,88 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                           key === "proof_communication" ||
                           key === "attendance_screenshot" ? (
                             <>
-                              {detail.previous_value ? (
+                              {prevVal ? (
+                                <>
+                                  <img
+                                    src={
+                                      prevVal.startsWith("data:") || prevVal.startsWith("http")
+                                        ? prevVal
+                                        : `data:image/png;base64,${prevVal}`
+                                    }
+                                    alt="Previous"
+                                    style={{
+                                      width: 40,
+                                      height: 40,
+                                      borderRadius: key === "profile_image" ? "50%" : "4px",
+                                      objectFit: "cover",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => {
+                                      setPreviewImage(
+                                        prevVal.startsWith("data:") || prevVal.startsWith("http")
+                                          ? prevVal
+                                          : `data:image/png;base64,${prevVal}`
+                                      );
+                                      setPreviewOpen(true);
+                                    }}
+                                  />
+                                  <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                                </>
+                              ) : null}
+                              {newVal ? (
                                 <img
                                   src={
-                                    detail.previous_value.startsWith("data:") ||
-                                    detail.previous_value.startsWith("http")
-                                      ? detail.previous_value
-                                      : `data:image/png;base64,${detail.previous_value}`
-                                  }
-                                  alt="Previous"
-                                  style={{
-                                    width: 40,
-                                    height: 40,
-                                    borderRadius:
-                                      key === "profile_image" ? "50%" : "4px",
-                                    objectFit: "cover",
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() => {
-                                    setPreviewImage(
-                                      detail.previous_value.startsWith(
-                                        "data:",
-                                      ) ||
-                                        detail.previous_value.startsWith("http")
-                                        ? detail.previous_value
-                                        : `data:image/png;base64,${detail.previous_value}`,
-                                    );
-                                    setPreviewOpen(true);
-                                  }}
-                                />
-                              ) : (
-                                <span style={{ color: "#d9363e" }}>Empty</span>
-                              )}
-                              <span style={{ color: "gray", fontSize: "10px" }}>
-                                ➔
-                              </span>
-                              {detail.new_value ? (
-                                <img
-                                  src={
-                                    detail.new_value.startsWith("data:") ||
-                                    detail.new_value.startsWith("http")
-                                      ? detail.new_value
-                                      : `data:image/png;base64,${detail.new_value}`
+                                    newVal.startsWith("data:") || newVal.startsWith("http")
+                                      ? newVal
+                                      : `data:image/png;base64,${newVal}`
                                   }
                                   alt="New"
                                   style={{
                                     width: 40,
                                     height: 40,
-                                    borderRadius:
-                                      key === "profile_image" ? "50%" : "4px",
+                                    borderRadius: key === "profile_image" ? "50%" : "4px",
                                     objectFit: "cover",
                                     cursor: "pointer",
                                   }}
                                   onClick={() => {
                                     setPreviewImage(
-                                      detail.new_value.startsWith("data:") ||
-                                        detail.new_value.startsWith("http")
-                                        ? detail.new_value
-                                        : `data:image/png;base64,${detail.new_value}`,
+                                      newVal.startsWith("data:") || newVal.startsWith("http")
+                                        ? newVal
+                                        : `data:image/png;base64,${newVal}`
                                     );
                                     setPreviewOpen(true);
                                   }}
                                 />
                               ) : (
-                                <span
-                                  style={{ color: "#52c41a", fontWeight: 500 }}
-                                >
-                                  Empty
-                                </span>
+                                <span style={{ color: "#52c41a", fontWeight: 500 }}>Empty</span>
                               )}
                             </>
-                          ) : key === "whatsapp_invite_link" ||
-                            key === "attendance_sheet_link" ? (
+                          ) : key === "whatsapp_invite_link" || key === "attendance_sheet_link" ? (
                             <>
-                              <span style={{ color: "#d9363e" }}>
-                                {detail.previous_value ? (
+                              {prevVal ? (
+                                <>
+                                  <span style={{ color: "#d9363e" }}>
+                                    <a
+                                      href={getWhatsAppLink(prevVal)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{ color: "#d9363e", textDecoration: "underline" }}
+                                    >
+                                      {prevVal}
+                                    </a>
+                                  </span>
+                                  <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                                </>
+                              ) : null}
+                              <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                                {newVal ? (
                                   <a
-                                    href={getWhatsAppLink(
-                                      detail.previous_value,
-                                    )}
+                                    href={getWhatsAppLink(newVal)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{
-                                      color: "#d9363e",
-                                      textDecoration: "underline",
-                                    }}
+                                    style={{ color: "#52c41a", textDecoration: "underline" }}
                                   >
-                                    {detail.previous_value}
-                                  </a>
-                                ) : (
-                                  "Empty"
-                                )}
-                              </span>
-
-                              <span style={{ color: "gray", fontSize: "10px" }}>
-                                ➔
-                              </span>
-
-                              <span
-                                style={{ color: "#52c41a", fontWeight: 500 }}
-                              >
-                                {detail.new_value ? (
-                                  <a
-                                    href={getWhatsAppLink(detail.new_value)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                      color: "#52c41a",
-                                      textDecoration: "underline",
-                                    }}
-                                  >
-                                    {detail.new_value}
+                                    {newVal}
                                   </a>
                                 ) : (
                                   "Empty"
@@ -1081,16 +1059,16 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                             </>
                           ) : (
                             <>
-                              <span style={{ color: "#d9363e" }}>
-                                {detail.previous_value || "Empty"}
-                              </span>
-                              <span style={{ color: "gray", fontSize: "10px" }}>
-                                ➔
-                              </span>
-                              <span
-                                style={{ color: "#52c41a", fontWeight: 500 }}
-                              >
-                                {detail.new_value || "Empty"}
+                              {prevVal ? (
+                                <>
+                                  <span style={{ color: "#d9363e" }}>
+                                    {prevVal}
+                                  </span>
+                                  <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                                </>
+                              ) : null}
+                              <span style={{ color: item.status === "Trainer Rejected" ? "#d32f2f" : "#52c41a", fontWeight: 500 }}>
+                                {newVal || "Empty"}
                               </span>
                             </>
                           )}
