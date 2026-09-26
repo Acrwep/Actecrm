@@ -35,7 +35,6 @@ import { MdOutlineRefresh, MdOutlineCheckCircle } from "react-icons/md";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
-  assignLiveLead,
   getAllDownlineUsers,
   getLeadAndFollowupCount,
   acknowledgeLead,
@@ -1326,7 +1325,10 @@ export default function AssignLeads({
                   setPagination({
                     page: 1,
                   });
-                  fetchAllManualAssignLeadsData();
+                  fetchAllManualAssignLeadsData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                  });
                 }}
               />
             </Col>

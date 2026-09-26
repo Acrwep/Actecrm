@@ -48,6 +48,7 @@ import {
   leadReEntry,
   updateLead,
   updateLiveLeadStatus,
+  updateWebsiteLeadActivity,
 } from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
@@ -492,6 +493,40 @@ const AddNewLead = forwardRef(
         liveLeadEmailValidator(liveLeadItem.email, liveLeadItem.phone);
       }
     };
+
+    useEffect(() => {
+      if (!liveLeadItem?.id) return;
+
+      const updateActivity = async () => {
+        const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+        const convertAsJson = JSON.parse(getLoginUserDetails);
+
+        try {
+          await updateWebsiteLeadActivity({
+            user_id: convertAsJson?.user_id || "",
+            lead_id: liveLeadItem.id,
+            last_activity_at: formatToBackendIST(new Date()),
+          });
+        } catch (error) {
+          console.error("Failed to update lead activity:", error);
+        }
+      };
+
+      // Immediately update when lead becomes active
+      updateActivity();
+
+      // Then every 2 minutes
+      const interval = setInterval(
+        () => {
+          updateActivity();
+        },
+        2 * 60 * 1000,
+      );
+
+      return () => {
+        clearInterval(interval);
+      };
+    }, [liveLeadItem?.id]);
 
     const getUserDetailsById = async () => {
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -1286,6 +1321,7 @@ const AddNewLead = forwardRef(
       const payload = {
         user_id: convertAsJson?.user_id,
         lead_id: liveLeadItem?.id,
+        is_converted: true,
       };
 
       try {

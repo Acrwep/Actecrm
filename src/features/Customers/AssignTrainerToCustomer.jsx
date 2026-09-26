@@ -814,8 +814,6 @@ export default function AssignTrainerToCustomer({
                   }}
                 >
                   {trainerHistory.map((item, index) => {
-                    const firstIndexItem =
-                      trainerHistory.length >= 2 ? trainerHistory[1] : null;
                     return (
                       <Collapse.Panel
                         key={index + 1}
@@ -834,14 +832,10 @@ export default function AssignTrainerToCustomer({
                               <span className="customer_trainerverify_accordion_heading">
                                 {item.trainer_code ? item.trainer_code : "-"}
 
-                                {index == 0 &&
-                                firstIndexItem &&
-                                firstIndexItem.is_verified == 1 ? (
+                                {item.is_escalated == 1 && (
                                   <span className="customer_trainerverify_accordion_heading_batch">
-                                    {`( Previous Trainer is Escalated )`}
+                                    {`( Trainer is Escalated )`}
                                   </span>
-                                ) : (
-                                  ""
                                 )}
                               </span>
                             </span>

@@ -824,6 +824,15 @@ export const assignLiveLead = async (payload) => {
   }
 };
 
+export const updateWebsiteLeadActivity = async (payload) => {
+  try {
+    const response = await api.put("/api/updateLeadActivity", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const liveLeadManualAssign = async (payload) => {
   try {
     const response = await api.put("/api/manualAssign", payload);

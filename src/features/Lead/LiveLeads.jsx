@@ -1073,6 +1073,9 @@ export default function LiveLead({
       user_id: convertAsJson?.user_id,
       lead_id: item.id,
       is_assigned: true,
+      assigned_at: formatToBackendIST(new Date()),
+      last_activity_at: formatToBackendIST(new Date()),
+      is_converted: false,
     };
 
     try {

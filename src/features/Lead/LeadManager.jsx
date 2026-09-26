@@ -60,6 +60,7 @@ export default function LeadManager() {
       user_id: convertAsJson?.user_id,
       lead_id: lead_id,
       is_assigned: false,
+      is_converted: false,
     };
     try {
       await assignLiveLead(payload);
