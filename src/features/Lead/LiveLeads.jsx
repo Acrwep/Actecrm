@@ -66,8 +66,8 @@ export default function LiveLead({
   onPickLead,
 }) {
   //useref
-  const filterTypeRef = useRef("");
   const searchRef = useRef("");
+  const searchTimeoutRef = useRef(null);
   const datesRef = useRef([]);
   const paginationRef = useRef({ page: 1, limit: 10 });
   const addLeaduseRef = useRef();
@@ -89,7 +89,6 @@ export default function LiveLead({
     live_leads: 0,
     trash_leads: 0,
   });
-  const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [leadData, setLeadData] = useState([]);
   const [liveLeadAllCounts, setLiveLeadAllCounts] = useState(null);
@@ -474,12 +473,6 @@ export default function LiveLead({
       datesRef.current = todayArray;
     }
 
-    if (liveLeadFilterType) {
-      filterTypeRef.current = liveLeadFilterType;
-    } else {
-      filterTypeRef.current = 1;
-    }
-
     if (liveLeadSearchValue) {
       searchRef.current = liveLeadSearchValue;
     } else {
@@ -626,15 +619,7 @@ export default function LiveLead({
     const payload = {
       region_type: convertAsJson?.user_id,
       ...(bucketName ? { bucket: bucketName } : {}),
-      ...(searchvalue && filterTypeRef.current == 1
-        ? { phone: searchvalue }
-        : searchvalue && filterTypeRef.current == 2
-          ? { name: searchvalue }
-          : searchvalue && filterTypeRef.current == 3
-            ? { email: searchvalue }
-            : searchvalue && filterTypeRef.current == 4
-              ? { course: searchvalue }
-              : {}),
+      ...(searchvalue && { search_filter: searchvalue }),
       // start_date: startDate,
       // end_date: endDate,
       page: pageNumber,
@@ -1041,19 +1026,31 @@ export default function LiveLead({
   };
 
   const handleSearch = (e) => {
-    setSearchValue(e.target.value);
+    const input = e.target.value;
+    setSearchValue(input);
+    dispatch(storeLiveLeadSearchValue(input));
     setLoading(true);
-    dispatch(storeLiveLeadSearchValue(e.target.value));
-    searchRef.current = e.target.value;
-    setTimeout(() => {
-      setPagination({
-        page: 1,
-      });
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
       fetchAllLiveLeadsData({
-        searchvalue: e.target.value,
+        searchvalue: "",
         pageNumber: 1,
       });
-    }, 300);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchAllLiveLeadsData({
+        searchvalue: input,
+        pageNumber: 1,
+      });
+    }, 400);
   };
 
   const handlePaginationChange = ({ page, limit }) => {
@@ -1281,23 +1278,13 @@ export default function LiveLead({
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={7}>
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                        ? "Search By Name"
-                        : filterType == 3
-                          ? "Search by Email"
-                          : filterType == 4
-                            ? "Search by Course"
-                            : ""
-                  }
+                  label={"Search..."}
                   width="100%"
                   height="33px"
-                  labelFontSize="12px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -1322,10 +1309,8 @@ export default function LiveLead({
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
                     padding: searchValue
                       ? "0px 26px 0px 0px"
                       : "0px 8px 0px 0px",
@@ -1333,63 +1318,6 @@ export default function LiveLead({
                   value={searchValue}
                   onChange={handleSearch}
                 />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            setFilterType(e.target.value);
-                            dispatch(storeLiveLeadFilterType(e.target.value));
-                            filterTypeRef.current = e.target.value;
-                            if (searchValue == "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                              dispatch(storeLiveLeadSearchValue(null));
-                              searchRef.current = null;
-                              setPagination({
-                                page: 1,
-                              });
-                              fetchAllLiveLeadsData({
-                                searchvalue: null,
-                                pageNumber: 1,
-                              });
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "6px" }}>
-                            Search by Course
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={18} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
               </div>
             </Col>
             <Col span={10}>

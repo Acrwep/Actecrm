@@ -590,7 +590,7 @@ const StudentVerify = forwardRef(
           };
           await inserCustomerTrack(trackPayload);
         }
-        CommonMessage("success", "Updated Successfully");
+        CommonMessage("success", "Candidate Verified Successfully");
 
         if (customerDetails?.status === "Awaiting Verify") {
           setTimeout(async () => {
@@ -1105,12 +1105,26 @@ const StudentVerify = forwardRef(
             )}
             <>
               {buttonLoading ? (
-                <button className={"users_adddrawer_loadingcreatebutton"}>
+                <button
+                  className={"users_adddrawer_loadingcreatebutton"}
+                  style={
+                    stepIndex === 1 &&
+                    customerDetails.status === "Awaiting Verify"
+                      ? { width: "140px" }
+                      : {}
+                  }
+                >
                   <CommonSpinner />
                 </button>
               ) : (
                 <button
                   className={"users_adddrawer_createbutton"}
+                  style={
+                    stepIndex === 1 &&
+                    customerDetails.status === "Awaiting Verify"
+                      ? { width: "140px" }
+                      : {}
+                  }
                   onClick={
                     stepIndex === 0
                       ? handleWelcomeCallDetails
@@ -1119,7 +1133,10 @@ const StudentVerify = forwardRef(
                         : handleTrainerFixation
                   }
                 >
-                  Update
+                  {stepIndex == 1 &&
+                  customerDetails.status === "Awaiting Verify"
+                    ? "Verify Candidate"
+                    : "Update"}
                 </button>
               )}
             </>
@@ -1139,7 +1156,30 @@ const StudentVerify = forwardRef(
                 ) : (
                   <Button
                     onClick={() => {
-                      setStepIndex(stepIndex + 1);
+                      if (stepIndex == 0) {
+                        if (
+                          customerDetails.welcome_call_status == 0 ||
+                          customerDetails.explained_next_process == 0 ||
+                          customerDetails.verified_contactdetails_and_expectation ==
+                            0
+                        ) {
+                          CommonMessage(
+                            "error",
+                            "Please enable all mandatory options in the Welcome Call section.",
+                          );
+                        } else {
+                          setStepIndex(stepIndex + 1);
+                        }
+                      } else if (stepIndex == 1) {
+                        if (customerDetails.status === "Awaiting Verify") {
+                          CommonMessage(
+                            "error",
+                            "Please verify the candidate first.",
+                          );
+                        } else {
+                          setStepIndex(stepIndex + 1);
+                        }
+                      }
                     }}
                     className={"customer_stepperbuttons"}
                   >

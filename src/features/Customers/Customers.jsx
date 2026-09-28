@@ -961,6 +961,7 @@ export default function Customers() {
                                 display: "flex",
                                 alignItems: "center",
                                 marginTop: "3px",
+                                marginBottom: "6px",
                               }}
                             >
                               <button
@@ -1209,7 +1210,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Trainer not Assigned yet",
+                                "Trainer not assigned yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer Verify" ||
@@ -1311,7 +1312,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Trainer not Assigned yet",
+                                "Trainer not assigned yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer Verify" ||
@@ -1413,7 +1414,7 @@ export default function Customers() {
                             ) {
                               CommonMessage(
                                 "warning",
-                                "Trainer not Assigned yet",
+                                "Trainer not assigned yet",
                               );
                             } else if (
                               record.status === "Awaiting Trainer Verify"
