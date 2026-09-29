@@ -2275,3 +2275,11 @@
   color: #52c41a;
   width: max-content;
 }
+.customer_assign_trainer_skeleton_container {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  background: #fff;
+  padding: 12px;
+  margin-bottom: 30px;
+}

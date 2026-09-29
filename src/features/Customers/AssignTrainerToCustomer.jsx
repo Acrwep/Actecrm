@@ -9,6 +9,7 @@ import {
   Steps,
   Flex,
   Tooltip,
+  Skeleton,
 } from "antd";
 import { LuIndianRupee } from "react-icons/lu";
 import { FaRegEye } from "react-icons/fa";
@@ -220,25 +221,23 @@ export default function AssignTrainerToCustomer({
         customer_details && customer_details.id ? customer_details.id : null,
     };
 
+    setHistoryLoading(true);
+
     try {
       const response = await getAssignTrainerHistoryForCustomer(payload);
       console.log("trainer history response", response);
       const historyData = response?.data?.data || [];
-      setHistoryLoading(true);
       if (historyData.length >= 1) {
         const reverseData = historyData.reverse();
         setTrainerHistory(reverseData);
-
-        setTimeout(() => {
-          setHistoryLoading(false);
-        }, 300);
       } else {
         setTrainerHistory([]);
-        setTimeout(() => {
-          setHistoryLoading(false);
-        }, 300);
       }
+      setTimeout(() => {
+        setHistoryLoading(false);
+      }, 300);
     } catch (error) {
+      setHistoryLoading(false);
       setTrainerHistory([]);
       console.log("trainer history error", error);
     } finally {
@@ -340,6 +339,7 @@ export default function AssignTrainerToCustomer({
 
   const renderTrainerOption = (props, option) => {
     const { key, ...optionProps } = props;
+
     return (
       <li
         key={key}
@@ -794,6 +794,26 @@ export default function AssignTrainerToCustomer({
       console.log("customer track error", error);
     }
   };
+
+  if (historyLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          padding: "16px",
+        }}
+      >
+        <div className="customer_assign_trainer_skeleton_container">
+          <Skeleton active paragraph={{ rows: 2 }} />
+        </div>
+        <div className="customer_assign_trainer_skeleton_container">
+          <Skeleton active paragraph={{ rows: 4 }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="customer_statusupdate_adddetailsContainer">
@@ -801,158 +821,259 @@ export default function AssignTrainerToCustomer({
           Previous Assigned Trainer History
         </p>
 
-        {historyLoading === false ? (
-          <>
-            {trainerHistory.length >= 1 ? (
-              <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-                <Collapse
-                  className="assesmntresult_collapse"
-                  // items={trainerHistory}
-                  activeKey={collapseDefaultKey}
-                  onChange={(keys) => {
-                    setCollapseDefaultKey(keys);
-                  }}
-                >
-                  {trainerHistory.map((item, index) => {
-                    return (
-                      <Collapse.Panel
-                        key={index + 1}
-                        header={
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              width: "100%",
-                              fontSize: "13px",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span>
-                              Trainer Id -{" "}
-                              <span className="customer_trainerverify_accordion_heading">
-                                {item.trainer_code ? item.trainer_code : "-"}
-
-                                {item.is_escalated == 1 && (
-                                  <span className="customer_trainerverify_accordion_heading_batch">
-                                    {`( Trainer is Escalated )`}
-                                  </span>
-                                )}
-                              </span>
-                            </span>
-
-                            {item.is_verified == 1 ? (
-                              <div className="customer_trans_statustext_container">
-                                <BsPatchCheckFill color="#3c9111" />
-                                <p
-                                  style={{
-                                    color: "#3c9111",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  Verified
-                                </p>
-                              </div>
-                            ) : item.is_rejected == 1 &&
-                              item.is_verified == 0 ? (
-                              <div className="customer_trans_statustext_container">
-                                <FaRegCircleXmark color="#d32f2f" />
-                                <p
-                                  style={{
-                                    color: "#d32f2f",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  Rejected
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="customer_trans_statustext_container">
-                                <PiClockCounterClockwiseBold
-                                  size={16}
-                                  color="gray"
-                                />
-                                <p
-                                  style={{
-                                    color: "gray",
-                                    fontWeight: 500,
-                                  }}
-                                >
-                                  Waiting for Verify
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        }
+        {trainerHistory.length >= 1 ? (
+          <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+            <Collapse
+              className="assesmntresult_collapse"
+              // items={trainerHistory}
+              activeKey={collapseDefaultKey}
+              onChange={(keys) => {
+                setCollapseDefaultKey(keys);
+              }}
+            >
+              {trainerHistory.map((item, index) => {
+                return (
+                  <Collapse.Panel
+                    key={index + 1}
+                    header={
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          fontSize: "13px",
+                          alignItems: "center",
+                        }}
                       >
-                        <div>
-                          <Row gutter={16} style={{ marginTop: "6px" }}>
+                        <span>
+                          Trainer Id -{" "}
+                          <span className="customer_trainerverify_accordion_heading">
+                            {item.trainer_code ? item.trainer_code : "-"}
+
+                            {item.is_escalated == 1 && (
+                              <span className="customer_trainerverify_accordion_heading_batch">
+                                {`( Trainer is Escalated )`}
+                              </span>
+                            )}
+                          </span>
+                        </span>
+
+                        {item.is_verified == 1 ? (
+                          <div className="customer_trans_statustext_container">
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p
+                              style={{
+                                color: "#3c9111",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Verified
+                            </p>
+                          </div>
+                        ) : item.is_rejected == 1 && item.is_verified == 0 ? (
+                          <div className="customer_trans_statustext_container">
+                            <FaRegCircleXmark color="#d32f2f" />
+                            <p
+                              style={{
+                                color: "#d32f2f",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Rejected
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="customer_trans_statustext_container">
+                            <PiClockCounterClockwiseBold
+                              size={16}
+                              color="gray"
+                            />
+                            <p
+                              style={{
+                                color: "gray",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Waiting for Verify
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    }
+                  >
+                    <div>
+                      <Row gutter={16} style={{ marginTop: "6px" }}>
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  HR Name
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <EllipsisTooltip
+                                text={
+                                  item.trainer_hr_name
+                                    ? item.trainer_hr_name
+                                    : "-"
+                                }
+                                smallText={true}
+                              />
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Trainer Name
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <EllipsisTooltip
+                                text={
+                                  item.trainer_name ? item.trainer_name : "-"
+                                }
+                                smallText={true}
+                              />
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Trainer Type
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {item.trainer_type}
+                              </p>
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Mode Of Class
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {item.mode_of_class}
+                              </p>
+                            </Col>
+                          </Row>
+                        </Col>
+
+                        <Col span={12}>
+                          <Row>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Commercial
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {"₹" + item.commercial}
+                              </p>
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Commercial%
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <p className="customerdetails_text">
+                                {item.commercial_percentage
+                                  ? item.commercial_percentage + "%"
+                                  : ""}
+                              </p>
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Proof Screenshot
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <button
+                                className="pendingcustomer_paymentscreenshot_viewbutton"
+                                style={{ gap: "4px" }}
+                                onClick={() => {
+                                  setIsProofScreenshotModal(true);
+                                  setProofScreenshot(
+                                    item && item.proof_communication !== null
+                                      ? item.proof_communication
+                                      : "-",
+                                  );
+                                }}
+                              >
+                                <FaRegEye size={16} /> View screenshot
+                              </button>
+                            </Col>
+                          </Row>
+
+                          <Row style={{ marginTop: "12px" }}>
+                            <Col span={12}>
+                              <div className="customerdetails_rowheadingContainer">
+                                <p className="customerdetails_rowheading">
+                                  Comments
+                                </p>
+                              </div>
+                            </Col>
+                            <Col span={12}>
+                              <EllipsisTooltip
+                                text={item.comments ? item.comments : "-"}
+                                smallText={true}
+                              />
+                            </Col>
+                          </Row>
+                        </Col>
+                      </Row>
+
+                      {/* rejected comment section */}
+                      <Row
+                        gutter={16}
+                        style={{
+                          marginTop: "16px",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        {item.is_rejected == 1 && item.is_verified == 0 ? (
+                          <>
                             <Col span={12}>
                               <Row>
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      HR Name
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <EllipsisTooltip
-                                    text={
-                                      item.trainer_hr_name
-                                        ? item.trainer_hr_name
-                                        : "-"
-                                    }
-                                    smallText={true}
-                                  />
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Trainer Name
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <EllipsisTooltip
-                                    text={
-                                      item.trainer_name
-                                        ? item.trainer_name
-                                        : "-"
-                                    }
-                                    smallText={true}
-                                  />
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Trainer Type
+                                      Rejected Date
                                     </p>
                                   </div>
                                 </Col>
                                 <Col span={12}>
                                   <p className="customerdetails_text">
-                                    {item.trainer_type}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Mode Of Class
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.mode_of_class}
+                                    {moment(item.rejected_date).format(
+                                      "DD/MM/YYYY",
+                                    )}
                                   </p>
                                 </Col>
                               </Row>
@@ -963,66 +1084,7 @@ export default function AssignTrainerToCustomer({
                                 <Col span={12}>
                                   <div className="customerdetails_rowheadingContainer">
                                     <p className="customerdetails_rowheading">
-                                      Commercial
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {"₹" + item.commercial}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Commercial%
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {item.commercial_percentage
-                                      ? item.commercial_percentage + "%"
-                                      : ""}
-                                  </p>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Proof Screenshot
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <button
-                                    className="pendingcustomer_paymentscreenshot_viewbutton"
-                                    style={{ gap: "4px" }}
-                                    onClick={() => {
-                                      setIsProofScreenshotModal(true);
-                                      setProofScreenshot(
-                                        item &&
-                                          item.proof_communication !== null
-                                          ? item.proof_communication
-                                          : "-",
-                                      );
-                                    }}
-                                  >
-                                    <FaRegEye size={16} /> View screenshot
-                                  </button>
-                                </Col>
-                              </Row>
-
-                              <Row style={{ marginTop: "12px" }}>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Comments
+                                      Reason for Rejection
                                     </p>
                                   </div>
                                 </Col>
@@ -1034,94 +1096,38 @@ export default function AssignTrainerToCustomer({
                                 </Col>
                               </Row>
                             </Col>
-                          </Row>
-
-                          {/* rejected comment section */}
-                          <Row
-                            gutter={16}
-                            style={{
-                              marginTop: "16px",
-                              marginBottom: "12px",
-                            }}
-                          >
-                            {item.is_rejected == 1 && item.is_verified == 0 ? (
-                              <>
-                                <Col span={12}>
-                                  <Row>
-                                    <Col span={12}>
-                                      <div className="customerdetails_rowheadingContainer">
-                                        <p className="customerdetails_rowheading">
-                                          Rejected Date
-                                        </p>
-                                      </div>
-                                    </Col>
-                                    <Col span={12}>
-                                      <p className="customerdetails_text">
-                                        {moment(item.rejected_date).format(
-                                          "DD/MM/YYYY",
-                                        )}
-                                      </p>
-                                    </Col>
-                                  </Row>
-                                </Col>
-
-                                <Col span={12}>
-                                  <Row>
-                                    <Col span={12}>
-                                      <div className="customerdetails_rowheadingContainer">
-                                        <p className="customerdetails_rowheading">
-                                          Reason for Rejection
-                                        </p>
-                                      </div>
-                                    </Col>
-                                    <Col span={12}>
-                                      <EllipsisTooltip
-                                        text={
-                                          item.comments ? item.comments : "-"
-                                        }
-                                        smallText={true}
-                                      />
-                                    </Col>
-                                  </Row>
-                                </Col>
-                              </>
-                            ) : item.verified_date ? (
+                          </>
+                        ) : item.verified_date ? (
+                          <Col span={12}>
+                            <Row>
                               <Col span={12}>
-                                <Row>
-                                  <Col span={12}>
-                                    <div className="customerdetails_rowheadingContainer">
-                                      <p className="customerdetails_rowheading">
-                                        Verified Date
-                                      </p>
-                                    </div>
-                                  </Col>
-                                  <Col span={12}>
-                                    <p className="customerdetails_text">
-                                      {moment(item.verified_date).format(
-                                        "DD/MM/YYYY",
-                                      )}
-                                    </p>
-                                  </Col>
-                                </Row>
+                                <div className="customerdetails_rowheadingContainer">
+                                  <p className="customerdetails_rowheading">
+                                    Verified Date
+                                  </p>
+                                </div>
                               </Col>
-                            ) : (
-                              ""
-                            )}
-                          </Row>
-                        </div>
-                      </Collapse.Panel>
-                    );
-                  })}
-                </Collapse>
-              </div>
-            ) : (
-              <p className="customer_trainerhistory_nodatatext">
-                No Data found
-              </p>
-            )}
-          </>
+                              <Col span={12}>
+                                <p className="customerdetails_text">
+                                  {moment(item.verified_date).format(
+                                    "DD/MM/YYYY",
+                                  )}
+                                </p>
+                              </Col>
+                            </Row>
+                          </Col>
+                        ) : (
+                          ""
+                        )}
+                      </Row>
+                    </div>
+                  </Collapse.Panel>
+                );
+              })}
+            </Collapse>
+          </div>
         ) : (
-          ""
+          <p className="customer_trainerhistory_nodatatext">No Data found</p>
         )}
       </div>
 
