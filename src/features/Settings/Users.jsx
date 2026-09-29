@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { InputAdornment } from "@mui/material";
 import {
   Row,
   Col,
@@ -98,12 +99,19 @@ export default function Users({
   const [passwordError, setPasswordError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  const getRegionPrefix = (rId) => {
+    if (rId == 1) return "CHN";
+    if (rId == 2) return "BNG";
+    if (rId == 3) return "HUB";
+    return "HUB";
+  };
   const [profileImage, setProfileImage] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
-  const [regionId, setRegionId] = useState(null);
+  const [regionId, setRegionId] = useState(3);
   const [regionError, setRegionError] = useState("");
   const [branchOptions, setBranchOptions] = useState([]);
   const [branchId, setBranchId] = useState("");
@@ -414,6 +422,7 @@ export default function Users({
     //end
     setTargetMonthEndDate(endDate);
     setAssignTargetMonthEndDate(endDate);
+    getBranchesData(3);
   }, []);
 
   useEffect(() => {
@@ -533,7 +542,6 @@ export default function Users({
     }
   };
 
-
   const handlePreview = async (file) => {
     if (file.url) {
       setPreviewImage(file.url);
@@ -573,7 +581,13 @@ export default function Users({
   const handleEdit = (item) => {
     console.log("clicked user", item);
     setEditUserId(item.id);
-    setUserId(item.user_id);
+
+    // const prefix = getRegionPrefix(item?.region_id);
+    // let numericId = item.user_id || "";
+    // if (numericId.toUpperCase().startsWith(prefix)) {
+    //   numericId = numericId.substring(prefix.length);
+    // }
+    setUserId(item.user_id || "");
     setProfileName(item.user_name);
     setPassword(item.password);
     setConfirmPassword(item.password);
@@ -832,9 +846,10 @@ export default function Users({
     setProfileImage("");
     setMobile("");
     setMobileError("");
-    setRegionId(null);
+    setRegionId(3);
+    getBranchesData(3);
     setRegionError("");
-    setBranchId("");
+    setBranchId(10);
     setBranchIdError("");
   };
 
@@ -1012,6 +1027,8 @@ export default function Users({
               className="leadmanager_addleadbutton"
               onClick={() => {
                 setIsOpenAddDrawer(true);
+                setRegionId(3);
+                setBranchId(10);
               }}
             >
               Add User
@@ -1091,44 +1108,48 @@ export default function Users({
             {profileImage ? null : (
               <div className="users_profile_empty_state">
                 <div className="users_profile_empty_icon_wrapper">
-                  <LuCloudUpload size={20} />
+                  <LuCloudUpload size={17} />
                 </div>
-                <div className="users_profile_empty_text">
-                  Upload Photo
-                </div>
+                <div className="users_profile_empty_text">Upload Photo</div>
               </div>
             )}
           </Upload>
         </div>
         <div style={{ marginBottom: "24px" }}>
-          <div
-            style={{
-              fontSize: "14px",
-              fontWeight: 600,
-              color: "#333",
-              paddingBottom: "8px",
-              borderBottom: "1px solid #f0f0f0",
-              marginBottom: "16px",
-            }}
-          >
-            Personal Details
-          </div>
+          <div className="users_adduser_headings">Personal Details</div>
           <Row gutter={[16, 20]}>
             <Col span={8}>
               <CommonInputField
                 label="User Id"
+                // startAdornment={
+                //   <InputAdornment position="start">
+                //     <span
+                //       style={{
+                //         fontSize: "12px",
+                //         color: "#666",
+                //         fontWeight: 600,
+                //       }}
+                //     >
+                //       {getRegionPrefix(regionId)}
+                //     </span>
+                //   </InputAdornment>
+                // }
                 required={true}
                 height={"34px"}
                 labelFontSize={"11px"}
                 onChange={(e) => {
-                  setUserId(e.target.value);
+                  const val = e.target.value;
+                  // if (val === "" || /^[0-9]+$/.test(val)) {
+                  setUserId(val);
                   if (validationTrigger) {
-                    setUserIdError(addressValidator(e.target.value));
+                    setUserIdError(addressValidator(val));
                   }
+                  // }
                 }}
                 value={userId}
                 error={userIdError}
                 disabled={editUserId ? true : false}
+                errorFontSize={"9px"}
               />
             </Col>
             <Col span={8}>
@@ -1145,6 +1166,7 @@ export default function Users({
                 }}
                 value={profileName}
                 error={profileNameError}
+                errorFontSize={"9px"}
               />
             </Col>
             <Col span={8}>
@@ -1161,24 +1183,14 @@ export default function Users({
                 }}
                 value={mobile}
                 error={mobileError}
+                errorFontSize={"9px"}
               />
             </Col>
           </Row>
         </div>
 
         <div style={{ marginBottom: "24px" }}>
-          <div
-            style={{
-              fontSize: "14px",
-              fontWeight: 600,
-              color: "#333",
-              paddingBottom: "8px",
-              borderBottom: "1px solid #f0f0f0",
-              marginBottom: "16px",
-            }}
-          >
-            Work Information
-          </div>
+          <div className="users_adduser_headings">Work Information</div>
           <Row gutter={[16, 20]}>
             <Col span={12}>
               <CommonSelectField
@@ -1202,6 +1214,7 @@ export default function Users({
                 }}
                 value={regionId}
                 error={regionError}
+                errorFontSize={"9px"}
               />
             </Col>
             <Col span={12}>
@@ -1219,12 +1232,15 @@ export default function Users({
                 }}
                 value={branchId}
                 error={branchIdError}
+                disabled={regionId == 3}
+                errorFontSize={"9px"}
               />
             </Col>
             <Col span={12}>
               <CommonAntdMultiSelect
                 label="Roles"
                 height="30px"
+                mandatory={true}
                 options={rolesData}
                 onChange={(value) => {
                   setUserRoles(value);
@@ -1234,6 +1250,7 @@ export default function Users({
                 }}
                 value={userRoles}
                 error={userRolesError}
+                errorFontSize={"9px"}
               />
             </Col>
             <Col span={12}>
@@ -1252,18 +1269,7 @@ export default function Users({
         </div>
 
         <div style={{ marginBottom: "24px" }}>
-          <div
-            style={{
-              fontSize: "14px",
-              fontWeight: 600,
-              color: "#333",
-              paddingBottom: "8px",
-              borderBottom: "1px solid #f0f0f0",
-              marginBottom: "16px",
-            }}
-          >
-            Security & Targets
-          </div>
+          <div className="users_adduser_headings">Security & Targets</div>
           <Row gutter={[16, 24]}>
             <Col span={12}>
               <CommonOutlinedInput
@@ -1276,14 +1282,14 @@ export default function Users({
                   <>
                     {showPassword ? (
                       <FiEye
-                        size={18}
+                        size={14}
                         color="gray"
                         style={{ cursor: "pointer" }}
                         onClick={() => setShowPassword(!showPassword)}
                       />
                     ) : (
                       <FiEyeOff
-                        size={18}
+                        size={14}
                         color="gray"
                         style={{ cursor: "pointer" }}
                         onClick={() => setShowPassword(!showPassword)}
@@ -1302,13 +1308,13 @@ export default function Users({
                 }}
                 value={password}
                 error={passwordError}
-                errorFontSize="10px"
+                errorFontSize="9px"
                 helperTextContainerStyle={{
                   position: "absolute",
                   bottom:
                     passwordError === "" ||
                     passwordError.includes("8 characters")
-                      ? "0px"
+                      ? "-2px"
                       : "-18px",
                   width: "100%",
                 }}
@@ -1325,7 +1331,7 @@ export default function Users({
                   <>
                     {showConfirmPassword ? (
                       <FiEye
-                        size={18}
+                        size={14}
                         color="gray"
                         style={{ cursor: "pointer" }}
                         onClick={() =>
@@ -1334,7 +1340,7 @@ export default function Users({
                       />
                     ) : (
                       <FiEyeOff
-                        size={18}
+                        size={14}
                         color="gray"
                         style={{ cursor: "pointer" }}
                         onClick={() =>
@@ -1354,10 +1360,10 @@ export default function Users({
                 }}
                 value={confirmPassword}
                 error={confirmPasswordError}
-                errorFontSize="10px"
+                errorFontSize="9px"
                 helperTextContainerStyle={{
                   position: "absolute",
-                  bottom: "0px",
+                  bottom: "-2px",
                   width: "100%",
                 }}
               />

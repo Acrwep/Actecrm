@@ -27,6 +27,7 @@ export default function CommonInputField({
   outsideLabel,
   errorLabel,
   endAdornment,
+  startAdornment,
 }) {
   const inputRef = useRef(null);
   const cursorRef = useRef(null);
@@ -167,6 +168,7 @@ export default function CommonInputField({
           input: {
             maxLength: { maxLength },
             endAdornment: endAdornment,
+            startAdornment: startAdornment,
           },
         }}
         onInput={onInput}

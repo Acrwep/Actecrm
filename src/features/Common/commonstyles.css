@@ -516,7 +516,7 @@
 /* antd multiselect styles */
 .commonantdmultiselect_label {
   /* position: absolute; */
-  font-size: 11px;
+  font-size: 10px;
   margin-bottom: 6px !important;
   color: rgb(105, 105, 105);
 }
@@ -545,7 +545,7 @@
   box-shadow: none !important;
 }
 .common_antdmultiselectfield_error .ant-select-selector {
-  min-height: 41px;
+  min-height: 36px;
   max-height: 80px;
   overflow-y: auto;
   border-radius: 4px !important;
@@ -563,7 +563,7 @@
   align-items: center;
 }
 .commonantdmultifield_errortext {
-  font-size: 12px;
+  font-size: 10px;
   color: #d32f2f;
   margin-top: 4px !important;
 }

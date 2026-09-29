@@ -17,7 +17,7 @@ export default function CommonAntdMultiSelect({
   allSelectLabel = "All",
 }) {
   const allValues = options.map(
-    (item) => item.user_id ?? item.role_id ?? item.id
+    (item) => item.user_id ?? item.role_id ?? item.id,
   );
 
   const handleChange = (selectedValues) => {
@@ -38,7 +38,18 @@ export default function CommonAntdMultiSelect({
       {label && (
         <div style={{ display: "flex", position: "relative" }}>
           <label className="commonantdmultiselect_label">{label}</label>
-          {mandatory && <p className="commonfield_asterisk">*</p>}
+          {mandatory && (
+            <p
+              style={{
+                marginLeft: "2.5px",
+                fontSize: "9px",
+                color: "rgb(105, 105, 105)",
+              }}
+              className="commonfield_asterisk"
+            >
+              *
+            </p>
+          )}
         </div>
       )}
 
@@ -85,7 +96,7 @@ export default function CommonAntdMultiSelect({
           const itemValue = item.user_id ?? item.role_id ?? item.id;
           const itemLabel = item.user_name
             ? `${item.user_id} - ${item.user_name}`
-            : item.role_name ?? item.name;
+            : (item.role_name ?? item.name);
 
           return (
             <Select.Option key={itemValue} value={itemValue} label={itemLabel}>

@@ -58,8 +58,7 @@ export const userIdValidator = (userid) => {
   let error = "";
 
   if (!userid || userid.length <= 0) error = " is required";
-  else if (!mobileRegex.test(userid) || userid.length < 4)
-    error = " is not valid";
+  else if (userid.length < 4) error = " is not valid";
   return error;
 };
 
