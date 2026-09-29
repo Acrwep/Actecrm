@@ -518,7 +518,7 @@
   /* position: absolute; */
   font-size: 11px;
   margin-bottom: 6px !important;
-  color: #333;
+  color: rgb(105, 105, 105);
 }
 .commonMultiselectfield .ant-select-selector {
   min-height: 36px;

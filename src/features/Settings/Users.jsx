@@ -10,7 +10,9 @@ import {
   Modal,
   Upload,
   Avatar,
+  Divider,
 } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import CommonTable from "../Common/CommonTable";
@@ -97,12 +99,14 @@ export default function Users({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [profileImage, setProfileImage] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState("");
   const [mobile, setMobile] = useState("");
   const [mobileError, setMobileError] = useState("");
   const [regionId, setRegionId] = useState(null);
   const [regionError, setRegionError] = useState("");
   const [branchOptions, setBranchOptions] = useState([]);
-  const [branchId, setBranchId] = useState(null);
+  const [branchId, setBranchId] = useState("");
   const [branchIdError, setBranchIdError] = useState("");
   const [childUsers, setChildUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
@@ -529,6 +533,23 @@ export default function Users({
     }
   };
 
+
+  const handlePreview = async (file) => {
+    if (file.url) {
+      setPreviewImage(file.url);
+      setPreviewOpen(true);
+      return;
+    }
+    setPreviewOpen(true);
+    const rawFile = file.originFileObj || file;
+    const reader = new FileReader();
+    reader.readAsDataURL(rawFile);
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      setPreviewImage(dataUrl);
+      setPreviewOpen(true);
+    };
+  };
   const handleProfileImageUpload = (file) => {
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
     if (!isJpgOrPng) {
@@ -813,7 +834,7 @@ export default function Users({
     setMobileError("");
     setRegionId(null);
     setRegionError("");
-    setBranchId(null);
+    setBranchId("");
     setBranchIdError("");
   };
 
@@ -1035,379 +1056,384 @@ export default function Users({
         width="45%"
         style={{ position: "relative", paddingBottom: 65 }}
       >
-        <div
-          className="profilepage_personalinfo_profileupload_container"
-          id="profilepage_personalinfo_profileupload_container"
-        >
-          <div
-            className="profilepage_personalinfo_profileimage_container"
-            style={profileImage ? { padding: 0, position: "relative" } : {}}
+        <input
+          autoFocus
+          style={{
+            width: 0,
+            height: 0,
+            opacity: 0,
+            position: "absolute",
+            zIndex: -1,
+          }}
+        />
+
+        <div className="users_profile_upload_container">
+          <Upload
+            listType="picture-circle"
+            fileList={
+              profileImage
+                ? [
+                    {
+                      uid: "-1",
+                      name: "image.png",
+                      status: "done",
+                      url: profileImage,
+                    },
+                  ]
+                : []
+            }
+            onRemove={() => setProfileImage("")}
+            beforeUpload={handleProfileImageUpload}
+            accept=".png,.jpg,.jpeg"
+            onPreview={handlePreview}
+            showUploadList={{ showPreviewIcon: true }}
           >
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                }}
-              />
-            ) : (
-              <FaUserLarge size={23} />
-            )}
-
-            {profileImage && (
-              <div
-                className="profile_image_remove_btn"
-                onClick={() => setProfileImage("")}
-                title="Remove Image"
-              >
-                <RiDeleteBinLine size={12} />
-              </div>
-            )}
-          </div>
-
-          <div style={{ width: "100%" }}>
-            <Dragger
-              className="profilepage_personalinfo_dragger"
-              accept=".jpg,.jpeg,.png"
-              showUploadList={false}
-              beforeUpload={handleProfileImageUpload}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: "12px",
-                }}
-              >
-                <div className="profilepage_personalinfo_dragger_icon_container">
-                  <LuCloudUpload size={21} />
+            {profileImage ? null : (
+              <div className="users_profile_empty_state">
+                <div className="users_profile_empty_icon_wrapper">
+                  <LuCloudUpload size={20} />
+                </div>
+                <div className="users_profile_empty_text">
+                  Upload Photo
                 </div>
               </div>
-              <p className="ant-upload-text">Upload your profile image</p>
-              <p className="ant-upload-hint">PNG or JPG (max. 5MB)</p>
-            </Dragger>
+            )}
+          </Upload>
+        </div>
+        <div style={{ marginBottom: "24px" }}>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#333",
+              paddingBottom: "8px",
+              borderBottom: "1px solid #f0f0f0",
+              marginBottom: "16px",
+            }}
+          >
+            Personal Details
           </div>
+          <Row gutter={[16, 20]}>
+            <Col span={8}>
+              <CommonInputField
+                label="User Id"
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                onChange={(e) => {
+                  setUserId(e.target.value);
+                  if (validationTrigger) {
+                    setUserIdError(addressValidator(e.target.value));
+                  }
+                }}
+                value={userId}
+                error={userIdError}
+                disabled={editUserId ? true : false}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Profile Name"
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                onChange={(e) => {
+                  setProfileName(e.target.value);
+                  if (validationTrigger) {
+                    setProfileNameError(selectValidator(e.target.value));
+                  }
+                }}
+                value={profileName}
+                error={profileNameError}
+              />
+            </Col>
+            <Col span={8}>
+              <CommonInputField
+                label="Mobile"
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                onChange={(e) => {
+                  setMobile(e.target.value);
+                  if (validationTrigger) {
+                    setMobileError(mobileValidator(e.target.value, "in"));
+                  }
+                }}
+                value={mobile}
+                error={mobileError}
+              />
+            </Col>
+          </Row>
         </div>
 
-        <Row
-          gutter={[
-            { xs: 24, sm: 24, md: 24, lg: 12 },
-            { xs: 30, sm: 30, md: 30, lg: 30 },
-          ]}
-          style={{ marginTop: "30px" }}
-        >
-          <Col span={8}>
-            <CommonInputField
-              label="User Id"
-              required={true}
-              onChange={(e) => {
-                setUserId(e.target.value);
-                if (validationTrigger) {
-                  setUserIdError(addressValidator(e.target.value));
-                }
-              }}
-              value={userId}
-              error={userIdError}
-              disabled={editUserId ? true : false}
-            />
-          </Col>
-          <Col span={8}>
-            <CommonInputField
-              label="Profile Name"
-              required={true}
-              onChange={(e) => {
-                setProfileName(e.target.value);
-                if (validationTrigger) {
-                  setProfileNameError(selectValidator(e.target.value));
-                }
-              }}
-              value={profileName}
-              error={profileNameError}
-            />
-          </Col>
+        <div style={{ marginBottom: "24px" }}>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#333",
+              paddingBottom: "8px",
+              borderBottom: "1px solid #f0f0f0",
+              marginBottom: "16px",
+            }}
+          >
+            Work Information
+          </div>
+          <Row gutter={[16, 20]}>
+            <Col span={12}>
+              <CommonSelectField
+                label="Region"
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                options={[
+                  { id: 1, name: "Chennai" },
+                  { id: 2, name: "Bangalore" },
+                  { id: 3, name: "Hub" },
+                ]}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setRegionId(value);
+                  setBranchId("");
+                  getBranchesData(parseInt(value));
+                  if (validationTrigger) {
+                    setRegionError(selectValidator(value));
+                  }
+                }}
+                value={regionId}
+                error={regionError}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonSelectField
+                label="Branch"
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                options={branchOptions}
+                onChange={(e) => {
+                  setBranchId(e.target.value);
+                  if (validationTrigger) {
+                    setBranchIdError(selectValidator(e.target.value));
+                  }
+                }}
+                value={branchId}
+                error={branchIdError}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonAntdMultiSelect
+                label="Roles"
+                height="30px"
+                options={rolesData}
+                onChange={(value) => {
+                  setUserRoles(value);
+                  if (validationTrigger) {
+                    setUserRolesError(selectValidator(value));
+                  }
+                }}
+                value={userRoles}
+                error={userRolesError}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonAntdMultiSelect
+                label="Assign Users"
+                options={assignUsersData}
+                onChange={(value) => {
+                  setChildUsers(value);
+                }}
+                value={childUsers}
+                error=""
+                height="30px"
+              />
+            </Col>
+          </Row>
+        </div>
 
-          <Col span={8}>
-            <CommonInputField
-              label="Mobile"
-              required={true}
-              onChange={(e) => {
-                setMobile(e.target.value);
-                if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value, "in"));
+        <div style={{ marginBottom: "24px" }}>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 600,
+              color: "#333",
+              paddingBottom: "8px",
+              borderBottom: "1px solid #f0f0f0",
+              marginBottom: "16px",
+            }}
+          >
+            Security & Targets
+          </div>
+          <Row gutter={[16, 24]}>
+            <Col span={12}>
+              <CommonOutlinedInput
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                icon={
+                  <>
+                    {showPassword ? (
+                      <FiEye
+                        size={18}
+                        color="gray"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setShowPassword(!showPassword)}
+                      />
+                    ) : (
+                      <FiEyeOff
+                        size={18}
+                        color="gray"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setShowPassword(!showPassword)}
+                      />
+                    )}
+                  </>
                 }
-              }}
-              value={mobile}
-              error={mobileError}
-            />
-          </Col>
-
-          <Col span={12}>
-            <CommonSelectField
-              label="Region"
-              required={true}
-              options={[
-                {
-                  id: 1,
-                  name: "Chennai",
-                },
-                {
-                  id: 2,
-                  name: "Bangalore",
-                },
-                {
-                  id: 3,
-                  name: "Hub",
-                },
-              ]}
-              onChange={(e) => {
-                const value = e.target.value;
-                setRegionId(value);
-                setBranchId("");
-                getBranchesData(parseInt(value));
-                if (validationTrigger) {
-                  setRegionError(selectValidator(value));
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (validationTrigger) {
+                    setPasswordError(passwordValidator(e.target.value));
+                    setConfirmPasswordError(
+                      confirmPasswordValidator(e.target.value, confirmPassword),
+                    );
+                  }
+                }}
+                value={password}
+                error={passwordError}
+                errorFontSize="10px"
+                helperTextContainerStyle={{
+                  position: "absolute",
+                  bottom:
+                    passwordError === "" ||
+                    passwordError.includes("8 characters")
+                      ? "0px"
+                      : "-18px",
+                  width: "100%",
+                }}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonOutlinedInput
+                label="Confirm Password"
+                type={showConfirmPassword ? "text" : "password"}
+                required={true}
+                height={"34px"}
+                labelFontSize={"11px"}
+                icon={
+                  <>
+                    {showConfirmPassword ? (
+                      <FiEye
+                        size={18}
+                        color="gray"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      />
+                    ) : (
+                      <FiEyeOff
+                        size={18}
+                        color="gray"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      />
+                    )}
+                  </>
                 }
-              }}
-              value={regionId}
-              error={regionError}
-            />
-          </Col>
-
-          <Col span={12}>
-            <CommonSelectField
-              label="Branch"
-              required={true}
-              options={branchOptions}
-              onChange={(e) => {
-                setBranchId(e.target.value);
-                if (validationTrigger) {
-                  setBranchIdError(selectValidator(e.target.value));
-                }
-              }}
-              value={branchId}
-              error={branchIdError}
-              // disabled={regionId == 3}
-            />
-          </Col>
-
-          <Col span={12}>
-            <CommonOutlinedInput
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              required={true}
-              icon={
-                <>
-                  {showPassword ? (
-                    <FiEye
-                      size={18}
-                      color="gray"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => setShowPassword(!showPassword)}
-                    />
-                  ) : (
-                    <FiEyeOff
-                      size={18}
-                      color="gray"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => setShowPassword(!showPassword)}
-                    />
-                  )}
-                </>
-              }
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (validationTrigger) {
-                  setPasswordError(passwordValidator(e.target.value));
-                  setConfirmPasswordError(
-                    confirmPasswordValidator(e.target.value, confirmPassword),
-                  );
-                }
-              }}
-              value={password}
-              error={passwordError}
-              errorFontSize="10px"
-              helperTextContainerStyle={{
-                position: "absolute",
-                bottom:
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (validationTrigger) {
+                    setConfirmPasswordError(
+                      confirmPasswordValidator(password, e.target.value),
+                    );
+                  }
+                }}
+                value={confirmPassword}
+                error={confirmPasswordError}
+                errorFontSize="10px"
+                helperTextContainerStyle={{
+                  position: "absolute",
+                  bottom: "0px",
+                  width: "100%",
+                }}
+              />
+            </Col>
+            <Col
+              span={12}
+              style={{
+                marginTop:
                   passwordError === "" || passwordError.includes("8 characters")
                     ? "0px"
-                    : "-18px",
-                width: "100%",
+                    : "12px",
               }}
-            />
-          </Col>
-
-          <Col span={12}>
-            <CommonOutlinedInput
-              label="Confirm Password"
-              type={showConfirmPassword ? "text" : "password"}
-              required={true}
-              icon={
-                <>
-                  {showConfirmPassword ? (
-                    <FiEye
-                      size={18}
-                      color="gray"
-                      style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                    />
-                  ) : (
-                    <FiEyeOff
-                      size={18}
-                      color="gray"
-                      style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                    />
-                  )}
-                </>
-              }
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (validationTrigger) {
-                  setConfirmPasswordError(
-                    confirmPasswordValidator(password, e.target.value),
-                  );
-                }
+            >
+              <TargetMonthPicker
+                label="Target Month"
+                required={false}
+                height={"34px"}
+                labelFontSize={"11px"}
+                onChange={(value) => {
+                  console.log(value, "monthhh");
+                  setTargetMonth(value);
+                  if (value) {
+                    const [monthName, year] = value.split(" - ");
+                    const selectedMonth = moment(
+                      `${monthName} ${year}`,
+                      "MMMM YYYY",
+                    );
+                    const startDate = selectedMonth
+                      .clone()
+                      .subtract(1, "month")
+                      .date(26)
+                      .format("YYYY-MM-DD");
+                    const endDate = selectedMonth
+                      .clone()
+                      .date(25)
+                      .format("YYYY-MM-DD");
+                    setTargetMonthStartDate(startDate);
+                    setTargetMonthEndDate(endDate);
+                    console.log("Start Date:", startDate);
+                    console.log("End Date:", endDate);
+                  }
+                }}
+                value={targetMonth}
+                error=""
+                labelMarginTop="2px"
+              />
+            </Col>
+            <Col
+              span={12}
+              style={{
+                marginTop:
+                  passwordError === "" || passwordError.includes("8 characters")
+                    ? "0px"
+                    : "12px",
               }}
-              value={confirmPassword}
-              error={confirmPasswordError}
-              errorFontSize="10px"
-              helperTextContainerStyle={{
-                position: "absolute",
-                bottom: "0px",
-                width: "100%",
-              }}
-            />{" "}
-          </Col>
-
-          <Col
-            span={12}
-            style={{
-              marginTop:
-                passwordError === "" || passwordError.includes("8 characters")
-                  ? "0px"
-                  : "24px",
-            }}
-          >
-            <TargetMonthPicker
-              label="Target Month"
-              required={false}
-              onChange={(value) => {
-                console.log(value, "monthhh");
-                setTargetMonth(value);
-                if (value) {
-                  const [monthName, year] = value.split(" - ");
-                  const selectedMonth = moment(
-                    `${monthName} ${year}`,
-                    "MMMM YYYY",
-                  );
-
-                  // Start date: 26th of previous month
-                  const startDate = selectedMonth
-                    .clone()
-                    .subtract(1, "month")
-                    .date(26)
-                    .format("YYYY-MM-DD");
-
-                  // End date: 25th of selected month
-                  const endDate = selectedMonth
-                    .clone()
-                    .date(25)
-                    .format("YYYY-MM-DD");
-
-                  setTargetMonthStartDate(startDate);
-                  setTargetMonthEndDate(endDate);
-                  console.log("Start Date:", startDate);
-                  console.log("End Date:", endDate);
-                }
-              }}
-              value={targetMonth}
-              error=""
-              labelMarginTop="2px"
-            />
-          </Col>
-          <Col
-            span={12}
-            style={{
-              marginTop:
-                passwordError === "" || passwordError.includes("8 characters")
-                  ? "0px"
-                  : "24px",
-            }}
-          >
-            <CommonOutlinedInput
-              label="Target"
-              type="number"
-              required={false}
-              onChange={(e) => {
-                setTarget(e.target.value);
-              }}
-              value={target}
-              onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10);
-                }
-              }}
-              icon={<LuIndianRupee size={16} />}
-            />
-          </Col>
-
-          <Col span={12}>
-            <CommonAntdMultiSelect
-              label="Roles"
-              options={rolesData}
-              onChange={(value) => {
-                setUserRoles(value);
-                if (validationTrigger) {
-                  setUserRolesError(selectValidator(value));
-                }
-              }}
-              value={userRoles}
-              error={userRolesError}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonAntdMultiSelect
-              label="Assign Users"
-              options={assignUsersData}
-              onChange={(value) => {
-                setChildUsers(value);
-              }}
-              value={childUsers}
-              error=""
-              height="55px"
-            />
-          </Col>
-        </Row>
-
-        {/* <Row gutter={16} style={{ marginTop: "30px" }}>
-        </Row> */}
-
-        {/* <Row
-          gutter={16}
-          style={{
-            marginTop: passwordError || confirmPasswordError ? "45px" : "30px",
-          }}
-        >
-        
-        </Row> */}
-
-        {/* <Row
-          gutter={16}
-          style={{
-            marginTop: "25px",
-          }}
-        >
-      
-        </Row> */}
+            >
+              <CommonOutlinedInput
+                label="Target"
+                type="number"
+                required={false}
+                height={"34px"}
+                labelFontSize={"11px"}
+                onChange={(e) => {
+                  setTarget(e.target.value);
+                }}
+                value={target}
+                onInput={(e) => {
+                  if (e.target.value.length > 10) {
+                    e.target.value = e.target.value.slice(0, 10);
+                  }
+                }}
+                icon={<LuIndianRupee size={14} />}
+              />
+            </Col>
+          </Row>
+        </div>
         <div className="leadmanager_tablefiler_footer">
           <div className="leadmanager_submitlead_buttoncontainer">
             {buttonLoading ? (
@@ -1425,6 +1451,15 @@ export default function Users({
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        open={previewOpen}
+        title="Preview Profile"
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+      >
+        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
 
       <Modal
         title="Assign Users and Role"
