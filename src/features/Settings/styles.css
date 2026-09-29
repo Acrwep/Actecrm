@@ -103,61 +103,111 @@
 }
 
 .settings_groupcard {
-  padding: 12px;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-  border-radius: 6px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.settings_groupcard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: #e2e8f0;
 }
 
 .groupname_container {
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  border-radius: 12px;
+  width: 54px;
+  height: 54px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: 600;
-  font-size: 18px;
+  font-weight: 700;
+  font-size: 20px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.groupname_container p {
+  margin: 0;
 }
 
 .settings_group_contentContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
+}
+
+.settings_group_contentContainer .role-name-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+.settings_group_contentContainer .role-name-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+.settings_group_contentContainer .role-desc-label {
   font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  margin-top: 4px;
+}
+.settings_group_contentContainer .role-desc-value {
+  font-weight: 500;
+  color: #475569;
 }
 
 .settings_groupcard_footer_container {
   display: flex;
   justify-content: space-between;
-  margin-top: 36px;
-  margin-bottom: 2px;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px dashed #e2e8f0;
 }
 
 .settings_addpermission_button {
-  background-color: transparent;
-  border-color: gray;
-  border-radius: 6px;
+  background-color: #f1f5f9;
+  border: none;
+  border-radius: 8px;
   width: 100px;
-  padding: 4px 0px;
-  font-size: 12px;
+  padding: 6px 0px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .settings_addpermission_button:hover {
-  border-color: #5b69ca;
-  opacity: 1 !important;
-  color: #5b69ca;
+  background-color: #5b69ca;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(91, 105, 202, 0.3);
 }
 
 .settings_addpermission_loading_button {
-  background-color: transparent;
-  border-color: gray;
-  border-radius: 6px;
+  background-color: #f1f5f9;
+  border: none;
+  border-radius: 8px;
   width: 100px;
-  padding: 4px 0px;
-  font-size: 12px;
+  padding: 6px 0px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
   cursor: default;
   opacity: 0.7;
 }
@@ -172,10 +222,23 @@
 }
 
 .settings_permission_subheading {
-  font-weight: 500;
-  margin-top: 12px !important;
-  font-size: 14px;
-  padding: 0px 24px 0px 24px;
+  font-weight: 600;
+  margin-top: 24px !important;
+  font-size: 15px;
+  color: #1e293b;
+  padding: 0px 24px;
+  display: flex;
+  align-items: center;
+}
+
+.settings_permission_subheading::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background-color: #5b69ca;
+  border-radius: 4px;
+  margin-right: 8px;
 }
 
 .settings_pageaccess_checkbox_container {
@@ -186,6 +249,12 @@
 
 .settings_pageaccess_checkbox {
   font-size: 13px;
+  color: #475569;
+  transition: color 0.2s;
+}
+
+.settings_pageaccess_checkbox:hover {
+  color: #1e293b;
 }
 
 .settings_pageaccess_checkbox .ant-checkbox-inner {
@@ -193,8 +262,7 @@
 }
 
 .settings_addgroupdrawer_divider {
-  margin: 18px 0px !important;
-  border-block-start: 1px solid rgb(5 5 5 / 14%) !important;
+  display: none !important;
 }
 
 .users_filterContainer {
@@ -242,16 +310,26 @@
 .settings_roles_heading {
   font-weight: 600;
   font-size: 15px;
+  margin-bottom: 12px !important;
 }
 
 .settings_groupcard_editbutton_conatiner {
   display: flex;
-  padding-top: 6px;
-  gap: 10px;
+  gap: 12px;
+  align-items: center;
+}
+
+.trainers_action_icons.delete-icon:hover {
+  color: #ef4444;
+  background-color: #fef2f2;
 }
 
 .settings_permission_rowcontainer {
-  padding: 0px 24px 0px 24px;
+  padding: 0px 24px 16px 24px;
+  background: #f8fafc;
+  margin: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
 }
 
 .settings_permissions_savebutton {
@@ -501,4 +579,95 @@
   .MuiOutlinedInput-root.Mui-focused
   .MuiAutocomplete-endAdornment {
   opacity: 1;
+}
+
+/* Polished Group Card Styles */
+.settings_groupcard {
+  padding: 16px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  border-left-width: 4px !important;
+  border-left-style: solid !important;
+  transition: all 0.2s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.settings_groupcard:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.groupname_container {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.groupname_container p {
+  margin: 0;
+}
+
+.settings_group_contentContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  /* color: #555; */
+  margin-top: 4px;
+}
+.settings_group_contentContainer p {
+  margin: 0;
+}
+
+.settings_groupcard_footer_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.settings_groupcard_editbutton_conatiner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.settings_addpermission_button {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 5px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings_addpermission_button:hover {
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+  color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
 }

@@ -401,12 +401,153 @@
   border-color: #5b69ca !important;
 }
 
-/* Profile Drawer Styles */
-.profile_details_drawer .ant-drawer-title {
+/* Premium Profile Drawer Styles */
+.premium_profile_drawer .ant-drawer-title {
   font-weight: 700 !important;
-  color: #333 !important;
+  color: #1e293b !important;
+  font-size: 16px;
 }
 
-.profile_details_drawer .ant-drawer-body {
+.premium_profile_drawer .ant-drawer-body {
   padding: 24px !important;
+  background-color: #ffffff;
+}
+
+.pp_top_card {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02);
+  margin-bottom: 20px;
+}
+
+.pp_avatar_wrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px solid #d9d9d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.pp_avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pp_avatar_placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #eff6ff;
+  width: 100%;
+  height: 100%;
+}
+
+.pp_info_section {
+  text-align: center;
+}
+
+.pp_name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.pp_company {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b69ca;
+  background-color: #eff6ff;
+  padding: 4px 14px;
+  border-radius: 12px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pp_details_container {
+  background-color: #ffffff;
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  padding: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.pp_detail_row {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.pp_detail_row:last-child {
+  margin-bottom: 0;
+}
+
+.pp_detail_row:hover {
+  background-color: #f8fafc;
+  transform: translateX(4px);
+}
+
+.pp_icon_box {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 14px;
+}
+
+.pp_icon_box.user_icon {
+  background-color: #eff6ff;
+  color: #3b82f6;
+}
+.pp_icon_box.mobile_icon {
+  background-color: #f0fdf4;
+  color: #22c55e;
+}
+.pp_icon_box.branch_icon {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+.pp_icon_box.region_icon {
+  background-color: #fdf4ff;
+  color: #d946ef;
+}
+
+.pp_detail_content {
+  display: flex;
+  flex-direction: column;
+}
+
+.pp_detail_label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pp_detail_value {
+  margin: 2px 0 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
 }

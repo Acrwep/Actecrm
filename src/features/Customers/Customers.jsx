@@ -3597,7 +3597,8 @@ export default function Customers() {
                       onClick={() => handleBucketClick(config)}
                     >
                       <p>
-                        {config.label} ({count})
+                        {`${config.label} (${count})`}
+                        {/* {config.label} ({count}) */}
                       </p>
                     </div>
                   );
@@ -3705,7 +3706,7 @@ export default function Customers() {
               >
                 <p className="customers_verify_trainer_label">
                   <span className="customers_verify_trainer_text">
-                    {config.label}
+                    {`${config.label} `}
 
                     {config.role && (
                       <span
@@ -3728,7 +3729,10 @@ export default function Customers() {
                       config.label === "Trainer Approval" ||
                       config.label === "Approval Rejected"
                         ? { marginLeft: "36px" }
-                        : {}
+                        : config.label === "Awaiting Trainer" ||
+                            config.label === "Trainer Rejected"
+                          ? { marginLeft: "3px" }
+                          : {}
                     }
                   >
                     {`( ${count} )`}

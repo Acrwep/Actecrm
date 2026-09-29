@@ -39,6 +39,7 @@ import {
   updateTrainer,
   getTrainerBanks,
   getTrainerById,
+  sendTrainerFormEmail,
 } from "../ApiService/action";
 
 import { CommonMessage } from "../Common/CommonMessage";
@@ -415,8 +416,14 @@ const AddTrainer = forwardRef(
       } else {
         if (setButtonLoading) setButtonLoading(true);
         try {
-          await createTrainer(payload);
+          const addTrainerResponse = await createTrainer(payload);
+          const addResponseData = addTrainerResponse?.data?.data;
+          console.log("addResponseData", addResponseData);
           CommonMessage("success", "Trainer Created");
+          handleSendFormLink(
+            addResponseData?.email || null,
+            addResponseData?.insertId || null,
+          );
 
           setTimeout(() => {
             if (setButtonLoading) setButtonLoading(false);
@@ -534,6 +541,27 @@ const AddTrainer = forwardRef(
         (file) => file.uid !== fileToRemove.uid,
       );
       setProfilePictureArray(newFileList);
+    };
+
+    const handleSendFormLink = async (trainerEmail, createdTrainerId) => {
+      if (!trainerEmail || !createdTrainerId) return;
+      const payload = {
+        email: trainerEmail,
+        link: `${
+          import.meta.env.VITE_EMAIL_URL
+        }/trainer-registration/${createdTrainerId}`,
+        trainer_id: createdTrainerId,
+      };
+
+      try {
+        await sendTrainerFormEmail(payload);
+      } catch (error) {
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
+      }
     };
 
     return (

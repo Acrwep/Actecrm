@@ -8,6 +8,7 @@ import {
   Divider,
   Button,
   Skeleton,
+  Table,
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
@@ -1038,105 +1039,92 @@ export default function PageAccess({
 
         <div className="settings_roles_container">
           <p className="settings_roles_heading">Roles</p>
-
-          <Row gutter={24} style={{ marginTop: "14px" }}>
+          <Row gutter={[24, 24]}>
             {rolesData.length >= 1 ? (
               <>
                 {rolesData.map((item, index) => {
                   return (
-                    <React.Fragment key={index}>
-                      <Col span={8} style={{ marginBottom: "20px" }}>
+                    <Col span={8} key={index}>
+                      <div
+                        className="settings_groupcard"
+                        style={{
+                          borderLeft: `4px solid ${item.text_color}`,
+                        }}
+                      >
                         <div
-                          className="settings_groupcard"
                           style={{
-                            borderLeft: `3px solid ${item.text_color}`,
+                            display: "flex",
+                            gap: "16px",
+                            alignItems: "flex-start",
                           }}
                         >
-                          {roleLoading ? (
-                            <div style={{ height: "120px" }}>
-                              <Skeleton
-                                avatar
-                                active
-                                paragraph={{
-                                  rows: 0,
+                          <div
+                            className="groupname_container"
+                            style={{
+                              backgroundColor: item.background_color,
+                              color: item.text_color,
+                            }}
+                          >
+                            <p>{getInitials(item.role_name)}</p>
+                          </div>
+
+                          <div className="settings_group_contentContainer">
+                            <p>
+                              Role Name:{" "}
+                              <span style={{ fontWeight: 600, color: "#333" }}>
+                                {item.role_name}
+                              </span>
+                            </p>
+                            <p>
+                              Description:{" "}
+                              <span style={{ fontWeight: 600, color: "#333" }}>
+                                {item.description ? item.description : "-"}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="settings_groupcard_footer_container">
+                          <div className="settings_groupcard_editbutton_conatiner">
+                            {permissions.includes("Update Role") && (
+                              <AiOutlineEdit
+                                size={16}
+                                className="trainers_action_icons"
+                                onClick={() => {
+                                  setRoleName(item.role_name);
+                                  setRoleId(item.role_id);
+                                  setIsOpenAddRoleModal(true);
                                 }}
                               />
-                            </div>
-                          ) : (
-                            <>
-                              <div style={{ display: "flex", gap: "16px" }}>
-                                <div
-                                  className="groupname_container"
-                                  style={{
-                                    backgroundColor: item.background_color,
-                                    color: item.text_color,
-                                  }}
-                                >
-                                  <p>{getInitials(item.role_name)}</p>
-                                </div>
+                            )}
 
-                                <div className="settings_group_contentContainer">
-                                  <p>
-                                    Role Name:{" "}
-                                    <span style={{ fontWeight: 600 }}>
-                                      {item.role_name}
-                                    </span>
-                                  </p>
-                                  <p>
-                                    Description:{" "}
-                                    <span style={{ fontWeight: 600 }}>
-                                      {item.description
-                                        ? item.description
-                                        : "-"}
-                                    </span>
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="settings_groupcard_footer_container">
-                                <div className="settings_groupcard_editbutton_conatiner">
-                                  {permissions.includes("Update Role") && (
-                                    <AiOutlineEdit
-                                      size={19}
-                                      className="trainers_action_icons"
-                                      onClick={() => {
-                                        setRoleName(item.role_name);
-                                        setRoleId(item.role_id);
-                                        setIsOpenAddRoleModal(true);
-                                      }}
-                                    />
-                                  )}
-
-                                  {permissions.includes("Delete Role") && (
-                                    <RiDeleteBinLine
-                                      size={18}
-                                      color="#d32f2f"
-                                      className="trainers_action_icons"
-                                      onClick={() => {
-                                        setRoleId(item.role_id);
-                                        setIsOpenRoleDeleteModal(true);
-                                      }}
-                                    />
-                                  )}
-                                </div>
-                                {permissions.includes("Add Permissions") && (
-                                  <button
-                                    className="settings_addpermission_button"
-                                    onClick={() => {
-                                      setRoleId(item.role_id);
-                                      setRoleName(item.role_name);
-                                      getRolePermissionsData(item.role_id);
-                                    }}
-                                  >
-                                    Permissions
-                                  </button>
-                                )}
-                              </div>
-                            </>
+                            {permissions.includes("Delete Role") && (
+                              <RiDeleteBinLine
+                                size={16}
+                                color="#dc2626"
+                                className="trainers_action_icons delete-icon"
+                                onClick={() => {
+                                  setRoleId(item.role_id);
+                                  setIsOpenRoleDeleteModal(true);
+                                }}
+                              />
+                            )}
+                          </div>
+                          {permissions.includes("Add Permissions") && (
+                            <button
+                              className="settings_addpermission_button"
+                              onClick={() => {
+                                setRoleId(item.role_id);
+                                setRoleName(item.role_name);
+                                getRolePermissionsData(item.role_id);
+                              }}
+                            >
+                              Permissions
+                            </button>
                           )}
                         </div>
-                      </Col>
-                    </React.Fragment>
+                      </div>
+                    </Col>
                   );
                 })}
               </>

@@ -35,6 +35,8 @@ import {
   getTrainerById,
   getTrainerSkills,
   updateTrainer,
+  sendOtpToCustomer,
+  verifyCustomerOtp,
 } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonSignaturePad from "../Common/CommonSignaturePad";
@@ -46,6 +48,12 @@ export default function TrainerRegistration() {
   const sigCanvasRef = useRef(null);
   const navigate = useNavigate();
   const { trainer_id } = useParams();
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [otpEmail, setOtpEmail] = useState("");
+  const [otpEmailError, setOtpEmailError] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
   const [activeKey, setActiveKey] = useState("1");
   //personal details usestates
   const [name, setName] = useState("");
@@ -559,6 +567,53 @@ export default function TrainerRegistration() {
     };
   };
 
+  const handleSendOtp = async () => {
+    const err = emailValidator(otpEmail);
+    if (err) {
+      setOtpEmailError(err);
+      return;
+    }
+    if (otpEmail != email) {
+      setOtpEmailError(
+        " is not registered. Please use your registered email address",
+      );
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await sendOtpToCustomer({ email: otpEmail, is_trainer: true });
+      CommonMessage("success", "OTP sent successfully");
+      setOtpEmailError("");
+      setIsOtpSent(true);
+    } catch (error) {
+      console.log("send OTP error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message || "Failed to send OTP",
+      );
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode) {
+      CommonMessage("error", "Please enter OTP");
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await verifyCustomerOtp({ email: otpEmail, otp: otpCode });
+      CommonMessage("success", "OTP verified successfully");
+      setIsOtpVerified(true);
+    } catch (error) {
+      console.log("verify OTP error", error);
+      CommonMessage("error", error?.response?.data?.message || "Invalid OTP");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleRemoveProfile = (fileToRemove) => {
     const newFileList = profilePictureArray.filter(
       (file) => file.uid !== fileToRemove.uid,
@@ -569,678 +624,811 @@ export default function TrainerRegistration() {
 
   return (
     <div className="trainer_payment_page_container">
-      <div
-        className="trainer_payment_page_card"
-        style={{ width: "70%", padding: "0px" }}
-      >
-        <div className="customerregistration_innerContainer">
-          <Row style={{ display: "flex" }}>
-            <Col xs={24} sm={24} md={8} lg={8}>
-              <img src={Logo} className="trainer_registration_logo" />
-              <p
-                className="trainer_registration_logotext"
-                style={{ color: "#1b538c" }}
-              >
-                Technologies
-              </p>
-              <p
-                style={{
-                  color: "#1b538c",
-                  fontWeight: "bold",
-                  marginTop: "1px",
-                  letterSpacing: "0.3px",
-                }}
-              >
-                Private Limited
-              </p>
-            </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={8}
-              lg={8}
+      {!isOtpVerified ? (
+        <div
+          className="trainer_payment_page_card"
+          style={{
+            maxWidth: "450px",
+            margin: "12vh auto",
+            padding: "40px 30px",
+            borderRadius: "12px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+            backgroundColor: "#fff",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: "30px",
+            }}
+          >
+            <img
+              src={Logo}
+              alt="ACTE Logo"
               style={{
-                display: "flex",
-                justifyContent: "center",
-                fontSize: "16px",
+                width: "120px",
+                marginBottom: "12px",
+                objectFit: "contain",
+              }}
+            />
+            <h2
+              style={{
+                color: "#1b538c",
+                fontSize: "19px",
+                fontWeight: "600",
+                margin: "0 0 8px 0",
               }}
             >
-              <p className="trainer_registration_heading">
-                Trainer Registration Form
-              </p>
-            </Col>
-            <Col
-              xs={24}
-              sm={24}
-              md={8}
-              lg={8}
-              className="customerregistration_profileimage_container"
+              Trainer Verification
+            </h2>
+            <p
+              style={{
+                color: "#6c757d",
+                fontSize: "12px",
+                margin: 0,
+                textAlign: "center",
+              }}
             >
-              <Upload
-                listType="picture-circle"
-                accept=".png,.jpg,.jpeg"
-                fileList={profilePictureArray}
-                onPreview={handlePreview}
-                onChange={handleProfileAttachment}
-                onRemove={(file) => handleRemoveProfile(file)}
-                beforeUpload={() => false} // prevent auto upload
-                style={{ width: 90, height: 90 }} // reduce size
-                className="trainer_picture_circle"
+              Please verify your email address to proceed with the registration.
+            </p>
+          </div>
+
+          <div style={{ marginBottom: isOtpSent ? "20px" : "30px" }}>
+            <CommonInputField
+              label="Email Address"
+              value={otpEmail}
+              onChange={(e) => {
+                setOtpEmail(e.target.value);
+                setOtpEmailError(emailValidator(e.target.value));
+              }}
+              error={otpEmailError}
+              disabled={isOtpSent}
+              errorFontSize={"9px"}
+              required={true}
+            />
+          </div>
+
+          {isOtpSent && (
+            <div style={{ marginBottom: "30px" }}>
+              <CommonInputField
+                label="Enter OTP"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value)}
+                required={true}
+                maxLength={6}
+              />
+            </div>
+          )}
+
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {otpLoading ? (
+              <button
+                className="trainer_registration_loadingsubmitbutton"
+                style={{
+                  width: "100%",
+                  borderRadius: "6px",
+                  padding: "10px 0",
+                }}
+                disabled
               >
-                {profilePictureArray.length >= 1 ? null : (
-                  <div>
-                    <PlusOutlined />
-                    <div style={{ marginTop: 8, fontSize: "12px" }}>
-                      Upload <br /> Profile
-                    </div>
-                  </div>
-                )}
-              </Upload>
-            </Col>
-          </Row>
+                <CommonSpinner />
+              </button>
+            ) : isOtpSent ? (
+              <button
+                className="trainer_registration_submitbutton"
+                style={{
+                  width: "100%",
+                  borderRadius: "6px",
+                  padding: "10px 0",
+                  fontSize: "13.5px",
+                }}
+                onClick={handleVerifyOtp}
+              >
+                Verify OTP
+              </button>
+            ) : (
+              <button
+                className="trainer_registration_submitbutton"
+                style={{
+                  width: "100%",
+                  borderRadius: "6px",
+                  padding: "10px 0",
+                  fontSize: "13.5px",
+                }}
+                onClick={handleSendOtp}
+              >
+                Send OTP
+              </button>
+            )}
+          </div>
         </div>
-
-        {loading ? (
-          <div className="customer_registration_loaderContainer">
-            <CommonSpinner color="#333" />
-          </div>
-        ) : (
-          // <Tabs
-          //   activeKey={activeKey}
-          //   onTabClick={handleTabClick}
-          //   items={tabItems}
-          //   className="trainer_registration_tabs"
-          // />
+      ) : (
+        <>
           <div
-            style={{ height: "auto", position: "relative", marginTop: "16px" }}
+            className="trainer_payment_page_card"
+            style={{ width: "70%", padding: "0px" }}
           >
-            <div className="logincard_innerContainer">
-              <p className="trainer_registration_headings">Primary Details</p>
-              <Row gutter={12}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="Trainer Name"
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (validationTrigger) {
-                        setNameError(nameValidator(e.target.value));
-                      }
+            <div className="customerregistration_innerContainer">
+              <Row style={{ display: "flex" }}>
+                <Col xs={24} sm={24} md={8} lg={8}>
+                  <img src={Logo} className="trainer_registration_logo" />
+                  <p
+                    className="trainer_registration_logotext"
+                    style={{ color: "#1b538c" }}
+                  >
+                    Technologies
+                  </p>
+                  <p
+                    style={{
+                      color: "#1b538c",
+                      fontWeight: "bold",
+                      marginTop: "1px",
+                      letterSpacing: "0.3px",
                     }}
-                    error={nameError}
-                    required={true}
-                    disabled={true}
-                  />
+                  >
+                    Private Limited
+                  </p>
                 </Col>
                 <Col
                   xs={24}
                   sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
+                  md={8}
+                  lg={8}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                  }}
                 >
-                  <CommonInputField
-                    label="Email"
-                    required={true}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (validationTrigger) {
-                        setEmailError(emailValidator(e.target.value));
-                      }
-                    }}
-                    value={email}
-                    error={emailError}
-                    disabled={true}
-                  />
+                  <p className="trainer_registration_heading">
+                    Trainer Registration Form
+                  </p>
                 </Col>
                 <Col
                   xs={24}
                   sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
+                  md={8}
+                  lg={8}
+                  className="customerregistration_profileimage_container"
                 >
-                  <PhoneWithCountry
-                    label="Mobile Number"
-                    onChange={(value) => {
-                      setMobile(value);
-                    }}
-                    selectedCountry={mobileCountry}
-                    countryCode={(code) => {
-                      setMobileCountryCode(code);
-                    }}
-                    onCountryChange={(iso2) => {
-                      setMobileCountry(iso2);
-                      setWhatsAppCountry(iso2);
-                    }}
-                    value={mobile}
-                    disabled={true}
-                    disableCountrySelect={true}
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <PhoneWithCountry
-                    label="WhatsApp Number"
-                    onChange={(value) => {
-                      setWhatsApp(value);
-                    }}
-                    countryCode={(code) => {
-                      setWhatsAppCountryCode(code);
-                    }}
-                    selectedCountry={whatsAppCountry}
-                    value={whatsApp}
-                    onCountryChange={(iso2) => {
-                      setWhatsAppCountry(iso2);
-                    }}
-                    disabled={true}
-                    disableCountrySelect={true}
-                  />
-                </Col>
-              </Row>
-
-              <Row gutter={12} style={{ marginTop: "30px" }}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonSelectField
-                    label="Technology"
-                    required={true}
-                    options={technologyOptions}
-                    onChange={(e) => {
-                      setTechnology(e.target.value);
-                      if (validationTrigger) {
-                        setTechnologyError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={technology}
-                    error={technologyError}
-                    valueMarginTop="-4px"
-                    disabled={true}
-                  />
-                </Col>
-
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonSelectField
-                    label="Experience"
-                    required={true}
-                    options={experienceOptions}
-                    onChange={(e) => {
-                      setExperience(e.target.value);
-                      if (validationTrigger) {
-                        setExperienceError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={experience}
-                    error={experienceError}
-                    valueMarginTop="-4px"
-                    disabled={true}
-                  />
-                </Col>
-
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonSelectField
-                    label="Relevant Experience"
-                    required={true}
-                    options={experienceOptions}
-                    onChange={(e) => {
-                      setRelevantExperience(e.target.value);
-                      if (validationTrigger) {
-                        setRelevantExperienceError(
-                          selectValidator(e.target.value),
-                        );
-                      }
-                    }}
-                    value={relevantExperience}
-                    error={relevantExperienceError}
-                    valueMarginTop="-4px"
-                    errorFontSize="9.9px"
-                    disabled={true}
-                  />
-                </Col>
-
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonSelectField
-                    label="Batch"
-                    required={true}
-                    options={batchOptions}
-                    onChange={(e) => {
-                      setBatch(e.target.value);
-                      if (validationTrigger) {
-                        setBatchError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={batch}
-                    error={batchError}
-                    valueMarginTop="-4px"
-                    disabled={true}
-                  />
-                </Col>
-              </Row>
-
-              <Row gutter={12} style={{ marginTop: "30px" }}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonMuiTimePicker
-                    label="Avaibility Time"
-                    required={true}
-                    onChange={(value) => {
-                      setAvaibilityTime(value);
-                      console.log("timeeeeeeee", value);
-                      if (validationTrigger) {
-                        setAvaibilityError(selectValidator(value));
-                      }
-                    }}
-                    value={avaibilityTime}
-                    error={avaibilityTimeError}
-                    disabled={true}
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonMuiTimePicker
-                    label="Secondary Time"
-                    required={true}
-                    onChange={(value) => {
-                      setSecondaryTime(value);
-                    }}
-                    value={secondaryTime}
-                    disabled={true}
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <div style={{ position: "relative", height: "auto" }}>
-                    <p className={"trainer_skillslabel"}>Skills</p>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "3px",
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <Select
-                          className={
-                            skills.length <= 0 && !skillsError
-                              ? "trainer_skills_multiselect"
-                              : skills.length >= 1 && !skillsError
-                                ? "trainer_skills_multiselect_two"
-                                : skills.length <= 0 && skillsError
-                                  ? "trainer_skills_multiselect_error"
-                                  : "trainer_skills_multiselect"
-                          }
-                          style={{ width: "100%" }}
-                          suffixIcon={
-                            <IoCaretDownSharp color="rgba(0,0,0,0.54)" />
-                          }
-                          disabled={true}
-                          mode="multiple"
-                          allowClear
-                          showSearch
-                          value={skills} // Only real selected values
-                          onChange={(value) => {
-                            console.log("skilllll", value);
-                            setSkills(value);
-                            if (validationTrigger) {
-                              setSkillsError(selectValidator(value));
-                            }
-                          }}
-                          status={skillsError ? "error" : ""}
-                          optionLabelProp="label"
-                          filterOption={(input, option) =>
-                            option.label
-                              .toLowerCase()
-                              .includes(input.toLowerCase())
-                          }
-                        >
-                          {skillsOptions.map((item) => {
-                            const itemValue = item.id;
-                            const itemLabel = item.name;
-
-                            return (
-                              <Select.Option
-                                key={itemValue}
-                                value={itemValue}
-                                label={itemLabel}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    textWrap: "wrap",
-                                  }}
-                                >
-                                  <Checkbox
-                                    checked={skills.includes(itemValue)}
-                                    style={{ marginRight: 8 }}
-                                    className="common_antdmultiselect_checkbox"
-                                  />
-                                  {itemLabel}
-                                </div>
-                              </Select.Option>
-                            );
-                          })}
-                        </Select>
-                      </div>
-                    </div>
-                    {skillsError && (
-                      <p className="trainer_skills_error">
-                        Skills {skillsError}
-                      </p>
-                    )}
-                  </div>
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="Location"
-                    required={true}
-                    onChange={(e) => {
-                      setLocation(e.target.value);
-                      if (validationTrigger) {
-                        setLocationError(addressValidator(e.target.value));
-                      }
-                    }}
-                    value={location}
-                    error={locationError}
-                    disabled={true}
-                  />
-                </Col>
-              </Row>
-            </div>
-
-            <Divider className="trainer_registration_dividers" />
-
-            <div className="logincard_innerContainer">
-              <p className="trainer_registration_headings">Bank Details</p>
-              <Row gutter={12}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="Account Holder Name"
-                    required={true}
-                    onChange={(e) => {
-                      setAccountHolderName(e.target.value);
-                      if (validationTrigger) {
-                        setAccountHolderNameError(
-                          nameValidator(e.target.value),
-                        );
-                      }
-                    }}
-                    value={accountHolderName}
-                    error={accountHolderNameError}
-                    errorFontSize="9px"
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="Account Number"
-                    required={true}
-                    onChange={(e) => {
-                      setAccountNumber(e.target.value);
-                      if (validationTrigger) {
-                        setAccountNumberError(
-                          accountNumberValidator(e.target.value),
-                        );
-                      }
-                    }}
-                    value={accountNumber}
-                    error={accountNumberError}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="Bank Name"
-                    required={true}
-                    onChange={(e) => {
-                      setBankName(e.target.value);
-                      if (validationTrigger) {
-                        setBankNameError(nameValidator(e.target.value));
-                      }
-                    }}
-                    value={bankName}
-                    error={bankNameError}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="Branch Name"
-                    required={true}
-                    onChange={(e) => {
-                      setBranchName(e.target.value);
-                      if (validationTrigger) {
-                        setBranchNameError(nameValidator(e.target.value));
-                      }
-                    }}
-                    value={branchName}
-                    error={branchNameError}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-              </Row>
-
-              <Row gutter={12} style={{ marginTop: "30px" }}>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonSelectField
-                    label="Account Type"
-                    required={true}
-                    options={[
-                      {
-                        id: "Savings",
-                        name: "Savings",
-                      },
-                      {
-                        id: "Current",
-                        name: "Current",
-                      },
-                    ]}
-                    onChange={(e) => {
-                      setAccountType(e.target.value);
-                      if (validationTrigger) {
-                        setAccountTypeError(selectValidator(e.target.value));
-                      }
-                    }}
-                    value={accountType}
-                    error={accountTypeError}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                >
-                  <CommonInputField
-                    label="IFSC Code"
-                    required={true}
-                    onChange={(e) => {
-                      setIfscCode(e.target.value.toUpperCase());
-                      if (validationTrigger) {
-                        setIfscCodeError(ifscValidator(e.target.value));
-                      }
-                    }}
-                    value={ifscCode}
-                    error={ifscCodeError}
-                    errorFontSize={"9px"}
-                  />
-                </Col>
-                <Col
-                  xs={24}
-                  sm={24}
-                  md={24}
-                  lg={6}
-                  className="trainer_registration_primarydetails_col_container"
-                  style={{ position: "relative", display: "flex" }}
-                >
-                  {signatureBase64 ? (
-                    <div style={{ display: "flex", gap: "6px" }}>
+                  <Upload
+                    listType="picture-circle"
+                    accept=".png,.jpg,.jpeg"
+                    fileList={profilePictureArray}
+                    onPreview={handlePreview}
+                    onChange={handleProfileAttachment}
+                    onRemove={(file) => handleRemoveProfile(file)}
+                    beforeUpload={() => false} // prevent auto upload
+                    style={{ width: 90, height: 90 }} // reduce size
+                    className="trainer_picture_circle"
+                  >
+                    {profilePictureArray.length >= 1 ? null : (
                       <div>
-                        <p style={{ fontWeight: 500, color: "#333" }}>
-                          Signature
-                        </p>
-                        <img
-                          src={signatureBase64}
-                          alt="Trainer Signature"
-                          className="customer_signature_image"
-                        />
+                        <PlusOutlined />
+                        <div style={{ marginTop: 8, fontSize: "12px" }}>
+                          Upload <br /> Profile
+                        </div>
                       </div>
-                      <button
-                        className="trainer_registration_signature_createbutton"
-                        onClick={() => setIsOpenSignatureModal(true)}
-                      >
-                        Update
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <Button
-                        className="customer_registration_addsign_button"
-                        onClick={() => {
-                          setIsOpenSignatureModal(true);
-                        }}
-                      >
-                        Add E-Signature
-                      </Button>
-                      {signatureError && (
-                        <p className="trainer_registration_signatureerror">
-                          {signatureError}
-                        </p>
-                      )}
-                    </>
-                  )}
+                    )}
+                  </Upload>
                 </Col>
               </Row>
             </div>
 
-            <div className="trainerregistrationform_submitbuttom_container">
-              {buttonLoading ? (
-                <button className="trainer_registration_loadingsubmitbutton">
-                  <CommonSpinner />
-                </button>
-              ) : (
-                <button
-                  className="trainer_registration_submitbutton"
-                  onClick={handleSubmit}
-                >
-                  Submit
-                </button>
-              )}
-            </div>
+            {loading ? (
+              <div className="customer_registration_loaderContainer">
+                <CommonSpinner color="#333" />
+              </div>
+            ) : (
+              // <Tabs
+              //   activeKey={activeKey}
+              //   onTabClick={handleTabClick}
+              //   items={tabItems}
+              //   className="trainer_registration_tabs"
+              // />
+              <div
+                style={{
+                  height: "auto",
+                  position: "relative",
+                  marginTop: "16px",
+                }}
+              >
+                <div className="logincard_innerContainer">
+                  <p className="trainer_registration_headings">
+                    Primary Details
+                  </p>
+                  <Row gutter={12}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Trainer Name"
+                        value={name}
+                        onChange={(e) => {
+                          setName(e.target.value);
+                          if (validationTrigger) {
+                            setNameError(nameValidator(e.target.value));
+                          }
+                        }}
+                        error={nameError}
+                        required={true}
+                        disabled={true}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Email"
+                        required={true}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (validationTrigger) {
+                            setEmailError(emailValidator(e.target.value));
+                          }
+                        }}
+                        value={email}
+                        error={emailError}
+                        disabled={true}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <PhoneWithCountry
+                        label="Mobile Number"
+                        onChange={(value) => {
+                          setMobile(value);
+                        }}
+                        selectedCountry={mobileCountry}
+                        countryCode={(code) => {
+                          setMobileCountryCode(code);
+                        }}
+                        onCountryChange={(iso2) => {
+                          setMobileCountry(iso2);
+                          setWhatsAppCountry(iso2);
+                        }}
+                        value={mobile}
+                        disabled={true}
+                        disableCountrySelect={true}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <PhoneWithCountry
+                        label="WhatsApp Number"
+                        onChange={(value) => {
+                          setWhatsApp(value);
+                        }}
+                        countryCode={(code) => {
+                          setWhatsAppCountryCode(code);
+                        }}
+                        selectedCountry={whatsAppCountry}
+                        value={whatsApp}
+                        onCountryChange={(iso2) => {
+                          setWhatsAppCountry(iso2);
+                        }}
+                        disabled={true}
+                        disableCountrySelect={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row gutter={12} style={{ marginTop: "30px" }}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonSelectField
+                        label="Technology"
+                        required={true}
+                        options={technologyOptions}
+                        onChange={(e) => {
+                          setTechnology(e.target.value);
+                          if (validationTrigger) {
+                            setTechnologyError(selectValidator(e.target.value));
+                          }
+                        }}
+                        value={technology}
+                        error={technologyError}
+                        valueMarginTop="-4px"
+                        disabled={true}
+                      />
+                    </Col>
+
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonSelectField
+                        label="Experience"
+                        required={true}
+                        options={experienceOptions}
+                        onChange={(e) => {
+                          setExperience(e.target.value);
+                          if (validationTrigger) {
+                            setExperienceError(selectValidator(e.target.value));
+                          }
+                        }}
+                        value={experience}
+                        error={experienceError}
+                        valueMarginTop="-4px"
+                        disabled={true}
+                      />
+                    </Col>
+
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonSelectField
+                        label="Relevant Experience"
+                        required={true}
+                        options={experienceOptions}
+                        onChange={(e) => {
+                          setRelevantExperience(e.target.value);
+                          if (validationTrigger) {
+                            setRelevantExperienceError(
+                              selectValidator(e.target.value),
+                            );
+                          }
+                        }}
+                        value={relevantExperience}
+                        error={relevantExperienceError}
+                        valueMarginTop="-4px"
+                        errorFontSize="9.9px"
+                        disabled={true}
+                      />
+                    </Col>
+
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonSelectField
+                        label="Batch"
+                        required={true}
+                        options={batchOptions}
+                        onChange={(e) => {
+                          setBatch(e.target.value);
+                          if (validationTrigger) {
+                            setBatchError(selectValidator(e.target.value));
+                          }
+                        }}
+                        value={batch}
+                        error={batchError}
+                        valueMarginTop="-4px"
+                        disabled={true}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row gutter={12} style={{ marginTop: "30px" }}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonMuiTimePicker
+                        label="Avaibility Time"
+                        required={true}
+                        onChange={(value) => {
+                          setAvaibilityTime(value);
+                          console.log("timeeeeeeee", value);
+                          if (validationTrigger) {
+                            setAvaibilityError(selectValidator(value));
+                          }
+                        }}
+                        value={avaibilityTime}
+                        error={avaibilityTimeError}
+                        disabled={true}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonMuiTimePicker
+                        label="Secondary Time"
+                        required={true}
+                        onChange={(value) => {
+                          setSecondaryTime(value);
+                        }}
+                        value={secondaryTime}
+                        disabled={true}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <div style={{ position: "relative", height: "auto" }}>
+                        <p className={"trainer_skillslabel"}>Skills</p>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <Select
+                              maxTagCount="responsive"
+                              className={
+                                skills.length <= 0 && !skillsError
+                                  ? "trainer_skills_multiselect"
+                                  : skills.length >= 1 && !skillsError
+                                    ? "trainer_skills_multiselect_two"
+                                    : skills.length <= 0 && skillsError
+                                      ? "trainer_skills_multiselect_error"
+                                      : "trainer_skills_multiselect"
+                              }
+                              style={{ width: "100%" }}
+                              suffixIcon={
+                                <IoCaretDownSharp color="rgba(0,0,0,0.54)" />
+                              }
+                              disabled={true}
+                              mode="multiple"
+                              allowClear
+                              showSearch
+                              value={skills} // Only real selected values
+                              onChange={(value) => {
+                                console.log("skilllll", value);
+                                setSkills(value);
+                                if (validationTrigger) {
+                                  setSkillsError(selectValidator(value));
+                                }
+                              }}
+                              status={skillsError ? "error" : ""}
+                              optionLabelProp="label"
+                              filterOption={(input, option) =>
+                                option.label
+                                  .toLowerCase()
+                                  .includes(input.toLowerCase())
+                              }
+                            >
+                              {skillsOptions.map((item) => {
+                                const itemValue = item.id;
+                                const itemLabel = item.name;
+
+                                return (
+                                  <Select.Option
+                                    key={itemValue}
+                                    value={itemValue}
+                                    label={itemLabel}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        textWrap: "wrap",
+                                      }}
+                                    >
+                                      <Checkbox
+                                        checked={skills.includes(itemValue)}
+                                        style={{ marginRight: 8 }}
+                                        className="common_antdmultiselect_checkbox"
+                                      />
+                                      {itemLabel}
+                                    </div>
+                                  </Select.Option>
+                                );
+                              })}
+                            </Select>
+                          </div>
+                        </div>
+                        {skillsError && (
+                          <p className="trainer_skills_error">
+                            Skills {skillsError}
+                          </p>
+                        )}
+                      </div>
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Location"
+                        required={true}
+                        onChange={(e) => {
+                          setLocation(e.target.value);
+                          if (validationTrigger) {
+                            setLocationError(addressValidator(e.target.value));
+                          }
+                        }}
+                        value={location}
+                        error={locationError}
+                        disabled={true}
+                      />
+                    </Col>
+                  </Row>
+                </div>
+
+                <Divider className="trainer_registration_dividers" />
+
+                <div className="logincard_innerContainer">
+                  <p className="trainer_registration_headings">Bank Details</p>
+                  <Row gutter={12}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Account Holder Name"
+                        required={true}
+                        onChange={(e) => {
+                          setAccountHolderName(e.target.value);
+                          if (validationTrigger) {
+                            setAccountHolderNameError(
+                              nameValidator(e.target.value),
+                            );
+                          }
+                        }}
+                        value={accountHolderName}
+                        error={accountHolderNameError}
+                        errorFontSize="9px"
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Account Number"
+                        required={true}
+                        onChange={(e) => {
+                          setAccountNumber(e.target.value);
+                          if (validationTrigger) {
+                            setAccountNumberError(
+                              accountNumberValidator(e.target.value),
+                            );
+                          }
+                        }}
+                        value={accountNumber}
+                        error={accountNumberError}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Bank Name"
+                        required={true}
+                        onChange={(e) => {
+                          setBankName(e.target.value);
+                          if (validationTrigger) {
+                            setBankNameError(nameValidator(e.target.value));
+                          }
+                        }}
+                        value={bankName}
+                        error={bankNameError}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="Branch Name"
+                        required={true}
+                        onChange={(e) => {
+                          setBranchName(e.target.value);
+                          if (validationTrigger) {
+                            setBranchNameError(nameValidator(e.target.value));
+                          }
+                        }}
+                        value={branchName}
+                        error={branchNameError}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row gutter={12} style={{ marginTop: "30px" }}>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonSelectField
+                        label="Account Type"
+                        required={true}
+                        options={[
+                          {
+                            id: "Savings",
+                            name: "Savings",
+                          },
+                          {
+                            id: "Current",
+                            name: "Current",
+                          },
+                        ]}
+                        onChange={(e) => {
+                          setAccountType(e.target.value);
+                          if (validationTrigger) {
+                            setAccountTypeError(
+                              selectValidator(e.target.value),
+                            );
+                          }
+                        }}
+                        value={accountType}
+                        error={accountTypeError}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                    >
+                      <CommonInputField
+                        label="IFSC Code"
+                        required={true}
+                        onChange={(e) => {
+                          setIfscCode(e.target.value.toUpperCase());
+                          if (validationTrigger) {
+                            setIfscCodeError(ifscValidator(e.target.value));
+                          }
+                        }}
+                        value={ifscCode}
+                        error={ifscCodeError}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={24}
+                      md={24}
+                      lg={6}
+                      className="trainer_registration_primarydetails_col_container"
+                      style={{ position: "relative", display: "flex" }}
+                    >
+                      {signatureBase64 ? (
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <div>
+                            <p style={{ fontWeight: 500, color: "#333" }}>
+                              Signature
+                            </p>
+                            <img
+                              src={signatureBase64}
+                              alt="Trainer Signature"
+                              className="customer_signature_image"
+                            />
+                          </div>
+                          <button
+                            className="trainer_registration_signature_createbutton"
+                            onClick={() => setIsOpenSignatureModal(true)}
+                          >
+                            Update
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <Button
+                            className="customer_registration_addsign_button"
+                            onClick={() => {
+                              setIsOpenSignatureModal(true);
+                            }}
+                          >
+                            Add E-Signature
+                          </Button>
+                          {signatureError && (
+                            <p className="trainer_registration_signatureerror">
+                              {signatureError}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="trainerregistrationform_submitbuttom_container">
+                  {buttonLoading ? (
+                    <button className="trainer_registration_loadingsubmitbutton">
+                      <CommonSpinner />
+                    </button>
+                  ) : (
+                    <button
+                      className="trainer_registration_submitbutton"
+                      onClick={handleSubmit}
+                    >
+                      Submit
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* <Divider className="trainer_registration_dividers" /> */}
           </div>
-        )}
 
-        {/* <Divider className="trainer_registration_dividers" /> */}
-      </div>
+          <Modal
+            title="Signature"
+            open={isOpenSignatureModal}
+            onCancel={() => setIsOpenSignatureModal(false)}
+            footer={false}
+            className="customerregistration_signaturemodal"
+          >
+            <CommonSignaturePad
+              instruction={true}
+              onUpload={handleSignatureBase64}
+            />
+          </Modal>
 
-      <Modal
-        title="Signature"
-        open={isOpenSignatureModal}
-        onCancel={() => setIsOpenSignatureModal(false)}
-        footer={false}
-        className="customerregistration_signaturemodal"
-      >
-        <CommonSignaturePad
-          instruction={true}
-          onUpload={handleSignatureBase64}
-        />
-      </Modal>
-
-      <Modal
-        open={previewOpen}
-        title="Preview Profile"
-        footer={null}
-        onCancel={() => setPreviewOpen(false)}
-      >
-        <img alt="preview" style={{ width: "100%" }} src={previewImage} />
-      </Modal>
+          <Modal
+            open={previewOpen}
+            title="Preview Profile"
+            footer={null}
+            onCancel={() => setPreviewOpen(false)}
+          >
+            <img alt="preview" style={{ width: "100%" }} src={previewImage} />
+          </Modal>
+        </>
+      )}
     </div>
   );
 }

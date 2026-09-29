@@ -1957,129 +1957,98 @@ Course Advisor
         title="Profile Details"
         open={isOpenProfileDrawer}
         onClose={() => setIsOpenProfileDrawer(false)}
-        width="35%"
-        className="profile_details_drawer"
+        width="30%"
+        className="premium_profile_drawer"
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "20px 0",
-          }}
-        >
-          <div
-            style={{
-              width: "100px",
-              height: "100px",
-              borderRadius: "50%",
-              backgroundColor: "#f5f5f5",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: "16px",
-              border: "2px solid #5b69ca",
-              overflow: "hidden",
-            }}
-          >
+        <div className="pp_top_card">
+          <div className="pp_avatar_wrapper">
             {loginUserProfileImage ? (
-              <img
-                src={
-                  loginUserProfileImage.startsWith("data:image") ||
-                  loginUserProfileImage.startsWith("http")
-                    ? loginUserProfileImage
-                    : `${import.meta.env.VITE_API_URL}/${loginUserProfileImage}`
-                }
-                alt="Profile"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              <Upload
+                listType="picture-circle"
+                fileList={[
+                  {
+                    uid: "-1",
+                    name: "profile.jpg",
+                    status: "done",
+                    url:
+                      loginUserProfileImage.startsWith("data:image") ||
+                      loginUserProfileImage.startsWith("http")
+                        ? loginUserProfileImage
+                        : `${import.meta.env.VITE_API_URL}/${loginUserProfileImage}`,
+                  },
+                ]}
+                onPreview={(file) => {
+                  setPreviewImage(file.url);
+                  setPreviewOpen(true);
+                }}
+                onRemove={false}
+                showUploadList={{ showRemoveIcon: false }}
+                beforeUpload={() => false}
+                accept=".png,.jpg,.jpeg"
               />
             ) : (
-              <FcManager size={60} />
+              <div className="pp_avatar_placeholder">
+                <FcManager size={60} />
+              </div>
             )}
           </div>
-          <p style={{ fontSize: "18px", fontWeight: 700, margin: 0 }}>
-            {loginUserDetails?.user_name || "-"}
-          </p>
-          <p style={{ color: "gray", fontSize: "14px" }}>ACTE</p>
+          <div className="pp_info_section">
+            <h2 className="pp_name">{loginUserDetails?.user_name || "-"}</h2>
+            <p className="pp_company">ACTE</p>
+          </div>
         </div>
 
-        <Divider style={{ margin: "12px 0" }} />
-
-        <div style={{ padding: "0 10px" }}>
-          <Row style={{ marginBottom: "16px" }}>
-            <Col span={10}>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                <FaRegUser color="gray" size={14} />
-                <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
-                  User ID
-                </p>
-              </div>
-            </Col>
-            <Col span={14}>
-              <p style={{ margin: 0, fontWeight: 600 }}>
+        <div className="pp_details_container">
+          <div className="pp_detail_row">
+            <div className="pp_icon_box user_icon">
+              <FaRegUser size={14} />
+            </div>
+            <div className="pp_detail_content">
+              <p className="pp_detail_label">User ID</p>
+              <p className="pp_detail_value">
                 {loginUserDetails?.user_id || "-"}
               </p>
-            </Col>
-          </Row>
+            </div>
+          </div>
 
-          <Row style={{ marginBottom: "16px" }}>
-            <Col span={10}>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                <IoCallOutline color="gray" size={16} />
-                <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
-                  Mobile
-                </p>
-              </div>
-            </Col>
-            <Col span={14}>
-              <p style={{ margin: 0, fontWeight: 600 }}>
+          <div className="pp_detail_row">
+            <div className="pp_icon_box mobile_icon">
+              <IoCallOutline size={16} />
+            </div>
+            <div className="pp_detail_content">
+              <p className="pp_detail_label">Mobile</p>
+              <p className="pp_detail_value">
                 {loginUserDetails?.phone || "-"}
               </p>
-            </Col>
-          </Row>
+            </div>
+          </div>
 
           {loginUserDetails?.branch_name && (
-            <Row style={{ marginBottom: "16px" }}>
-              <Col span={10}>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <IoLocationOutline color="gray" size={16} />
-                  <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
-                    Branch
-                  </p>
-                </div>
-              </Col>
-              <Col span={14}>
-                <p style={{ margin: 0, fontWeight: 600 }}>
+            <div className="pp_detail_row">
+              <div className="pp_icon_box branch_icon">
+                <IoLocationOutline size={16} />
+              </div>
+              <div className="pp_detail_content">
+                <p className="pp_detail_label">Branch</p>
+                <p className="pp_detail_value">
                   {loginUserDetails.branch_name}
                 </p>
-              </Col>
-            </Row>
+              </div>
+            </div>
           )}
 
           {loginUserDetails?.region_name && (
-            <Row style={{ marginBottom: "16px" }}>
-              <Col span={10}>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <IoLocationOutline color="gray" size={16} />
-                  <p style={{ margin: 0, color: "gray", fontWeight: 500 }}>
-                    Region
-                  </p>
-                </div>
-              </Col>
-              <Col span={14}>
-                <p style={{ margin: 0, fontWeight: 600 }}>
+            <div className="pp_detail_row">
+              <div className="pp_icon_box region_icon">
+                <IoLocationOutline size={16} />
+              </div>
+              <div className="pp_detail_content">
+                <p className="pp_detail_label">Region</p>
+                <p className="pp_detail_value">
                   {loginUserDetails.region_name}
                 </p>
-              </Col>
-            </Row>
+              </div>
+            </div>
           )}
         </div>
       </Drawer>

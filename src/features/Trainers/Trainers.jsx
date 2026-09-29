@@ -58,7 +58,6 @@ import {
   getTrainerSkills,
   getUsersByRole,
   getCustomerByTrainerId,
-  sendTrainerFormEmail,
   trainerStatusUpdate,
   updateTableColumns,
   updateTrainer,
@@ -284,10 +283,120 @@ export default function Trainers() {
   const childUsers = useSelector((state) => state.childusers);
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
-  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
+
+  const mainBuckets = [
+    {
+      value: "",
+      label: "All",
+      countKey: "allTrainersCount",
+      activeClass: "customers_active_student_onboarding_container",
+      inactiveClass: "customers_student_onboarding_container",
+    },
+    {
+      value: "Pending",
+      label: "Pending",
+      countKey: "pendingCount",
+      activeClass: "customers_active_progress_monitoring_container",
+      inactiveClass: "customers_progress_monitoring_container",
+    },
+    {
+      value: "Verified",
+      label: "Eligible Trainers",
+      countKey: "verifiedCount",
+      activeClass: "trainers_active_verifiedtrainers_container",
+      inactiveClass: "customers_completed_container",
+    },
+    {
+      value: "Onboarded",
+      label: "Onboarded Trainers",
+      countKey: "onBoardingCount",
+      activeClass: "customers_active_classschedule_container",
+      inactiveClass: "customers_classschedule_container",
+    },
+    {
+      value: "OnGoing",
+      label: "On-Going Trainers",
+      countKey: "onGoingCount",
+      activeClass: "customers_active_classgoing_container",
+      inactiveClass: "customers_classgoing_container",
+    },
+    {
+      value: "Rejected",
+      label: "Rejected Trainers",
+      countKey: "rejectedCount",
+      activeClass: "trainers_active_rejectedtrainers_container",
+      inactiveClass: "trainers_rejected_container",
+    },
+  ];
+
+  const bucketConfigs = {
+    Pending: [
+      {
+        label: "Form Pending",
+        value: "Form Pending",
+        countKey: "formPendingCount",
+        activeClass: "trainers_active_formpending_container",
+        inactiveClass: "customers_feedback_container",
+      },
+      {
+        label: "Verify Pending",
+        value: "Verify Pending",
+        countKey: "verifyPendingCount",
+        activeClass: "trainers_active_verifypending_container",
+        inactiveClass: "customers_studentvefity_container",
+      },
+    ],
+    Onboarded: [
+      {
+        label: "1",
+        value: "1",
+        countKey: "firstStageCount",
+        activeClass: "trainers_active_stage1_container",
+        inactiveClass: "trainers_stage1_container",
+      },
+      {
+        label: "2 to 5",
+        value: "5",
+        countKey: "secondStageCount",
+        activeClass: "trainers_active_stage2_container",
+        inactiveClass: "trainers_stage2_container",
+      },
+      {
+        label: "6 to 10",
+        value: "10",
+        countKey: "thirdStageCount",
+        activeClass: "trainers_active_stage3_container",
+        inactiveClass: "trainers_stage3_container",
+      },
+      {
+        label: "10+",
+        value: "10+",
+        countKey: "fourthStageCount",
+        activeClass: "trainers_active_stage4_container",
+        inactiveClass: "trainers_stage4_container",
+      },
+    ],
+    OnGoing: [
+      {
+        label: "Existing",
+        value: "Existing",
+        countKey: "existingOngoingCount",
+        activeClass: "trainers_active_ongoing_existing_container",
+        inactiveClass: "trainers_ongoing_existing_container",
+      },
+      {
+        label: "New",
+        value: "New",
+        countKey: "newOngoingCount",
+        activeClass: "trainers_active_ongoing_new_container",
+        inactiveClass: "trainers_ongoing_new_container",
+      },
+    ],
+  };
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   const [viewTrainerData, setViewTrainerData] = useState(null);
   const [trainersData, setTrainersData] = useState([]);
+  const [bucketStatus, setBucketStatus] = useState("AddTrainer");
   const [status, setStatus] = useState("AddTrainer");
   const [previousStatus, setPreviousStatus] = useState(null);
   const statusRef = useRef(status);
@@ -723,9 +832,61 @@ export default function Trainers() {
       setHrUsers([]);
       console.log("get hr users error", error);
     } finally {
-      setStatus("AddTrainer");
-      getTrainersData(null, null, null, 1, 10, true);
+      fetchTrainersData({
+        searchValue: null,
+        status: null,
+        hrId: null,
+        keyword: null,
+        experience: null,
+        location: null,
+        pageNumber: 1,
+        limit: 10,
+        callTechnologiesApi: true,
+      });
     }
+  };
+
+  const handleMainBucketChange = (bucketValue) => {
+    console.log("bucketValue", bucketValue);
+    if (bucketStatus === bucketValue) return;
+    setBucketStatus(bucketValue);
+
+    let subStatus = "";
+    if (bucketValue === "Pending") subStatus = "Form Pending";
+    else if (bucketValue === "Onboarded") subStatus = "1";
+    else if (bucketValue === "OnGoing") subStatus = "Existing";
+    else subStatus = bucketValue; // For All, Verified, Rejected
+
+    setStatus(subStatus);
+    setPagination({ ...pagination, page: 1 });
+    fetchTrainersData({ status: subStatus, pageNumber: 1 });
+  };
+
+  const handleSubBucketClick = (config) => {
+    if (status === config.value) return;
+    setStatus(config.value);
+    setPagination({ ...pagination, page: 1 });
+    fetchTrainersData({ status: config.value, pageNumber: 1 });
+  };
+
+  const fetchTrainersData = (overrides = {}) => {
+    getTrainersData(
+      overrides.searchValue !== undefined ? overrides.searchValue : searchValue,
+      overrides.status !== undefined ? overrides.status : status,
+      overrides.hrId !== undefined ? overrides.hrId : hrId,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination.page,
+      overrides.limit !== undefined ? overrides.limit : pagination.limit,
+      overrides.callTechnologiesApi !== undefined
+        ? overrides.callTechnologiesApi
+        : false,
+      overrides.keyword !== undefined ? overrides.keyword : searchKeyword,
+      overrides.experience !== undefined
+        ? overrides.experience
+        : searchExperience,
+      overrides.location !== undefined ? overrides.location : searchLocation,
+    );
   };
 
   const getTrainersData = async (
@@ -745,12 +906,14 @@ export default function Trainers() {
     let is_form_sent = null;
 
     if (!trainerStatus || trainerStatus === "") {
-      bucket = "All";
+      bucket = "";
+    } else if (trainerStatus === "Pending") {
+      bucket = "total_pending";
     } else if (trainerStatus === "Form Pending") {
-      bucket = "All";
+      bucket = "total_pending";
       is_form_sent = 1;
     } else if (trainerStatus === "Verify Pending") {
-      bucket = "All";
+      bucket = "total_pending";
       statusPayload = "Verify Pending";
     } else if (trainerStatus === "Verified") {
       bucket = "Verified";
@@ -771,7 +934,7 @@ export default function Trainers() {
       bucket = "ongoing";
       statusPayload = trainerStatus;
     } else if (trainerStatus === "Rejected") {
-      bucket = "All";
+      bucket = "total_pending";
       statusPayload = "Rejected";
     }
 
@@ -1309,7 +1472,7 @@ export default function Trainers() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    getTrainersData(searchValue, status, hrId, page, limit);
+    fetchTrainersData({ pageNumber: page, limit: limit });
   };
 
   const getCourseData = async () => {
@@ -1338,7 +1501,7 @@ export default function Trainers() {
       setPagination({
         page: 1,
       });
-      getTrainersData(e.target.value, status, hrId, 1, pagination.limit);
+      fetchTrainersData({ searchValue: e.target.value, pageNumber: 1 });
     }, 300);
   };
 
@@ -1412,7 +1575,6 @@ export default function Trainers() {
     setButtonLoading(false);
     setEditTrainerId(null);
     setEditTrainerData(null);
-    setIsOpenAddDrawer(false);
     setIsOpenFilterDrawer(false);
   };
 
@@ -1431,13 +1593,13 @@ export default function Trainers() {
       await trainerStatusUpdate(payload);
       CommonMessage("success", "Status Updated");
       setTimeout(() => {
-        getTrainersData(
-          searchValueRef.current,
-          statusRef.current,
-          hrIdRef.current,
-          paginationRef.current.page,
-          paginationRef.current.limit,
-        );
+        fetchTrainersData({
+          searchValue: searchValueRef.current,
+          status: statusRef.current,
+          hrId: hrIdRef.current,
+          pageNumber: paginationRef.current.page,
+          limit: paginationRef.current.limit,
+        });
       });
     } catch (error) {
       console.log("trainer status change error", error);
@@ -1453,30 +1615,25 @@ export default function Trainers() {
     // setStatus("");
     setSearchValue("");
     setHrId(null);
+    setSearchKeyword("");
+    setSearchExperience("");
+    setSearchLocation("");
+    setStatus("");
+    setBucketStatus("");
     setPagination({
       page: 1,
     });
-    getTrainersData(null, status, null, 1, pagination.limit);
-  };
-
-  const handleSendFormLink = async (trainerEmail, trainerId) => {
-    const payload = {
-      email: trainerEmail,
-      link: `${
-        import.meta.env.VITE_EMAIL_URL
-      }/trainer-registration/${trainerId}`,
-      trainer_id: trainerId,
-    };
-
-    try {
-      await sendTrainerFormEmail(payload);
-    } catch (error) {
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
+    fetchTrainersData({
+      searchValue: null,
+      status: "",
+      hrId: null,
+      keyword: null,
+      experience: null,
+      location: null,
+      pageNumber: 1,
+      limit: 10,
+      callTechnologiesApi: false,
+    });
   };
 
   return (
@@ -1494,6 +1651,7 @@ export default function Trainers() {
                 onClick={() => {
                   if (status === "AddTrainer") return;
                   setStatus("AddTrainer");
+                  setBucketStatus("AddTrainer");
                   setEditTrainerId(null);
                   formReset();
                 }}
@@ -1501,133 +1659,32 @@ export default function Trainers() {
                 <p>Add Trainer</p>
               </div>
             )}
-            <div
-              className={
-                status === "" ||
-                status === "Form Pending" ||
-                status === "Verify Pending"
-                  ? "trainers_active_all_container"
-                  : "trainers_all_container"
-              }
-              onClick={() => {
-                if (status === "") {
-                  return;
-                }
-                setStatus("");
-                setPagination({
-                  page: 1,
-                });
-                getTrainersData(searchValue, null, hrId, 1, pagination.limit);
-              }}
-            >
-              <p>All {`( ${allTrainersCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "Verified"
-                  ? "trainers_active_verifiedtrainers_container"
-                  : "customers_completed_container"
-              }
-              onClick={() => {
-                if (status === "Verified") {
-                  return;
-                }
-                setStatus("Verified");
-                setPagination({
-                  page: 1,
-                });
-                getTrainersData(
-                  searchValue,
-                  "Verified",
-                  hrId,
-                  1,
-                  pagination.limit,
-                );
-              }}
-            >
-              <p>Eligible Trainers {`( ${verifiedCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "Onboarded" ||
-                status === "1" ||
-                status === "5" ||
-                status === "10" ||
-                status === "10+"
-                  ? "customers_active_classschedule_container"
-                  : "customers_classschedule_container"
-              }
-              onClick={() => {
-                if (status === "Onboarded") {
-                  return;
-                }
-                setStatus("Onboarded");
-                setPagination({
-                  page: 1,
-                });
-                getTrainersData(
-                  searchValue,
-                  "Onboarded",
-                  hrId,
-                  1,
-                  pagination.limit,
-                );
-              }}
-            >
-              <p>Onboarded Trainers {`( ${onBoardingCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "OnGoing" ||
-                status === "New" ||
-                status === "Existing"
-                  ? "customers_active_classgoing_container"
-                  : "customers_classgoing_container"
-              }
-              onClick={() => {
-                if (status === "OnGoing") {
-                  return;
-                }
-                setStatus("OnGoing");
-                setPagination({
-                  page: 1,
-                });
-                getTrainersData(
-                  searchValue,
-                  "Ongoing",
-                  hrId,
-                  1,
-                  pagination.limit,
-                );
-              }}
-            >
-              <p>On-Going Trainers {`( ${onGoingCount} )`}</p>
-            </div>
-            <div
-              className={
-                status === "Rejected"
-                  ? "trainers_active_rejectedtrainers_container"
-                  : "trainers_rejected_container"
-              }
-              onClick={() => {
-                if (status === "Rejected") {
-                  return;
-                }
-                setStatus("Rejected");
-                setPagination({
-                  page: 1,
-                });
-                getTrainersData(
-                  searchValue,
-                  "Rejected",
-                  hrId,
-                  1,
-                  pagination.limit,
-                );
-              }}
-            >
-              <p>Rejected Trainers {`( ${rejectedCount} )`}</p>
-            </div>
+            {mainBuckets.map((bucket, index) => {
+              const isActive =
+                bucketStatus === bucket.value && status !== "AddTrainer";
+              const counts = {
+                allTrainersCount,
+                pendingCount: formPendingCount + verifyPendingCount,
+                verifiedCount,
+                onBoardingCount,
+                onGoingCount,
+                rejectedCount,
+              };
+              const count = counts[bucket.countKey] ?? "-";
+              return (
+                <div
+                  key={index}
+                  className={
+                    isActive ? bucket.activeClass : bucket.inactiveClass
+                  }
+                  onClick={() => handleMainBucketChange(bucket.value)}
+                >
+                  <p>
+                    {bucket.label} {`( ${count} )`}
+                  </p>
+                </div>
+              );
+            })}
           </ScrollableTabContainer>
         </Col>
 
@@ -1711,17 +1768,13 @@ export default function Trainers() {
                           setSearchExperience("");
                           setSearchLocation("");
                           setPagination({ ...pagination, page: 1 });
-                          getTrainersData(
-                            searchValue,
-                            status,
-                            hrId,
-                            1,
-                            pagination.limit,
-                            false,
-                            "",
-                            "",
-                            "",
-                          );
+                          fetchTrainersData({
+                            pageNumber: 1,
+                            callTechnologiesApi: false,
+                            keyword: "",
+                            experience: "",
+                            location: "",
+                          });
                         }}
                       >
                         <IoIosClose size={20} />
@@ -1733,17 +1786,13 @@ export default function Trainers() {
                       className="trainers-search-button"
                       onClick={() => {
                         setPagination({ ...pagination, page: 1 });
-                        getTrainersData(
-                          searchValue,
-                          status,
-                          hrId,
-                          1,
-                          pagination.limit,
-                          false,
-                          searchKeyword,
-                          searchExperience,
-                          searchLocation,
-                        );
+                        fetchTrainersData({
+                          pageNumber: 1,
+                          callTechnologiesApi: false,
+                          keyword: searchKeyword,
+                          experience: searchExperience,
+                          location: searchLocation,
+                        });
                       }}
                     >
                       <CiSearch size={14} strokeWidth={1} /> Search
@@ -1776,13 +1825,7 @@ export default function Trainers() {
                               setPagination({
                                 page: 1,
                               });
-                              getTrainersData(
-                                null,
-                                status,
-                                hrId,
-                                1,
-                                pagination.limit,
-                              );
+                              fetchTrainersData({ pageNumber: 1 });
                             }}
                           >
                             <IoIosClose size={11} />
@@ -1824,13 +1867,7 @@ export default function Trainers() {
                                   setPagination({
                                     page: 1,
                                   });
-                                  getTrainersData(
-                                    null,
-                                    status,
-                                    hrId,
-                                    1,
-                                    pagination.limit,
-                                  );
+                                  fetchTrainersData({ pageNumber: 1 });
                                 }
                               }}
                             >
@@ -1874,13 +1911,10 @@ export default function Trainers() {
                       value={hrId}
                       onChange={(e) => {
                         setHrId(e.target.value);
-                        getTrainersData(
-                          searchValue,
-                          status,
-                          e.target.value,
-                          1,
-                          pagination.limit,
-                        );
+                        fetchTrainersData({
+                          hrId: e.target.value,
+                          pageNumber: 1,
+                        });
                       }}
                       disableClearable={false}
                     />
@@ -1911,9 +1945,8 @@ export default function Trainers() {
               />
             </Col>
           </Row>
-          {(status === "" ||
-            status === "Form Pending" ||
-            status === "Verify Pending") && (
+          {/* Sub Buckets */}
+          {status !== "AddTrainer" && bucketConfigs[bucketStatus] && (
             <Row
               style={{
                 marginTop: "16px",
@@ -1922,202 +1955,34 @@ export default function Trainers() {
                 paddingLeft: "12px",
               }}
             >
-              <div
-                className={
-                  status === "Form Pending"
-                    ? "trainers_active_formpending_container"
-                    : "customers_feedback_container"
-                }
-                onClick={() => {
-                  if (status === "Form Pending") {
-                    return;
-                  }
-                  setStatus("Form Pending");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Form Pending",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>Form Pending {`( ${formPendingCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "Verify Pending"
-                    ? "trainers_active_verifypending_container"
-                    : "customers_studentvefity_container"
-                }
-                onClick={() => {
-                  if (status === "Verify Pending") {
-                    return;
-                  }
-                  setStatus("Verify Pending");
-                  setPagination({
-                    page: 1,
-                  });
-                  getTrainersData(
-                    searchValue,
-                    "Verify Pending",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>Verify Pending {`( ${verifyPendingCount} )`}</p>
-              </div>
-            </Row>
-          )}
-
-          {(status === "Onboarded" ||
-            status === "1" ||
-            status === "5" ||
-            status === "10" ||
-            status === "10+") && (
-            <Row
-              style={{
-                marginTop: "16px",
-                marginBottom: "24px",
-                gap: "12px",
-                paddingLeft: "12px",
-              }}
-            >
-              <div
-                className={
-                  status === "1"
-                    ? "trainers_active_stage1_container"
-                    : "trainers_stage1_container"
-                }
-                onClick={() => {
-                  if (status === "1") return;
-                  setStatus("1");
-                  setPagination({ page: 1 });
-                  getTrainersData(searchValue, "1", hrId, 1, pagination.limit);
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>1 {`( ${firstStageCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "5"
-                    ? "trainers_active_stage2_container"
-                    : "trainers_stage2_container"
-                }
-                onClick={() => {
-                  if (status === "5") return;
-                  setStatus("5");
-                  setPagination({ page: 1 });
-                  getTrainersData(searchValue, "5", hrId, 1, pagination.limit);
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>2 to 5 {`( ${secondStageCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "10"
-                    ? "trainers_active_stage3_container"
-                    : "trainers_stage3_container"
-                }
-                onClick={() => {
-                  if (status === "10") return;
-                  setStatus("10");
-                  setPagination({ page: 1 });
-                  getTrainersData(searchValue, "10", hrId, 1, pagination.limit);
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>6 to 10 {`( ${thirdStageCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "10+"
-                    ? "trainers_active_stage4_container"
-                    : "trainers_stage4_container"
-                }
-                onClick={() => {
-                  if (status === "10+") return;
-                  setStatus("10+");
-                  setPagination({ page: 1 });
-                  getTrainersData(
-                    searchValue,
-                    "10+",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>10+ {`( ${fourthStageCount} )`}</p>
-              </div>
-            </Row>
-          )}
-
-          {(status === "OnGoing" ||
-            status === "New" ||
-            status === "Existing") && (
-            <Row
-              style={{
-                marginTop: "16px",
-                marginBottom: "24px",
-                gap: "12px",
-                paddingLeft: "12px",
-              }}
-            >
-              <div
-                className={
-                  status === "Existing"
-                    ? "trainers_active_ongoing_existing_container"
-                    : "trainers_ongoing_existing_container"
-                }
-                onClick={() => {
-                  if (status === "Existing") return;
-                  setStatus("Existing");
-                  setPagination({ page: 1 });
-                  getTrainersData(
-                    searchValue,
-                    "Existing",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>Existing {`( ${existingOngoingCount} )`}</p>
-              </div>
-              <div
-                className={
-                  status === "New"
-                    ? "trainers_active_ongoing_new_container"
-                    : "trainers_ongoing_new_container"
-                }
-                onClick={() => {
-                  if (status === "New") return;
-                  setStatus("New");
-                  setPagination({ page: 1 });
-                  getTrainersData(
-                    searchValue,
-                    "New",
-                    hrId,
-                    1,
-                    pagination.limit,
-                  );
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p>New {`( ${newOngoingCount} )`}</p>
-              </div>
+              {bucketConfigs[bucketStatus].map((config, index) => {
+                const isActive = status === config.value;
+                const counts = {
+                  formPendingCount,
+                  verifyPendingCount,
+                  firstStageCount,
+                  secondStageCount,
+                  thirdStageCount,
+                  fourthStageCount,
+                  existingOngoingCount,
+                  newOngoingCount,
+                };
+                const count = counts[config.countKey] ?? "-";
+                return (
+                  <div
+                    key={index}
+                    className={
+                      isActive ? config.activeClass : config.inactiveClass
+                    }
+                    onClick={() => handleSubBucketClick(config)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <p>
+                      {config.label} ( {count} )
+                    </p>
+                  </div>
+                );
+              })}
             </Row>
           )}
         </>
@@ -2142,13 +2007,7 @@ export default function Trainers() {
             setIsOpenAddCourseModal={setIsOpenAddCourseModal}
             setIsOpenAddSkillModal={setIsOpenAddSkillModal}
             callgetTrainersApi={() => {
-              getTrainersData(
-                searchValue,
-                status,
-                hrId,
-                pagination.page,
-                pagination.limit,
-              );
+              fetchTrainersData({});
             }}
             setButtonLoading={setButtonLoading}
             previousStatus={previousStatus}
@@ -2199,13 +2058,7 @@ export default function Trainers() {
                 addTrainerRef.current.resetForm();
                 if (previousStatus !== null) {
                   setStatus(previousStatus);
-                  getTrainersData(
-                    searchValue,
-                    previousStatus,
-                    hrId,
-                    pagination.page,
-                    pagination.limit,
-                  );
+                  fetchTrainersData({ status: previousStatus });
                   setPreviousStatus(null);
                 }
               }}
@@ -2504,13 +2357,7 @@ export default function Trainers() {
             onFormRefresh={() => {
               setIsOpenRequestFormDrawer(false);
               setEditTrainerId(null);
-              getTrainersData(
-                searchValue,
-                status,
-                hrId,
-                pagination.page,
-                pagination.limit,
-              );
+              fetchTrainersData({});
             }}
           />
         ) : (
