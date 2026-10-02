@@ -1910,9 +1910,9 @@
 
 /* email template styles */
 .emailtemplate_createbutton {
+  font-size: 12px;
   border-color: #5b69ca !important;
   color: #5b69ca !important;
-  margin-top: 5px;
 }
 
 /* Payment Screenshot Gallery Styles */
