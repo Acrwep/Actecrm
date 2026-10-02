@@ -45,7 +45,7 @@ export default function CommonMultiSelectField({
     if (!value) return [];
     const valArray = Array.isArray(value) ? value : [value];
     return options.filter((opt) => {
-      const optId = String(opt.user_id ?? opt.id ?? "");
+      const optId = String(opt.user_id ?? opt.id ?? opt.role_id ?? "");
       return valArray.map(String).includes(optId);
     });
   }, [value, options]);
@@ -53,7 +53,7 @@ export default function CommonMultiSelectField({
   const handleChange = (event, newValue) => {
     if (!onChange) return;
     const selectedIds = newValue.map((opt) =>
-      String(opt.user_id ?? opt.id ?? ""),
+      String(opt.user_id ?? opt.id ?? opt.role_id ?? ""),
     );
     onChange({
       target: {
@@ -162,7 +162,7 @@ export default function CommonMultiSelectField({
               const { key, ...restProps } = props;
               return (
                 <li
-                  key={key || option.user_id || option.id}
+                  key={key || option.user_id || option.id || option.role_id}
                   {...restProps}
                   style={{ padding: "4px 8px" }}
                 >
@@ -197,7 +197,10 @@ export default function CommonMultiSelectField({
                             ? option?.trainer_code
                             : option?.user_name
                               ? `${option.user_id} - ${option.user_name}`
-                              : option?.exp_range || option?.name || ""}
+                              : option?.exp_range ||
+                                option?.name ||
+                                option?.role_name ||
+                                ""}
                   </span>
                 </li>
               );
@@ -217,7 +220,7 @@ export default function CommonMultiSelectField({
                       ? option?.trainer_code
                       : option?.user_name
                         ? option.user_name
-                        : option?.name || "";
+                        : option?.role_name || option?.name || "";
             });
 
             const limit = 2;

@@ -64,6 +64,7 @@ import CommonDeviceDetails from "../Common/CommonDeviceDetails";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import PrismaZoom from "react-prismazoom";
 import CommonSelectField from "../Common/CommonSelectField";
+import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 
 const { Dragger } = Upload;
 
@@ -76,6 +77,7 @@ export default function Users({
 }) {
   //search userefs start
   const searchTimeoutRef = useRef(null);
+  const prevSelectedUserIdRef = useRef("[]");
   const abortControllerRef = useRef(null);
   //search userefs end
   // const device = CommonDeviceDetails();
@@ -129,6 +131,7 @@ export default function Users({
   const [editUserId, setEditUserId] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const [isOpenRoleModal, setIsOpenRoleModal] = useState(false);
+  const [selectedRoleIds, setSelectedRoleIds] = useState([]);
   const [isOpenProfileModal, setIsOpenProfileModal] = useState("");
   //set target usestates
   const [selectedRows, setSelectedRows] = useState([]);
@@ -440,6 +443,7 @@ export default function Users({
   const fetchUsersData = (overrides = {}) => {
     getUsersData(
       overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.roles !== undefined ? overrides.roles : selectedRoleIds,
       overrides.pageNumber !== undefined
         ? overrides.pageNumber
         : pagination.page,
@@ -447,7 +451,7 @@ export default function Users({
     );
   };
 
-  const getUsersData = async (searchvalue, pageNumber, limit) => {
+  const getUsersData = async (searchvalue, roles, pageNumber, limit) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -457,6 +461,8 @@ export default function Users({
     setUserTableLoading(true);
     const payload = {
       ...(searchvalue && { keyword: searchvalue }),
+      ...(roles &&
+        roles.length > 0 && { roles: roles.map((r) => parseInt(r)) }),
       page: pageNumber,
       limit: limit,
       include_profile_image: true,
@@ -667,6 +673,27 @@ export default function Users({
         limit: pagination.limit,
       });
     }, 400);
+  };
+
+  const handleSelectRole = async (e) => {
+    const value = e.target.value;
+    setSelectedRoleIds(value);
+  };
+
+  const handleSelectRoleBlur = async () => {
+    const value = selectedRoleIds;
+
+    // if (!value || value.length <= 0) return;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedUserIdRef.current = stringifiedValue;
+    setPagination({
+      page: 1,
+    });
+    fetchUsersData({ roles: value, pageNumber: 1 });
   };
 
   const handleSubmit = async () => {
@@ -979,37 +1006,54 @@ export default function Users({
       </div> */}
       <Row>
         <Col xs={24} sm={24} md={24} lg={12}>
-          <CommonOutlinedInput
-            label="Search"
-            width="40%"
-            height="33px"
-            labelFontSize="12px"
-            icon={
-              searchValue ? (
-                <div
-                  className="users_filter_closeIconContainer"
-                  onClick={() => {
-                    setSearchValue("");
-                    dispatch(storeUserSearchValue(null));
-                    setPagination({
-                      page: 1,
-                    });
-                    fetchUsersData({ searchvalue: null, pageNumber: 1 });
-                  }}
-                >
-                  <IoIosClose size={11} />
-                </div>
-              ) : (
-                <CiSearch size={16} />
-              )
-            }
-            labelMarginTop="-1px"
-            style={{
-              padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
-            }}
-            onChange={handleSearch}
-            value={searchValue}
-          />
+          <Row gutter={12}>
+            <Col span={9}>
+              <CommonOutlinedInput
+                label="Search"
+                width="100%"
+                height="33px"
+                labelFontSize="11px"
+                icon={
+                  searchValue ? (
+                    <div
+                      className="users_filter_closeIconContainer"
+                      onClick={() => {
+                        setSearchValue("");
+                        dispatch(storeUserSearchValue(null));
+                        setPagination({
+                          page: 1,
+                        });
+                        fetchUsersData({ searchvalue: null, pageNumber: 1 });
+                      }}
+                    >
+                      <IoIosClose size={11} />
+                    </div>
+                  ) : (
+                    <CiSearch size={16} />
+                  )
+                }
+                labelMarginTop="0px"
+                style={{
+                  padding: searchValue ? "0px 26px 0px 0px" : "0px 8px 0px 0px",
+                }}
+                onChange={handleSearch}
+                value={searchValue}
+              />
+            </Col>
+            <Col span={9}>
+              <CommonMultiSelectField
+                height="34px"
+                label="Select Role"
+                labelMarginTop="1px"
+                labelFontSize="11px"
+                width={"100%"}
+                options={rolesData}
+                onChange={handleSelectRole}
+                onBlur={handleSelectRoleBlur}
+                value={selectedRoleIds}
+              />
+            </Col>
+          </Row>
         </Col>
         <Col
           xs={24}

@@ -85,7 +85,6 @@ export default function AssignLeads({
     (state) => state.assignleadfiltervalues,
   );
   const tabName = useSelector((state) => state.leadmanageractivepage);
-  const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [selectedBucket, setSelectedBucket] = useState("Assigned");
   const [bucketCounts, setBucketCounts] = useState({
@@ -700,7 +699,6 @@ export default function AssignLeads({
         filterValuesFromRedux.start_date,
         filterValuesFromRedux.end_date,
       ]);
-      setFilterType(filterValuesFromRedux.filterType);
       setSearchValue(filterValuesFromRedux.searchValue);
       setPagination({
         page: filterValuesFromRedux.pageNumber,
@@ -779,15 +777,7 @@ export default function AssignLeads({
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
     const payload = {
-      ...(searchvalue && filterType == 1
-        ? { phone: searchvalue }
-        : searchvalue && filterType == 2
-          ? { name: searchvalue }
-          : searchvalue && filterType == 3
-            ? { email: searchvalue }
-            : searchvalue && filterType == 4
-              ? { course: searchvalue }
-              : {}),
+      ...(searchvalue && { search_filter: searchvalue }),
       start_date: startDate,
       end_date: endDate,
       ...(!permissions.includes("View All Assigned Leads")
@@ -1119,15 +1109,7 @@ export default function AssignLeads({
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
     const payload = {
-      ...(searchValue && filterType == 1
-        ? { phone: searchValue }
-        : searchValue && filterType == 2
-          ? { name: searchValue }
-          : searchValue && filterType == 3
-            ? { email: searchValue }
-            : searchValue && filterType == 4
-              ? { course: searchValue }
-              : {}),
+      ...(searchValue && { search_filter: searchValue }),
       // start_date: startDate,
       // end_date: endDate,
       ...(!permissions.includes("View All Assigned Leads")
@@ -1188,23 +1170,13 @@ export default function AssignLeads({
       <Row>
         <Col xs={24} sm={24} md={24} lg={17}>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={7}>
               <div className="overallduecustomers_filterContainer">
                 <CommonOutlinedInput
-                  label={
-                    filterType == 1
-                      ? "Search By Mobile"
-                      : filterType == 2
-                        ? "Search By Name"
-                        : filterType == 3
-                          ? "Search by Email"
-                          : filterType == 4
-                            ? "Search by Course"
-                            : ""
-                  }
+                  label={"Search..."}
                   width="100%"
                   height="33px"
-                  labelFontSize="12px"
+                  labelFontSize="11px"
                   icon={
                     searchValue ? (
                       <div
@@ -1232,10 +1204,8 @@ export default function AssignLeads({
                       <CiSearch size={16} />
                     )
                   }
-                  labelMarginTop="-1px"
+                  labelMarginTop="0px"
                   style={{
-                    borderTopRightRadius: "0px",
-                    borderBottomRightRadius: "0px",
                     padding: searchValue
                       ? "0px 26px 0px 0px"
                       : "0px 8px 0px 0px",
@@ -1243,73 +1213,9 @@ export default function AssignLeads({
                   value={searchValue}
                   onChange={handleSearch}
                 />
-                {/* Filter Button */}
-                <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={filterType}
-                          onChange={(e) => {
-                            setFilterType(e.target.value);
-                            dispatch(
-                              storeAssignLeadFilterValues({
-                                filterType: e.target.value,
-                              }),
-                            );
-                            if (searchValue == "") {
-                              return;
-                            } else {
-                              setSearchValue("");
-                              dispatch(
-                                storeAssignLeadFilterValues({
-                                  searchValue: "",
-                                  pageNumber: 1,
-                                  pageLimit: pagination.limit,
-                                }),
-                              );
-                              setPagination({
-                                page: 1,
-                              });
-                              fetchAllManualAssignLeadsData({
-                                searchvalue: null,
-                              });
-                            }
-                          }}
-                        >
-                          <Radio
-                            value={1}
-                            style={{ marginTop: "6px", marginBottom: "12px" }}
-                          >
-                            Search by Mobile
-                          </Radio>
-                          <Radio value={2} style={{ marginBottom: "12px" }}>
-                            Search by Name
-                          </Radio>
-                          <Radio value={3} style={{ marginBottom: "12px" }}>
-                            Search by Email
-                          </Radio>
-                          <Radio value={4} style={{ marginBottom: "6px" }}>
-                            Search by Course
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button className="users_filterbutton">
-                        <IoFilter size={18} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div>
               </div>
             </Col>
-            <Col span={10}>
+            <Col span={12}>
               <CommonMuiCustomDatePicker
                 value={selectedDates}
                 onDateChange={(dates) => {
