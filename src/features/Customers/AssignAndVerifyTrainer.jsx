@@ -560,7 +560,7 @@ const AssignAndVerifyTrainer = forwardRef(
                     ? "Approval Rejected"
                     : "Trainer Rejected",
                 ...(drawerContentStatus === "Trainer Approval"
-                  ? { trainer_mapping_id: customerDetails.training_map_id }
+                  ? { trainer_mapping_id: trainer_mapping_data?.id || null }
                   : {}),
                 ...(drawerContentStatus === "Trainer Approval"
                   ? { approval_rejected_reason: rejectTrainerComments }

@@ -107,27 +107,25 @@ const ClassSchedule = forwardRef(
     useEffect(() => {
       console.log("customer_details", customerDetails);
       //trainer coordination
+      const trainerData = customerDetails?.trainer_data?.[0] || {};
+
       setWhatsappGroupStatus(
-        customerDetails?.whatsapp_group_creation === 1 ? 1 : 2,
+        trainerData?.whatsapp_group_creation === 1 ? 1 : 2,
       );
-      setWhatsappInviteLink(customerDetails?.whatsapp_invite_link);
-      setWelcomeMessageStatus(
-        customerDetails?.hr_welcome_message === 1 ? 1 : 2,
-      );
-      setLinkStatus(customerDetails?.shared_attendance_link === 1 ? 1 : 2);
+      setWhatsappInviteLink(trainerData?.whatsapp_invite_link);
+      setWelcomeMessageStatus(trainerData?.hr_welcome_message === 1 ? 1 : 2);
+      setLinkStatus(trainerData?.shared_attendance_link === 1 ? 1 : 2);
       if (
-        customerDetails?.shared_attendance_link === 1 &&
-        customerDetails?.attendance_screenshot
+        trainerData?.shared_attendance_link === 1 &&
+        trainerData?.attendance_screenshot
       ) {
         setAttendanceType("Screenshot");
       } else {
         setAttendanceType("Link");
       }
-      setAttendanceSheetLink(customerDetails?.attendance_sheet_link);
-      setAttendanceScreenshot(customerDetails?.attendance_screenshot);
-      setClassMonitorStatus(
-        customerDetails?.first_class_monitoring === 1 ? 1 : 2,
-      );
+      setAttendanceSheetLink(trainerData?.attendance_sheet_link);
+      setAttendanceScreenshot(trainerData?.attendance_screenshot);
+      setClassMonitorStatus(trainerData?.first_class_monitoring === 1 ? 1 : 2);
       setCus_Details(customerDetails);
     }, []);
 
@@ -187,17 +185,18 @@ const ClassSchedule = forwardRef(
 
       if (whatsappInviteLinkValidate || attendanceSheetLinkValidate) return;
 
+      const trainerData = cus_details?.trainer_data?.[0] || {};
       const initialWhatsappGroupStatus =
-        cus_details?.whatsapp_group_creation === 1 ? 1 : 2;
-      const initialWhatsappInviteLink = cus_details?.whatsapp_invite_link;
+        trainerData?.whatsapp_group_creation === 1 ? 1 : 2;
+      const initialWhatsappInviteLink = trainerData?.whatsapp_invite_link;
       const initialWelcomeMessageStatus =
-        cus_details?.hr_welcome_message === 1 ? 1 : 2;
+        trainerData?.hr_welcome_message === 1 ? 1 : 2;
       const initialLinkStatus =
-        cus_details?.shared_attendance_link === 1 ? 1 : 2;
-      const initialAttendanceSheetLink = cus_details?.attendance_sheet_link;
-      const initialAttendanceScreenshot = cus_details?.attendance_screenshot;
+        trainerData?.shared_attendance_link === 1 ? 1 : 2;
+      const initialAttendanceSheetLink = trainerData?.attendance_sheet_link;
+      const initialAttendanceScreenshot = trainerData?.attendance_screenshot;
       const initialsMonitorStatus =
-        cus_details?.first_class_monitoring === 1 ? 1 : 2;
+        trainerData?.first_class_monitoring === 1 ? 1 : 2;
 
       if (
         whatsappGroupStatus == initialWhatsappGroupStatus &&
@@ -232,8 +231,9 @@ const ClassSchedule = forwardRef(
               ? attendanceScreenshot
               : "",
         first_class_monitoring: classMonitorStatus == 1 ? 1 : 0,
-        trainer_confirmation: cus_details.trainer_confirmation,
-        trainer_mapping_id: customerDetails?.training_map_id,
+        trainer_confirmation:
+          cus_details?.trainer_data?.[0]?.trainer_confirmation,
+        trainer_mapping_id: cus_details?.trainer_data?.[0]?.training_map_id,
       };
 
       const changedFields = {};
@@ -366,7 +366,7 @@ const ClassSchedule = forwardRef(
       setButtonLoading(true);
       const payload = {
         from_email: "admission@acte.in",
-        email: cus_details.trainer_email,
+        email: cus_details?.trainer_data?.[0]?.trainer_email,
         subject: subject,
         content: emailContent,
       };
@@ -377,15 +377,22 @@ const ClassSchedule = forwardRef(
 
         if (!is_resent) {
           const trainer_coordination_payload = {
-            whatsapp_group_creation: cus_details.whatsapp_group_creation,
-            whatsapp_invite_link: cus_details.whatsapp_invite_link,
-            hr_welcome_message: cus_details.hr_welcome_message,
-            shared_attendance_link: cus_details.shared_attendance_link,
-            attendance_sheet_link: cus_details.attendance_sheet_link,
-            attendance_screenshot: cus_details.attendance_screenshot,
-            first_class_monitoring: cus_details.first_class_monitoring,
+            whatsapp_group_creation:
+              cus_details?.trainer_data?.[0]?.whatsapp_group_creation,
+            whatsapp_invite_link:
+              cus_details?.trainer_data?.[0]?.whatsapp_invite_link,
+            hr_welcome_message:
+              cus_details?.trainer_data?.[0]?.hr_welcome_message,
+            shared_attendance_link:
+              cus_details?.trainer_data?.[0]?.shared_attendance_link,
+            attendance_sheet_link:
+              cus_details?.trainer_data?.[0]?.attendance_sheet_link,
+            attendance_screenshot:
+              cus_details?.trainer_data?.[0]?.attendance_screenshot,
+            first_class_monitoring:
+              cus_details?.trainer_data?.[0]?.first_class_monitoring,
             trainer_confirmation: 1,
-            trainer_mapping_id: customerDetails?.training_map_id,
+            trainer_mapping_id: cus_details?.trainer_data?.[0]?.training_map_id,
           };
 
           await updateTrainerCoordination(trainer_coordination_payload);
@@ -1385,41 +1392,47 @@ const ClassSchedule = forwardRef(
                         className={"users_adddrawer_createbutton"}
                         onClick={() => {
                           handleSendEmail(
-                            cus_details && cus_details.trainer_confirmation == 0
+                            cus_details &&
+                              cus_details?.trainer_data?.[0]
+                                ?.trainer_confirmation == 0
                               ? false
                               : true,
                           );
                         }}
                       >
-                        {cus_details && cus_details.trainer_confirmation == 0
+                        {cus_details &&
+                        cus_details?.trainer_data?.[0]?.trainer_confirmation ==
+                          0
                           ? "Send Mail"
                           : "Resend Mail"}
                       </button>
                     )}
                   </>
 
-                  {cus_details && cus_details.trainer_confirmation == 0 && (
-                    <>
-                      {buttonLoading ? (
-                        <button
-                          className={"users_adddrawer_loadingcreatebutton"}
-                          style={{ width: "165px" }}
-                        >
-                          <CommonSpinner />
-                        </button>
-                      ) : (
-                        <button
-                          className={"users_adddrawer_createbutton"}
-                          style={{ width: "165px" }}
-                          onClick={() => {
-                            setIsAlreadyMailSentModal(true);
-                          }}
-                        >
-                          Mark as Already Sent
-                        </button>
-                      )}
-                    </>
-                  )}
+                  {cus_details &&
+                    cus_details?.trainer_data?.[0]?.trainer_confirmation ==
+                      0 && (
+                      <>
+                        {buttonLoading ? (
+                          <button
+                            className={"users_adddrawer_loadingcreatebutton"}
+                            style={{ width: "165px" }}
+                          >
+                            <CommonSpinner />
+                          </button>
+                        ) : (
+                          <button
+                            className={"users_adddrawer_createbutton"}
+                            style={{ width: "165px" }}
+                            onClick={() => {
+                              setIsAlreadyMailSentModal(true);
+                            }}
+                          >
+                            Mark as Already Sent
+                          </button>
+                        )}
+                      </>
+                    )}
                 </div>
               ) : (
                 <>
@@ -1446,28 +1459,21 @@ const ClassSchedule = forwardRef(
                 <Button
                   onClick={() => {
                     if (stepIndex == 1) {
-                      console.log("Trainer Coordination Values:", {
-                        whatsapp_group_creation:
-                          cus_details?.whatsapp_group_creation,
-                        hr_welcome_message: cus_details?.hr_welcome_message,
-                        shared_attendance_link:
-                          cus_details?.shared_attendance_link,
-                        attendance_sheet_link:
-                          cus_details?.attendance_sheet_link,
-                        attendance_screenshot:
-                          cus_details?.attendance_screenshot,
-                        first_class_monitoring:
-                          cus_details?.first_class_monitoring,
-                        trainer_confirmation: cus_details?.trainer_confirmation,
-                      });
                       if (
-                        cus_details.whatsapp_group_creation == 0 ||
-                        cus_details.hr_welcome_message == 0 ||
-                        cus_details.shared_attendance_link == 0 ||
-                        (cus_details.shared_attendance_link == 1 &&
-                          !cus_details.attendance_sheet_link &&
-                          !cus_details.attendance_screenshot) ||
-                        cus_details.first_class_monitoring == 0
+                        cus_details?.trainer_data?.[0]
+                          ?.whatsapp_group_creation == 0 ||
+                        cus_details?.trainer_data?.[0]?.hr_welcome_message ==
+                          0 ||
+                        cus_details?.trainer_data?.[0]
+                          ?.shared_attendance_link == 0 ||
+                        (cus_details?.trainer_data?.[0]
+                          ?.shared_attendance_link == 1 &&
+                          !cus_details?.trainer_data?.[0]
+                            ?.attendance_sheet_link &&
+                          !cus_details?.trainer_data?.[0]
+                            ?.attendance_screenshot) ||
+                        cus_details?.trainer_data?.[0]
+                          ?.first_class_monitoring == 0
                       ) {
                         CommonMessage(
                           "error",
@@ -1577,15 +1583,22 @@ const ClassSchedule = forwardRef(
                   setButtonLoading(true);
                   const trainer_coordination_payload = {
                     whatsapp_group_creation:
-                      cus_details.whatsapp_group_creation,
-                    whatsapp_invite_link: cus_details.whatsapp_invite_link,
-                    hr_welcome_message: cus_details.hr_welcome_message,
-                    shared_attendance_link: cus_details.shared_attendance_link,
-                    attendance_sheet_link: cus_details.attendance_sheet_link,
-                    attendance_screenshot: cus_details.attendance_screenshot,
-                    first_class_monitoring: cus_details.first_class_monitoring,
+                      cus_details?.trainer_data?.[0]?.whatsapp_group_creation,
+                    whatsapp_invite_link:
+                      cus_details?.trainer_data?.[0]?.whatsapp_invite_link,
+                    hr_welcome_message:
+                      cus_details?.trainer_data?.[0]?.hr_welcome_message,
+                    shared_attendance_link:
+                      cus_details?.trainer_data?.[0]?.shared_attendance_link,
+                    attendance_sheet_link:
+                      cus_details?.trainer_data?.[0]?.attendance_sheet_link,
+                    attendance_screenshot:
+                      cus_details?.trainer_data?.[0]?.attendance_screenshot,
+                    first_class_monitoring:
+                      cus_details?.trainer_data?.[0]?.first_class_monitoring,
                     trainer_confirmation: 1,
-                    trainer_mapping_id: customerDetails?.training_map_id,
+                    trainer_mapping_id:
+                      cus_details?.trainer_data?.[0]?.training_map_id,
                   };
 
                   try {
