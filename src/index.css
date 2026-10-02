@@ -650,3 +650,57 @@ button:focus-visible {
 .trainers_active_ongoing_new_container p {
   margin: 0 !important;
 }
+/* Global Ant Design Collapse Beautiful UI Overrides */
+.ant-collapse {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.ant-collapse > .ant-collapse-item {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  margin-bottom: 12px;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ant-collapse > .ant-collapse-item:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1 !important;
+}
+
+.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+  align-items: center !important;
+  background: #f8fafc !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease !important;
+}
+
+.ant-collapse-item-active > .ant-collapse-header {
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+}
+
+.ant-collapse .ant-collapse-content {
+  border-top: none !important;
+  background-color: #ffffff !important;
+}
+
+.ant-collapse .ant-collapse-content > .ant-collapse-content-box {
+  padding: 20px !important;
+}
+
+.ant-collapse .ant-collapse-expand-icon {
+  color: #64748b !important;
+  padding-inline-end: 12px !important;
+}
+
+.ant-collapse > .ant-collapse-item:last-child {
+  border-radius: 8px !important;
+  margin-bottom: 0;
+}

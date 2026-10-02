@@ -175,7 +175,9 @@ const InsertPendingFees = forwardRef(
       }
       setConvenienceFees(conve_fees.toFixed(2));
 
-      const actualPaid = parseFloat(((parseFloat(payAmount) || 0) - conve_fees).toFixed(2));
+      const actualPaid = parseFloat(
+        ((parseFloat(payAmount) || 0) - conve_fees).toFixed(2),
+      );
       const amt = parseFloat((parseFloat(pendingAmount) || 0).toFixed(2));
 
       if (
@@ -1072,18 +1074,28 @@ const InsertPendingFees = forwardRef(
                             {item.payment_status === "Verify Pending" ? (
                               <div className="customer_trans_statustext_container">
                                 <PiClockCounterClockwiseBold
-                                  size={16}
+                                  size={14}
                                   color="gray"
                                 />
-                                <p style={{ color: "gray", fontWeight: 500 }}>
+                                <p
+                                  style={{
+                                    color: "gray",
+                                    fontWeight: 500,
+                                    fontSize: "12px",
+                                  }}
+                                >
                                   Waiting for Verify
                                 </p>
                               </div>
                             ) : item.payment_status === "Rejected" ? (
                               <div className="customer_trans_statustext_container">
-                                <FaRegCircleXmark color="#d32f2f" />
+                                <FaRegCircleXmark color="#d32f2f" size={12} />
                                 <p
-                                  style={{ color: "#d32f2f", fontWeight: 500 }}
+                                  style={{
+                                    color: "#d32f2f",
+                                    fontWeight: 500,
+                                    fontSize: "12px",
+                                  }}
                                 >
                                   Rejected
                                 </p>
@@ -1125,9 +1137,13 @@ const InsertPendingFees = forwardRef(
                                       />
                                     </Tooltip>
                                   )}
-                                <BsPatchCheckFill color="#3c9111" />
+                                <BsPatchCheckFill color="#3c9111" size={12} />
                                 <p
-                                  style={{ color: "#3c9111", fontWeight: 500 }}
+                                  style={{
+                                    color: "#3c9111",
+                                    fontWeight: 500,
+                                    fontSize: "12px",
+                                  }}
                                 >
                                   Verified
                                 </p>

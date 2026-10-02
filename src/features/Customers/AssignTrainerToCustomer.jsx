@@ -19,11 +19,6 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
-import { IoLocationOutline } from "react-icons/io5";
-import { MdOutlineAssignmentInd } from "react-icons/md";
-import { FaPhoneAlt } from "react-icons/fa";
-import { IoFilter } from "react-icons/io5";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonInputField from "../Common/CommonInputField";
@@ -39,19 +34,16 @@ import {
   assignTrainerForCustomer,
   getAssignTrainerHistoryForCustomer,
   getCustomerById,
-  getTrainerById,
   getTrainers,
   inserCustomerTrack,
   rejectTrainerForCustomer,
   updateCustomerStatus,
-  updateTrainerCoordination,
 } from "../ApiService/action";
 import moment from "moment";
 import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
-import CommonTable from "../Common/CommonTable";
 import { CommonMessage } from "../Common/CommonMessage";
 import TrainerDetailsModal from "./TrainerFullDetailsModal";
 
@@ -470,7 +462,7 @@ export default function AssignTrainerToCustomer({
     const getTrainerName = (t) => {
       if (t.trainer_object?.name) return t.trainer_object.name;
       const foundInList = trainersData.find(
-        (x) => String(x.id) === String(t.trainer_id)
+        (x) => String(x.id) === String(t.trainer_id),
       );
       if (foundInList?.name) return foundInList.name;
       if (

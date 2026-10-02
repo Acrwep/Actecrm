@@ -28,14 +28,10 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
-import { IoLocationOutline } from "react-icons/io5";
-import { IoFilter } from "react-icons/io5";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import { CommonMessage } from "../Common/CommonMessage";
 import {
-  assignTrainerForCustomer,
   getAssignTrainerHistoryForCustomer,
   getTrainers,
   inserCustomerTrack,
@@ -51,7 +47,6 @@ import {
   selectValidator,
 } from "../Common/Validation";
 import moment from "moment";
-import CommonTable from "../Common/CommonTable";
 import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -377,7 +372,8 @@ const AssignAndVerifyTrainer = forwardRef(
           previousTrainerDetails.mode_of_class !== modeOfClass ||
           previousTrainerDetails.trainer_type !== trainerType ||
           previousTrainerDetails.comments !== assignTrainerComments ||
-          previousTrainerDetails.proof_communication !== assignTrainerProofBase64;
+          previousTrainerDetails.proof_communication !==
+            assignTrainerProofBase64;
 
         if (!hasChanges) {
           CommonMessage("warning", "No Changes Made");
@@ -386,7 +382,10 @@ const AssignAndVerifyTrainer = forwardRef(
 
         changedFields["trainer_name"] = {
           previous_value: previousTrainerDetails.trainer_name || "-",
-          new_value: selectedTrainerObject?.name || previousTrainerDetails.trainer_name || "-",
+          new_value:
+            selectedTrainerObject?.name ||
+            previousTrainerDetails.trainer_name ||
+            "-",
         };
         changedFields["commercial"] = {
           previous_value: previousTrainerDetails.commercial || "-",

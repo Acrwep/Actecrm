@@ -927,27 +927,41 @@ const FinanceVerify = forwardRef(
                             {item.payment_status === "Verify Pending" ? (
                               <div className="customer_trans_statustext_container">
                                 <PiClockCounterClockwiseBold
-                                  size={16}
+                                  size={14}
                                   color="gray"
                                 />
-                                <p style={{ color: "gray", fontWeight: 500 }}>
+                                <p
+                                  style={{
+                                    color: "gray",
+                                    fontWeight: 500,
+                                    fontSize: "12px",
+                                  }}
+                                >
                                   Waiting for Verify
                                 </p>
                               </div>
                             ) : item.payment_status === "Rejected" ? (
                               <div className="customer_trans_statustext_container">
-                                <FaRegCircleXmark color="#d32f2f" />
+                                <FaRegCircleXmark color="#d32f2f" size={12} />
                                 <p
-                                  style={{ color: "#d32f2f", fontWeight: 500 }}
+                                  style={{
+                                    color: "#d32f2f",
+                                    fontWeight: 500,
+                                    fontSize: "12px",
+                                  }}
                                 >
                                   Rejected
                                 </p>
                               </div>
                             ) : (
                               <div className="customer_trans_statustext_container">
-                                <BsPatchCheckFill color="#3c9111" />
+                                <BsPatchCheckFill color="#3c9111" size={12} />
                                 <p
-                                  style={{ color: "#3c9111", fontWeight: 500 }}
+                                  style={{
+                                    color: "#3c9111",
+                                    fontWeight: 500,
+                                    fontSize: "12px",
+                                  }}
                                 >
                                   Verified
                                 </p>
@@ -1214,20 +1228,27 @@ const FinanceVerify = forwardRef(
                               {item.payment_status === "Verify Pending" ? (
                                 <div className="customer_trans_statustext_container">
                                   <PiClockCounterClockwiseBold
-                                    size={16}
+                                    size={14}
                                     color="gray"
                                   />
-                                  <p style={{ color: "gray", fontWeight: 500 }}>
+                                  <p
+                                    style={{
+                                      color: "gray",
+                                      fontWeight: 500,
+                                      fontSize: "12px",
+                                    }}
+                                  >
                                     Waiting for Verify
                                   </p>
                                 </div>
                               ) : item.payment_status === "Rejected" ? (
                                 <div className="customer_trans_statustext_container">
-                                  <FaRegCircleXmark color="#d32f2f" />
+                                  <FaRegCircleXmark color="#d32f2f" size={12} />
                                   <p
                                     style={{
                                       color: "#d32f2f",
                                       fontWeight: 500,
+                                      fontSize: "12px",
                                     }}
                                   >
                                     Rejected
@@ -1235,11 +1256,12 @@ const FinanceVerify = forwardRef(
                                 </div>
                               ) : (
                                 <div className="customer_trans_statustext_container">
-                                  <BsPatchCheckFill color="#3c9111" />
+                                  <BsPatchCheckFill color="#3c9111" size={12} />
                                   <p
                                     style={{
                                       color: "#3c9111",
                                       fontWeight: 500,
+                                      fontSize: "12px",
                                     }}
                                   >
                                     Verified
