@@ -163,7 +163,7 @@ export default function CommonCustomerSingleSelectField({
                 fontSize: errorFontSize || "10px",
                 color: "#d32f2f",
                 fontFamily: "Poppins, sans-serif",
-                marginLeft: 0,
+                marginLeft: 1,
                 position: "absolute",
               }}
             >

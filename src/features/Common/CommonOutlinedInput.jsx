@@ -69,9 +69,9 @@ export default function CommonOutlinedInput({
       {error && (
         <div style={helperTextContainerStyle}>
           <FormHelperText
-            className="common_selectfield_errortext"
-            style={{
-              fontSize: errorFontSize ? errorFontSize : "10px",
+            sx={{
+              fontSize: errorFontSize || "10px",
+              lineHeight: "1.6 !important",
             }}
           >
             {label + " " + error}

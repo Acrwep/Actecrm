@@ -1,5 +1,14 @@
 import React, { useState, useEffect, forwardRef } from "react";
-import { Row, Col, Button, Collapse, Modal, Divider, message } from "antd";
+import {
+  Row,
+  Col,
+  Button,
+  Collapse,
+  Modal,
+  Divider,
+  message,
+  Skeleton,
+} from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
@@ -81,12 +90,14 @@ const FinanceVerify = forwardRef(
     const [dueDate, setDueDate] = useState(null);
     const [dueDateError, setDueDateError] = useState("");
     const [buttonLoading, setButtonLoading] = useState(false);
+    const [paymentHistoryLoading, setPaymentHistoryLoading] = useState(false);
 
     useEffect(() => {
       getPaymentHistoryData();
     }, []);
 
     const getPaymentHistoryData = async () => {
+      setPaymentHistoryLoading(true);
       try {
         const response = await getCustomersPaymentHistory(
           customerDetails?.lead_id,
@@ -191,6 +202,8 @@ const FinanceVerify = forwardRef(
         setPaymentFullDetails(null);
         setPaymentHistory([]);
         console.log("particular customer payment history error", error);
+      } finally {
+        setPaymentHistoryLoading(false);
       }
     };
 
@@ -706,6 +719,45 @@ const FinanceVerify = forwardRef(
         console.log("sendLmsDetailsMail error", error);
       }
     };
+
+    if (paymentHistoryLoading) {
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "30px",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              margin: "0px 12px",
+              borderRadius: "8px",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+              background: "#fff",
+              padding: "12px",
+            }}
+          >
+            <Skeleton active paragraph={{ rows: 2 }} />
+          </div>
+          <div
+            style={{
+              margin: "0px 12px",
+              borderRadius: "8px",
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+              background: "#fff",
+              padding: "12px",
+              marginBottom: "30px",
+            }}
+          >
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div>

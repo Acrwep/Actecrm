@@ -706,7 +706,7 @@
 .customer_trainer_badge_mainconatiner {
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 .customer_trainer_onboardcount_badgecount_container {
   display: flex;

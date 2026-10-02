@@ -37,8 +37,6 @@ import { CommonMessage } from "../Common/CommonMessage";
 import {
   assignTrainerForCustomer,
   getAssignTrainerHistoryForCustomer,
-  getCustomerByTrainerId,
-  getTrainerById,
   getTrainers,
   inserCustomerTrack,
   rejectTrainerForCustomer,
@@ -58,6 +56,7 @@ import CommonSpinner from "../Common/CommonSpinner";
 import PrismaZoom from "react-prismazoom";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
+import TrainerDetailsModal from "./TrainerFullDetailsModal";
 import "./styles.css";
 
 const AssignAndVerifyTrainer = forwardRef(
@@ -92,24 +91,17 @@ const AssignAndVerifyTrainer = forwardRef(
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
       useState(false);
-    const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
-    const [trainerClassTakenCount, setTrainerClassTakenCount] = useState(0);
-    const [trainerClassGoingCount, setTrainerClassGoingCount] = useState(0);
+    const [clickedTrainerId, setClickedTrainerId] = useState(null);
     //trainer verify usestates
+    const [activeTrainerItem, setActiveTrainerItem] = useState(null);
     const [assignTrainerData, setAssignTrainerData] = useState(null);
     const [isProofScreenshotModal, setIsProofScreenshotModal] = useState(false);
     const [proofScreenshot, setProofScreenshot] = useState("");
-    const [isShowRejectTrainerCommentBox, setIsShowRejectTrainerCommentBox] =
-      useState(false);
+    const [activeRejectIndex, setActiveRejectIndex] = useState(null);
     const [rejectTrainerComments, setRejectTrainerComments] = useState("");
     const [rejectTrainerCommentsError, setRejectTrainerCommentsError] =
       useState("");
     const [isOpenTrainerVerifyModal, setIsOpenTrainerVerifyModal] =
-      useState(false);
-    const [isOpenTrainerCustomersModal, setIsOpenTrainerCustomersModal] =
-      useState(false);
-    const [customerByTrainerData, setCustomerByTrainerData] = useState([]);
-    const [customerByTrainerLoading, setCustomerByTrainerLoading] =
       useState(false);
     const [buttonLoading, setButtonLoading] = useState(false);
 
@@ -133,83 +125,6 @@ const AssignAndVerifyTrainer = forwardRef(
     const [trainerHasMore, setTrainerHasMore] = useState(true);
     const [trainerSelectloading, setTrainerSelectloading] = useState(false);
 
-    const customerByTrainerColumn = [
-      {
-        title: "Customer Name",
-        key: "cus_name",
-        dataIndex: "cus_name",
-        width: 140,
-        render: (text) => {
-          return <EllipsisTooltip text={text} />;
-        },
-      },
-      {
-        title: "Customer Email",
-        key: "cus_email",
-        dataIndex: "cus_email",
-        width: 140,
-        render: (text) => {
-          return <EllipsisTooltip text={text} />;
-        },
-      },
-      {
-        title: "Customer Mobile",
-        key: "cus_phone",
-        dataIndex: "cus_phone",
-        width: 140,
-      },
-      {
-        title: "Course Name",
-        key: "course_name",
-        dataIndex: "course_name",
-        width: 160,
-        render: (text) => {
-          return <EllipsisTooltip text={text} />;
-        },
-      },
-      {
-        title: "Region",
-        key: "region_name",
-        dataIndex: "region_name",
-        width: 120,
-      },
-      {
-        title: "Branch Name",
-        key: "branch_name",
-        dataIndex: "branch_name",
-        width: 140,
-      },
-      {
-        title: "Course Fees",
-        key: "primary_fees",
-        dataIndex: "primary_fees",
-        width: 120,
-        render: (text) => {
-          return <p>{"₹" + text}</p>;
-        },
-      },
-      {
-        title: "Class Going %",
-        key: "class_percentage",
-        dataIndex: "class_percentage",
-        width: 115,
-        fixed: "right",
-        render: (text) => {
-          return <p>{text ? `${parseInt(text)}%` : `0%`}</p>;
-        },
-      },
-      {
-        title: "Trainer Commercial",
-        key: "commercial",
-        dataIndex: "commercial",
-        fixed: "right",
-        width: 160,
-        render: (text) => {
-          return <p>{"₹" + text}</p>;
-        },
-      },
-    ];
-
     useEffect(() => {
       handleTrainerHistory();
     }, []);
@@ -230,6 +145,7 @@ const AssignAndVerifyTrainer = forwardRef(
           setTrainerHistory(reverseData);
 
           if (drawerContentStatus === "Update Assigned Trainer") {
+            getTrainersData();
             const currentTrainerDetails = reverseData[0];
             console.log("currentTrainerDetails", currentTrainerDetails);
 
@@ -244,65 +160,14 @@ const AssignAndVerifyTrainer = forwardRef(
               setTrainerType(currentTrainerDetails.trainer_type || "");
             }
           }
-          setTimeout(() => {
-            setHistoryLoading(false);
-          }, 300);
         } else {
           setTrainerHistory([]);
-          setTimeout(() => {
-            setHistoryLoading(false);
-          }, 300);
         }
+        setHistoryLoading(false);
       } catch (error) {
         setTrainerHistory([]);
         setHistoryLoading(false);
         console.log("trainer history error", error);
-      } finally {
-        setTimeout(() => {
-          if (
-            drawerContentStatus == "Trainer Verify" ||
-            drawerContentStatus == "Trainer Approval" ||
-            drawerContentStatus === "Update Assigned Trainer"
-          ) {
-            getAssignTrainerData();
-          }
-        }, 100);
-      }
-    };
-
-    const getAssignTrainerData = async () => {
-      try {
-        const response = await getTrainerById(
-          customerDetails && customerDetails.trainer_id
-            ? customerDetails.trainer_id
-            : null,
-        );
-        const trainerDetails = response?.data?.data;
-        console.log("trainerDetailssssssssssssss", trainerDetails);
-        if (drawerContentStatus === "Update Assigned Trainer") {
-          setSelectedTrainerObject(trainerDetails);
-        } else {
-          setAssignTrainerData(trainerDetails);
-        }
-      } catch (error) {
-        setAssignTrainerData(null);
-        console.log("get trainer by id error", error);
-      } finally {
-        getTrainersData();
-      }
-    };
-
-    const getTrainerByIdData = async (trainerId) => {
-      try {
-        const response = await getTrainerById(trainerId);
-        const trainerDetails = response?.data?.data;
-        setSelectedTrainerId(trainerId);
-        setClickedTrainerDetails([trainerDetails]);
-        setSelectedTrainerObject(trainerDetails);
-        setTrainerSearchText(trainerDetails.name);
-      } catch (error) {
-        setClickedTrainerDetails([]);
-        console.log("get trainer by id error", error);
       }
     };
 
@@ -357,7 +222,6 @@ const AssignAndVerifyTrainer = forwardRef(
       setTrainerType(selectedObj?.trainer_type || "");
 
       setSelectedTrainerIdError(selectValidator(selectedId));
-      getCustomerByTrainerIdData(selectedId, 0);
       // 👇 show selected label in input
       setTrainerSearchText(selectedObj?.name || "");
     };
@@ -471,37 +335,13 @@ const AssignAndVerifyTrainer = forwardRef(
       }
     };
 
-    const getCustomerByTrainerIdData = async (trainerid, classtaken) => {
-      setCustomerByTrainerLoading(true);
-      const payload = {
-        trainer_id: trainerid,
-        is_class_taken: classtaken,
-      };
-      try {
-        const response = await getCustomerByTrainerId(payload);
-        console.log("get customer by trainer id response", response);
-
-        setTrainerClassTakenCount(response?.data?.data?.on_boarding_count || 0);
-        setTrainerClassGoingCount(response?.data?.data?.on_going_count || 0);
-
-        setCustomerByTrainerData(response?.data?.data?.students || []);
-        setTimeout(() => {
-          setCustomerByTrainerLoading(false);
-        }, 300);
-      } catch (error) {
-        setCustomerByTrainerData([]);
-        setCustomerByTrainerLoading(false);
-        console.log("get customer by trainer id error", error);
-      }
-    };
-
     useImperativeHandle(ref, () => ({
-      handleAssignTrainer,
+      handleUpdateTrainer,
       openTrainerVerifyModal,
       handleRejectTrainer,
     }));
 
-    const handleAssignTrainer = async () => {
+    const handleUpdateTrainer = async () => {
       const trainerIdValidate = selectValidator(selectedTrainerId);
       const commercialValidate = selectValidator(commercial);
       const modeOfClassValidate = selectValidator(modeOfClass);
@@ -525,6 +365,51 @@ const AssignAndVerifyTrainer = forwardRef(
       )
         return;
 
+      const previousTrainerDetails =
+        trainerHistory && trainerHistory.length > 0 ? trainerHistory[0] : null;
+
+      const changedFields = {};
+
+      if (previousTrainerDetails) {
+        const hasChanges =
+          previousTrainerDetails.trainer_id !== selectedTrainerId ||
+          String(previousTrainerDetails.commercial) !== String(commercial) ||
+          previousTrainerDetails.mode_of_class !== modeOfClass ||
+          previousTrainerDetails.trainer_type !== trainerType ||
+          previousTrainerDetails.comments !== assignTrainerComments ||
+          previousTrainerDetails.proof_communication !== assignTrainerProofBase64;
+
+        if (!hasChanges) {
+          CommonMessage("warning", "No Changes Made");
+          return;
+        }
+
+        changedFields["trainer_name"] = {
+          previous_value: previousTrainerDetails.trainer_name || "-",
+          new_value: selectedTrainerObject?.name || previousTrainerDetails.trainer_name || "-",
+        };
+        changedFields["commercial"] = {
+          previous_value: previousTrainerDetails.commercial || "-",
+          new_value: commercial || "-",
+        };
+        changedFields["mode_of_class"] = {
+          previous_value: previousTrainerDetails.mode_of_class || "-",
+          new_value: modeOfClass || "-",
+        };
+        changedFields["trainer_type"] = {
+          previous_value: previousTrainerDetails.trainer_type || "-",
+          new_value: trainerType || "-",
+        };
+        changedFields["comments"] = {
+          previous_value: previousTrainerDetails.comments || "-",
+          new_value: assignTrainerComments || "-",
+        };
+        changedFields["proof_communication"] = {
+          previous_value: previousTrainerDetails.proof_communication || "-",
+          new_value: assignTrainerProofBase64 || "-",
+        };
+      }
+
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
@@ -545,56 +430,17 @@ const AssignAndVerifyTrainer = forwardRef(
         }),
       };
 
-      if (drawerContentStatus === "Update Assigned Trainer") {
-        try {
-          await updateTrainerForCustomer(payload);
-          CommonMessage("success", "Updated Successfully");
-          handleCustomerTrack("Trainer Updated");
-        } catch (error) {
-          setUpdateButtonLoading(false);
-          CommonMessage(
-            "error",
-            error?.response?.data?.details ||
-              "Something went wrong. Try again later",
-          );
-        }
-      } else {
-        try {
-          await assignTrainerForCustomer(payload);
-          CommonMessage("success", "Updated Successfully");
-          setTimeout(async () => {
-            const payload = {
-              customer_ids: [
-                {
-                  customer_id: customerDetails.id,
-                  status: "Awaiting Trainer Verify",
-                  updated_at: formatToBackendIST(new Date()),
-                  updated_by: converAsJson?.user_id || "",
-                },
-              ],
-            };
-            try {
-              await updateCustomerStatus(payload);
-              handleCustomerTrack("Trainer Assigned");
-              setTimeout(() => {
-                handleSecondCustomerTrack("Awaiting Trainer Verify");
-              }, 300);
-            } catch (error) {
-              CommonMessage(
-                "error",
-                error?.response?.data?.message ||
-                  "Something went wrong. Try again later",
-              );
-            }
-          }, 300);
-        } catch (error) {
-          setUpdateButtonLoading(false);
-          CommonMessage(
-            "error",
-            error?.response?.data?.details ||
-              "Something went wrong. Try again later",
-          );
-        }
+      try {
+        await updateTrainerForCustomer(payload);
+        CommonMessage("success", "Trainer Updated Successfully");
+        handleCustomerTrack("Trainer Updated", changedFields);
+      } catch (error) {
+        setUpdateButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
       }
     };
 
@@ -603,6 +449,11 @@ const AssignAndVerifyTrainer = forwardRef(
     };
 
     const handleVerifyTrainer = async () => {
+      if (!activeTrainerItem) {
+        CommonMessage("Something went wrong");
+        return;
+      }
+      console.log("activeTrainerItem", activeTrainerItem);
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
       const today = new Date();
@@ -610,7 +461,7 @@ const AssignAndVerifyTrainer = forwardRef(
       setButtonLoading(true);
 
       const payload = {
-        id: customerDetails.training_map_id,
+        id: activeTrainerItem.id,
         verified_date: formatToBackendIST(today),
       };
 
@@ -618,9 +469,13 @@ const AssignAndVerifyTrainer = forwardRef(
         if (drawerContentStatus !== "Trainer Approval") {
           await verifyTrainerForCustomer(payload);
         }
-        CommonMessage("success", "Updated Successfully");
+        CommonMessage(
+          "success",
+          drawerContentStatus === "Trainer Approval"
+            ? "Trainer Approved Successfully"
+            : "Trainer Verified Successfully",
+        );
         setTimeout(async () => {
-          setButtonLoading(false);
           const payload = {
             customer_ids: [
               {
@@ -636,6 +491,7 @@ const AssignAndVerifyTrainer = forwardRef(
           };
           try {
             await updateCustomerStatus(payload);
+            setButtonLoading(false);
             handleCustomerTrack(
               drawerContentStatus === "Trainer Approval"
                 ? "Trainer Approved"
@@ -666,15 +522,7 @@ const AssignAndVerifyTrainer = forwardRef(
       }
     };
 
-    const handleRejectTrainer = async () => {
-      setIsShowRejectTrainerCommentBox(true);
-      setTimeout(() => {
-        const container = document.getElementById(
-          "customer_trainerreject_commentContainer",
-        );
-        container.scrollIntoView({ behavior: "smooth" });
-      }, 200);
-
+    const handleRejectTrainer = async (trainer_mapping_data) => {
       const commentValidate = addressValidator(rejectTrainerComments);
 
       setRejectTrainerCommentsError(commentValidate);
@@ -685,10 +533,10 @@ const AssignAndVerifyTrainer = forwardRef(
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
 
-      setRejectButtonLoader(true);
+      setButtonLoading(true);
 
       const payload = {
-        id: customerDetails.training_map_id,
+        id: trainer_mapping_data.id,
         rejected_date: formatToBackendIST(today),
         comments: rejectTrainerComments,
       };
@@ -697,7 +545,12 @@ const AssignAndVerifyTrainer = forwardRef(
         if (drawerContentStatus !== "Trainer Approval") {
           await rejectTrainerForCustomer(payload);
         }
-        CommonMessage("success", "Updated Successfully");
+        CommonMessage(
+          "success",
+          drawerContentStatus === "Trainer Approval"
+            ? "Trainer Approval Rejected"
+            : "Trainer Rejected",
+        );
         setTimeout(async () => {
           const payload = {
             customer_ids: [
@@ -724,6 +577,7 @@ const AssignAndVerifyTrainer = forwardRef(
               drawerContentStatus === "Trainer Approval"
                 ? "Trainer Approval Rejected"
                 : "Trainer Rejected",
+              trainer_mapping_data,
             );
             setTimeout(() => {
               handleSecondCustomerTrack(
@@ -732,6 +586,8 @@ const AssignAndVerifyTrainer = forwardRef(
                   : "Awaiting Trainer",
               );
             }, 300);
+            setButtonLoading(false);
+            setActiveRejectIndex(null);
           } catch (error) {
             CommonMessage(
               "error",
@@ -741,7 +597,7 @@ const AssignAndVerifyTrainer = forwardRef(
           }
         }, 300);
       } catch (error) {
-        setRejectButtonLoader(false);
+        setButtonLoading(false);
         CommonMessage(
           "error",
           error?.response?.data?.details ||
@@ -750,7 +606,8 @@ const AssignAndVerifyTrainer = forwardRef(
       }
     };
 
-    const handleCustomerTrack = async (updatestatus) => {
+    const handleCustomerTrack = async (updatestatus, trainerData = null) => {
+      console.log("trackkkkkk trainerData", trainerData);
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
@@ -763,68 +620,7 @@ const AssignAndVerifyTrainer = forwardRef(
         trainerHistory &&
         trainerHistory.length > 0
       ) {
-        const previousTrainerDetails = trainerHistory[0];
-        const changedFields = {};
-        console.log(
-          "previousTrainerDetails",
-          previousTrainerDetails,
-          modeOfClass,
-        );
-
-        if (
-          previousTrainerDetails.trainer_name !== selectedTrainerObject?.name
-        ) {
-          changedFields["trainer_name"] = {
-            previous_value: previousTrainerDetails.trainer_name || "-",
-            new_value: selectedTrainerObject?.name || "-",
-          };
-        }
-        if (String(previousTrainerDetails.commercial) !== String(commercial)) {
-          changedFields["commercial"] = {
-            previous_value: previousTrainerDetails.commercial || "-",
-            new_value: commercial || "-",
-          };
-        }
-        if (previousTrainerDetails.mode_of_class !== modeOfClass) {
-          changedFields["mode_of_class"] = {
-            previous_value: previousTrainerDetails.mode_of_class || "-",
-            new_value: modeOfClass || "-",
-          };
-        }
-        if (previousTrainerDetails.trainer_type !== trainerType) {
-          changedFields["trainer_type"] = {
-            previous_value: previousTrainerDetails.trainer_type || "-",
-            new_value: trainerType || "-",
-          };
-        }
-        if (previousTrainerDetails.comments !== assignTrainerComments) {
-          changedFields["comments"] = {
-            previous_value: previousTrainerDetails.comments || "-",
-            new_value: assignTrainerComments || "-",
-          };
-        }
-        if (
-          previousTrainerDetails.proof_communication !==
-          assignTrainerProofBase64
-        ) {
-          changedFields["proof_communication"] = {
-            previous_value: previousTrainerDetails.proof_communication || "-",
-            new_value: assignTrainerProofBase64 || "-",
-          };
-        }
-
-        finalDetails =
-          Object.keys(changedFields).length > 0
-            ? changedFields
-            : {
-                trainer_id: selectedTrainerId,
-                trainer_name: selectedTrainerObject?.name || "",
-                commercial: commercial,
-                mode_of_class: modeOfClass,
-                trainer_type: trainerType,
-                comments: assignTrainerComments,
-                proof_communication: assignTrainerProofBase64,
-              };
+        finalDetails = trainerData;
       } else {
         finalDetails = {
           trainer_id: selectedTrainerId,
@@ -837,42 +633,17 @@ const AssignAndVerifyTrainer = forwardRef(
         };
       }
 
-      const verifyOrRejectTrainerDetails = {
-        trainer_name:
-          customerDetails && customerDetails.trainer_name
-            ? customerDetails.trainer_name
+      const rejectedTrainerDetails = {
+        trainer_name: trainerData?.trainer_name || "-",
+        "commercial_%":
+          trainerData?.commercial_percentage != null
+            ? `${trainerData.commercial_percentage}%`
             : "-",
-        trainer_email:
-          customerDetails && customerDetails.trainer_email
-            ? customerDetails.trainer_email
-            : "-",
-        trainer_mobile:
-          customerDetails && customerDetails.trainer_mobile
-            ? customerDetails.trainer_mobile
-            : "-",
-        mode_of_class:
-          customerDetails && customerDetails.mode_of_class
-            ? customerDetails.mode_of_class
-            : "-",
-        trainer_type:
-          customerDetails && customerDetails.trainer_type
-            ? customerDetails.trainer_type
-            : "-",
-        trainer_commercial:
-          customerDetails && customerDetails.commercial != null
-            ? customerDetails.commercial
-            : "-",
-        trainer_commercial_percentage:
-          customerDetails && customerDetails.commercial_percentage != null
-            ? customerDetails.commercial_percentage
-            : "-",
-        ...(updatestatus && updatestatus === "Trainer Rejected"
-          ? { rejected_reason: rejectTrainerComments }
-          : {}),
-      };
-
-      const approvalRejectedDetails = {
-        rejected_reason: rejectTrainerComments,
+        type: trainerData?.trainer_type || "-",
+        commercial:
+          trainerData?.commercial != null ? `₹${trainerData.commercial}` : "-",
+        mode_of_training: trainerData?.mode_of_class || "-",
+        rejection_reason: rejectTrainerComments || "-",
       };
 
       const payload = {
@@ -883,13 +654,13 @@ const AssignAndVerifyTrainer = forwardRef(
             updated_by:
               converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
             status_date: formatToBackendIST(today),
-            // details: assignTrainerDetails,
             ...((updatestatus && updatestatus === "Trainer Assigned") ||
             updatestatus === "Trainer Updated"
               ? { details: finalDetails }
-              : updatestatus === "Trainer Approval Rejected"
-                ? { details: approvalRejectedDetails }
-                : { details: verifyOrRejectTrainerDetails }),
+              : updatestatus === "Trainer Approval Rejected" ||
+                  updatestatus === "Trainer Rejected"
+                ? { details: rejectedTrainerDetails }
+                : {}),
           },
         ],
       };
@@ -983,14 +754,13 @@ const AssignAndVerifyTrainer = forwardRef(
     };
 
     const cardStyle = {
-      margin: "20px 24px",
+      margin: "0px 12px",
       borderRadius: "8px",
       border: "1px solid #e2e8f0",
       boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
       background: "#fff",
       padding: "12px",
-      marginTop: "16px",
-      marginBottom: "30px",
+      marginBottom: "16px",
     };
 
     const HeaderTitle = ({ icon, title }) => (
@@ -1240,7 +1010,7 @@ const AssignAndVerifyTrainer = forwardRef(
                           </Col>
 
                           {/* rejected/verified comment section */}
-                          {item.is_rejected == 1 && item.is_verified == 0 ? (
+                          {item.is_rejected == 1 ? (
                             <>
                               <Col span={6}>
                                 {renderField(
@@ -1257,7 +1027,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                 )}
                               </Col>
                             </>
-                          ) : item.verified_date ? (
+                          ) : item.verified_date && item.is_rejected == 0 ? (
                             <Col span={6}>
                               {renderField(
                                 "Verified Date",
@@ -1265,6 +1035,89 @@ const AssignAndVerifyTrainer = forwardRef(
                               )}
                             </Col>
                           ) : null}
+
+                          {item.is_rejected == 1 ||
+                          drawerContentStatus ===
+                            "Update Assigned Trainer" ? null : (
+                            <Col span={24} style={{ marginTop: "0px" }}>
+                              {activeRejectIndex === index && (
+                                <div
+                                  style={{
+                                    marginBottom: "16px",
+                                    position: "relative",
+                                  }}
+                                  id="customer_trainerreject_commentContainer"
+                                >
+                                  <CommonTextArea
+                                    label="Comment"
+                                    required={true}
+                                    onChange={(e) => {
+                                      setRejectTrainerComments(e.target.value);
+                                      setRejectTrainerCommentsError(
+                                        addressValidator(e.target.value),
+                                      );
+                                    }}
+                                    value={rejectTrainerComments}
+                                    error={rejectTrainerCommentsError}
+                                  />
+                                </div>
+                              )}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "12px",
+                                  justifyContent: "center",
+                                  marginTop: "12px",
+                                }}
+                              >
+                                {activeRejectIndex === index && (
+                                  <Button
+                                    className="customer_verify_trainer_back_button"
+                                    onClick={() => {
+                                      setActiveRejectIndex(null);
+                                      setRejectTrainerComments("");
+                                      setRejectTrainerCommentsError("");
+                                    }}
+                                  >
+                                    Back
+                                  </Button>
+                                )}
+                                <Button
+                                  loading={
+                                    buttonLoading && activeRejectIndex === index
+                                  }
+                                  onClick={() => {
+                                    if (buttonLoading) return;
+                                    if (activeRejectIndex === index) {
+                                      handleRejectTrainer(item);
+                                    } else {
+                                      setActiveRejectIndex(index);
+                                      setRejectTrainerComments("");
+                                      setRejectTrainerCommentsError("");
+                                    }
+                                  }}
+                                  className="customer_finance_rejectbutton"
+                                >
+                                  {activeRejectIndex === index
+                                    ? "Confirm Reject"
+                                    : "Reject"}
+                                </Button>
+                                {activeRejectIndex !== index && (
+                                  <Button
+                                    className="customer_finance_verifybutton"
+                                    onClick={() => {
+                                      setActiveTrainerItem(item);
+                                      setIsOpenTrainerVerifyModal(true);
+                                    }}
+                                  >
+                                    {drawerContentStatus === "Trainer Approval"
+                                      ? "Approve"
+                                      : "Verify"}
+                                  </Button>
+                                )}
+                              </div>
+                            </Col>
+                          )}
                         </Row>
                       </div>
                     </Collapse.Panel>
@@ -1277,15 +1130,12 @@ const AssignAndVerifyTrainer = forwardRef(
           )}
         </div>
 
-        {drawerContentStatus == "Assign Trainer" ||
-        drawerContentStatus === "Update Assigned Trainer" ? (
+        {drawerContentStatus === "Update Assigned Trainer" ? (
           <>
             <Divider className="customer_statusupdate_divider" />
             <div className="customer_statusupdate_adddetailsContainer">
               <p className="customer_statusupdate_adddetails_heading">
-                {drawerContentStatus == "Assign Trainer"
-                  ? "Assign New Trainer"
-                  : "Update Trainer"}
+                Update Trainer
               </p>
 
               <Row gutter={16} style={{ marginTop: "14px" }}>
@@ -1297,44 +1147,6 @@ const AssignAndVerifyTrainer = forwardRef(
                       gap: "8px",
                     }}
                   >
-                    {/* <div style={{ flex: 1 }}>
-                      <CommonSelectField
-                        label="Trainer"
-                        required={true}
-                        options={trainersData}
-                        onChange={(e) => {
-                          setTrainerId(e.target.value);
-                          const clickedTrainer = trainersData.filter(
-                            (f) => f.id == e.target.value,
-                          );
-                          console.log("clickedTrainer", clickedTrainer);
-                          setTrainerType(
-                            clickedTrainer.length >= 1 &&
-                              clickedTrainer[0].trainer_type
-                              ? clickedTrainer[0].trainer_type
-                              : "",
-                          );
-                          setClickedTrainerDetails(clickedTrainer);
-                          setTrainerIdError(selectValidator(e.target.value));
-                          getCustomerByTrainerIdData(e.target.value, 0);
-                        }}
-                        value={trainerId}
-                        error={trainerIdError}
-                        onFocus={() => setIsTrainerSelectFocused(true)}
-                        onBlur={() => setIsTrainerSelectFocused(false)}
-                        borderRightNone={true}
-                        showLabelStatus={
-                          trainerFilterType == 1
-                            ? "Name"
-                            : trainerFilterType == 2
-                              ? "Trainer Id"
-                              : trainerFilterType == 3
-                                ? "Email"
-                                : "Mobile"
-                        }
-                      />
-                    </div> */}
-
                     <div style={{ flex: 1 }}>
                       <CommonCustomerSingleSelectField
                         label="Trainer"
@@ -1364,7 +1176,7 @@ const AssignAndVerifyTrainer = forwardRef(
                           className="trainers_action_icons"
                           onClick={() => {
                             setIsOpenTrainerDetailModal(true);
-                            setClickedTrainerDetails([selectedTrainerObject]);
+                            setClickedTrainerId(selectedTrainerId);
                           }}
                         />
                       </Tooltip>
@@ -1470,505 +1282,21 @@ const AssignAndVerifyTrainer = forwardRef(
               </Row>
             </div>
           </>
-        ) : (
-          <>
-            <Divider className="customer_statusupdate_divider" />
-            <div style={cardStyle}>
-              <HeaderTitle
-                icon={<FaRegCircleUser size={18} color="#2563eb" />}
-                title="Assigned Trainer Details"
-              />
-              <Row gutter={24}>
-                <Col span={6}>
-                  {renderField(
-                    "HR Name",
-                    assignTrainerData && assignTrainerData.hr_head
-                      ? assignTrainerData.hr_head
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Trainer Name",
-                    assignTrainerData && assignTrainerData.name
-                      ? `${assignTrainerData.name} (${assignTrainerData.trainer_code || "-"})`
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Trainer Email",
-                    assignTrainerData && assignTrainerData.email
-                      ? assignTrainerData.email
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Trainer Mobile",
-                    assignTrainerData && assignTrainerData.mobile
-                      ? assignTrainerData.mobile
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Mode Of Class",
-                    customerDetails &&
-                      customerDetails.mode_of_class_name !== null
-                      ? customerDetails.mode_of_class_name
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Trainer Type",
-                    customerDetails && customerDetails.trainer_type !== null
-                      ? customerDetails.trainer_type
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Commercial",
-                    customerDetails && customerDetails.commercial !== null
-                      ? "₹" + customerDetails.commercial
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Commercial%",
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        fontFamily: "'Poppins', sans-serif",
-                        fontSize: "13px",
-                        color:
-                          customerDetails &&
-                          customerDetails.commercial_percentage !== null
-                            ? customerDetails.commercial_percentage < 18
-                              ? "#3c9111" // green
-                              : customerDetails.commercial_percentage <= 22
-                                ? "#ffa502" // orange
-                                : "#d32f2f" // red
-                            : "inherit",
-                      }}
-                    >
-                      {customerDetails && customerDetails.commercial_percentage
-                        ? customerDetails.commercial_percentage + "%"
-                        : "-"}
-                    </span>,
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Comments",
-                    customerDetails && customerDetails.comments !== null
-                      ? customerDetails.comments
-                      : "-",
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Proof Screenshot",
-                    <button
-                      className="pendingcustomer_paymentscreenshot_viewbutton"
-                      style={{ gap: "4px" }}
-                      onClick={() => {
-                        setIsProofScreenshotModal(true);
-                        setProofScreenshot(
-                          customerDetails &&
-                            customerDetails.proof_communication !== null
-                            ? customerDetails.proof_communication
-                            : "-",
-                        );
-                      }}
-                    >
-                      <FaRegEye size={16} /> View screenshot
-                    </button>,
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Class Taken",
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "'Poppins', sans-serif",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "#333",
-                        }}
-                      >
-                        {customerDetails?.completed_student_count != null
-                          ? `${customerDetails.completed_student_count} Customers`
-                          : "-"}
-                      </span>
-                      {customerDetails?.completed_student_count > 0 && (
-                        <Tooltip
-                          placement="top"
-                          title="View Customer Details"
-                          trigger={["hover", "click"]}
-                        >
-                          <FaRegEye
-                            size={14}
-                            className="trainers_action_icons"
-                            onClick={() => {
-                              setIsOpenTrainerCustomersModal(true);
-                              getCustomerByTrainerIdData(
-                                customerDetails?.trainer_id ?? null,
-                                1,
-                              );
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </div>,
-                  )}
-                </Col>
-                <Col span={6}>
-                  {renderField(
-                    "Class Going",
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "'Poppins', sans-serif",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "#333",
-                        }}
-                      >
-                        {customerDetails?.ongoing_student_count != null
-                          ? `${customerDetails.ongoing_student_count} Customers`
-                          : "-"}
-                      </span>
-                      {customerDetails?.ongoing_student_count > 0 && (
-                        <Tooltip
-                          placement="top"
-                          title="View Customer Details"
-                          trigger={["hover", "click"]}
-                        >
-                          <FaRegEye
-                            size={14}
-                            className="trainers_action_icons"
-                            onClick={() => {
-                              setIsOpenTrainerCustomersModal(true);
-                              getCustomerByTrainerIdData(
-                                customerDetails && customerDetails.trainer_id
-                                  ? customerDetails.trainer_id
-                                  : null,
-                                0,
-                              );
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </div>,
-                  )}
-                </Col>
-              </Row>
-
-              {isShowRejectTrainerCommentBox ? (
-                <div
-                  style={{ marginTop: "12px", position: "relative" }}
-                  id="customer_trainerreject_commentContainer"
-                >
-                  <CommonTextArea
-                    label="Comment"
-                    required={true}
-                    onChange={(e) => {
-                      setRejectTrainerComments(e.target.value);
-                      setRejectTrainerCommentsError(
-                        addressValidator(e.target.value),
-                      );
-                    }}
-                    value={rejectTrainerComments}
-                    error={rejectTrainerCommentsError}
-                  />
-                </div>
-              ) : (
-                ""
-              )}
-            </div>
-          </>
-        )}
+        ) : null}
 
         {/* trainer fulldetails modal */}
-        <Modal
-          title="Trainer Full Details"
+        <TrainerDetailsModal
           open={isOpenTrainerDetailModal}
           onCancel={() => setIsOpenTrainerDetailModal(false)}
-          footer={false}
-          width="50%"
-        >
-          {clickedTrainerDetails.map((item, index) => {
-            return (
-              <Row gutter={16} style={{ marginTop: "20px" }}>
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <FaRegCircleUser size={15} color="gray" />
-                        <p className="customerdetails_rowheading">HR Name</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.hr_head ? item.hr_head : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <FaRegCircleUser size={15} color="gray" />
-                        <p className="customerdetails_rowheading">
-                          Trainer Name
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.name
-                          ? `${item.name} (${
-                              item.trainer_code ? item.trainer_code : "-"
-                            })`
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <MdOutlineEmail size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Email</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.email}</p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <IoCallOutline size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Mobile</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.mobile}</p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <FaWhatsapp size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Whatsapp</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.whatsapp}</p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <IoLocationOutline size={15} color="gray" />
-                        <p className="customerdetails_rowheading">Location</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.location}</p>
-                    </Col>
-                  </Row>
-                </Col>
-
-                <Col span={12}>
-                  <Row>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Technology</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">{item.technology}</p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Experience</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.overall_exp_year + " Years"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Relevent Experience
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.relavant_exp_year + " Years"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Avaibility Timing
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.availability_time
-                          ? moment(item.availability_time, "HH:mm:ss").format(
-                              "hh:mm A",
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Secondary Timing
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.secondary_time
-                          ? moment(item.secondary_time, "HH:mm:ss").format(
-                              "hh:mm A",
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Skills</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {item.skills && Array.isArray(item.skills)
-                          ? item.skills.map((skill) => skill.name).join(", ")
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            );
-          })}
-
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <div className="customer_trainer_badge_mainconatiner">
-              <div className="customer_trainer_onboardcount_badgecount_container">
-                {/* <div className="customer_trainer_onboardcount_badge" /> */}
-                <p className="customer_trainer_onboardcount_badgecount">
-                  Class Taken{" "}
-                  <span style={{ fontWeight: 600 }}>
-                    {trainerClassTakenCount}
-                  </span>{" "}
-                  Customers
-                </p>
-              </div>
-
-              <div className="customer_trainer_ongoingcount_badgecount_container">
-                {/* <div className="customer_trainer_goingcount_badge" /> */}
-                <p className="customer_trainer_onboardcount_badgecount">
-                  Class Going{" "}
-                  <span style={{ fontWeight: 600 }}>
-                    {trainerClassGoingCount}
-                  </span>{" "}
-                  Customers
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "16px" }}>
-            <p className="customer_trainer_cusomer_heading">
-              Class Going Customers List{" "}
-            </p>
-            <CommonTable
-              scroll={{ x: 1200 }}
-              columns={customerByTrainerColumn}
-              dataSource={customerByTrainerData}
-              dataPerPage={10}
-              loading={customerByTrainerLoading}
-              checkBox="false"
-              size="small"
-              className="questionupload_table"
-            />
-          </div>
-        </Modal>
-
-        <Modal
-          title="Customers Details"
-          open={isOpenTrainerCustomersModal}
-          onCancel={() => setIsOpenTrainerCustomersModal(false)}
-          footer={false}
-          width="60%"
-        >
-          <CommonTable
-            scroll={{ x: 1200 }}
-            columns={customerByTrainerColumn}
-            dataSource={customerByTrainerData}
-            dataPerPage={10}
-            loading={customerByTrainerLoading}
-            checkBox="false"
-            size="small"
-            className="questionupload_table"
-            onPaginationChange={handlePaginationChange} // callback to fetch new data
-            limit={pagination.limit} // page size
-            page_number={pagination.page} // current page
-            totalPageNumber={pagination.total} // total rows
-          />
-        </Modal>
+          trainerId={clickedTrainerId}
+        />
 
         {/* trainer verify modal */}
         {/* payment verify modal */}
         <Modal
           open={isOpenTrainerVerifyModal}
           onCancel={() => {
+            setActiveTrainerItem(null);
             setIsOpenTrainerVerifyModal(false);
           }}
           footer={false}
@@ -1978,12 +1306,14 @@ const AssignAndVerifyTrainer = forwardRef(
           <p className="customer_classcompletemodal_heading">Are you sure?</p>
 
           <p className="customer_classcompletemodal_text">
-            You Want To Verify The Trainer{" "}
+            {`You Want To ${
+              drawerContentStatus === "Trainer Approval" ? "Approve" : "Verify"
+            }  The Trainer`}{" "}
             <span style={{ fontWeight: 700, color: "#333", fontSize: "14px" }}>
-              {assignTrainerData && assignTrainerData.name
-                ? `${assignTrainerData.name} (${
-                    assignTrainerData.trainer_code
-                      ? assignTrainerData.trainer_code
+              {activeTrainerItem && activeTrainerItem.trainer_name
+                ? `${activeTrainerItem.trainer_name} (${
+                    activeTrainerItem.trainer_code
+                      ? activeTrainerItem.trainer_code
                       : "-"
                   })`
                 : "-"}
@@ -1999,6 +1329,7 @@ const AssignAndVerifyTrainer = forwardRef(
             <Button
               className="customer_classcompletemodal_cancelbutton"
               onClick={() => {
+                setActiveTrainerItem(null);
                 setIsOpenTrainerVerifyModal(false);
               }}
             >

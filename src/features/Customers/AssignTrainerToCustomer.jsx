@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Row,
   Col,
@@ -17,6 +17,7 @@ import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
+import { RiDeleteBinLine } from "react-icons/ri";
 import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
@@ -38,10 +39,10 @@ import {
   assignTrainerForCustomer,
   getAssignTrainerHistoryForCustomer,
   getCustomerById,
-  getCustomerByTrainerId,
   getTrainerById,
   getTrainers,
   inserCustomerTrack,
+  rejectTrainerForCustomer,
   updateCustomerStatus,
   updateTrainerCoordination,
 } from "../ApiService/action";
@@ -52,6 +53,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonCustomerSingleSelectField from "../Common/CommonCustomerSingleSelect";
 import CommonTable from "../Common/CommonTable";
 import { CommonMessage } from "../Common/CommonMessage";
+import TrainerDetailsModal from "./TrainerFullDetailsModal";
 
 const { Step } = Steps;
 
@@ -61,155 +63,76 @@ export default function AssignTrainerToCustomer({
   callgetCustomersApi,
 }) {
   const [customerDetails, setCustomerDetails] = useState(null);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [commercial, setCommercial] = useState(null);
-  const [commercialError, setCommercialError] = useState("");
   const modeOfClassOptions = [
     { id: "Offline", name: "Offline" },
     { id: "Online", name: "Online" },
   ];
-  const [modeOfClass, setModeOfClass] = useState(null);
-  const [modeOfClassError, setModeOfClassError] = useState("");
-  const [trainerType, setTrainerType] = useState("");
 
-  const [assignTrainerProofBase64, setAssignTrainerProofBase64] = useState("");
-  const [assignTrainerProofError, setAssignTrainerProofError] = useState("");
-  const [assignTrainerComments, setAssignTrainerComments] = useState("");
-  const [assignTrainerCommentsError, setAssignTrainerCommentsError] =
-    useState("");
+  const [trainersList, setTrainersList] = useState([
+    {
+      trainer_id: null,
+      trainer_object: null,
+      commercial: null,
+      mode_of_class: null,
+      trainer_type: "",
+      proof_communication: "",
+      comments: "",
+      errors: {},
+    },
+  ]);
+
   const [trainerHistory, setTrainerHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
   const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
     useState(false);
-  const [customerByTrainerData, setCustomerByTrainerData] = useState([]);
-  const [customerByTrainerLoading, setCustomerByTrainerLoading] =
-    useState(false);
+
   const [clickedTrainerDetails, setClickedTrainerDetails] = useState([]);
-  const [trainerClassTakenCount, setTrainerClassTakenCount] = useState(0);
-  const [trainerClassGoingCount, setTrainerClassGoingCount] = useState(0);
+  const [clickedTrainerId, setClickedTrainerId] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [isProofScreenshotModal, setIsProofScreenshotModal] = useState(false);
+  const [proofScreenshot, setProofScreenshot] = useState("");
   /* ---------------- Trainer STATES ---------------- */
   const [trainersData, setTrainersData] = useState([]);
-  // ✅ IMPORTANT: keep IDs & Objects separately
-  const [selectedTrainerId, setSelectedTrainerId] = useState(null);
-  const [selectedTrainerIdError, setSelectedTrainerIdError] = useState(null);
-  const [selectedTrainerObject, setSelectedTrainerObject] = useState(null);
   const [trainerSearchText, setTrainerSearchText] = useState("");
   /* ---------------- PAGINATION ---------------- */
   const [trainerPage, setTrainerPage] = useState(1);
   const [trainerHasMore, setTrainerHasMore] = useState(true);
   const [trainerSelectloading, setTrainerSelectloading] = useState(false);
 
-  //trainer coordination usestates
-  const [whatsappGroupStatus, setWhatsappGroupStatus] = useState(null);
-  const [welcomeMessageStatus, setWelcomeMessageStatus] = useState(null);
-  const [linkStatus, setLinkStatus] = useState(null);
-  const [classMonitorStatus, setClassMonitorStatus] = useState(null);
-  const [trainerConfirmation, setTrainerConfirmation] = useState(null);
-
-  const prev = () => setStepIndex(stepIndex - 1);
-
-  const customerByTrainerColumn = [
-    {
-      title: "Customer Name",
-      key: "cus_name",
-      dataIndex: "cus_name",
-      width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Customer Email",
-      key: "cus_email",
-      dataIndex: "cus_email",
-      width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Customer Mobile",
-      key: "cus_phone",
-      dataIndex: "cus_phone",
-      width: 140,
-    },
-    {
-      title: "Course Name",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 160,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      width: 120,
-    },
-    {
-      title: "Branch Name",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 140,
-    },
-    {
-      title: "Course Fees",
-      key: "primary_fees",
-      dataIndex: "primary_fees",
-      width: 120,
-      render: (text) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-    {
-      title: "Class Going %",
-      key: "class_percentage",
-      dataIndex: "class_percentage",
-      width: 115,
-      fixed: "right",
-      render: (text) => {
-        return <p>{text ? `${parseInt(text)}%` : `0%`}</p>;
-      },
-    },
-    {
-      title: "Trainer Commercial",
-      key: "commercial",
-      dataIndex: "commercial",
-      fixed: "right",
-      width: 160,
-      render: (text) => {
-        return <p>{"₹" + text}</p>;
-      },
-    },
-  ];
-
   useEffect(() => {
     console.log("customer_details", customer_details);
-    setSelectedTrainerId(customer_details?.trainer_id);
-    setCommercial(customer_details?.commercial);
-    setModeOfClass(customer_details?.trainer_mode_of_class);
-    setTrainerType(customer_details?.trainer_type);
-    setAssignTrainerComments(customer_details?.comments);
-    setAssignTrainerProofBase64(customer_details?.proof_communication);
-    //trainer coordination
-    setWhatsappGroupStatus(
-      customer_details?.whatsapp_group_creation === 1 ? 1 : 2,
-    );
-    setWelcomeMessageStatus(customer_details?.hr_welcome_message === 1 ? 1 : 2);
-    setLinkStatus(customer_details?.shared_attendance_link === 1 ? 1 : 2);
-    setClassMonitorStatus(
-      customer_details?.first_class_monitoring === 1 ? 1 : 2,
-    );
-    setTrainerConfirmation(
-      customer_details?.trainer_confirmation === 1 ? 1 : 2,
-    );
-    //---------------------------------------------------------
-    if (customer_details?.trainer_id) {
-      getCustomerByTrainerIdData(customer_details.trainer_id, 0);
+    if (customer_details) {
+      if (
+        customer_details.trainer_data &&
+        customer_details.trainer_data.length > 0
+      ) {
+        const trainers = customer_details.trainer_data.map((trainer) => ({
+          training_map_id: trainer.training_map_id || null,
+          trainer_id: trainer.trainer_id || null,
+          trainer_object: null,
+          commercial: trainer.commercial || null,
+          mode_of_class: trainer.trainer_mode_of_class || null,
+          trainer_type: trainer.trainer_type || "",
+          proof_communication: trainer.proof_communication || "",
+          comments: trainer.comments || "",
+          errors: {},
+        }));
+        setTrainersList(trainers);
+      } else {
+        setTrainersList([
+          {
+            trainer_id: customer_details.trainer_id || null,
+            trainer_object: null,
+            commercial: customer_details.commercial || null,
+            mode_of_class: customer_details.trainer_mode_of_class || null,
+            trainer_type: customer_details.trainer_type || "",
+            proof_communication: customer_details.proof_communication || "",
+            comments: customer_details.comments || "",
+            errors: {},
+          },
+        ]);
+      }
     }
     setCustomerDetails(customer_details);
     handleTrainerHistory();
@@ -242,27 +165,8 @@ export default function AssignTrainerToCustomer({
       console.log("trainer history error", error);
     } finally {
       setTimeout(() => {
-        getAssignTrainerData();
+        getTrainersData();
       }, 100);
-    }
-  };
-
-  const getAssignTrainerData = async () => {
-    if (!customer_details?.trainer_id) {
-      getTrainersData();
-      return;
-    }
-    try {
-      const response = await getTrainerById(customer_details.trainer_id);
-      const trainerDetails = response?.data?.data;
-      console.log("trainerDetailssssssssssssss", trainerDetails);
-      if (trainerDetails) {
-        setSelectedTrainerObject(trainerDetails);
-      }
-    } catch (error) {
-      console.log("get trainer by id error", error);
-    } finally {
-      getTrainersData();
     }
   };
 
@@ -324,17 +228,50 @@ export default function AssignTrainerToCustomer({
   };
 
   /* ---------------- SELECT HANDLER (KEY FIX) ---------------- */
-  const handleTrainerSelect = (event) => {
+  const handleTrainerSelect = (event, index) => {
     const selectedId = event.target.value;
     const selectedObj = event.target.object; // ✅ DIRECT OBJECT
-    setSelectedTrainerId(selectedId);
-    setSelectedTrainerObject(selectedObj);
-    setTrainerType(selectedObj?.trainer_type || "");
 
-    setSelectedTrainerIdError(selectValidator(selectedId));
-    getCustomerByTrainerIdData(selectedId, 0);
+    const newList = [...trainersList];
+    newList[index].trainer_id = selectedId;
+    newList[index].trainer_object = selectedObj;
+    newList[index].trainer_type = selectedObj?.trainer_type || "";
+    newList[index].errors.trainer_id = selectValidator(selectedId);
+    setTrainersList(newList);
     // 👇 show selected label in input
     setTrainerSearchText(selectedObj?.name || "");
+  };
+
+  const handleTrainerFieldChange = (index, field, value) => {
+    const newList = [...trainersList];
+    newList[index][field] = value;
+    if (field === "comments") {
+      newList[index].errors[field] = addressValidator(value);
+    } else {
+      newList[index].errors[field] = selectValidator(value);
+    }
+    setTrainersList(newList);
+  };
+
+  const handleAddTrainer = () => {
+    setTrainersList([
+      ...trainersList,
+      {
+        trainer_id: null,
+        trainer_object: null,
+        commercial: null,
+        mode_of_class: null,
+        trainer_type: "",
+        proof_communication: "",
+        comments: "",
+        errors: {},
+      },
+    ]);
+  };
+
+  const handleRemoveTrainer = (index) => {
+    const newList = trainersList.filter((_, i) => i !== index);
+    setTrainersList(newList);
   };
 
   const renderTrainerOption = (props, option) => {
@@ -418,14 +355,16 @@ export default function AssignTrainerToCustomer({
   const mergedTrainers = useMemo(() => {
     const map = new Map();
 
-    if (selectedTrainerObject) {
-      map.set(selectedTrainerObject.id, selectedTrainerObject);
-    }
+    trainersList.forEach((t) => {
+      if (t.trainer_object) {
+        map.set(t.trainer_object.id, t.trainer_object);
+      }
+    });
 
     trainersData.forEach((c) => map.set(c.id, c));
 
     return Array.from(map.values());
-  }, [trainersData, selectedTrainerObject]);
+  }, [trainersData, trainersList]);
 
   /* ---------------- DROPDOWN OPEN ---------------- */
   const handleTrainerDropdownOpen = () => {
@@ -447,113 +386,33 @@ export default function AssignTrainerToCustomer({
     }
   };
 
-  const getCustomerByTrainerIdData = async (trainerid, classtaken) => {
-    setCustomerByTrainerLoading(true);
-    const payload = {
-      trainer_id: trainerid,
-      is_class_taken: classtaken,
-    };
-    try {
-      const response = await getCustomerByTrainerId(payload);
-      console.log("get customer by trainer id response", response);
-
-      setTrainerClassTakenCount(response?.data?.data?.on_boarding_count || 0);
-      setTrainerClassGoingCount(response?.data?.data?.on_going_count || 0);
-
-      setCustomerByTrainerData(response?.data?.data?.students || []);
-      setTimeout(() => {
-        setCustomerByTrainerLoading(false);
-      }, 300);
-    } catch (error) {
-      setCustomerByTrainerData([]);
-      setCustomerByTrainerLoading(false);
-      console.log("get customer by trainer id error", error);
-    }
-  };
-
   const handleAssignTrainer = async () => {
     console.log("customer_details", customer_details);
 
-    const trainerIdValidate = selectValidator(selectedTrainerId);
-    const commercialValidate = selectValidator(commercial);
-    const modeOfClassValidate = selectValidator(modeOfClass);
-    const commentValidate = addressValidator(assignTrainerComments);
-    const assignTrainerProofValidate = selectValidator(
-      assignTrainerProofBase64,
-    );
-
-    setSelectedTrainerIdError(trainerIdValidate);
-    setCommercialError(commercialValidate);
-    setModeOfClassError(modeOfClassValidate);
-    setAssignTrainerProofError(assignTrainerProofValidate);
-    setAssignTrainerCommentsError(commentValidate);
-
-    if (
-      trainerIdValidate ||
-      commercialValidate ||
-      modeOfClassValidate ||
-      assignTrainerProofValidate ||
-      commentValidate
-    )
-      return;
-
-    const initialTrainerId = customer_details?.trainer_id;
-    const initialCommercial = customer_details?.commercial;
-    const initialModeOfClass = customer_details?.trainer_mode_of_class;
-    const initialTrainerType = customer_details?.trainer_type;
-    const initialComments = customer_details?.comments;
-    const initialProof = customer_details?.proof_communication;
-
-    if (
-      selectedTrainerId == initialTrainerId &&
-      commercial == initialCommercial &&
-      modeOfClass == initialModeOfClass &&
-      trainerType == initialTrainerType &&
-      assignTrainerComments == initialComments &&
-      assignTrainerProofBase64 == initialProof
-    ) {
-      CommonMessage("warning", "No changes made to update");
-      return;
-    }
-
-    const changedFields = {};
-
-    if (selectedTrainerId != initialTrainerId) {
-      changedFields["trainer_name"] = {
-        previous_value: customer_details?.trainer_name || "Empty",
-        new_value: selectedTrainerObject?.name || "Empty",
+    let hasError = false;
+    const newList = trainersList.map((t) => {
+      const errs = {
+        trainer_id: selectValidator(t.trainer_id),
+        commercial: selectValidator(t.commercial),
+        mode_of_class: selectValidator(t.mode_of_class),
+        comments: addressValidator(t.comments),
+        proof_communication: selectValidator(t.proof_communication),
       };
-    }
-    if (commercial != initialCommercial) {
-      changedFields["commercial"] = {
-        previous_value: initialCommercial || "Empty",
-        new_value: commercial || "Empty",
-      };
-    }
-    if (modeOfClass != initialModeOfClass) {
-      changedFields["mode_of_training"] = {
-        previous_value: initialModeOfClass || "Empty",
-        new_value: modeOfClass || "Empty",
-      };
-    }
-    if (trainerType != initialTrainerType) {
-      changedFields["trainer_type"] = {
-        previous_value: initialTrainerType || "Empty",
-        new_value: trainerType || "Empty",
-      };
-    }
-    if (assignTrainerComments != initialComments) {
-      changedFields["comments"] = {
-        previous_value: initialComments || "Empty",
-        new_value: assignTrainerComments || "Empty",
-      };
-    }
-    if (assignTrainerProofBase64 !== initialProof) {
-      changedFields["proof_communication"] = {
-        previous_value: initialProof || "",
-        new_value: assignTrainerProofBase64 || "",
-      };
-    }
+      if (
+        errs.trainer_id ||
+        errs.commercial ||
+        errs.mode_of_class ||
+        errs.comments ||
+        errs.proof_communication
+      ) {
+        hasError = true;
+      }
+      return { ...t, errors: errs };
+    });
+
+    setTrainersList(newList);
+
+    if (hasError) return;
 
     const today = new Date();
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
@@ -561,15 +420,175 @@ export default function AssignTrainerToCustomer({
 
     setButtonLoading(true);
 
+    let isTrainerReplaced = false;
+    let previousTrainerData = null;
+
+    if (customer_details.status !== "Awaiting Trainer") {
+      previousTrainerData =
+        trainerHistory && trainerHistory.length > 0 ? trainerHistory[0] : null;
+
+      if (previousTrainerData && trainersList.length === 1) {
+        const t = trainersList[0];
+        const hasChanges =
+          String(previousTrainerData.trainer_id) !== String(t.trainer_id) ||
+          String(previousTrainerData.commercial) !== String(t.commercial) ||
+          previousTrainerData.mode_of_class !== t.mode_of_class ||
+          previousTrainerData.trainer_type !== t.trainer_type ||
+          previousTrainerData.comments !== t.comments ||
+          previousTrainerData.proof_communication !== t.proof_communication;
+
+        if (!hasChanges) {
+          CommonMessage("warning", "No Changes Made");
+          setButtonLoading(false);
+          return;
+        }
+      }
+
+      if (previousTrainerData && previousTrainerData.id) {
+        const rejectPayload = {
+          id: previousTrainerData.id,
+          rejected_date: formatToBackendIST(today),
+          rejected_reason: "Replaced with new trainer",
+          rejected_by: converAsJson?.user_id,
+        };
+        try {
+          await rejectTrainerForCustomer(rejectPayload);
+          isTrainerReplaced = true;
+        } catch (error) {
+          setButtonLoading(false);
+          CommonMessage(
+            "error",
+            error?.response?.data?.details ||
+              error?.response?.data?.message ||
+              "Something went wrong. Try again later",
+          );
+          return;
+        }
+      }
+    }
+
+    const getTrainerName = (t) => {
+      if (t.trainer_object?.name) return t.trainer_object.name;
+      const foundInList = trainersData.find(
+        (x) => String(x.id) === String(t.trainer_id)
+      );
+      if (foundInList?.name) return foundInList.name;
+      if (
+        previousTrainerData &&
+        String(previousTrainerData.trainer_id) === String(t.trainer_id)
+      ) {
+        return previousTrainerData.trainer_name;
+      }
+      return t.trainer_id;
+    };
+
+    const changedFields = {};
+    if (trainersList.length === 1) {
+      changedFields.trainer_name = {
+        previous_value:
+          isTrainerReplaced && previousTrainerData
+            ? previousTrainerData.trainer_name ||
+              previousTrainerData.trainer_id ||
+              "-"
+            : "Empty",
+        new_value: getTrainerName(trainersList[0]),
+      };
+      changedFields.commercial = {
+        previous_value:
+          isTrainerReplaced && previousTrainerData
+            ? previousTrainerData.commercial || "-"
+            : "Empty",
+        new_value: trainersList[0].commercial,
+      };
+      changedFields.mode_of_training = {
+        previous_value:
+          isTrainerReplaced && previousTrainerData
+            ? previousTrainerData.mode_of_class || "-"
+            : "Empty",
+        new_value: trainersList[0].mode_of_class,
+      };
+      changedFields.trainer_type = {
+        previous_value:
+          isTrainerReplaced && previousTrainerData
+            ? previousTrainerData.trainer_type || "-"
+            : "Empty",
+        new_value: trainersList[0].trainer_type,
+      };
+      changedFields.comments = {
+        previous_value:
+          isTrainerReplaced && previousTrainerData
+            ? previousTrainerData.comments || "-"
+            : "Empty",
+        new_value: trainersList[0].comments,
+      };
+      changedFields.proof_communication = {
+        previous_value:
+          isTrainerReplaced && previousTrainerData
+            ? previousTrainerData.proof_communication || "-"
+            : "",
+        new_value: trainersList[0].proof_communication,
+      };
+    } else {
+      trainersList.forEach((t, i) => {
+        const prefix = `trainer_${i + 1}_`;
+        changedFields[`${prefix}name`] = {
+          previous_value:
+            isTrainerReplaced && previousTrainerData
+              ? previousTrainerData.trainer_name ||
+                previousTrainerData.trainer_id ||
+                "-"
+              : "Empty",
+          new_value: getTrainerName(t),
+        };
+        changedFields[`${prefix}commercial`] = {
+          previous_value:
+            isTrainerReplaced && previousTrainerData
+              ? previousTrainerData.commercial || "-"
+              : "Empty",
+          new_value: t.commercial,
+        };
+        changedFields[`${prefix}mode_of_training`] = {
+          previous_value:
+            isTrainerReplaced && previousTrainerData
+              ? previousTrainerData.mode_of_class || "-"
+              : "Empty",
+          new_value: t.mode_of_class,
+        };
+        changedFields[`${prefix}type`] = {
+          previous_value:
+            isTrainerReplaced && previousTrainerData
+              ? previousTrainerData.trainer_type || "-"
+              : "Empty",
+          new_value: t.trainer_type,
+        };
+        changedFields[`${prefix}comments`] = {
+          previous_value:
+            isTrainerReplaced && previousTrainerData
+              ? previousTrainerData.comments || "-"
+              : "Empty",
+          new_value: t.comments,
+        };
+        changedFields[`${prefix}proof_communication`] = {
+          previous_value:
+            isTrainerReplaced && previousTrainerData
+              ? previousTrainerData.proof_communication || "-"
+              : "",
+          new_value: t.proof_communication,
+        };
+      });
+    }
+
     const payload = {
       customer_id: customer_details.id,
-      proof_communication: assignTrainerProofBase64,
-      comments: assignTrainerComments,
-      trainer_id: selectedTrainerId,
-      commercial: commercial,
-      mode_of_class: modeOfClass,
-      trainer_type: trainerType,
-      created_date: formatToBackendIST(today),
+      trainers: trainersList.map((t) => ({
+        trainer_id: t.trainer_id,
+        commercial: t.commercial,
+        mode_of_class: t.mode_of_class,
+        trainer_type: t.trainer_type,
+        proof_communication: t.proof_communication,
+        comments: t.comments,
+        created_date: formatToBackendIST(today),
+      })),
     };
 
     try {
@@ -597,7 +616,8 @@ export default function AssignTrainerToCustomer({
         } catch (error) {
           CommonMessage(
             "error",
-            error?.response?.data?.message ||
+            error?.response?.data?.details ||
+              error?.response?.data?.message ||
               "Something went wrong. Try again later",
           );
         }
@@ -607,139 +627,7 @@ export default function AssignTrainerToCustomer({
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
-  const handleTrainerCoordination = async () => {
-    const initialWhatsappGroupStatus =
-      customerDetails?.whatsapp_group_creation === 1 ? 1 : 2;
-    const initialWelcomeMessageStatus =
-      customerDetails?.hr_welcome_message === 1 ? 1 : 2;
-    const initialLinkStatus =
-      customerDetails?.shared_attendance_link === 1 ? 1 : 2;
-    const initialsMonitorStatus =
-      customerDetails?.first_class_monitoring === 1 ? 1 : 2;
-    const initialsTrainerConfirmation =
-      customerDetails?.trainer_confirmation === 1 ? 1 : 2;
-
-    if (
-      whatsappGroupStatus == initialWhatsappGroupStatus &&
-      welcomeMessageStatus == initialWelcomeMessageStatus &&
-      linkStatus == initialLinkStatus &&
-      classMonitorStatus == initialsMonitorStatus &&
-      trainerConfirmation == initialsTrainerConfirmation
-    ) {
-      CommonMessage("warning", "No changes made to update");
-      return;
-    }
-
-    setButtonLoading(true);
-    const payload = {
-      whatsapp_group_creation: whatsappGroupStatus == 1 ? 1 : 0,
-      hr_welcome_message: welcomeMessageStatus == 1 ? 1 : 0,
-      shared_attendance_link: linkStatus == 1 ? 1 : 0,
-      first_class_monitoring: classMonitorStatus == 1 ? 1 : 0,
-      trainer_confirmation: trainerConfirmation == 1 ? 1 : 0,
-      trainer_mapping_id: customer_details?.training_map_id,
-    };
-
-    const changedFields = {};
-    const whatsappOptions = [
-      { id: 1, name: "Created" },
-      { id: 2, name: "Not Yet" },
-    ];
-    const welcomeMessageOptions = [
-      { id: 1, name: "Completed" },
-      { id: 2, name: "Pending" },
-    ];
-    const linkOptions = [
-      { id: 1, name: "Shared" },
-      { id: 2, name: "Not Yet" },
-    ];
-    const classMonitorOptions = [
-      { id: 1, name: "Monitored" },
-      { id: 2, name: "Not Yet" },
-    ];
-    const trainerConfirmOptions = [
-      { id: 1, name: "Completed" },
-      { id: 2, name: "Pending" },
-    ];
-
-    const getName = (options, val) => {
-      const found = options.find((o) => String(o.id) === String(val));
-      return found ? found.name : val;
-    };
-
-    if (whatsappGroupStatus != initialWhatsappGroupStatus) {
-      changedFields["whatsapp_group_creation"] = {
-        previous_value: getName(whatsappOptions, initialWhatsappGroupStatus),
-        new_value: getName(whatsappOptions, whatsappGroupStatus),
-      };
-    }
-    if (welcomeMessageStatus != initialWelcomeMessageStatus) {
-      changedFields["hr_welcome_message"] = {
-        previous_value: getName(
-          welcomeMessageOptions,
-          initialWelcomeMessageStatus,
-        ),
-        new_value: getName(welcomeMessageOptions, welcomeMessageStatus),
-      };
-    }
-    if (linkStatus != initialLinkStatus) {
-      changedFields["shared_attendance_link"] = {
-        previous_value: getName(linkOptions, initialLinkStatus),
-        new_value: getName(linkOptions, linkStatus),
-      };
-    }
-    if (classMonitorStatus != initialsMonitorStatus) {
-      changedFields["first_class_monitoring"] = {
-        previous_value: getName(classMonitorOptions, initialsMonitorStatus),
-        new_value: getName(classMonitorOptions, classMonitorStatus),
-      };
-    }
-    if (trainerConfirmation != initialsTrainerConfirmation) {
-      changedFields["trainer_confirmation"] = {
-        previous_value: getName(
-          trainerConfirmOptions,
-          initialsTrainerConfirmation,
-        ),
-        new_value: getName(trainerConfirmOptions, trainerConfirmation),
-      };
-    }
-
-    try {
-      await updateTrainerCoordination(payload);
-
-      const getloginUserDetails = localStorage.getItem("loginUserDetails");
-      const converAsJson = getloginUserDetails
-        ? JSON.parse(getloginUserDetails)
-        : null;
-
-      const trackPayload = {
-        customers: [
-          {
-            customer_id: customerDetails?.id,
-            status: "Trainer Coordination Details Updated",
-            details: changedFields,
-            status_date: formatToBackendIST(new Date()),
-            updated_by: converAsJson?.user_id || "",
-          },
-        ],
-      };
-      await inserCustomerTrack(trackPayload);
-
-      CommonMessage(
-        "success",
-        "Trainer Coordination Details Updated Successfully",
-      );
-      getParticularCustomerDetails();
-    } catch (error) {
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
+          error?.response?.data?.message ||
           "Something went wrong. Try again later",
       );
     }
@@ -795,6 +683,28 @@ export default function AssignTrainerToCustomer({
     }
   };
 
+  const renderField = (label, value) => (
+    <div style={{ marginBottom: "8px" }}>
+      <span
+        style={{
+          fontFamily: "'Poppins', sans-serif",
+          fontSize: "12px",
+          display: "block",
+          marginBottom: "2px",
+          color: "#64748b",
+          fontWeight: 500,
+        }}
+      >
+        {label}
+      </span>
+      {typeof value === "string" || typeof value === "number" ? (
+        <EllipsisTooltip text={value} isViewLeadDetailsText={true} />
+      ) : (
+        value
+      )}
+    </div>
+  );
+
   if (historyLoading) {
     return (
       <div
@@ -841,7 +751,7 @@ export default function AssignTrainerToCustomer({
                           display: "flex",
                           justifyContent: "space-between",
                           width: "100%",
-                          fontSize: "13px",
+                          fontSize: "12px",
                           alignItems: "center",
                         }}
                       >
@@ -858,40 +768,43 @@ export default function AssignTrainerToCustomer({
                           </span>
                         </span>
 
-                        {item.is_verified == 1 ? (
+                        {item.is_rejected == 1 ? (
                           <div className="customer_trans_statustext_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p
-                              style={{
-                                color: "#3c9111",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Verified
-                            </p>
-                          </div>
-                        ) : item.is_rejected == 1 && item.is_verified == 0 ? (
-                          <div className="customer_trans_statustext_container">
-                            <FaRegCircleXmark color="#d32f2f" />
+                            <FaRegCircleXmark size={12} color="#d32f2f" />
                             <p
                               style={{
                                 color: "#d32f2f",
                                 fontWeight: 500,
+                                fontSize: "12px",
                               }}
                             >
                               Rejected
                             </p>
                           </div>
+                        ) : item.is_verified == 1 ? (
+                          <div className="customer_trans_statustext_container">
+                            <BsPatchCheckFill size={12} color="#3c9111" />
+                            <p
+                              style={{
+                                color: "#3c9111",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Verified
+                            </p>
+                          </div>
                         ) : (
                           <div className="customer_trans_statustext_container">
                             <PiClockCounterClockwiseBold
-                              size={16}
+                              size={14}
                               color="gray"
                             />
                             <p
                               style={{
                                 color: "gray",
                                 fontWeight: 500,
+                                fontSize: "12px",
                               }}
                             >
                               Waiting for Verify
@@ -901,224 +814,119 @@ export default function AssignTrainerToCustomer({
                       </div>
                     }
                   >
-                    <div>
-                      <Row gutter={16} style={{ marginTop: "6px" }}>
-                        <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  HR Name
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <EllipsisTooltip
-                                text={
-                                  item.trainer_hr_name
-                                    ? item.trainer_hr_name
-                                    : "-"
-                                }
-                                smallText={true}
-                              />
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Trainer Name
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <EllipsisTooltip
-                                text={
-                                  item.trainer_name ? item.trainer_name : "-"
-                                }
-                                smallText={true}
-                              />
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Trainer Type
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.trainer_type}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Mode Of Class
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.mode_of_class}
-                              </p>
-                            </Col>
-                          </Row>
-                        </Col>
-
-                        <Col span={12}>
-                          <Row>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Commercial
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {"₹" + item.commercial}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Commercial%
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <p className="customerdetails_text">
-                                {item.commercial_percentage
-                                  ? item.commercial_percentage + "%"
-                                  : ""}
-                              </p>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Proof Screenshot
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <button
-                                className="pendingcustomer_paymentscreenshot_viewbutton"
-                                style={{ gap: "4px" }}
-                                onClick={() => {
-                                  setIsProofScreenshotModal(true);
-                                  setProofScreenshot(
-                                    item && item.proof_communication !== null
-                                      ? item.proof_communication
-                                      : "-",
-                                  );
-                                }}
-                              >
-                                <FaRegEye size={16} /> View screenshot
-                              </button>
-                            </Col>
-                          </Row>
-
-                          <Row style={{ marginTop: "12px" }}>
-                            <Col span={12}>
-                              <div className="customerdetails_rowheadingContainer">
-                                <p className="customerdetails_rowheading">
-                                  Comments
-                                </p>
-                              </div>
-                            </Col>
-                            <Col span={12}>
-                              <EllipsisTooltip
-                                text={item.comments ? item.comments : "-"}
-                                smallText={true}
-                              />
-                            </Col>
-                          </Row>
-                        </Col>
-                      </Row>
-
-                      {/* rejected comment section */}
+                    <div style={{ padding: "0 0px" }}>
                       <Row
-                        gutter={16}
+                        gutter={24}
                         style={{
-                          marginTop: "16px",
+                          marginTop: "12px",
                           marginBottom: "12px",
                         }}
                       >
-                        {item.is_rejected == 1 && item.is_verified == 0 ? (
-                          <>
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Rejected Date
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <p className="customerdetails_text">
-                                    {moment(item.rejected_date).format(
-                                      "DD/MM/YYYY",
-                                    )}
-                                  </p>
-                                </Col>
-                              </Row>
-                            </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "HR Name",
+                            item.trainer_hr_name ? item.trainer_hr_name : "-",
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Trainer Name",
+                            item.trainer_name ? item.trainer_name : "-",
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Trainer Type",
+                            item.trainer_type || "-",
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Mode Of Class",
+                            item.mode_of_class || "-",
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Commercial",
+                            item.commercial ? "₹" + item.commercial : "-",
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Commercial%",
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                fontFamily: "'Poppins', sans-serif",
+                                fontSize: "13px",
+                                color:
+                                  item.commercial_percentage !== null &&
+                                  item.commercial_percentage !== undefined
+                                    ? item.commercial_percentage < 18
+                                      ? "#3c9111" // green
+                                      : item.commercial_percentage <= 22
+                                        ? "#ffa502" // orange
+                                        : "#d32f2f" // red
+                                    : "inherit",
+                              }}
+                            >
+                              {item.commercial_percentage
+                                ? item.commercial_percentage + "%"
+                                : "-"}
+                            </span>,
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Proof Screenshot",
+                            <button
+                              className="pendingcustomer_paymentscreenshot_viewbutton"
+                              style={{ gap: "4px" }}
+                              onClick={() => {
+                                setIsProofScreenshotModal(true);
+                                setProofScreenshot(
+                                  item && item.proof_communication !== null
+                                    ? item.proof_communication
+                                    : "-",
+                                );
+                              }}
+                            >
+                              <FaRegEye size={16} /> View screenshot
+                            </button>,
+                          )}
+                        </Col>
+                        <Col span={6}>
+                          {renderField(
+                            "Comments",
+                            item.comments ? item.comments : "-",
+                          )}
+                        </Col>
 
-                            <Col span={12}>
-                              <Row>
-                                <Col span={12}>
-                                  <div className="customerdetails_rowheadingContainer">
-                                    <p className="customerdetails_rowheading">
-                                      Reason for Rejection
-                                    </p>
-                                  </div>
-                                </Col>
-                                <Col span={12}>
-                                  <EllipsisTooltip
-                                    text={item.comments ? item.comments : "-"}
-                                    smallText={true}
-                                  />
-                                </Col>
-                              </Row>
+                        {/* rejected/verified comment section */}
+                        {item.is_rejected == 1 ? (
+                          <>
+                            <Col span={6}>
+                              {renderField(
+                                "Rejected Date",
+                                moment(item.rejected_date).format("DD/MM/YYYY"),
+                              )}
+                            </Col>
+                            <Col span={6}>
+                              {renderField(
+                                "Reason for Rejection",
+                                item.comments ? item.comments : "-",
+                              )}
                             </Col>
                           </>
-                        ) : item.verified_date ? (
-                          <Col span={12}>
-                            <Row>
-                              <Col span={12}>
-                                <div className="customerdetails_rowheadingContainer">
-                                  <p className="customerdetails_rowheading">
-                                    Verified Date
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col span={12}>
-                                <p className="customerdetails_text">
-                                  {moment(item.verified_date).format(
-                                    "DD/MM/YYYY",
-                                  )}
-                                </p>
-                              </Col>
-                            </Row>
+                        ) : item.verified_date && item.is_rejected == 0 ? (
+                          <Col span={6}>
+                            {renderField(
+                              "Verified Date",
+                              moment(item.verified_date).format("DD/MM/YYYY"),
+                            )}
                           </Col>
-                        ) : (
-                          ""
-                        )}
+                        ) : null}
                       </Row>
                     </div>
                   </Collapse.Panel>
@@ -1174,256 +982,260 @@ export default function AssignTrainerToCustomer({
         </Steps> */}
 
         <>
-          <p
-            className="customer_statusupdate_adddetails_heading"
-            style={{ marginTop: "20px" }}
-          >
+          <p className="customer_assign_newtrainer_heading">
             {trainerHistory.length >= 1
               ? "Assigned Trainer Details"
               : "Assign New Trainer"}
           </p>
 
-          <Row gutter={16} style={{ marginTop: "14px" }}>
-            <Col span={12}>
+          {trainersList.map((trainer, index) => {
+            return (
               <div
+                key={index}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
+                  marginBottom: "24px",
+                  border: "1px solid #e8e8e8",
+                  borderRadius: "8px",
+                  background: "#fcfcfc",
+                  overflow: "hidden",
                 }}
               >
-                <div style={{ flex: 1 }}>
-                  <CommonCustomerSingleSelectField
-                    label="Trainer"
-                    required={true}
-                    options={mergedTrainers}
-                    value={selectedTrainerId}
-                    onChange={handleTrainerSelect}
-                    onInputChange={handleTrainerSearch}
-                    onDropdownOpen={handleTrainerDropdownOpen}
-                    onDropdownScroll={handleTrainerScroll}
-                    loading={trainerSelectloading}
-                    renderOption={renderTrainerOption}
-                    error={selectedTrainerIdError}
-                    disableClearable={false}
-                    showLabelStatus="Name"
-                  />
-                </div>
-
-                {selectedTrainerId && (
-                  <Tooltip
-                    placement="top"
-                    title="View Trainer Details"
-                    trigger={["hover", "click"]}
-                  >
-                    <FaRegEye
-                      size={14.5}
-                      className="trainers_action_icons"
-                      onClick={() => {
-                        setIsOpenTrainerDetailModal(true);
-                        setClickedTrainerDetails([selectedTrainerObject]);
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            </Col>
-
-            <Col span={12}>
-              <CommonOutlinedInput
-                label="Commercial"
-                type="number"
-                required={true}
-                onChange={(e) => {
-                  setCommercial(e.target.value);
-                  setCommercialError(selectValidator(e.target.value));
-                }}
-                value={commercial}
-                error={commercialError}
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
-                icon={<LuIndianRupee size={16} />}
-              />
-            </Col>
-          </Row>
-
-          <Row gutter={16} style={{ marginTop: "30px" }}>
-            <Col span={12}>
-              <CommonSelectField
-                label="Mode Of Class"
-                required={true}
-                options={modeOfClassOptions}
-                onChange={(e) => {
-                  setModeOfClass(e.target.value);
-                  setModeOfClassError(selectValidator(e.target.value));
-                }}
-                value={modeOfClass}
-                error={modeOfClassError}
-              />
-            </Col>
-            <Col span={12}>
-              <CommonInputField
-                label="Trainer Type"
-                required={true}
-                value={trainerType}
-                disabled={true}
-              />
-            </Col>
-          </Row>
-
-          <Row style={{ marginTop: "28px", marginBottom: "30px" }}>
-            <Col span={24}>
-              <div>
-                <CommonTextArea
-                  label="Comments"
-                  required={true}
-                  onChange={(e) => {
-                    setAssignTrainerComments(e.target.value);
-                    setAssignTrainerCommentsError(
-                      addressValidator(e.target.value),
-                    );
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 16px",
+                    borderBottom: "1px solid #e8e8e8",
+                    background: "#f5f5f5",
                   }}
-                  value={assignTrainerComments}
-                  error={assignTrainerCommentsError}
-                />
-              </div>
-
-              <div
-                style={{
-                  position: "relative",
-                  marginTop: "40px",
-                }}
-              >
-                <ImageUploadCrop
-                  label="Proof Communication"
-                  aspect={1}
-                  maxSizeMB={1}
-                  required={true}
-                  value={assignTrainerProofBase64}
-                  onChange={(base64) => setAssignTrainerProofBase64(base64)}
-                  onErrorChange={setAssignTrainerProofError}
-                />
-                {assignTrainerProofError && (
-                  <p
+                >
+                  <div
                     style={{
-                      fontSize: "12px",
-                      color: "#d32f2f",
-                      marginTop: 4,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
                     }}
                   >
-                    {`Proof Screenshot ${assignTrainerProofError}`}
-                  </p>
-                )}
-              </div>
-            </Col>
-          </Row>
-        </>
+                    <div
+                      style={{
+                        width: "4px",
+                        height: "16px",
+                        backgroundColor: "#5b69ca",
+                        borderRadius: "2px",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "14px",
+                        color: "#001529",
+                      }}
+                    >
+                      Trainer {index + 1}
+                    </span>
+                  </div>
+                  {trainersList.length > 1 && (
+                    <Button
+                      danger
+                      type="text"
+                      size="small"
+                      onClick={() => handleRemoveTrainer(index)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        fontSize: "12px",
+                        gap: "6px",
+                      }}
+                    >
+                      <RiDeleteBinLine size={14} />
+                      Remove
+                    </Button>
+                  )}
+                </div>
 
-        {/* {stepIndex == 1 && (
-          <Row
-            gutter={[12, 24]}
-            style={{ marginTop: "20px", marginBottom: "30px" }}
+                <div style={{ padding: "16px" }}>
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <div style={{ flex: 1 }}>
+                          <CommonCustomerSingleSelectField
+                            label="Trainer"
+                            required={true}
+                            options={mergedTrainers}
+                            value={trainer.trainer_id}
+                            onChange={(e) => handleTrainerSelect(e, index)}
+                            onInputChange={handleTrainerSearch}
+                            onDropdownOpen={handleTrainerDropdownOpen}
+                            onDropdownScroll={handleTrainerScroll}
+                            loading={trainerSelectloading}
+                            renderOption={renderTrainerOption}
+                            error={trainer.errors.trainer_id}
+                            disableClearable={false}
+                            showLabelStatus="Name"
+                            height={"34px"}
+                            labelMarginTop={"0px"}
+                            labelFontSize={"11px"}
+                            errorFontSize={"9px"}
+                          />
+                        </div>
+
+                        {trainer.trainer_id && (
+                          <Tooltip
+                            placement="top"
+                            title="View Trainer Details"
+                            trigger={["hover", "click"]}
+                          >
+                            <FaRegEye
+                              size={14}
+                              className="trainers_action_icons"
+                              onClick={() => {
+                                setClickedTrainerId(trainer.trainer_id);
+                                setIsOpenTrainerDetailModal(true);
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </div>
+                    </Col>
+
+                    <Col span={12}>
+                      <CommonOutlinedInput
+                        label="Commercial"
+                        type="number"
+                        required={true}
+                        onChange={(e) =>
+                          handleTrainerFieldChange(
+                            index,
+                            "commercial",
+                            e.target.value,
+                          )
+                        }
+                        value={trainer.commercial}
+                        error={trainer.errors.commercial}
+                        onInput={(e) => {
+                          if (e.target.value.length > 10) {
+                            e.target.value = e.target.value.slice(0, 10);
+                          }
+                        }}
+                        icon={<LuIndianRupee size={16} />}
+                        height={"34px"}
+                        labelFontSize={"11px"}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row gutter={16} style={{ marginTop: "24px" }}>
+                    <Col span={12}>
+                      <CommonSelectField
+                        label="Mode Of Class"
+                        required={true}
+                        options={modeOfClassOptions}
+                        onChange={(e) =>
+                          handleTrainerFieldChange(
+                            index,
+                            "mode_of_class",
+                            e.target.value,
+                          )
+                        }
+                        value={trainer.mode_of_class}
+                        error={trainer.errors.mode_of_class}
+                        height={"34px"}
+                        labelFontSize={"11px"}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <CommonInputField
+                        label="Trainer Type"
+                        required={true}
+                        value={trainer.trainer_type}
+                        disabled={true}
+                        height={"34px"}
+                        labelFontSize={"11px"}
+                        errorFontSize={"9px"}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Row style={{ marginTop: "20px" }}>
+                    <Col span={24}>
+                      <div>
+                        <CommonTextArea
+                          label="Comments"
+                          required={true}
+                          onChange={(e) =>
+                            handleTrainerFieldChange(
+                              index,
+                              "comments",
+                              e.target.value,
+                            )
+                          }
+                          value={trainer.comments}
+                          error={trainer.errors.comments}
+                        />
+                      </div>
+
+                      <div
+                        style={{
+                          position: "relative",
+                          marginTop: "40px",
+                        }}
+                      >
+                        <ImageUploadCrop
+                          label="Proof Communication"
+                          aspect={1}
+                          maxSizeMB={1}
+                          required={true}
+                          value={trainer.proof_communication}
+                          onChange={(base64) =>
+                            handleTrainerFieldChange(
+                              index,
+                              "proof_communication",
+                              base64,
+                            )
+                          }
+                          onErrorChange={(err) => {
+                            const newList = [...trainersList];
+                            newList[index].errors.proof_communication = err;
+                            setTrainersList(newList);
+                          }}
+                        />
+                        {trainer.errors.proof_communication && (
+                          <p
+                            style={{
+                              fontSize: "12px",
+                              color: "#d32f2f",
+                              marginTop: 4,
+                            }}
+                          >
+                            {`Proof Screenshot ${trainer.errors.proof_communication}`}
+                          </p>
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* <Button
+            type="dashed"
+            onClick={handleAddTrainer}
+            className="customer_assigntrainer_addanother_trainer_button"
+            style={{ width: "100%", marginBottom: "20px" }}
           >
-            <Col span={8}>
-              <CommonSelectField
-                label={"Whatsapp Group Status"}
-                required={true}
-                options={[
-                  { id: 1, name: "Created" },
-                  { id: 2, name: "Not Yet" },
-                ]}
-                onChange={(e) => {
-                  setWhatsappGroupStatus(e.target.value);
-                }}
-                value={whatsappGroupStatus}
-                error={""}
-                height={"33px"}
-                labelFontSize={"11px"}
-                labelMarginTop={"0px"}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label={"Welcome Message Status"}
-                required={true}
-                options={[
-                  { id: 1, name: "Completed" },
-                  { id: 2, name: "Pending" },
-                ]}
-                onChange={(e) => {
-                  setWelcomeMessageStatus(e.target.value);
-                }}
-                value={welcomeMessageStatus}
-                error={""}
-                height={"33px"}
-                labelFontSize={"11px"}
-                labelMarginTop={"0px"}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label={"Shared Teams & Attendance Link"}
-                required={true}
-                options={[
-                  { id: 1, name: "Shared" },
-                  { id: 2, name: "Not Yet" },
-                ]}
-                onChange={(e) => {
-                  setLinkStatus(e.target.value);
-                }}
-                value={linkStatus}
-                error={""}
-                height={"33px"}
-                labelFontSize={"11px"}
-                labelMarginTop={"0px"}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label={"First Class Monitoring"}
-                required={true}
-                options={[
-                  { id: 1, name: "Monitored" },
-                  { id: 2, name: "Not Yet" },
-                ]}
-                onChange={(e) => {
-                  setClassMonitorStatus(e.target.value);
-                }}
-                value={classMonitorStatus}
-                error={""}
-                height={"33px"}
-                labelFontSize={"11px"}
-                labelMarginTop={"0px"}
-                errorFontSize="9px"
-              />
-            </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label={"Trainer Confirmation"}
-                required={true}
-                options={[
-                  { id: 1, name: "Completed" },
-                  { id: 2, name: "Pending" },
-                ]}
-                onChange={(e) => {
-                  setTrainerConfirmation(e.target.value);
-                }}
-                value={trainerConfirmation}
-                error={""}
-                height={"33px"}
-                labelFontSize={"11px"}
-                labelMarginTop={"0px"}
-                errorFontSize="9px"
-              />
-            </Col>
-          </Row>
-        )} */}
+            + Add Another Trainer
+          </Button> */}
+        </>
       </div>
 
       <div className="leadmanager_tablefiler_footer">
@@ -1431,15 +1243,6 @@ export default function AssignTrainerToCustomer({
           className="leadmanager_submitlead_buttoncontainer"
           style={{ gap: "12px" }}
         >
-          {/* {stepIndex > 0 && (
-            <Button onClick={prev} className="customer_stepperbuttons">
-              Previous
-            </Button>
-          )} */}
-
-          {/* {stepIndex == 0 && trainerHistory.length >= 1 ? (
-            ""
-          ) : ( */}
           <>
             {buttonLoading ? (
               <button
@@ -1454,267 +1257,47 @@ export default function AssignTrainerToCustomer({
             ) : (
               <button
                 className={"users_adddrawer_createbutton"}
-                // onClick={
-                //   stepIndex === 0
-                //     ? handleAssignTrainer
-                //     : handleTrainerCoordination
-                // }
                 onClick={handleAssignTrainer}
                 style={{ width: "120px" }}
-                // style={{
-                //   ...(stepIndex === 0 ? { width: "120px" } : {}),
-                // }}
               >
-                {/* {stepIndex === 0 ? "Assign Trainer" : "Update"} */}
                 Assign Trainer
               </button>
             )}
           </>
-          {/* )} */}
-
-          {/* {stepIndex < 1 && (
-            <Button
-              onClick={() => {
-                setStepIndex(stepIndex + 1);
-              }}
-              className={"customer_stepperbuttons"}
-            >
-              Next
-            </Button>
-          )} */}
         </div>
       </div>
 
       {/* trainer fulldetails modal */}
-      <Modal
-        title="Trainer Full Details"
+      <TrainerDetailsModal
         open={isOpenTrainerDetailModal}
         onCancel={() => setIsOpenTrainerDetailModal(false)}
+        trainerId={clickedTrainerId}
+      />
+
+      {/* proof screenshot modal */}
+      <Modal
+        title="Proof Screenshot"
+        open={isProofScreenshotModal}
+        onCancel={() => {
+          setIsProofScreenshotModal(false);
+          setProofScreenshot("");
+        }}
         footer={false}
-        width="50%"
+        width="32%"
+        className="customer_paymentscreenshot_modal"
       >
-        {clickedTrainerDetails.map((item, index) => {
-          return (
-            <Row gutter={16} style={{ marginTop: "20px" }}>
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">HR Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.hr_head ? item.hr_head : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaRegCircleUser size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Trainer Name</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.name
-                        ? `${item.name} (${
-                            item.trainer_code ? item.trainer_code : "-"
-                          })`
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <MdOutlineEmail size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Email</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.email}</p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoCallOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Mobile</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.mobile}</p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <FaWhatsapp size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Whatsapp</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.whatsapp}</p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <IoLocationOutline size={15} color="gray" />
-                      <p className="customerdetails_rowheading">Location</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.location}</p>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col span={12}>
-                <Row>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Technology</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">{item.technology}</p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Experience</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.overall_exp_year + " Years"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Relevent Experience
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.relavant_exp_year + " Years"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Avaibility Timing
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.availability_time
-                        ? moment(item.availability_time, "HH:mm:ss").format(
-                            "hh:mm A",
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">
-                        Secondary Timing
-                      </p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.secondary_time
-                        ? moment(item.secondary_time, "HH:mm:ss").format(
-                            "hh:mm A",
-                          )
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-
-                <Row style={{ marginTop: "12px" }}>
-                  <Col span={12}>
-                    <div className="customerdetails_rowheadingContainer">
-                      <p className="customerdetails_rowheading">Skills</p>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <p className="customerdetails_text">
-                      {item.skills && Array.isArray(item.skills)
-                        ? item.skills.map((skill) => skill.name).join(", ")
-                        : "-"}
-                    </p>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          );
-        })}
-
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <div className="customer_trainer_badge_mainconatiner">
-            <div className="customer_trainer_onboardcount_badgecount_container">
-              {/* <div className="customer_trainer_onboardcount_badge" /> */}
-              <p className="customer_trainer_onboardcount_badgecount">
-                Class Taken{" "}
-                <span style={{ fontWeight: 600 }}>
-                  {trainerClassTakenCount}
-                </span>{" "}
-                Customers
-              </p>
-            </div>
-
-            <div className="customer_trainer_ongoingcount_badgecount_container">
-              {/* <div className="customer_trainer_goingcount_badge" /> */}
-              <p className="customer_trainer_onboardcount_badgecount">
-                Class Going{" "}
-                <span style={{ fontWeight: 600 }}>
-                  {trainerClassGoingCount}
-                </span>{" "}
-                Customers
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "16px" }}>
-          <p className="customer_trainer_cusomer_heading">
-            Class Going Customers List{" "}
-          </p>
-          <CommonTable
-            scroll={{ x: 1200 }}
-            columns={customerByTrainerColumn}
-            dataSource={customerByTrainerData}
-            dataPerPage={10}
-            loading={customerByTrainerLoading}
-            checkBox="false"
-            size="small"
-            className="questionupload_table"
-          />
+        <div style={{ overflow: "hidden", maxHeight: "100vh" }}>
+          <PrismaZoom>
+            {proofScreenshot ? (
+              <img
+                src={`data:image/png;base64,${proofScreenshot}`}
+                alt="payment screenshot"
+                className="customer_paymentscreenshot_image"
+              />
+            ) : (
+              "-"
+            )}
+          </PrismaZoom>
         </div>
       </Modal>
     </>

@@ -125,6 +125,7 @@ button:focus-visible {
 
 .ant-menu-light.ant-menu-root.ant-menu-inline {
   border-inline-end: none !important;
+  margin-bottom: 16px;
 }
 .ant-menu-inline .ant-menu-item {
   height: 40px !important;

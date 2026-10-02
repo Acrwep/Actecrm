@@ -87,7 +87,6 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import CustomerEmailTemplate from "./CustomerEmailTemplate";
 import ParticularCustomerDetails from "./ParticularCustomerDetails";
 import OthersHandling from "./OthersHandling";
-import ReAssignTrainer from "./ReAssignTrainer";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import PreCertificate from "./PreCertificate";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
@@ -104,7 +103,6 @@ export default function Customers() {
   const financeVerifyRef = useRef();
   const studentVerifyRef = useRef();
   const assignAndVerifyTrainerRef = useRef();
-  const reAssignTrainerRef = useRef();
   const classScheduleRef = useRef();
   const othersHandlingRef = useRef();
   const preCertificateRef = useRef();
@@ -623,16 +621,16 @@ export default function Customers() {
     },
     {
       title: "HR",
-      key: "trainer_hr_name",
-      dataIndex: "trainer_hr_name",
+      key: "hr_name",
+      dataIndex: "hr_name",
       width: 80,
       align: "center",
       render: (text, record) => {
         if (text) {
-          const hr = `${record.trainer_hr_id} - ${text}`;
+          const hr = `${record.hr_id} - ${text}`;
           return (
             <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={hr} children={record.trainer_hr_id} />
+              <OverflowTooltip title={hr} children={record.hr_id} />
             </div>
           );
         } else {
@@ -643,36 +641,57 @@ export default function Customers() {
     {
       title: "Trainer Name",
       key: "trainer_name",
-      dataIndex: "trainer_name",
-      width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      dataIndex: "trainer_data",
+      width: 180,
+      render: (trainerData) => {
+        const trainerNames = trainerData
+          ?.map((trainer) => trainer.trainer_name)
+          .filter(Boolean)
+          .join(", ");
+
+        return <EllipsisTooltip text={trainerNames || "-"} />;
       },
     },
     {
       title: "Trainer Comm. %",
       key: "commercial_percentage",
-      dataIndex: "commercial_percentage",
-      width: 130,
-      render: (text) => {
+      dataIndex: "trainer_data",
+      width: 150,
+      render: (trainerData) => {
+        const percentages = trainerData
+          ?.map((trainer) => trainer.commercial_percentage)
+          .filter(
+            (value) => value !== null && value !== undefined && value !== "",
+          )
+          .map((value) => Number(value));
+
         return (
           <p
             className="customerdetails_text"
             style={{
               fontWeight: 700,
-              color:
-                text && text !== null
-                  ? text < 18
-                    ? "#3c9111" // green
-                    : text > 18 && text <= 22
-                      ? "#ffa502" // yellow
-                      : text > 24
-                        ? "#d32f2f" // red
-                        : ""
-                  : "", // fallback color if null
+              fontSize: "12px",
             }}
           >
-            {text && text ? text + "%" : "-"}
+            {percentages?.length
+              ? percentages.map((value, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      color:
+                        value < 18
+                          ? "#3c9111" // green
+                          : value >= 18 && value <= 22
+                            ? "#ffa502" // yellow
+                            : value > 24
+                              ? "#d32f2f" // red
+                              : "",
+                    }}
+                  >
+                    {value}%{index < percentages.length - 1 ? ", " : ""}
+                  </span>
+                ))
+              : "-"}
           </p>
         );
       },
@@ -880,7 +899,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet",
+                                "Form not submitted yet",
                               );
                             } else {
                               if (!permissions.includes("Finance Verify")) {
@@ -921,7 +940,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet",
+                                "Form not submitted yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -1029,7 +1048,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet",
+                                "Form not submitted yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -1175,7 +1194,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet",
+                                "Form not submitted yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -1277,7 +1296,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet",
+                                "Form not submitted yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -1379,7 +1398,7 @@ export default function Customers() {
                             if (record.status === "Form Pending") {
                               CommonMessage(
                                 "warning",
-                                "Form Not Submitted Yet",
+                                "Form not submitted yet",
                               );
                             } else if (
                               record.status === "Awaiting Finance" ||
@@ -1684,89 +1703,39 @@ export default function Customers() {
                       ""
                     )}
 
-                    {(record.status === "Escalated" &&
-                      record.trainer_hr_id != null) ||
-                    (record.status === "Hold" &&
-                      record.trainer_hr_id != null) ||
-                    (record.status === "Partially Closed" &&
-                      record.trainer_hr_id != null) ||
-                    (record.status === "Discontinued" &&
-                      record.trainer_hr_id != null) ||
-                    (record.status === "Videos Given" &&
-                      record.trainer_hr_id != null) ||
-                    (record.status === "Demo Completed" &&
-                      record.trainer_hr_id != null) ||
-                    (record.status === "Refund" &&
-                      record.trainer_hr_id != null) ? (
-                      <Col span={12}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <button
-                            className="customers_reassigntrainer_button"
-                            onClick={() => {
-                              if (!permissions.includes("Trainer Assign")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
-                              if (record.user_edit_access === "no") {
-                                CommonMessage(
-                                  "error",
-                                  "Candidate is assigned to another branch",
-                                );
-                                return;
-                              }
-
-                              getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Re-Assign Trainer");
-                              setIsStatusUpdateDrawer(true);
-                            }}
-                          >
-                            Re-Assign Trainer
-                          </button>
-                        </div>
-                      </Col>
-                    ) : (
-                      <Col span={12}>
-                        <Checkbox
-                          className="customers_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status === "Form Pending") {
-                              CommonMessage(
-                                "warning",
-                                "Form Not Submitted Yet",
-                              );
-                            } else if (record.status === "Awaiting Finance") {
-                              CommonMessage(
-                                "warning",
-                                "Payment not verified yet",
-                              );
-                            } else {
-                              if (!permissions.includes("Others Checkbox")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
-                              if (record.user_edit_access === "no") {
-                                CommonMessage(
-                                  "error",
-                                  "Candidate is assigned to another branch",
-                                );
-                                return;
-                              }
-                              getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Others");
-                              setIsStatusUpdateDrawer(true);
+                    <Col span={12}>
+                      <Checkbox
+                        className="customers_statuscheckbox"
+                        checked={false}
+                        onChange={(e) => {
+                          if (record.status === "Form Pending") {
+                            CommonMessage("warning", "Form not submitted yet");
+                          } else if (record.status === "Awaiting Finance") {
+                            CommonMessage(
+                              "warning",
+                              "Payment not verified yet",
+                            );
+                          } else {
+                            if (!permissions.includes("Others Checkbox")) {
+                              CommonMessage("error", "Access Denied");
+                              return;
                             }
-                          }}
-                        >
-                          Others
-                        </Checkbox>
-                      </Col>
-                    )}
+                            if (record.user_edit_access === "no") {
+                              CommonMessage(
+                                "error",
+                                "Candidate is assigned to another branch",
+                              );
+                              return;
+                            }
+                            getParticularCustomerDetails(record?.id);
+                            setDrawerContentStatus("Others");
+                            setIsStatusUpdateDrawer(true);
+                          }
+                        }}
+                      >
+                        Others
+                      </Checkbox>
+                    </Col>
                   </Row>
                 </>
               }
@@ -3873,11 +3842,9 @@ export default function Customers() {
 
       <Drawer
         title={
-          drawerContentStatus == "Re-Assign Trainer"
-            ? "Re-Assign Trainer"
-            : drawerContentStatus == "Pre Certificate"
-              ? "Generate Certificate"
-              : "Update Status"
+          drawerContentStatus == "Pre Certificate"
+            ? "Generate Certificate"
+            : "Update Status"
         }
         open={isStatusUpdateDrawer}
         onClose={updateStatusDrawerReset}
@@ -4352,22 +4319,6 @@ export default function Customers() {
                   }}
                 />
               </>
-            ) : drawerContentStatus == "Re-Assign Trainer" ? (
-              <>
-                <ReAssignTrainer
-                  ref={reAssignTrainerRef}
-                  customerDetails={customerDetails}
-                  drawerContentStatus={drawerContentStatus}
-                  setUpdateButtonLoading={setUpdateButtonLoading}
-                  callgetCustomersApi={() => {
-                    updateStatusDrawerReset();
-                    setPagination({
-                      page: 1,
-                    });
-                    fetchCustomersData({});
-                  }}
-                />
-              </>
             ) : drawerContentStatus === "Class Schedule" ||
               drawerContentStatus === "Class Going" ? (
               <>
@@ -4441,33 +4392,13 @@ export default function Customers() {
         drawerContentStatus === "Assign Trainer" ||
         drawerContentStatus === "Class Schedule" ||
         drawerContentStatus === "Update Reviews" ||
+        drawerContentStatus === "Trainer Verify" ||
+        drawerContentStatus === "Trainer Approval" ||
         drawerContentStatus === "Passedout Process" ? (
           ""
         ) : (
           <div className="leadmanager_tablefiler_footer">
             <div className="leadmanager_submitlead_buttoncontainer">
-              {drawerContentStatus === "Trainer Verify" ||
-              drawerContentStatus === "Trainer Approval" ? (
-                <>
-                  {rejectbuttonLoader ? (
-                    <button className="customer_trainerreject_loadingbutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="customer_trainerreject_button"
-                      onClick={() =>
-                        assignAndVerifyTrainerRef.current?.handleRejectTrainer()
-                      }
-                    >
-                      Rejected
-                    </button>
-                  )}
-                </>
-              ) : (
-                ""
-              )}
-
               <>
                 {updateButtonLoading ? (
                   <button
@@ -4489,42 +4420,37 @@ export default function Customers() {
                     onClick={
                       drawerContentStatus === "Update Assigned Trainer"
                         ? () =>
-                            assignAndVerifyTrainerRef.current?.handleAssignTrainer()
-                        : drawerContentStatus === "Re-Assign Trainer"
+                            assignAndVerifyTrainerRef.current?.handleUpdateTrainer()
+                        : drawerContentStatus === "Trainer Verify" ||
+                            drawerContentStatus === "Trainer Approval"
                           ? () =>
-                              reAssignTrainerRef.current?.handleReAssignTrainer()
-                          : drawerContentStatus === "Trainer Verify" ||
-                              drawerContentStatus === "Trainer Approval"
+                              assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
+                          : drawerContentStatus === "Class Schedule"
                             ? () =>
-                                assignAndVerifyTrainerRef.current?.openTrainerVerifyModal()
-                            : drawerContentStatus === "Class Schedule"
+                                classScheduleRef.current?.handleClassSchedule()
+                            : drawerContentStatus === "Class Going"
                               ? () =>
-                                  classScheduleRef.current?.handleClassSchedule()
-                              : drawerContentStatus === "Class Going"
+                                  classScheduleRef.current?.handleUpdateClassGoing()
+                              : drawerContentStatus === "Pre Certificate"
                                 ? () =>
-                                    classScheduleRef.current?.handleUpdateClassGoing()
-                                : drawerContentStatus === "Pre Certificate"
+                                    preCertificateRef.current?.handleGeneratePreCert()
+                                : drawerContentStatus === "Others"
                                   ? () =>
-                                      preCertificateRef.current?.handleGeneratePreCert()
-                                  : drawerContentStatus === "Others"
-                                    ? () =>
-                                        othersHandlingRef.current?.handleSubmit()
-                                    : handleStatusMismatch
+                                      othersHandlingRef.current?.handleSubmit()
+                                  : handleStatusMismatch
                     }
                   >
                     {drawerContentStatus === "Update Assigned Trainer"
                       ? "Update Trainer"
                       : drawerContentStatus === "Trainer Approval"
                         ? "Approve"
-                        : drawerContentStatus === "Re-Assign Trainer"
-                          ? "Re-Assign"
-                          : drawerContentStatus === "Class Going" ||
-                              drawerContentStatus === "Class Schedule" ||
-                              drawerContentStatus === "Others"
-                            ? "Update"
-                            : drawerContentStatus == "Pre Certificate"
-                              ? "Generate"
-                              : "Verify"}
+                        : drawerContentStatus === "Class Going" ||
+                            drawerContentStatus === "Class Schedule" ||
+                            drawerContentStatus === "Others"
+                          ? "Update"
+                          : drawerContentStatus == "Pre Certificate"
+                            ? "Generate"
+                            : "Verify"}
                   </button>
                 )}
               </>

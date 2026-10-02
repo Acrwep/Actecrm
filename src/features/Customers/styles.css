@@ -1800,6 +1800,12 @@
   font-size: 14px;
   color: #333;
 }
+.customer_assign_newtrainer_heading {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 16px !important;
+}
 .customer_paymentscreenshot_heading {
   color: #333;
   font-weight: 600;
@@ -2282,4 +2288,25 @@
   background: #fff;
   padding: 12px;
   margin-bottom: 30px;
+}
+.customer_assigntrainer_addanother_trainer_button {
+  border-color: rgba(128, 128, 128, 0.541);
+  font-size: 12px;
+}
+.customer_assigntrainer_addanother_trainer_button:hover {
+  border-color: #5b69ca !important;
+  color: #5b69ca !important;
+  font-weight: 500 !important;
+}
+.customer_verify_trainer_back_button {
+  font-size: 12px;
+  width: 80px;
+  color: #333;
+  height: 28px !important;
+  font-weight: 500;
+}
+.customer_verify_trainer_back_button:hover {
+  border-color: #d9d9d9 !important;
+  color: #333 !important;
+  opacity: 0.7 !important;
 }

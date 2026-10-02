@@ -192,7 +192,7 @@ export default function PhoneWithCountry({
             startAdornment: (
               <InputAdornment
                 position="start"
-                style={{ marginRight: "0px", marginLeft: "-8px" }}
+                style={{ marginRight: "-6px", marginLeft: "-8px" }}
               >
                 <Select
                   disabled={disableCountrySelect}
@@ -220,6 +220,10 @@ export default function PhoneWithCountry({
                       padding: countrySelectPadding || "8px 0px 8px 8px",
                       display: "flex",
                       alignItems: "center",
+                    },
+                    ".MuiSelect-icon": {
+                      fontSize: "20px",
+                      right: "9px",
                     },
                   }}
                   value={country.iso2}

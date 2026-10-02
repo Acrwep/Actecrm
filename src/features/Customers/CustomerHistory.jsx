@@ -509,7 +509,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     style={{ marginTop: "12px" }}
                     onClick={() => {
                       getImageTypeFromBase64(item.details.proof_communication);
-                      setProofScreenshotBase64(item.details.proof_communication);
+                      setProofScreenshotBase64(
+                        item.details.proof_communication,
+                      );
                       setIsOpenProofViewModal(true);
                     }}
                   >
@@ -631,16 +633,34 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                 {Object.entries({
                   trainer_name: item.details?.trainer_name || "-",
                   "commercial_%":
-                    item.details?.trainer_commercial_percentage != null
-                      ? `${item.details.trainer_commercial_percentage}%`
-                      : "-",
+                    item.details?.["commercial_%"] != null &&
+                    item.details?.["commercial_%"] !== "-"
+                      ? item.details?.["commercial_%"]
+                      : item.details?.trainer_commercial_percentage != null
+                        ? `${item.details.trainer_commercial_percentage}%`
+                        : "-",
                   trainer_type: item.details?.trainer_type || "-",
                   commercial:
-                    item.details?.trainer_commercial != null
-                      ? `₹${item.details.trainer_commercial}`
-                      : "-",
-                  mode_of_training: item.details?.mode_of_class || "-",
-                  rejection_reason: item.details?.rejected_reason || "-",
+                    item.details?.commercial != null &&
+                    item.details?.commercial !== "-"
+                      ? item.details?.commercial
+                      : item.details?.trainer_commercial != null
+                        ? `₹${item.details.trainer_commercial}`
+                        : "-",
+                  mode_of_training:
+                    item.details?.mode_of_training == 1 ||
+                    item.details?.mode_of_class == 1
+                      ? "Offline"
+                      : item.details?.mode_of_training == 2 ||
+                          item.details?.mode_of_class == 2
+                        ? "Online"
+                        : item.details?.mode_of_training ||
+                          item.details?.mode_of_class ||
+                          "-",
+                  rejection_reason:
+                    item.details?.rejection_reason ||
+                    item.details?.rejected_reason ||
+                    "-",
                 }).map(([key, value]) => (
                   <div
                     key={key}
@@ -776,7 +796,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                     ? item.details.comments
                     : item.details.rejected_reason
                       ? item.details.rejected_reason
-                      : "-"}
+                      : item.details.rejection_reason
+                        ? item.details.rejection_reason
+                        : "-"}
                 </span>
               </div>
             </div>
@@ -902,7 +924,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                         paddingBottom: "4px",
                       }}
                     >
-                      {item.status === "Trainer Approval Rejected" || item.status === "Trainer Rejected"
+                      {item.status === "Trainer Approval Rejected" ||
+                      item.status === "Trainer Rejected"
                         ? "Rejected Trainer Details:"
                         : "Changes Made:"}
                     </p>
@@ -930,14 +953,17 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                             <FaRegEye size={16} /> View{" "}
                             {key
                               .split("_")
-                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                              .map(
+                                (w) => w.charAt(0).toUpperCase() + w.slice(1),
+                              )
                               .join(" ")}
                           </button>
                         );
                       }
 
                       // Determine values
-                      const isFlat = typeof detail !== "object" || detail === null;
+                      const isFlat =
+                        typeof detail !== "object" || detail === null;
                       const prevVal = isFlat ? null : detail.previous_value;
                       const newVal = isFlat ? detail : detail.new_value;
 
@@ -973,7 +999,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                                 <>
                                   <img
                                     src={
-                                      prevVal.startsWith("data:") || prevVal.startsWith("http")
+                                      prevVal.startsWith("data:") ||
+                                      prevVal.startsWith("http")
                                         ? prevVal
                                         : `data:image/png;base64,${prevVal}`
                                     }
@@ -981,26 +1008,33 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                                     style={{
                                       width: 40,
                                       height: 40,
-                                      borderRadius: key === "profile_image" ? "50%" : "4px",
+                                      borderRadius:
+                                        key === "profile_image" ? "50%" : "4px",
                                       objectFit: "cover",
                                       cursor: "pointer",
                                     }}
                                     onClick={() => {
                                       setPreviewImage(
-                                        prevVal.startsWith("data:") || prevVal.startsWith("http")
+                                        prevVal.startsWith("data:") ||
+                                          prevVal.startsWith("http")
                                           ? prevVal
-                                          : `data:image/png;base64,${prevVal}`
+                                          : `data:image/png;base64,${prevVal}`,
                                       );
                                       setPreviewOpen(true);
                                     }}
                                   />
-                                  <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                                  <span
+                                    style={{ color: "gray", fontSize: "10px" }}
+                                  >
+                                    ➔
+                                  </span>
                                 </>
                               ) : null}
                               {newVal ? (
                                 <img
                                   src={
-                                    newVal.startsWith("data:") || newVal.startsWith("http")
+                                    newVal.startsWith("data:") ||
+                                    newVal.startsWith("http")
                                       ? newVal
                                       : `data:image/png;base64,${newVal}`
                                   }
@@ -1008,24 +1042,31 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                                   style={{
                                     width: 40,
                                     height: 40,
-                                    borderRadius: key === "profile_image" ? "50%" : "4px",
+                                    borderRadius:
+                                      key === "profile_image" ? "50%" : "4px",
                                     objectFit: "cover",
                                     cursor: "pointer",
                                   }}
                                   onClick={() => {
                                     setPreviewImage(
-                                      newVal.startsWith("data:") || newVal.startsWith("http")
+                                      newVal.startsWith("data:") ||
+                                        newVal.startsWith("http")
                                         ? newVal
-                                        : `data:image/png;base64,${newVal}`
+                                        : `data:image/png;base64,${newVal}`,
                                     );
                                     setPreviewOpen(true);
                                   }}
                                 />
                               ) : (
-                                <span style={{ color: "#52c41a", fontWeight: 500 }}>Empty</span>
+                                <span
+                                  style={{ color: "#52c41a", fontWeight: 500 }}
+                                >
+                                  Empty
+                                </span>
                               )}
                             </>
-                          ) : key === "whatsapp_invite_link" || key === "attendance_sheet_link" ? (
+                          ) : key === "whatsapp_invite_link" ||
+                            key === "attendance_sheet_link" ? (
                             <>
                               {prevVal ? (
                                 <>
@@ -1034,21 +1075,33 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                                       href={getWhatsAppLink(prevVal)}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      style={{ color: "#d9363e", textDecoration: "underline" }}
+                                      style={{
+                                        color: "#d9363e",
+                                        textDecoration: "underline",
+                                      }}
                                     >
                                       {prevVal}
                                     </a>
                                   </span>
-                                  <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                                  <span
+                                    style={{ color: "gray", fontSize: "10px" }}
+                                  >
+                                    ➔
+                                  </span>
                                 </>
                               ) : null}
-                              <span style={{ color: "#52c41a", fontWeight: 500 }}>
+                              <span
+                                style={{ color: "#52c41a", fontWeight: 500 }}
+                              >
                                 {newVal ? (
                                   <a
                                     href={getWhatsAppLink(newVal)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{ color: "#52c41a", textDecoration: "underline" }}
+                                    style={{
+                                      color: "#52c41a",
+                                      textDecoration: "underline",
+                                    }}
                                   >
                                     {newVal}
                                   </a>
@@ -1064,10 +1117,22 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                                   <span style={{ color: "#d9363e" }}>
                                     {prevVal}
                                   </span>
-                                  <span style={{ color: "gray", fontSize: "10px" }}>➔</span>
+                                  <span
+                                    style={{ color: "gray", fontSize: "10px" }}
+                                  >
+                                    ➔
+                                  </span>
                                 </>
                               ) : null}
-                              <span style={{ color: item.status === "Trainer Rejected" ? "#d32f2f" : "#52c41a", fontWeight: 500 }}>
+                              <span
+                                style={{
+                                  color:
+                                    item.status === "Trainer Rejected"
+                                      ? "#d32f2f"
+                                      : "#52c41a",
+                                  fontWeight: 500,
+                                }}
+                              >
                                 {newVal || "Empty"}
                               </span>
                             </>

@@ -370,7 +370,7 @@ export default function ParticularCustomerDetails({ customerId }) {
           icon={<MdAssignment size={18} color="#2563eb" />}
           title="Training Team Details"
         />
-        <Row gutter={24}>
+        <Row gutter={24} style={{ marginBottom: "16px" }}>
           <Col span={6}>
             {renderField(
               "RA",
@@ -387,30 +387,77 @@ export default function ParticularCustomerDetails({ customerId }) {
                 : "-",
             )}
           </Col>
-          <Col span={6}>
-            {renderField("Trainer Id", customerDetails?.trainer_code)}
-          </Col>
-          <Col span={6}>
-            {renderField("Trainer Name", customerDetails?.trainer_name)}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Trainer Mobile",
-              customerDetails?.trainer_mobile
-                ? `${
-                    customerDetails?.trainer_mobile_code
-                      ? customerDetails.trainer_mobile_code.startsWith("+")
-                        ? customerDetails.trainer_mobile_code
-                        : `+${customerDetails.trainer_mobile_code}`
-                      : ""
-                  } ${customerDetails.trainer_mobile}`
-                : "-",
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField("Trainer Email", customerDetails?.trainer_email)}
-          </Col>
         </Row>
+
+        {customerDetails?.trainer_data &&
+          customerDetails.trainer_data.length > 0 && (
+            <div>
+              <span
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#1e293b",
+                  marginBottom: "8px",
+                  display: "block",
+                }}
+              >
+                Assigned Trainers
+              </span>
+              {customerDetails.trainer_data.map((trainer, index) => (
+                <Row
+                  gutter={24}
+                  key={index}
+                  style={{
+                    margin: "0px",
+                    marginBottom: "12px",
+                    padding: "8px 0px",
+                    background: "#f8fafc",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <Col span={6}>
+                    {renderField(
+                      "Trainer Id",
+                      trainer.trainer_code || trainer.trainer_id,
+                    )}
+                  </Col>
+                  <Col span={6}>
+                    {renderField(
+                      "Trainer Name",
+                      trainer.trainer_name || trainer.name,
+                    )}
+                  </Col>
+                  <Col span={6}>
+                    {renderField(
+                      "Trainer Mobile",
+                      trainer.trainer_mobile || trainer.mobile
+                        ? `${
+                            trainer.trainer_mobile_code || trainer.mobile_code
+                              ? (
+                                  trainer.trainer_mobile_code ||
+                                  trainer.mobile_code
+                                )
+                                  .toString()
+                                  .startsWith("+")
+                                ? trainer.trainer_mobile_code ||
+                                  trainer.mobile_code
+                                : `+${trainer.trainer_mobile_code || trainer.mobile_code}`
+                              : ""
+                          } ${trainer.trainer_mobile || trainer.mobile}`
+                        : "-",
+                    )}
+                  </Col>
+                  <Col span={6}>
+                    {renderField(
+                      "Trainer Email",
+                      trainer.trainer_email || trainer.email,
+                    )}
+                  </Col>
+                </Row>
+              ))}
+            </div>
+          )}
       </div>
 
       {/* 5. Assignment Details */}
