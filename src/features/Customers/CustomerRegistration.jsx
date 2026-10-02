@@ -72,7 +72,7 @@ export default function CustomerRegistration() {
       return;
     }
 
-    if (otpEmail != email) {
+    if (otpEmail?.trim().toLowerCase() !== email?.trim().toLowerCase()) {
       setOtpEmailError(
         " is not registered. Please use your registered email address",
       );

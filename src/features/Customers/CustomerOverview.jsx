@@ -7,7 +7,7 @@ import { IoCallOutline, IoLocationOutline } from "react-icons/io5";
 import { FaWhatsapp, FaRegUser } from "react-icons/fa";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 
-const CustomerOverview = ({ customerDetails, isLoading }) => {
+const CustomerOverview = ({ customerDetails }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 

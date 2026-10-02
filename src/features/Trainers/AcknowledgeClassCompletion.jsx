@@ -63,7 +63,7 @@ export default function AcknowledgeClassCompletion() {
       return;
     }
 
-    if (otpEmail != email) {
+    if (otpEmail?.trim().toLowerCase() !== email?.trim().toLowerCase()) {
       setOtpEmailError(
         " is not registered. Please use your registered email address",
       );
@@ -152,7 +152,7 @@ export default function AcknowledgeClassCompletion() {
         setMessage("Class acknowledged successfully");
       } else {
         setMessage(
-          "Thank you for your response. We will contact you shortly regarding the pending syllabus."
+          "Thank you for your response. We will contact you shortly regarding the pending syllabus.",
         );
       }
 
