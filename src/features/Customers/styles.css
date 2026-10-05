@@ -2310,3 +2310,18 @@
   color: #333 !important;
   opacity: 0.7 !important;
 }
+.customer_overview_studentid_badge {
+  font-size: 11px;
+  color: #1d39c4;
+  background-color: #f0f5ff;
+  border: 1px solid #adc6ff;
+  padding: 0px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.5;
+  font-weight: 500;
+  width: max-content;
+  margin-top: 5px;
+  margin-bottom: 6px !important;
+}

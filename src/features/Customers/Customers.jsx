@@ -690,19 +690,27 @@ export default function Customers() {
     {
       title: "Comments",
       key: "trainer_mapping_comments",
-      dataIndex: "trainer_mapping_comments",
+      dataIndex: "trainer_data",
       width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      render: (trainerData) => {
+        const comments = trainerData
+          ?.map((trainer) => trainer.trainer_mapping_comments)
+          .filter(Boolean)
+          .join(", ");
+        return <EllipsisTooltip text={comments || "-"} />;
       },
     },
     {
       title: "Rejected Reason",
       key: "approval_rejected_reason",
-      dataIndex: "approval_rejected_reason",
+      dataIndex: "trainer_data",
       width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      render: (trainerData) => {
+        const comments = trainerData
+          ?.map((trainer) => trainer.approval_rejected_reason)
+          .filter(Boolean)
+          .join(", ");
+        return <EllipsisTooltip text={comments || "-"} />;
       },
     },
     {

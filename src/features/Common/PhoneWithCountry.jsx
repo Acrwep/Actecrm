@@ -192,7 +192,7 @@ export default function PhoneWithCountry({
             startAdornment: (
               <InputAdornment
                 position="start"
-                style={{ marginRight: "-6px", marginLeft: "-8px" }}
+                style={{ marginRight: "0px", marginLeft: "-8px" }}
               >
                 <Select
                   disabled={disableCountrySelect}

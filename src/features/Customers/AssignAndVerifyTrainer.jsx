@@ -987,7 +987,7 @@ const AssignAndVerifyTrainer = forwardRef(
                               "Proof Screenshot",
                               <button
                                 className="pendingcustomer_paymentscreenshot_viewbutton"
-                                style={{ gap: "4px" }}
+                                style={{ gap: "4px", fontSize: "12px" }}
                                 onClick={() => {
                                   setIsProofScreenshotModal(true);
                                   setProofScreenshot(
@@ -997,7 +997,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                   );
                                 }}
                               >
-                                <FaRegEye size={16} /> View screenshot
+                                <FaRegEye size={14} /> View screenshot
                               </button>,
                             )}
                           </Col>

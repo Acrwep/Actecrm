@@ -63,7 +63,7 @@ const CustomerOverview = ({ customerDetails }) => {
               : "-"}
           </p>
           {customerDetails?.student_id && (
-            <p className="customer_coursenametext">
+            <p className="customer_overview_studentid_badge">
               {customerDetails && customerDetails.student_id
                 ? customerDetails.student_id
                 : "-"}
@@ -72,22 +72,26 @@ const CustomerOverview = ({ customerDetails }) => {
           <p className="customer_coursenametext">
             {" "}
             Date Of Joining:{" "}
-            {customerDetails && customerDetails.date_of_joining
-              ? moment(customerDetails.date_of_joining).format("DD/MM/YYYY")
-              : "-"}
+            <span style={{ color: "#333", fontWeight: 600 }}>
+              {customerDetails && customerDetails.date_of_joining
+                ? moment(customerDetails.date_of_joining).format("DD/MM/YYYY")
+                : "-"}
+            </span>
           </p>
 
-          <p className="customer_coursenametext">
+          <p className="customer_coursenametext" style={{ marginTop: "6px" }}>
             Sale Executive:{" "}
-            {`${
-              customerDetails && customerDetails.lead_assigned_to_id
-                ? customerDetails.lead_assigned_to_id
-                : "-"
-            } (${
-              customerDetails && customerDetails.lead_assigned_to_name
-                ? customerDetails.lead_assigned_to_name
-                : "-"
-            })`}
+            <span style={{ color: "#333", fontWeight: 600 }}>
+              {`${
+                customerDetails && customerDetails.lead_assigned_to_id
+                  ? customerDetails.lead_assigned_to_id
+                  : "-"
+              } (${
+                customerDetails && customerDetails.lead_assigned_to_name
+                  ? customerDetails.lead_assigned_to_name
+                  : "-"
+              })`}
+            </span>
           </p>
         </div>
       </div>
