@@ -393,7 +393,7 @@ const StudentVerify = forwardRef(
           "success",
           "Trainer Fixation Details Updated Successfully",
         );
-        getParticularCustomerDetails();
+        callgetCustomersApi();
       } catch (error) {
         setButtonLoading(false);
         CommonMessage(
@@ -826,7 +826,7 @@ const StudentVerify = forwardRef(
 
           {/* requirement verification */}
           {stepIndex == 1 && (
-            <Row gutter={[12, 24]} style={{ marginTop: "20px" }}>
+            <Row gutter={[12, 26]} style={{ marginTop: "20px" }}>
               <Col span={8}>
                 <CommonInputField
                   label={"Course Name"}
@@ -960,13 +960,13 @@ const StudentVerify = forwardRef(
                       <Select
                         className={
                           languagesKnown.length <= 0 && !languagesKnownError
-                            ? "trainer_certificate_field"
+                            ? "customers_studentverify_languages_field"
                             : languagesKnown.length >= 1 && !languagesKnownError
-                              ? "trainer_certificate_multiselect_two"
+                              ? "customers_studentverify_languages_multiselect_field"
                               : languagesKnown.length <= 0 &&
                                   languagesKnownError
-                                ? "trainer_certificate_field_error"
-                                : "trainer_certificate_field"
+                                ? "customers_studentverify_languages_field_error"
+                                : "customers_studentverify_languages_field"
                         }
                         style={{ width: "100%", height: "33px" }}
                         suffixIcon={
@@ -1019,7 +1019,7 @@ const StudentVerify = forwardRef(
                     </div>
                   </div>
                   {languagesKnownError && (
-                    <p className="trainer_skills_error">
+                    <p className="customers_studentverify_languages_field_error_text">
                       Languages {languagesKnownError}
                     </p>
                   )}

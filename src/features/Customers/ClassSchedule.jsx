@@ -1458,7 +1458,15 @@ const ClassSchedule = forwardRef(
               {stepIndex < 2 && (
                 <Button
                   onClick={() => {
-                    if (stepIndex == 1) {
+                    if (
+                      cus_details &&
+                      cus_details?.trainer_data?.[0]?.trainer_confirmation == 0
+                    ) {
+                      CommonMessage(
+                        "error",
+                        "Please send the trainer confirmation email before proceeding to the next step.",
+                      );
+                    } else if (stepIndex == 1) {
                       if (
                         cus_details?.trainer_data?.[0]
                           ?.whatsapp_group_creation == 0 ||

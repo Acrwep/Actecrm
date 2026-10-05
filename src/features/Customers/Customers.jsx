@@ -973,7 +973,8 @@ export default function Customers() {
                         </Checkbox>
                       ) : (
                         <>
-                          {permissions.includes("Student Verify") ? (
+                          {permissions.includes("Student Verify") &&
+                          record.trainer_fixation_call == 0 ? (
                             <div
                               style={{
                                 display: "flex",
@@ -1518,7 +1519,7 @@ export default function Customers() {
                       )}
                     </Col>
 
-                    {record.status === "Class Going" ||
+                    {/* {record.status === "Class Going" ||
                     record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <Col span={12}>
@@ -1559,7 +1560,7 @@ export default function Customers() {
                       </Col>
                     ) : (
                       ""
-                    )}
+                    )} */}
 
                     {record.status === "Class Going" ||
                     record.status === "Passedout process" ||
@@ -1618,6 +1619,8 @@ export default function Customers() {
                             style={{
                               display: "flex",
                               alignItems: "center",
+                              marginTop: "6px",
+                              marginBottom: "6px",
                             }}
                           >
                             <button
@@ -1652,7 +1655,10 @@ export default function Customers() {
                     {record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <>
-                        <Col span={12} style={{ marginBottom: "6px" }}>
+                        <Col
+                          span={12}
+                          style={{ marginTop: "6px", marginBottom: "6px" }}
+                        >
                           <button
                             className="customers_addfeedbackbutton"
                             onClick={() => {
@@ -1682,7 +1688,7 @@ export default function Customers() {
                             }}
                           >
                             {record.status === "Completed"
-                              ? "Update PP"
+                              ? "Update Certificate"
                               : "Passedout process"}
                           </button>
                         </Col>

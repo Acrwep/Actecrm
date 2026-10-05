@@ -276,7 +276,8 @@
 .trainer_skills_multiselect_two .ant-select-selection-placeholder,
 .trainer_skills_multiselect_error .ant-select-selection-placeholder,
 .trainer_certificate_field .ant-select-selection-placeholder,
-.trainer_certificate_multiselect_two .ant-select-selection-placeholder {
+.trainer_certificate_multiselect_two .ant-select-selection-placeholder,
+.trainer_certificate_field_error .ant-select-selection-placeholder {
   color: gray !important;
   font-size: 12px;
   margin-top: 1.3px !important;

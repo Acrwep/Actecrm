@@ -2325,3 +2325,95 @@
   margin-top: 5px;
   margin-bottom: 6px !important;
 }
+
+.customers_studentverify_languages_field .ant-select-selection-placeholder,
+.customers_studentverify_languages_multiselect_field
+  .ant-select-selection-placeholder {
+  color: gray !important;
+  font-size: 11px;
+  margin-top: 1px !important;
+  font-family: "Poppins", sans-serif;
+  opacity: 1;
+}
+.customers_studentverify_languages_field_error
+  .ant-select-selection-placeholder {
+  color: #d32f2f !important;
+  font-size: 11px;
+  margin-top: 1px !important;
+  font-family: "Poppins", sans-serif;
+  opacity: 1;
+}
+.customers_studentverify_languages_field .ant-select-selector {
+  font-size: 11px !important;
+  min-height: 34px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: #80808066 !important;
+  box-shadow: none !important;
+}
+.customers_studentverify_languages_field:hover.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+.customers_studentverify_languages_field.ant-select-focused.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector,
+.customers_studentverify_languages_field.ant-select-open.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #5b69ca !important;
+  box-shadow: none !important;
+}
+/* multiselect */
+.customers_studentverify_languages_multiselect_field .ant-select-selector {
+  min-height: 41px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: #80808066 !important;
+  box-shadow: none !important;
+}
+.customers_studentverify_languages_multiselect_field:hover.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: rgba(128, 128, 128, 0.705) !important;
+  box-shadow: none !important;
+}
+/* error field */
+.customers_studentverify_languages_field_error .ant-select-selector {
+  min-height: 34px;
+  max-height: 80px;
+  overflow-y: auto;
+  border-radius: 4px !important;
+  scrollbar-width: thin;
+  border-width: 1px !important;
+  border-color: rgba(128, 128, 128, 0.56) !important;
+  box-shadow: none !important;
+}
+.customers_studentverify_languages_field_error .ant-select-selector:focus {
+  box-shadow: none !important;
+}
+.customers_studentverify_languages_field_error:hover.ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector {
+  border-color: #d32f2f !important;
+  box-shadow: none !important;
+}
+.customers_studentverify_languages_field_error_text {
+  color: #d32f2f;
+  margin-top: 5px;
+  margin-left: 12px;
+  font-size: 10px;
+}
