@@ -113,7 +113,7 @@ export default function CommonMultiSelectField({
                   : showLabelStatus === "Trainer Id"
                     ? option?.trainer_code
                     : option?.user_name
-                      ? `${option.user_id} - ${option.user_name}`
+                      ? `${option.view_user_id} - ${option.user_name}`
                       : option?.exp_range || option?.name || ""
           }
           getOptionDisabled={(option) =>
@@ -196,7 +196,7 @@ export default function CommonMultiSelectField({
                           : showLabelStatus === "Trainer Id"
                             ? option?.trainer_code
                             : option?.user_name
-                              ? `${option.user_id} - ${option.user_name}`
+                              ? `${option.view_user_id} - ${option.user_name}`
                               : option?.exp_range ||
                                 option?.name ||
                                 option?.role_name ||

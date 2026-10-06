@@ -127,6 +127,7 @@ export default function Login() {
       const filteredUserDetails = {
         id: loginUserDetails?.id,
         user_id: loginUserDetails?.user_id,
+        view_user_id: loginUserDetails?.view_user_id,
         user_name: loginUserDetails?.user_name,
         child_users: loginUserDetails?.child_users,
         roles: loginUserDetails?.roles,

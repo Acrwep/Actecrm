@@ -313,12 +313,12 @@ export default function Admissions() {
       width: 120,
       group: "General Info",
       render: (text, record) => {
-        const lead_executive = `${record.assigned_to} - ${text}`;
+        const lead_executive = `${record.assigned_to_view_user_id} - ${text}`;
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
             <OverflowTooltip
               title={lead_executive}
-              children={record.assigned_to}
+              children={record.assigned_to_view_user_id}
             />
           </div>
         );
@@ -333,10 +333,10 @@ export default function Admissions() {
       align: "center",
       render: (text, record) => {
         if (text) {
-          const ra = `${record.ra_user_id} - ${text}`;
+          const ra = `${record.ra_view_user_id} - ${text}`;
           return (
             <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={ra} children={record.ra_user_id} />
+              <OverflowTooltip title={ra} children={record.ra_view_user_id} />
             </div>
           );
         } else {
@@ -353,10 +353,10 @@ export default function Admissions() {
       group: "General Info",
       render: (text, record) => {
         if (text) {
-          const hr = `${record.hr_user_id} - ${text}`;
+          const hr = `${record.hr_view_user_id} - ${text}`;
           return (
             <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={hr} children={record.hr_user_id} />
+              <OverflowTooltip title={hr} children={record.hr_view_user_id} />
             </div>
           );
         } else {

@@ -210,12 +210,21 @@ const AddNewLead = forwardRef(
     //assign lead
     const [saleUsers, setSaleUsers] = useState([]);
     const [assignExecutiveId, setAssignExecutiveId] = useState("");
-    const [regionManagerId, setRegionManagerId] = useState(null);
-    const [regionManagerName, setRegionManagerName] = useState("");
-    const [branchManagerId, setBranchManagerId] = useState(null);
-    const [branchManagerName, setBranchManagerName] = useState("");
-    const [leadOwner, setLeadOwner] = useState("");
-    const [leadOwnerName, setLeadOwnerName] = useState("");
+    const [regionManager, setRegionManager] = useState({
+      id: null,
+      view_id: null,
+      name: "",
+    });
+    const [branchManager, setBranchManager] = useState({
+      id: null,
+      view_id: null,
+      name: "",
+    });
+    const [leadOwner, setLeadOwner] = useState({
+      id: "",
+      view_id: "",
+      name: "",
+    });
     //junk handle
     const [isPreviousJunk, setIsPreviousJunk] = useState(false);
     //loading
@@ -283,8 +292,11 @@ const AddNewLead = forwardRef(
         if (!updateLeadItem) {
           getUserDetailsById();
         }
-        setLeadOwner(convertAsJson?.user_id);
-        setLeadOwnerName(convertAsJson?.user_name);
+        setLeadOwner({
+          id: convertAsJson?.user_id,
+          view_id: convertAsJson?.view_user_id,
+          name: convertAsJson?.user_name,
+        });
       }
       fetchLeadDetails();
     }, []);
@@ -304,8 +316,11 @@ const AddNewLead = forwardRef(
           const convertAsJson = JSON.parse(getLoginUserDetails);
 
           setAssignExecutiveId(convertAsJson?.user_id);
-          setLeadOwner(convertAsJson?.user_id);
-          setLeadOwnerName(convertAsJson?.user_name);
+          setLeadOwner({
+            id: convertAsJson?.user_id,
+            view_id: convertAsJson?.view_user_id,
+            name: convertAsJson?.user_name,
+          });
           getUserDetailsById();
           setRegionError("");
           setHasSetAssignmentDefaults(true);
@@ -348,8 +363,11 @@ const AddNewLead = forwardRef(
           areasList = [];
           console.log("response status error", error);
         }
-        setLeadOwner(updateLeadItem?.user_id);
-        setLeadOwnerName(updateLeadItem?.user_name);
+        setLeadOwner({
+          id: updateLeadItem?.user_id,
+          view_id: updateLeadItem?.view_user_id,
+          name: updateLeadItem?.user_name,
+        });
         setAssignExecutiveId(updateLeadItem?.lead_assigned_to_id);
         if (isReAssign) {
           getSaleUsersData(updateLeadItem?.assigned_branch_id || null);
@@ -558,10 +576,8 @@ const AddNewLead = forwardRef(
         branch_id: branchId,
       };
       if (!branchId) {
-        setRegionManagerId(null);
-        setRegionManagerName("");
-        setBranchManagerId(null);
-        setBranchManagerName("");
+        setRegionManager({ id: null, view_id: null, name: "" });
+        setBranchManager({ id: null, view_id: null, name: "" });
         setLoading(false);
         return;
       }
@@ -573,15 +589,20 @@ const AddNewLead = forwardRef(
         console.log("branch_data", branch_data);
 
         if (branch_data) {
-          setRegionManagerId(branch_data?.regional_manager_id);
-          setRegionManagerName(branch_data?.regional_manager_name);
+          setRegionManager({
+            id: branch_data?.regional_manager_id,
+            view_id: branch_data?.regional_manager_view_user_id,
+            name: branch_data?.regional_manager_name,
+          });
 
           if (branch_data?.regional_manager_id?.startsWith("HUB")) {
-            setBranchManagerId(null);
-            setBranchManagerName("");
+            setBranchManager({ id: null, view_id: null, name: "" });
           } else {
-            setBranchManagerId(branch_data?.branch_manager_id);
-            setBranchManagerName(branch_data?.branch_manager_name);
+            setBranchManager({
+              id: branch_data?.branch_manager_id,
+              view_id: branch_data?.branch_manager_view_user_id,
+              name: branch_data?.branch_manager_name,
+            });
           }
         }
       } catch (error) {
@@ -972,7 +993,7 @@ const AddNewLead = forwardRef(
         defaultBranch,
         "checkkk",
         "leadOwner",
-        leadOwner,
+        leadOwner.id,
       );
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -1156,7 +1177,7 @@ const AddNewLead = forwardRef(
 
       const payload = {
         ...(updateLeadItem && { lead_id: updateLeadItem.id }),
-        user_id: leadOwner,
+        user_id: leadOwner.id,
         assigned_executive_id: assignExecutiveId,
         name: name,
         phone_code: mobileCountryCode,
@@ -1221,8 +1242,8 @@ const AddNewLead = forwardRef(
         is_manager: permissions.includes("Add Lead With Existing Mobile Number")
           ? true
           : false,
-        assigned_manager_id: regionManagerId,
-        branch_manager_id: branchManagerId,
+        assigned_manager_id: regionManager.id,
+        branch_manager_id: branchManager.id,
         consigned_id:
           defaultBranch == assignedBranchId ? null : convertAsJson?.user_id,
         assigned_to:
@@ -1267,8 +1288,8 @@ const AddNewLead = forwardRef(
           assigned_to: assignExecutiveId,
           updated_by: convertAsJson?.user_id,
           is_branch_changed: isBranchChanged ? 1 : 0,
-          assigned_manager: isBranchChanged ? regionManagerId : null,
-          branch_manager_id: isBranchChanged ? branchManagerId : null,
+          assigned_manager: isBranchChanged ? regionManager.id : null,
+          branch_manager_id: isBranchChanged ? branchManager.id : null,
           assigned_branch_id: assignedBranchId,
         };
 
@@ -1411,7 +1432,7 @@ const AddNewLead = forwardRef(
       setContactModeError("");
       setResponseStatus(null);
       setResponseStatusError("");
-      setAssignExecutiveId(leadOwner);
+      setAssignExecutiveId(leadOwner.id);
       setAssignedBranchId("");
       setDefaultBranch("");
       setBranchError("");
@@ -2428,10 +2449,8 @@ const AddNewLead = forwardRef(
                     onChange={(e) => {
                       setAssignedBranchId(e.target.value);
                       setAssignExecutiveId("");
-                      setRegionManagerId("");
-                      setRegionManagerName("");
-                      setBranchManagerId("");
-                      setBranchManagerName("");
+                      setRegionManager({ id: "", view_id: null, name: "" });
+                      setBranchManager({ id: "", view_id: null, name: "" });
                       getBranchManagersData(e.target.value);
                       if (validationTrigger) {
                         setBranchError(selectValidator(e.target.value));
@@ -2446,14 +2465,14 @@ const AddNewLead = forwardRef(
                     // disabled={true}
                   />
                 </div>
-                {!regionManagerId?.startsWith("HUB") && (
+                {!regionManager.id?.startsWith("HUB") && (
                   <div style={{ marginBottom: "24px" }}>
                     <CommonInputField
                       label="Branch Manager"
                       required={false}
                       value={
-                        branchManagerId
-                          ? `${branchManagerId} - ${branchManagerName}`
+                        branchManager.view_id
+                          ? `${branchManager.id} - ${branchManager.name}`
                           : ""
                       }
                       error={""}
@@ -2468,8 +2487,8 @@ const AddNewLead = forwardRef(
                     label="Region Manager"
                     required={false}
                     value={
-                      regionManagerId
-                        ? `${regionManagerId} - ${regionManagerName}`
+                      regionManager.id
+                        ? `${regionManager.view_id} - ${regionManager.name}`
                         : ""
                     }
                     error={""}
@@ -2505,7 +2524,11 @@ const AddNewLead = forwardRef(
                   <CommonInputField
                     label="Lead Owner"
                     required={false}
-                    value={leadOwner ? `${leadOwner} - ${leadOwnerName}` : ""}
+                    value={
+                      leadOwner.id
+                        ? `${leadOwner?.view_id || leadOwner.id} - ${leadOwner.name}`
+                        : ""
+                    }
                     error={""}
                     height={"35px"}
                     labelFontSize={"11.5px"}

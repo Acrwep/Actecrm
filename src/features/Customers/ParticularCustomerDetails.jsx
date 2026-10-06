@@ -375,7 +375,7 @@ export default function ParticularCustomerDetails({ customerId }) {
             {renderField(
               "RA",
               customerDetails?.ra_id
-                ? `${customerDetails.ra_id} (${customerDetails.ra_name || "-"})`
+                ? `${customerDetails.ra_view_user_id} (${customerDetails.ra_name || "-"})`
                 : "-",
             )}
           </Col>
@@ -383,7 +383,7 @@ export default function ParticularCustomerDetails({ customerId }) {
             {renderField(
               "HR",
               customerDetails?.hr_id
-                ? `${customerDetails.hr_id} (${customerDetails.hr_name || "-"})`
+                ? `${customerDetails.hr_view_user_id} (${customerDetails.hr_name || "-"})`
                 : "-",
             )}
           </Col>
@@ -471,7 +471,7 @@ export default function ParticularCustomerDetails({ customerId }) {
             {renderField(
               "Lead Executive",
               customerDetails?.lead_assigned_to_id
-                ? `${customerDetails.lead_assigned_to_id} (${customerDetails.lead_assigned_to_name || "-"})`
+                ? `${customerDetails.lead_assigned_to_view_user_id} (${customerDetails.lead_assigned_to_name || "-"})`
                 : "-",
             )}
           </Col>

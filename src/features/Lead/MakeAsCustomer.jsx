@@ -797,8 +797,9 @@ const MakeAsCustomer = forwardRef(
               <Col span={12}>
                 <p className="customerdetails_text">
                   {`${
-                    clickedLeadItem && clickedLeadItem.lead_assigned_to_id
-                      ? clickedLeadItem.lead_assigned_to_id
+                    clickedLeadItem &&
+                    clickedLeadItem.lead_assigned_to_view_user_id
+                      ? clickedLeadItem.lead_assigned_to_view_user_id
                       : "-"
                   } (${
                     clickedLeadItem && clickedLeadItem.lead_assigned_to_name

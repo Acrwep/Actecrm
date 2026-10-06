@@ -285,13 +285,17 @@ const DownloadTableAsCSV = (
         if (column.dataIndex === "assigned_by_user") {
           const Name = row[column.dataIndex];
           if (!Name) return "-";
-          return row.assigned_by ? `${row.assigned_by} - ${Name}` : Name;
+          return row.assigned_by_view_user_id
+            ? `${row.assigned_by_view_user_id} - ${Name}`
+            : Name;
         }
 
         if (column.dataIndex === "assigned_to_user") {
           const Name = row[column.dataIndex];
           if (!Name) return "-";
-          return row.assigned_to ? `${row.assigned_to} - ${Name}` : Name;
+          return row.assigned_to_view_user_id
+            ? `${row.assigned_to_view_user_id} - ${Name}`
+            : Name;
         }
 
         return row[column.dataIndex]; // other fields

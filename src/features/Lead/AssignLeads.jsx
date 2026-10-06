@@ -232,11 +232,11 @@ export default function AssignLeads({
       dataIndex: "assigned_by_user",
       width: 90,
       render: (text, record) => {
-        const lead_executive = `${record.assigned_by} - ${text}`;
+        const lead_executive = `${record.assigned_by_view_user_id} - ${text}`;
         return (
           <OverflowTooltip
             title={lead_executive}
-            children={record.assigned_by}
+            children={record.assigned_by_view_user_id}
           />
         );
       },
@@ -260,11 +260,13 @@ export default function AssignLeads({
       dataIndex: "assigned_to_user",
       width: 90,
       render: (text, record) => {
-        const lead_executive = text ? `${record.assigned_to} - ${text}` : "-";
+        const lead_executive = text
+          ? `${record.assigned_to_view_user_id} - ${text}`
+          : "-";
         return (
           <OverflowTooltip
             title={lead_executive}
-            children={record.assigned_to}
+            children={record.assigned_to_view_user_id}
           />
         );
       },

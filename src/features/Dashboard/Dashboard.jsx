@@ -209,6 +209,8 @@ export default function Dashboard() {
       setBranchWiseDates(PreviousAndCurrentDate);
       setSitesDates(PreviousAndCurrentDate);
       setRegionWiseDates(PreviousAndCurrentDate);
+      console.log("downlineUserssssssssssss", downlineUsers);
+
       setSubUsers(downlineUsers);
       setDefaultSubUsers(downlineUsers);
       mounted.current = true;
@@ -723,7 +725,7 @@ export default function Dashboard() {
       console.log(userwise_leads);
 
       const xaxis = userwise_leads.map(
-        (item) => `${item.user_id} (${item.user_name})`,
+        (item) => `${item.view_user_id} (${item.user_name})`,
       );
 
       const series = userwise_leads.map((item) =>
@@ -851,7 +853,7 @@ export default function Dashboard() {
       console.log(userwise_scorecard);
 
       const xaxis = userwise_scorecard.map(
-        (item) => `${item.user_id} (${item.user_name})`,
+        (item) => `${item.view_user_id} (${item.user_name})`,
       );
       const series = userwise_scorecard.map((item) =>
         type == 1

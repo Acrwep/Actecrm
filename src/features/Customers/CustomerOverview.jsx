@@ -83,8 +83,8 @@ const CustomerOverview = ({ customerDetails }) => {
             Sale Executive:{" "}
             <span style={{ color: "#333", fontWeight: 600 }}>
               {`${
-                customerDetails && customerDetails.lead_assigned_to_id
-                  ? customerDetails.lead_assigned_to_id
+                customerDetails && customerDetails.lead_assigned_to_view_user_id
+                  ? customerDetails.lead_assigned_to_view_user_id
                   : "-"
               } (${
                 customerDetails && customerDetails.lead_assigned_to_name

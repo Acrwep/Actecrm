@@ -244,10 +244,16 @@ export default function Leads({
     useState(false);
   const [assignedBranchId, setAssignedBranchId] = useState("");
   const [assignedBranchIdError, setAssignedBranchIdError] = useState("");
-  const [regionManagerId, setRegionManagerId] = useState(null);
-  const [regionManagerName, setRegionManagerName] = useState("");
-  const [branchManagerId, setBranchManagerId] = useState(null);
-  const [branchManagerName, setBranchManagerName] = useState("");
+  const [regionManager, setRegionManager] = useState({
+    id: null,
+    view_id: null,
+    name: "",
+  });
+  const [branchManager, setBranchManager] = useState({
+    id: null,
+    view_id: null,
+    name: "",
+  });
   const [selfReAssignExecutiveOptions, setSelfReAssignExecutiveOptions] =
     useState("");
   const [selfReAssignExecutiveId, setSelfReAssignExecutiveId] = useState("");
@@ -319,12 +325,12 @@ export default function Leads({
               ),
             sortDirections: ["ascend", "descend"],
             render: (text, record) => {
-              const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+              const lead_executive = `${record.lead_assigned_to_view_user_id} - ${text}`;
               return (
                 <div style={{ textAlign: "center", width: "100%" }}>
                   <OverflowTooltip
                     title={lead_executive}
-                    children={record.lead_assigned_to_id}
+                    children={record.lead_assigned_to_view_user_id}
                   />
                 </div>
               );
@@ -590,6 +596,7 @@ export default function Leads({
           <div className="leadmanager_actionbuttonContainer">
             <Tooltip placement="bottom" title="View Lead Details">
               <FaRegEye
+                size={14}
                 className="leadmanager_action_icon"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
@@ -700,7 +707,7 @@ export default function Leads({
                         setUpdateLeadItem(record);
                         setLeadId(record.id);
                         setCurrentLeadExecutive(
-                          `${record?.lead_assigned_to_id} - ${record?.lead_assigned_to_name}`,
+                          `${record?.lead_assigned_to_view_user_id} - ${record?.lead_assigned_to_name}`,
                         );
                       } else if (onEditLead) {
                         onEditLead(record, true);
@@ -1024,12 +1031,12 @@ export default function Leads({
                   ),
                 sortDirections: ["ascend", "descend"],
                 render: (text, record) => {
-                  const lead_executive = `${record.lead_assigned_to_id} - ${text}`;
+                  const lead_executive = `${record.lead_assigned_to_view_user_id} - ${text}`;
                   return (
                     <div style={{ textAlign: "center", width: "100%" }}>
                       <OverflowTooltip
                         title={lead_executive}
-                        children={record.lead_assigned_to_id}
+                        children={record.lead_assigned_to_view_user_id}
                       />
                     </div>
                   );
@@ -1322,6 +1329,7 @@ export default function Leads({
                     <div className="leadmanager_actionbuttonContainer">
                       <Tooltip placement="bottom" title="View Lead Details">
                         <FaRegEye
+                          size={14}
                           className="leadmanager_action_icon"
                           style={{ cursor: "pointer" }}
                           onClick={() => {
@@ -1439,7 +1447,7 @@ export default function Leads({
                                   setUpdateLeadItem(record);
                                   setLeadId(record.id);
                                   setCurrentLeadExecutive(
-                                    `${record?.lead_assigned_to_id} - ${record?.lead_assigned_to_name}`,
+                                    `${record?.lead_assigned_to_view_user_id} - ${record?.lead_assigned_to_name}`,
                                   );
                                 } else if (onEditLead) {
                                   onEditLead(record, true);
@@ -2102,10 +2110,8 @@ export default function Leads({
       branch_id: branchId,
     };
     if (!branchId) {
-      setRegionManagerId(null);
-      setRegionManagerName("");
-      setBranchManagerId(null);
-      setBranchManagerName("");
+      setRegionManager({ id: null, view_id: null, name: "" });
+      setBranchManager({ id: null, view_id: null, name: "" });
       setSelfAssignLoading(true);
       return;
     }
@@ -2117,15 +2123,20 @@ export default function Leads({
       console.log("branch_data", branch_data);
       getSaleUsersData(branchId);
       if (branch_data) {
-        setRegionManagerId(branch_data?.regional_manager_id);
-        setRegionManagerName(branch_data?.regional_manager_name);
+        setRegionManager({
+          id: branch_data?.regional_manager_id,
+          view_id: branch_data?.regional_manager_view_user_id,
+          name: branch_data?.regional_manager_name,
+        });
 
         if (branch_data?.regional_manager_id?.startsWith("HUB")) {
-          setBranchManagerId(null);
-          setBranchManagerName("");
+          setBranchManager({ id: null, view_id: null, name: "" });
         } else {
-          setBranchManagerId(branch_data?.branch_manager_id);
-          setBranchManagerName(branch_data?.branch_manager_name);
+          setBranchManager({
+            id: branch_data?.branch_manager_id,
+            view_id: branch_data?.branch_manager_view_user_id,
+            name: branch_data?.branch_manager_name,
+          });
         }
       }
     } catch (error) {
@@ -2158,10 +2169,10 @@ export default function Leads({
   const handleSelfReAssign = async () => {
     setSelfReAssignValidationTrigger(true);
     const assignedBranchIdValidate = selectValidator(assignedBranchId);
-    const branchManagerIdValidate = regionManagerId?.startsWith("HUB")
+    const branchManagerIdValidate = regionManager.id?.startsWith("HUB")
       ? ""
-      : selectValidator(branchManagerId);
-    const regionManagerIdValidate = selectValidator(regionManagerId);
+      : selectValidator(branchManager.id);
+    const regionManagerIdValidate = selectValidator(regionManager.id);
     const selfReAssignExecutiveIdValidate = selectValidator(
       selfReAssignExecutiveId,
     );
@@ -2187,9 +2198,9 @@ export default function Leads({
       updated_by: loginUserId,
       assigned_to: selfReAssignExecutiveId,
       next_follow_up_date: formatToBackendIST(new Date()),
-      assigned_manager: regionManagerId,
+      assigned_manager: regionManager.id,
       assigned_branch_id: assignedBranchId,
-      branch_manager_id: branchManagerId,
+      branch_manager_id: branchManager.id,
     };
 
     try {
@@ -2218,10 +2229,8 @@ export default function Leads({
     setLeadId(null);
     setAssignedBranchId(null);
     setAssignedBranchIdError("");
-    setRegionManagerId(null);
-    setRegionManagerName("");
-    setBranchManagerId(null);
-    setBranchManagerName("");
+    setRegionManager({ id: null, view_id: null, name: "" });
+    setBranchManager({ id: null, view_id: null, name: "" });
     setSelfReAssignExecutiveOptions([]);
     setSelfReAssignExecutiveId(null);
     setSelfReAssignExecutiveIdError("");
@@ -3339,7 +3348,7 @@ export default function Leads({
                       <div className="leadmanager_actionbuttonContainer">
                         <Tooltip placement="bottom" title="View Lead Details">
                           <FaRegEye
-                            size={16}
+                            size={14}
                             style={{ cursor: "pointer" }}
                             onClick={() => {
                               setViewLeadItem(record);
@@ -3459,7 +3468,7 @@ export default function Leads({
                                     setUpdateLeadItem(record);
                                     setLeadId(record.id);
                                     setCurrentLeadExecutive(
-                                      `${record?.lead_assigned_to_id} - ${record?.lead_assigned_to_name}`,
+                                      `${record?.lead_assigned_to_view_user_id} - ${record?.lead_assigned_to_name}`,
                                     );
                                   } else if (onEditLead) {
                                     onEditLead(record, true);
@@ -3862,10 +3871,8 @@ export default function Leads({
               setAssignedBranchId(e.target.value);
               setSelfReAssignExecutiveId("");
               setSelfReAssignExecutiveIdError("");
-              setRegionManagerId("");
-              setRegionManagerName("");
-              setBranchManagerId("");
-              setBranchManagerName("");
+              setRegionManager({ id: "", view_id: null, name: "" });
+              setBranchManager({ id: "", view_id: null, name: "" });
               getBranchManagersData(e.target.value);
               if (selfReAssignValidationTrigger) {
                 setAssignedBranchIdError(selectValidator(e.target.value));
@@ -3880,14 +3887,14 @@ export default function Leads({
             // disabled={true}
           />
         </div>
-        {!regionManagerId?.startsWith("HUB") && (
+        {!regionManager.id?.startsWith("HUB") && (
           <div style={{ marginBottom: "24px" }}>
             <CommonInputField
               label="Branch Manager"
               required={false}
               value={
-                branchManagerId
-                  ? `${branchManagerId} - ${branchManagerName}`
+                branchManager.id
+                  ? `${branchManager?.view_id || branchManager.id} - ${branchManager.name}`
                   : ""
               }
               error={""}
@@ -3902,7 +3909,7 @@ export default function Leads({
             label="Region Manager"
             required={false}
             value={
-              regionManagerId ? `${regionManagerId} - ${regionManagerName}` : ""
+              regionManager.id ? `${regionManager?.view_id || regionManager.id} - ${regionManager.name}` : ""
             }
             error={""}
             height={"35px"}

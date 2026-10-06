@@ -84,7 +84,7 @@ export default function CommonSelectField({
                   : showLabelStatus === "Trainer Id"
                     ? option?.trainer_code
                     : option?.user_name
-                      ? `${option.user_id} - ${option.user_name} `
+                      ? `${option.view_user_id} - ${option.user_name} `
                       : option?.exp_range || option?.name || ""
           }
           onChange={(event, newValue) =>
