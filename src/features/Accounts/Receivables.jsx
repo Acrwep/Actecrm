@@ -159,12 +159,12 @@ export default function Receivables({
             dataIndex: "lead_assigned_to_name",
             width: 110,
             render: (text, record) => {
-              const salse_executive = `${record.lead_assigned_to_id} - ${text}`;
+              const salse_executive = `${record.lead_assigned_to_view_user_id} - ${text}`;
               return (
                 <div style={{ textAlign: "center", width: "100%" }}>
                   <OverflowTooltip
                     title={salse_executive}
-                    children={record.lead_assigned_to_id}
+                    children={record.lead_assigned_to_view_user_id}
                   />
                 </div>
               );

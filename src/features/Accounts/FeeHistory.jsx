@@ -186,12 +186,12 @@ export default function FeeHistory({
             dataIndex: "assigned_to_name",
             width: 110,
             render: (text, record) => {
-              const lead_executive = `${record.assigned_to} - ${text}`;
+              const lead_executive = `${record.assigned_to_view_user_id} - ${text}`;
               return (
                 <div style={{ textAlign: "center", width: "100%" }}>
                   <OverflowTooltip
                     title={lead_executive}
-                    children={record.assigned_to}
+                    children={record.assigned_to_view_user_id}
                   />
                 </div>
               );

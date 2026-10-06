@@ -210,12 +210,12 @@ export default function Received({
             dataIndex: "collected_by",
             width: 100,
             render: (text, record) => {
-              const user = `${record.collected_user_id} - ${text}`;
+              const user = `${record.collected_by_view_user_id} - ${text}`;
               return (
                 <div style={{ textAlign: "center", width: "100%" }}>
                   <OverflowTooltip
                     title={user}
-                    children={record.collected_user_id}
+                    children={record.collected_by_view_user_id}
                   />
                 </div>
               );

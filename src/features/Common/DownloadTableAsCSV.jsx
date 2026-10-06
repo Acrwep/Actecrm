@@ -188,6 +188,20 @@ const DownloadTableAsCSV = (
           return stateName;
         }
         //customers table handling
+        if (column.dataIndex === "ra_name") {
+          const raName = row[column.dataIndex];
+          if (!raName) return "-";
+          return row.ra_view_user_id
+            ? `${row.ra_view_user_id} - ${raName}`
+            : raName;
+        }
+        if (column.dataIndex === "hr_name") {
+          const hrName = row[column.dataIndex];
+          if (!hrName) return "-";
+          return row.hr_view_user_id
+            ? `${row.hr_view_user_id} - ${hrName}`
+            : hrName;
+        }
         if (column.dataIndex === "trainer_hr_name") {
           const hrName = row[column.dataIndex];
           if (!hrName) return "-";
@@ -199,23 +213,25 @@ const DownloadTableAsCSV = (
         if (column.dataIndex === "lead_assigned_to_name") {
           const lName = row[column.dataIndex];
           if (!lName) return "-";
-          return row.lead_assigned_to_id
-            ? `${row.lead_assigned_to_id} - ${lName}`
+          return row.lead_assigned_to_view_user_id
+            ? `${row.lead_assigned_to_view_user_id} - ${lName}`
             : lName;
         }
 
         if (column.dataIndex === "collected_by") {
           const lName = row[column.dataIndex];
           if (!lName) return "-";
-          return row.collected_user_id
-            ? `${row.collected_user_id} - ${lName}`
+          return row.collected_by_view_user_id
+            ? `${row.collected_by_view_user_id} - ${lName}`
             : lName;
         }
 
         if (column.dataIndex === "assigned_to_name") {
           const lName = row[column.dataIndex];
           if (!lName) return "-";
-          return row.assigned_to ? `${row.assigned_to} - ${lName}` : lName;
+          return row.assigned_to_view_user_id
+            ? `${row.assigned_to_view_user_id} - ${lName}`
+            : lName;
         }
 
         if (column.dataIndex === "lead_assigned_to_id") {
@@ -279,6 +295,48 @@ const DownloadTableAsCSV = (
         }
         if (column.dataIndex === "commercial_percentage") {
           return row[column.dataIndex] ? row[column.dataIndex] + "%" : "-";
+        }
+
+        if (column.dataIndex === "trainer_data") {
+          const trainerData = row[column.dataIndex];
+          if (!Array.isArray(trainerData) || trainerData.length === 0)
+            return "-";
+
+          if (column.key === "trainer_name") {
+            return (
+              trainerData
+                .map((t) => t.trainer_name)
+                .filter(Boolean)
+                .join(", ") || "-"
+            );
+          }
+          if (column.key === "commercial_percentage") {
+            return (
+              trainerData
+                .map((t) => t.commercial_percentage)
+                .filter((v) => v !== null && v !== undefined && v !== "")
+                .map((v) => `${Number(v)}%`)
+                .join(", ") || "-"
+            );
+          }
+          if (column.key === "trainer_mapping_comments") {
+            return (
+              trainerData
+                .map((t) => t.trainer_mapping_comments)
+                .filter(Boolean)
+                .join(", ") || "-"
+            );
+          }
+          if (column.key === "approval_rejected_reason") {
+            return (
+              trainerData
+                .map((t) => t.approval_rejected_reason)
+                .filter(Boolean)
+                .join(", ") || "-"
+            );
+          }
+
+          return "-";
         }
 
         //assign lead table handling

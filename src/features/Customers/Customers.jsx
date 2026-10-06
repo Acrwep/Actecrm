@@ -599,10 +599,10 @@ export default function Customers() {
       align: "center",
       render: (text, record) => {
         if (text) {
-          const ra = `${record.ra_id} - ${text}`;
+          const ra = `${record.ra_view_user_id} - ${text}`;
           return (
             <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={ra} children={record.ra_id} />
+              <OverflowTooltip title={ra} children={record.ra_view_user_id} />
             </div>
           );
         } else {
@@ -618,10 +618,10 @@ export default function Customers() {
       align: "center",
       render: (text, record) => {
         if (text) {
-          const hr = `${record.hr_id} - ${text}`;
+          const hr = `${record.hr_view_user_id} - ${text}`;
           return (
             <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={hr} children={record.hr_id} />
+              <OverflowTooltip title={hr} children={record.hr_view_user_id} />
             </div>
           );
         } else {
@@ -784,12 +784,12 @@ export default function Customers() {
       dataIndex: "lead_assigned_to_name",
       width: 110,
       render: (text, record) => {
-        const salse_executive = `${record.lead_assigned_to_id} - ${text}`;
+        const salse_executive = `${record.lead_assigned_to_view_user_id} - ${text}`;
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
             <OverflowTooltip
               title={salse_executive}
-              children={record.lead_assigned_to_id}
+              children={record.lead_assigned_to_view_user_id}
             />
           </div>
         );
@@ -3251,10 +3251,10 @@ export default function Customers() {
                     >
                       <CommonSelectField
                         width="100%"
-                        height="35px"
+                        height="33px"
                         label="Select Mode Of Training"
                         labelMarginTop="0px"
-                        labelFontSize="12px"
+                        labelFontSize="11px"
                         options={modeOfTrainingOptions}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -3272,10 +3272,10 @@ export default function Customers() {
                       />{" "}
                       <CommonSelectField
                         width="100%"
-                        height="35px"
+                        height="33px"
                         label="Select Origin"
                         labelMarginTop="0px"
-                        labelFontSize="12px"
+                        labelFontSize="11px"
                         options={[
                           {
                             id: "acte.in",
