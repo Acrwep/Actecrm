@@ -525,8 +525,8 @@ export default function ViewTrainerPaymentDetails({
                               </div>
                             }
                           >
-                            <div style={{ padding: "9px 0px 0px 0px" }}>
-                              <div style={{ padding: "0px 16px" }}>
+                            <div>
+                              <div>
                                 <p
                                   className="trainer_paymentrequestform_headings"
                                   style={{ fontSize: "14px" }}
@@ -627,7 +627,7 @@ export default function ViewTrainerPaymentDetails({
                               </div>
                               <Divider className="customer_statusupdate_divider" />
 
-                              <div style={{ padding: "0px 16px" }}>
+                              <div>
                                 <p
                                   className="trainer_paymentrequestform_headings"
                                   style={{ fontSize: "14px" }}

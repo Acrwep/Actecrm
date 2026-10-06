@@ -190,11 +190,16 @@ export default function Server() {
       width: 90,
       render: (text, record) => {
         const lead_executive = `${
-          text ? `${text} - ${record.created_by}` : "-"
+          text
+            ? `${record.created_by_view_user_id} - ${record.created_by}`
+            : "-"
         }`;
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
-            <OverflowTooltip title={lead_executive} children={text} />
+            <OverflowTooltip
+              title={lead_executive}
+              children={record.created_by_view_user_id}
+            />
           </div>
         );
       },
@@ -846,11 +851,16 @@ export default function Server() {
                 width: 90,
                 render: (text, record) => {
                   const lead_executive = `${
-                    text ? `${text} - ${record.created_by}` : "-"
+                    text
+                      ? `${record.created_by_view_user_id} - ${record.created_by}`
+                      : "-"
                   }`;
                   return (
                     <div style={{ textAlign: "center", width: "100%" }}>
-                      <OverflowTooltip title={lead_executive} children={text} />
+                      <OverflowTooltip
+                        title={lead_executive}
+                        children={record.created_by_view_user_id}
+                      />
                     </div>
                   );
                 },
@@ -2490,425 +2500,174 @@ export default function Server() {
         }}
         className="customer_statusupdate_drawer"
       >
-        <div className="customer_statusupdate_drawer_profileContainer">
-          {customerDetails && customerDetails.profile_image ? (
-            <img
-              src={customerDetails.profile_image}
-              className="cutomer_profileimage"
-            />
-          ) : (
-            <FaRegUser size={50} color="#333" />
-          )}
+        {isStatusUpdateDrawerLoading ? (
+          <CustomerOverviewSkeleton />
+        ) : (
+          <>
+            <CustomerOverview customerDetails={customerDetails} />
 
-          <div>
-            <p className="customer_nametext">
-              {" "}
-              {customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"}
-            </p>
-            <p className="customer_coursenametext">
-              {" "}
-              {customerDetails && customerDetails.course_name
-                ? customerDetails.course_name
-                : "-"}
-            </p>
-          </div>
-        </div>
+            <Divider className="customer_statusupdate_divider" />
 
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Name</p>
+            <div
+              className="customer_statusupdate_adddetailsContainer"
+              style={{ marginBottom: "20px" }}
+            >
+              <div className="customerdetails_coursecard">
+                <div className="customerdetails_coursecard_headercontainer">
+                  <p>Server Details</p>
                 </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.name
-                    ? customerDetails.name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
 
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.email
-                    ? customerDetails.email
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.phone
-                    ? customerDetails.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaWhatsapp size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Whatsapp</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.whatsapp
-                    ? customerDetails.whatsapp
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  {customerDetails && customerDetails.gender === "Male" ? (
-                    <BsGenderMale size={15} color="gray" />
-                  ) : (
-                    <BsGenderFemale size={15} color="gray" />
-                  )}
-                  <p className="customerdetails_rowheading">Gender</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.gender
-                    ? customerDetails.gender
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.current_location
-                    ? customerDetails.current_location
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {`${
-                    customerDetails && customerDetails.lead_assigned_to_id
-                      ? customerDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    customerDetails && customerDetails.lead_assigned_to_name
-                      ? customerDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.course_name
-                    ? customerDetails.course_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">
-                    Course Fees
-                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                  </p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.total_course_amount
-                    ? "₹" + customerDetails.total_course_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f", fontWeight: 700 }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Type</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_timing
-                    ? customerDetails.batch_timing
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <div
-          className="customer_statusupdate_adddetailsContainer"
-          style={{ marginBottom: "20px" }}
-        >
-          <div className="customerdetails_coursecard">
-            <div className="customerdetails_coursecard_headercontainer">
-              <p>Server Details</p>
-            </div>
-
-            <div className="customerdetails_coursecard_contentcontainer">
-              <Row>
-                <Col span={12}>
-                  <Row>
+                <div className="customerdetails_coursecard_contentcontainer">
+                  <Row gutter={12}>
                     <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Created At</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {serverDetails && serverDetails.created_date
-                          ? moment(serverDetails.created_date).format(
-                              "DD/MM/YYYY",
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Server Name
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {serverDetails && serverDetails.server_name
-                          ? serverDetails.server_name
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  {permissions.includes("Show Server Cost & Vendor") && (
-                    <Row style={{ marginTop: "12px" }}>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">
-                            Server Cost
+                      <Row>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Created At
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p className="customerdetails_text">
+                            {serverDetails && serverDetails.created_date
+                              ? moment(serverDetails.created_date).format(
+                                  "DD/MM/YYYY",
+                                )
+                              : "-"}
                           </p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {serverDetails && serverDetails.server_cost
-                            ? `₹${serverDetails.server_cost}`
-                            : "-"}
-                        </p>
-                      </Col>
-                    </Row>
-                  )}
+                        </Col>
+                      </Row>
 
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Server Duration
-                        </p>
-                      </div>
+                      <Row style={{ marginTop: "12px" }}>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Server Name
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <EllipsisTooltip
+                            text={
+                              serverDetails && serverDetails.server_name
+                                ? serverDetails.server_name
+                                : "-"
+                            }
+                            smallText={true}
+                          />
+                        </Col>
+                      </Row>
+
+                      {permissions.includes("Show Server Cost & Vendor") && (
+                        <Row style={{ marginTop: "12px" }}>
+                          <Col span={12}>
+                            <div className="customerdetails_rowheadingContainer">
+                              <p className="customerdetails_rowheading">
+                                Server Cost
+                              </p>
+                            </div>
+                          </Col>
+                          <Col span={12}>
+                            <p className="customerdetails_text">
+                              {serverDetails && serverDetails.server_cost
+                                ? `₹${serverDetails.server_cost}`
+                                : "-"}
+                            </p>
+                          </Col>
+                        </Row>
+                      )}
+
+                      <Row style={{ marginTop: "12px" }}>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Server Duration
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p className="customerdetails_text">
+                            {serverDetails && serverDetails.duration
+                              ? serverDetails.duration + " " + "Days"
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
                     </Col>
+
                     <Col span={12}>
-                      <p className="customerdetails_text">
-                        {serverDetails && serverDetails.duration
-                          ? serverDetails.duration + " " + "Days"
-                          : "-"}
-                      </p>
+                      {permissions.includes("Show Server Cost & Vendor") && (
+                        <Row>
+                          <Col span={12}>
+                            <div className="customerdetails_rowheadingContainer">
+                              <p className="customerdetails_rowheading">
+                                Vendor
+                              </p>
+                            </div>
+                          </Col>
+                          <Col span={12}>
+                            <p className="customerdetails_text">
+                              {serverDetails && serverDetails.vendor_id
+                                ? serverDetails.vendor_id
+                                : "-"}
+                            </p>
+                          </Col>
+                        </Row>
+                      )}
+
+                      <Row
+                        style={{
+                          marginTop: permissions.includes(
+                            "Show Server Cost & Vendor",
+                          )
+                            ? "12px"
+                            : "0px",
+                        }}
+                      >
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Start Date
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p className="customerdetails_text">
+                            {serverDetails && serverDetails.start_date
+                              ? moment(serverDetails.start_date).format(
+                                  "DD/MM/YYYY",
+                                )
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
+
+                      <Row style={{ marginTop: "12px" }}>
+                        <Col span={12}>
+                          <div className="customerdetails_rowheadingContainer">
+                            <p className="customerdetails_rowheading">
+                              Expire Date
+                            </p>
+                          </div>
+                        </Col>
+                        <Col span={12}>
+                          <p className="customerdetails_text">
+                            {serverDetails && serverDetails.end_date
+                              ? moment(serverDetails.end_date).format(
+                                  "DD/MM/YYYY",
+                                )
+                              : "-"}
+                          </p>
+                        </Col>
+                      </Row>
                     </Col>
                   </Row>
-                </Col>
-
-                <Col span={12}>
-                  {permissions.includes("Show Server Cost & Vendor") && (
-                    <Row>
-                      <Col span={12}>
-                        <div className="customerdetails_rowheadingContainer">
-                          <p className="customerdetails_rowheading">Vendor</p>
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <p className="customerdetails_text">
-                          {serverDetails && serverDetails.vendor_id
-                            ? serverDetails.vendor_id
-                            : "-"}
-                        </p>
-                      </Col>
-                    </Row>
-                  )}
-
-                  <Row
-                    style={{
-                      marginTop: permissions.includes(
-                        "Show Server Cost & Vendor",
-                      )
-                        ? "12px"
-                        : "0px",
-                    }}
-                  >
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">Start Date</p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {serverDetails && serverDetails.start_date
-                          ? moment(serverDetails.start_date).format(
-                              "DD/MM/YYYY",
-                            )
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-
-                  <Row style={{ marginTop: "12px" }}>
-                    <Col span={12}>
-                      <div className="customerdetails_rowheadingContainer">
-                        <p className="customerdetails_rowheading">
-                          Expire Date
-                        </p>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <p className="customerdetails_text">
-                        {serverDetails && serverDetails.end_date
-                          ? moment(serverDetails.end_date).format("DD/MM/YYYY")
-                          : "-"}
-                      </p>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </Drawer>
       {/* server raise confirm modal */}
       <Modal

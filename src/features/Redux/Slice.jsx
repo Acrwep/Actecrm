@@ -499,6 +499,17 @@ const liveLeadSelectedDatesSlice = createSlice({
   },
 });
 
+const bulkSearchDataSlice = createSlice({
+  name: "bulksearchdata",
+  initialState,
+  reducers: {
+    storeBulkSearchData(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 //define slice
 export const { storeloginUserProfileBase64 } =
   loginUserProfileBase64Slice.actions;
@@ -560,6 +571,8 @@ export const { storeLeadFilterValues } = leadFilterValuesSlice.actions;
 export const { storeJunkLeadFilterValues } = junkLeadFilterValuesSlice.actions;
 export const { storeAssignLeadFilterValues } =
   assignLeadFilterValuesSlice.actions;
+export const { storeBulkSearchData } = bulkSearchDataSlice.actions;
+
 //create reducer
 export const loginUserProfileBase64Reducer =
   loginUserProfileBase64Slice.reducer;
@@ -616,3 +629,4 @@ export const LeadFilterValuesReducer = leadFilterValuesSlice.reducer;
 export const junkLeadFilterValuesReducer = junkLeadFilterValuesSlice.reducer;
 export const assignLeadFilterValuesReducer =
   assignLeadFilterValuesSlice.reducer;
+export const bulkSearchDataRecucer = bulkSearchDataSlice.reducer;

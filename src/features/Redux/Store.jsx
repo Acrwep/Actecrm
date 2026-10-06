@@ -39,6 +39,7 @@ import {
   junkLeadFilterValuesReducer,
   assignLeadFilterValuesReducer,
   ticketsModulePermissionListReducer,
+  bulkSearchDataRecucer,
 } from "./Slice";
 
 export const reduxStore = configureStore({
@@ -84,5 +85,6 @@ export const reduxStore = configureStore({
     leadfiltervalues: LeadFilterValuesReducer,
     junkleadfiltervalues: junkLeadFilterValuesReducer,
     assignleadfiltervalues: assignLeadFilterValuesReducer,
+    bulksearchdata: bulkSearchDataRecucer,
   },
 });

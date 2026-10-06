@@ -187,6 +187,15 @@ const DownloadTableAsCSV = (
           }
           return stateName;
         }
+        //bulk search
+        if (column.dataIndex === "lead_by") {
+          const executive_name = row[column.dataIndex];
+          if (!executive_name) return "-";
+          return executive_name
+            ? `${row.lead_by_view_user_id} - ${executive_name}`
+            : executive_name;
+        }
+
         //customers table handling
         if (column.dataIndex === "ra_name") {
           const raName = row[column.dataIndex];
@@ -235,19 +244,19 @@ const DownloadTableAsCSV = (
         }
 
         if (column.dataIndex === "lead_assigned_to_id") {
-          const l_id = row[column.dataIndex];
+          const l_id = row.lead_assigned_to_view_user_id;
           if (!l_id) return "-";
           return l_id ? `${l_id} - ${row.lead_assigned_to_name}` : l_id;
         }
 
         if (column.dataIndex === "ra_user_id") {
-          const ra_id = row[column.dataIndex];
+          const ra_id = row.ra_view_user_id;
           if (!ra_id) return "-";
           return ra_id ? `${ra_id} - ${row.ra_user_name}` : ra_id;
         }
 
         if (column.dataIndex === "hr_user_id") {
-          const hr_id = row[column.dataIndex];
+          const hr_id = row.hr_view_user_id;
           if (!hr_id) return "-";
           return hr_id ? `${hr_id} - ${row.hr_user_name}` : hr_id;
         }

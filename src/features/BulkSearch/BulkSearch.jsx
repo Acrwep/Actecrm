@@ -32,16 +32,19 @@ import "./styles.css";
 import { bulkSearch } from "../ApiService/action";
 import moment from "moment";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CommonMultiSelect from "../Common/CommonMultiSelect";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonSpinner from "../Common/CommonSpinner";
 import OverflowTooltip from "../Common/OverflowTooltip";
+import { storeBulkSearchData } from "../Redux/Slice";
 
 const { Dragger } = Upload;
 
 export default function BulkSearch() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const bulkSearchDataFromRedux = useSelector((state) => state.bulksearchdata);
 
   const [searchValue, setSearchValue] = useState("");
   const searchTimeoutRef = useRef(null);
@@ -136,12 +139,12 @@ export default function BulkSearch() {
       width: 140,
       align: "center",
       render: (text, record) => {
-        const lead_executive = `${record.lead_by_id} - ${text}`;
+        const lead_executive = `${record.lead_by_view_user_id} - ${text}`;
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
             <OverflowTooltip
               title={lead_executive}
-              children={record.lead_by_id}
+              children={record.lead_by_view_user_id}
             />
           </div>
         );
@@ -161,13 +164,14 @@ export default function BulkSearch() {
   ];
 
   const [data, setData] = useState([]);
-  const [duplicateData, setDuplicateData] = useState([]);
 
   useEffect(() => {
     if (permissions.length >= 1) {
       if (!permissions.includes("Bulk Search Page")) {
         navigate("/dashboard");
         return;
+      } else {
+        setData(bulkSearchDataFromRedux);
       }
     }
   }, [permissions]);
@@ -310,15 +314,16 @@ export default function BulkSearch() {
       setLoading(true);
       try {
         const response = await bulkSearch(payload);
-        setData(response?.data?.data || []);
-        setDuplicateData(response?.data?.data || []);
+        const bulk_search_data = response?.data?.data || [];
+        setData(bulk_search_data);
+        dispatch(storeBulkSearchData(bulk_search_data));
         setBulkUploadModal(false);
         setTimeout(() => {
           setLoading(false);
         }, 300);
       } catch (error) {
         setData([]);
-        setDuplicateData([]);
+        dispatch(storeBulkSearchData([]));
         setLoading(false);
         console.log("blk serach error", error);
       }
@@ -396,7 +401,7 @@ export default function BulkSearch() {
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      const filterData = duplicateData.filter((f) => {
+      const filterData = bulkSearchDataFromRedux.filter((f) => {
         const statusMatch = status?.length ? status.includes(f.status) : true;
 
         // ✅ Search across all 3 fields
@@ -449,13 +454,15 @@ export default function BulkSearch() {
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
-                          const filterData = duplicateData.filter((f) => {
-                            const statusMatch = status?.length
-                              ? status.includes(f.status)
-                              : true; // ✅ only check if statusId array has values
+                          const filterData = bulkSearchDataFromRedux.filter(
+                            (f) => {
+                              const statusMatch = status?.length
+                                ? status.includes(f.status)
+                                : true; // ✅ only check if statusId array has values
 
-                            return statusMatch;
-                          });
+                              return statusMatch;
+                            },
+                          );
 
                           setData(filterData);
                         }}
@@ -487,68 +494,6 @@ export default function BulkSearch() {
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    {/* <Select
-                      className={"bulksearch_status_multiselect"}
-                      style={{ width: "100%" }}
-                      suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
-                      mode="multiple"
-                      allowClear
-                      showSearch
-                      value={status} // Only real selected values
-                      onChange={(value) => {
-                        setStatus(value);
-                        console.log("old valll", value);
-                        const filterData = duplicateData.filter((f) => {
-                          // ✅ Handle array of statuses
-                          const statusMatch = value?.length
-                            ? value.includes(f.status)
-                            : true;
-
-                          const typeMatch =
-                            f.mobile?.toLowerCase().includes(searchValue) ||
-                            f.name?.toLowerCase().includes(searchValue) ||
-                            f.email?.toLowerCase().includes(searchValue);
-
-                          return statusMatch && typeMatch;
-                        });
-
-                        setData(filterData);
-                      }}
-                      status={""}
-                      optionLabelProp="label"
-                      filterOption={(input, option) =>
-                        option.label.toLowerCase().includes(input.toLowerCase())
-                      }
-                    >
-                      {statusOptions.map((item) => {
-                        const itemValue = item.id;
-                        const itemLabel = item.name;
-
-                        return (
-                          <Select.Option
-                            key={itemValue}
-                            value={itemValue}
-                            label={itemLabel}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                textWrap: "wrap",
-                              }}
-                            >
-                              <Checkbox
-                                checked={status.includes(itemValue)}
-                                style={{ marginRight: 8 }}
-                                className="common_antdmultiselect_checkbox"
-                              />
-                              {itemLabel}
-                            </div>
-                          </Select.Option>
-                        );
-                      })}
-                    </Select> */}
-
                     <CommonMultiSelect
                       label="Status"
                       labelMarginTop="0.2px"
@@ -560,19 +505,21 @@ export default function BulkSearch() {
                         console.log("valllll", value);
                         setStatus(value);
 
-                        const filterData = duplicateData.filter((f) => {
-                          // ✅ Handle array of statuses
-                          const statusMatch = value?.length
-                            ? value.includes(f.status)
-                            : true;
+                        const filterData = bulkSearchDataFromRedux.filter(
+                          (f) => {
+                            // ✅ Handle array of statuses
+                            const statusMatch = value?.length
+                              ? value.includes(f.status)
+                              : true;
 
-                          const typeMatch =
-                            f.mobile?.toLowerCase().includes(searchValue) ||
-                            f.name?.toLowerCase().includes(searchValue) ||
-                            f.email?.toLowerCase().includes(searchValue);
+                            const typeMatch =
+                              f.mobile?.toLowerCase().includes(searchValue) ||
+                              f.name?.toLowerCase().includes(searchValue) ||
+                              f.email?.toLowerCase().includes(searchValue);
 
-                          return statusMatch && typeMatch;
-                        });
+                            return statusMatch && typeMatch;
+                          },
+                        );
 
                         setData(filterData);
                       }}
@@ -609,9 +556,10 @@ export default function BulkSearch() {
                 className="bulksearch_download_button"
                 onClick={() => {
                   const today = new Date();
+                  const alterColumns = columns.filter((f) => f.key != "sino");
                   DownloadTableAsCSV(
                     data,
-                    columns,
+                    alterColumns,
                     `${moment(today).format("DD-MM-YYYY")} Bulk Search.csv`,
                   );
                 }}

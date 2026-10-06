@@ -717,10 +717,12 @@ export default function TrainerPayment() {
       width: 75,
       align: "center",
       render: (text, record) => {
-        const ra = text ? `${text} - ${record.ra_user_name}` : "-";
+        const ra = text
+          ? `${record.ra_view_user_id} - ${record.ra_user_name}`
+          : "-";
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
-            <OverflowTooltip title={ra} children={text} />
+            <OverflowTooltip title={ra} children={record.ra_view_user_id} />
           </div>
         );
       },
@@ -732,10 +734,12 @@ export default function TrainerPayment() {
       align: "center",
       width: 75,
       render: (text, record) => {
-        const hr = text ? `${text} - ${record.hr_user_name}` : "-";
+        const hr = text
+          ? `${record.hr_view_user_id} - ${record.hr_user_name}`
+          : "-";
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
-            <OverflowTooltip title={hr} children={text} />
+            <OverflowTooltip title={hr} children={record.hr_view_user_id} />
           </div>
         );
       },
@@ -755,11 +759,14 @@ export default function TrainerPayment() {
       width: 75,
       render: (text, record) => {
         const sale_executive = text
-          ? `${text} - ${record.lead_assigned_to_name}`
+          ? `${record.lead_assigned_to_view_user_id} - ${record.lead_assigned_to_name}`
           : "-";
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
-            <OverflowTooltip title={sale_executive} children={text} />
+            <OverflowTooltip
+              title={sale_executive}
+              children={record.lead_assigned_to_view_user_id}
+            />
           </div>
         );
       },

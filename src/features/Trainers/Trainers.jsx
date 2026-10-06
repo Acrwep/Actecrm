@@ -484,13 +484,13 @@ export default function Trainers() {
       fixed: "left",
       render: (text, record) => {
         const lead_executive = `${
-          text ? `${record.created_by} - ${text}` : "-"
+          text ? `${record.created_by_view_user_id} - ${text}` : "-"
         }`;
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
             <OverflowTooltip
               title={lead_executive}
-              children={record.created_by}
+              children={record.created_by_view_user_id}
             />
           </div>
         );
@@ -1078,13 +1078,13 @@ export default function Trainers() {
                 align: "center",
                 render: (text, record) => {
                   const lead_executive = `${
-                    text ? `${record.created_by} - ${text}` : "-"
+                    text ? `${record.created_by_view_user_id} - ${text}` : "-"
                   }`;
                   return (
                     <div style={{ textAlign: "center", width: "100%" }}>
                       <OverflowTooltip
                         title={lead_executive}
-                        children={record.created_by}
+                        children={record.created_by_view_user_id}
                       />
                     </div>
                   );
