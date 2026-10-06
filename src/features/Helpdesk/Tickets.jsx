@@ -243,6 +243,22 @@ export default function Tickets() {
       key: "created_by_name",
       dataIndex: "created_by_name",
       width: 120,
+      align: "center",
+      render: (text, record) => {
+        if (text) {
+          const sale_executive = `${record.created_by_view_user_id} - ${text}`;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip
+                title={sale_executive}
+                children={record.created_by_view_user_id}
+              />
+            </div>
+          );
+        } else {
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
+        }
+      },
     },
     {
       title: "Complaint By",
@@ -314,14 +330,14 @@ export default function Tickets() {
       width: 90,
       align: "center",
       render: (text, record) => {
-        const manager = record.manager_user_id
-          ? `${record.manager_user_id} - ${text}`
+        const manager = record.manager_view_user_id
+          ? `${record.manager_view_user_id} - ${text}`
           : "-";
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
             <OverflowTooltip
               title={manager}
-              children={record.manager_user_id}
+              children={record.manager_view_user_id}
             />
           </div>
         );
@@ -335,12 +351,15 @@ export default function Tickets() {
       align: "center",
       render: (text, record) => {
         if (text) {
-          const sub_user = record.ra_user_id
-            ? `${record.ra_user_id} - ${text}`
+          const sub_user = record.ra_view_user_id
+            ? `${record.ra_view_user_id} - ${text}`
             : "-";
           return (
             <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={sub_user} children={record.ra_user_id} />
+              <OverflowTooltip
+                title={sub_user}
+                children={record.ra_view_user_id}
+              />
             </div>
           );
         } else {
@@ -1572,8 +1591,8 @@ export default function Tickets() {
                 <Col span={12}>
                   <EllipsisTooltip
                     text={
-                      ticketDetails && ticketDetails.manager_user_id
-                        ? `${ticketDetails.manager_user_id} - ${ticketDetails?.manager_name}`
+                      ticketDetails && ticketDetails.manager_view_user_id
+                        ? `${ticketDetails.manager_view_user_id} - ${ticketDetails?.manager_name}`
                         : "-"
                     }
                     smallText={true}

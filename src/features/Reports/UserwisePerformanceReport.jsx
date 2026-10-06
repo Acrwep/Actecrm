@@ -25,6 +25,7 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import moment from "moment";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function UserwisePerformanceReport() {
   const mounted = useRef(false);
@@ -74,12 +75,18 @@ export default function UserwisePerformanceReport() {
   const columns = [
     {
       title: "User Name",
-      key: "user_id",
-      dataIndex: "user_id",
-      width: 160,
+      key: "user_name",
+      dataIndex: "user_name",
+      width: 95,
       fixed: "left",
       render: (text, row) => ({
-        children: <p> {`${text} - ${row.user_name}`}</p>,
+        // children: <p> {`${row.view_user_id} - ${text}`}</p>,
+        children: (
+          <OverflowTooltip
+            title={`${row.view_user_id} - ${text}`}
+            children={row.view_user_id}
+          />
+        ),
         props: {
           rowSpan: row.branchRowSpan,
         },

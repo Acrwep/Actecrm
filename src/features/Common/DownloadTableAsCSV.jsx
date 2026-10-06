@@ -187,6 +187,13 @@ const DownloadTableAsCSV = (
           }
           return stateName;
         }
+        if (column.dataIndex === "sale_name") {
+          const executive_name = row[column.dataIndex];
+          if (!executive_name) return "-";
+          return executive_name
+            ? `${row.sale_view_user_id} - ${executive_name}`
+            : executive_name;
+        }
         //bulk search
         if (column.dataIndex === "lead_by") {
           const executive_name = row[column.dataIndex];
@@ -265,7 +272,7 @@ const DownloadTableAsCSV = (
           const uName = row[column.dataIndex];
           if (!uName) return "-";
           if (uName === "Total" || uName === "total") return "Total";
-          return row.user_id ? `${row.user_id} - ${uName}` : uName;
+          return row.view_user_id ? `${row.view_user_id} - ${uName}` : uName;
         }
         if (column.dataIndex === "is_customer_updated") {
           if (row[column.dataIndex] == 1) {

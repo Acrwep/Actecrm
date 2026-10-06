@@ -30,6 +30,7 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CommonMessage } from "../Common/CommonMessage";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import OverflowTooltip from "../Common/OverflowTooltip";
 const { Column, ColumnGroup } = Table;
 
 export default function CustomerFeesHistoryReport() {
@@ -91,8 +92,13 @@ export default function CustomerFeesHistoryReport() {
       fixed: "left",
       width: 120,
       render: (text, record) => {
-        const lead_executive = `${record.sale_id} - ${text}`;
-        return <EllipsisTooltip text={lead_executive} />;
+        const lead_executive = `${record.sale_view_user_id} - ${text}`;
+        return (
+          <OverflowTooltip
+            title={lead_executive}
+            children={record.sale_view_user_id}
+          />
+        );
       },
     },
     {
@@ -673,6 +679,7 @@ export default function CustomerFeesHistoryReport() {
 
     const downloadColumns = [];
     columns.forEach((col) => {
+      if (col.title === "S.No") return;
       if (col.children) {
         const installNum = col.className.split("-").pop();
         col.children.forEach((child) => {
