@@ -95,7 +95,7 @@ export default function CommonAntdMultiSelect({
         {options.map((item) => {
           const itemValue = item.user_id ?? item.role_id ?? item.id;
           const itemLabel = item.user_name
-            ? `${item.user_id} - ${item.user_name}`
+            ? `${item.view_user_id} - ${item.user_name}`
             : (item.role_name ?? item.name);
 
           return (

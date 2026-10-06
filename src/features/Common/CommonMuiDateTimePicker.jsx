@@ -96,7 +96,21 @@ export default function CommonMuiDateTimePicker({
                 },
                 "& .MuiInputBase-input": {
                   fontFamily: "Poppins, sans-serif !important",
-                  fontSize: "13px",
+                  fontSize: fontSize || "13px",
+                  paddingTop: "10px", // Align vertically for 42px height
+                  paddingBottom: "10px",
+                },
+                "& .MuiPickersSectionList-root": {
+                  paddingTop: "10px",
+                  paddingBottom: "10px",
+                },
+                "& .MuiPickersSectionList-section": {
+                  fontFamily: "Poppins, sans-serif !important",
+                  fontSize: fontSize || "13px",
+                },
+                "& .MuiPickersSectionList-sectionContent": {
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: fontSize || "13px",
                 },
                 "& .MuiInputLabel-root": {
                   fontFamily: "Poppins, sans-serif",
@@ -270,7 +284,13 @@ export default function CommonMuiDateTimePicker({
               },
               "& .MuiInputBase-input": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
+                paddingTop: "10px", // Align vertically for 42px height
+                paddingBottom: "10px",
+              },
+              "& .MuiPickersSectionList-root": {
+                paddingTop: "10px",
+                paddingBottom: "10px",
               },
               "& .MuiInputLabel-root": {
                 fontFamily: "Poppins, sans-serif",
@@ -287,11 +307,10 @@ export default function CommonMuiDateTimePicker({
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
                 fontSize: fontSize || "13px",
-                marginTop: "3px",
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
               },
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: error ? "#d32f2f" : "#b0b0b0",

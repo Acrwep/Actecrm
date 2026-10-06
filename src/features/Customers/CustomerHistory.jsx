@@ -432,8 +432,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -456,8 +456,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -527,8 +527,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -609,8 +609,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -699,8 +699,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -727,8 +727,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -762,8 +762,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -805,8 +805,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -828,8 +828,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -902,8 +902,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>
@@ -1147,8 +1147,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               <p className="customer_history_updateddate">
                 Updated By:{"  "}
                 <span style={{ color: "gray" }}>
-                  {item?.updated_by_id
-                    ? `${item.updated_by_id} - ${item.updated_by}`
+                  {item?.updated_by_view_user_id
+                    ? `${item.updated_by_view_user_id} - ${item.updated_by}`
                     : ""}
                 </span>
               </p>

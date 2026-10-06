@@ -3,7 +3,11 @@ import { Drawer, Row, Col, Rate, Divider, Checkbox, Button } from "antd";
 import moment from "moment";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { FaWhatsapp } from "react-icons/fa";
-import { MdOutlineEmail, MdOutlineDateRange } from "react-icons/md";
+import {
+  MdOutlineEmail,
+  MdOutlineDateRange,
+  MdEventNote,
+} from "react-icons/md";
 import { IoCallOutline, IoLocationOutline } from "react-icons/io5";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonAvatar from "../Common/CommonAvatar";
@@ -571,7 +575,7 @@ export default function FollowUpDrawerForm({
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Communication:
                           </span>
                           <span
@@ -598,7 +602,7 @@ export default function FollowUpDrawerForm({
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Mode:
                           </span>
                           <span
@@ -625,7 +629,7 @@ export default function FollowUpDrawerForm({
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Interest Rate:
                           </span>
                           <Rate
@@ -642,7 +646,7 @@ export default function FollowUpDrawerForm({
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Response Status:
                           </span>
                           <span
@@ -667,6 +671,42 @@ export default function FollowUpDrawerForm({
                             {item.response_status || "-"}
                           </span>
                         </div>
+
+                        {item.next_follow_up_date &&
+                          item.next_follow_up_date !== "0001-01-01T00:00:00" &&
+                          !item.next_follow_up_date.startsWith("0001") && (
+                            <div className="viewlead_next_follow_up_container">
+                              <span className="viewlead_followup_history_sublabel">
+                                Next Follow Up:
+                              </span>
+                              <span className="viewlead_next_follow_up_value">
+                                <MdEventNote size={12} />
+                                {moment(item.next_follow_up_date).format(
+                                  "MMM DD, YYYY",
+                                )}
+                                {item.next_followup_time &&
+                                  item.next_followup_time !==
+                                    "0001-01-01T00:00:00" &&
+                                  !item.next_followup_time.startsWith(
+                                    "0001",
+                                  ) && (
+                                    <span style={{ marginLeft: "2px" }}>
+                                      {moment(
+                                        item.next_followup_time,
+                                        "HH:mm:ss",
+                                      ).format("hh:mm A") !== "Invalid date"
+                                        ? moment(
+                                            item.next_followup_time,
+                                            "HH:mm:ss",
+                                          ).format("hh:mm A")
+                                        : moment(
+                                            item.next_followup_time,
+                                          ).format("hh:mm A")}
+                                    </span>
+                                  )}
+                              </span>
+                            </div>
+                          )}
                       </div>
 
                       {item.comments && (
@@ -704,6 +744,10 @@ export default function FollowUpDrawerForm({
           <Col span={8}>
             <CommonSelectField
               label="Communication"
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              fontSize={"11.5px"}
               required={true}
               value={communicationStatus}
               onChange={(e) => {
@@ -724,11 +768,16 @@ export default function FollowUpDrawerForm({
               }}
               options={communicationStatusOptions}
               error={communicationStatusError}
+              errorFontSize={"9px"}
             />
           </Col>
           <Col span={8}>
             <CommonSelectField
               label={communicationStatus == 2 ? "Reason" : "Mode"}
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              fontSize={"11.5px"}
               required={true}
               options={
                 communicationStatus == 2
@@ -757,11 +806,16 @@ export default function FollowUpDrawerForm({
               value={contactMode}
               error={contactModeError}
               disabled={!communicationStatus}
+              errorFontSize={"9px"}
             />
           </Col>
           <Col span={8}>
             <CommonSelectField
               label="Response Status"
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              fontSize={"11.5px"}
               required={true}
               value={responseStatus}
               onChange={(e) => {
@@ -774,11 +828,16 @@ export default function FollowUpDrawerForm({
               ]}
               error={responseStatusError}
               disabled={contactMode == 5 || contactMode == 6}
+              errorFontSize={"9px"}
             />
           </Col>
           <Col span={8} style={{ marginTop: "24px" }}>
             <CommonSelectField
               label="Follow-up Type"
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              fontSize={"11.5px"}
               required={true}
               value={followupType}
               onChange={(e) => {
@@ -806,7 +865,7 @@ export default function FollowUpDrawerForm({
               ].filter((option) =>
                 is_moveto_interested
                   ? option.id !== 10 && option.id !== 2
-                  : true
+                  : true,
               )}
               renderOption={(props, option) => (
                 <li {...props}>
@@ -831,11 +890,17 @@ export default function FollowUpDrawerForm({
               )}
               error={followupTypeError}
               disabled={contactMode == 5 || contactMode == 6}
+              errorFontSize={"9px"}
             />
           </Col>
           <Col span={8} style={{ marginTop: "24px" }}>
             <CommonNxtFollowupDatePicker
               label="Next Follow-up Date"
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              fontSize={"11.5px"}
+              iconSize={"15px"}
               required={true}
               value={nxtFollowupDate}
               onChange={(val) => {
@@ -844,12 +909,10 @@ export default function FollowUpDrawerForm({
               }}
               leadTemperature={parseInt(leadDetails?.lead_status_id)}
               error={nxtFollowupDateError}
-              height={"36px"}
-              labelFontSize={"12px"}
-              labelMarginTop={"0px"}
               disabled={
                 followupType == null || followupType === "" || followupType == 2
               }
+              errorFontSize={"9px"}
             />
           </Col>
 
@@ -861,9 +924,11 @@ export default function FollowUpDrawerForm({
               onChange={(val) => setNextFollowupTime(val)}
               error={""}
               onlyTime={true}
-              height={"36px"}
-              labelFontSize={"12px"}
+              height={"33px"}
+              labelFontSize={"11px"}
               labelMarginTop={"0px"}
+              fontSize={"11.5px"}
+              iconSize={"15px"}
               disabled={
                 contactMode == 6 ||
                 followupType == null ||

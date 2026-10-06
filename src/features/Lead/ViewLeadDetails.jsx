@@ -231,51 +231,31 @@ export default function ViewLeadDetails({ leadData: initialData }) {
               >
                 Is Customer
               </Text>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "center",
-                  marginTop: "2px",
-                }}
-              >
+              <div style={{ marginTop: "4px" }}>
                 {leadData?.is_customer_reg === 1 ? (
-                  <>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color: "#2e7a07ff",
-                        fontSize: "13px",
-                      }}
-                    >
-                      Yes
-                    </span>
+                  <div className="viewlead_iscustomer_badge_yes">
+                    <div className="viewlead_iscustomer_dot"></div>
+                    <span>Yes</span>
                     <Tooltip
                       placement="bottom"
                       title="View Customer Track"
                       className="leadtable_comments_tooltip"
                     >
-                      <FaRegEye
-                        color="#333"
-                        size={14}
-                        style={{ cursor: "pointer" }}
+                      <div
+                        className="viewlead_iscustomer_icon_btn"
                         onClick={() => {
                           setSelectedCustomerId(leadData?.customer_id || null);
                           setIsOpenCustomerHistoryDrawer(true);
                         }}
-                      />
+                      >
+                        <FaRegEye size={12} />
+                      </div>
                     </Tooltip>
-                  </>
+                  </div>
                 ) : (
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color: "#dc2626",
-                      fontSize: "13px",
-                    }}
-                  >
-                    No
-                  </span>
+                  <div className="viewlead_iscustomer_badge_no">
+                    <span>No</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -675,7 +655,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                           item.next_follow_up_date !== "0001-01-01T00:00:00" &&
                           !item.next_follow_up_date.startsWith("0001") && (
                             <div className="viewlead_next_follow_up_container">
-                              <span className="viewlead_next_follow_up_label">
+                              <span className="viewlead_followup_history_sublabel">
                                 Next Follow Up:
                               </span>
                               <span className="viewlead_next_follow_up_value">

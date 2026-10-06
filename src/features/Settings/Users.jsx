@@ -92,7 +92,8 @@ export default function Users({
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [assignUsersData, setAssignUsersData] = useState(allUsersData);
   const [userId, setUserId] = useState("");
-  const [userIdError, setUserIdError] = useState("");
+  const [viewUserId, setViewUserId] = useState("");
+  const [viewUserIdError, setViewUserIdError] = useState("");
   const [profileName, setProfileName] = useState("");
   const [profileNameError, setProfileNameError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -204,9 +205,9 @@ export default function Users({
                   whiteSpace: "nowrap",
                   width: "100%",
                 }}
-                title={record.user_id}
+                title={record.view_user_id}
               >
-                {record.user_id}
+                {record.view_user_id}
               </div>
             </div>
           </Flex>
@@ -514,6 +515,7 @@ export default function Users({
     try {
       const response = await getUsers(payload);
       dispatch(storeAllUsersList(response?.data?.data?.data || []));
+      window.dispatchEvent(new CustomEvent("refreshRegionsAndBranchesTab"));
     } catch (error) {
       dispatch(storeAllUsersList([]));
       console.log(error);
@@ -593,7 +595,8 @@ export default function Users({
     // if (numericId.toUpperCase().startsWith(prefix)) {
     //   numericId = numericId.substring(prefix.length);
     // }
-    setUserId(item.user_id || "");
+    setUserId(item?.user_id || "");
+    setViewUserId(item.view_user_id || "");
     setProfileName(item.user_name);
     setPassword(item.password);
     setConfirmPassword(item.password);
@@ -698,7 +701,7 @@ export default function Users({
 
   const handleSubmit = async () => {
     setValidationTrigger(true);
-    const userIdValidate = addressValidator(userId);
+    const viewUserIdValidate = addressValidator(viewUserId);
     const profileNameValidate = selectValidator(profileName);
     const mobileValidate = mobileValidator(mobile, "in");
     const regionIdValidate = selectValidator(regionId);
@@ -710,7 +713,7 @@ export default function Users({
     );
     const userRolesValidate = selectValidator(userRoles);
 
-    setUserIdError(userIdValidate);
+    setViewUserIdError(viewUserIdValidate);
     setProfileNameError(profileNameValidate);
     setMobileError(mobileValidate);
     setRegionError(regionIdValidate);
@@ -720,7 +723,7 @@ export default function Users({
     setUserRolesError(userRolesValidate);
 
     if (
-      userIdValidate ||
+      viewUserIdValidate ||
       profileNameValidate ||
       mobileValidate ||
       regionIdValidate ||
@@ -793,7 +796,8 @@ export default function Users({
     const today = new Date();
     const payload = {
       ...(editUserId && { id: editUserId }),
-      user_id: userId,
+      ...(editUserId ? { user_id: userId } : { user_id: viewUserId }),
+      view_user_id: viewUserId,
       user_name: profileName,
       branch_id: branchId,
       password: password,
@@ -849,8 +853,8 @@ export default function Users({
 
   const formReset = () => {
     setIsOpenAddDrawer(false);
-    setUserId("");
-    setUserIdError("");
+    setViewUserId("");
+    setViewUserIdError("");
     setProfileName("");
     setProfileNameError("");
     setPassword("");
@@ -1184,15 +1188,14 @@ export default function Users({
                 onChange={(e) => {
                   const val = e.target.value;
                   // if (val === "" || /^[0-9]+$/.test(val)) {
-                  setUserId(val);
+                  setViewUserId(val);
                   if (validationTrigger) {
-                    setUserIdError(addressValidator(val));
+                    setViewUserIdError(addressValidator(val));
                   }
                   // }
                 }}
-                value={userId}
-                error={userIdError}
-                disabled={editUserId ? true : false}
+                value={viewUserId}
+                error={viewUserIdError}
                 errorFontSize={"9px"}
               />
             </Col>

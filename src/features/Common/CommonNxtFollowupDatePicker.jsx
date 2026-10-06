@@ -122,8 +122,8 @@ export default function CommonNxtFollowupDatePicker({
               <span
                 style={{
                   position: "absolute",
-                  bottom: "-18px", // adjust distance below the input
-                  left: "0",
+                  bottom: "-16px", // adjust distance below the input
+                  left: 12,
                   fontSize: errorFontSize ? errorFontSize : "11px",
                   color: "#d32f2f",
                 }}
@@ -147,14 +147,23 @@ export default function CommonNxtFollowupDatePicker({
                 color: error ? "#d32f2f" : "#5b69ca", // custom focus color
               },
               // value font
+              "& .MuiInputBase-input": {
+                fontFamily: "Poppins, sans-serif !important",
+                fontSize: fontSize || "13px",
+                paddingTop: "10px", // Align vertically for 42px height
+                paddingBottom: "10px",
+              },
+              "& .MuiPickersSectionList-root": {
+                paddingTop: "10px",
+                paddingBottom: "10px",
+              },
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
                 fontSize: fontSize || "13px",
-                marginTop: "3px",
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
+                fontSize: fontSize || "13px",
               },
               "& .MuiSvgIcon-root": {
                 fontSize: iconSize || "20px",

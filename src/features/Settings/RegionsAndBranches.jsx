@@ -12,7 +12,9 @@ import {
 import "./styles.css";
 
 export default function RegionAndBranches() {
-  const [allUsersList, setAllUsersList] = useState([]);
+  const allUsersData = useSelector((state) => state.alluserslist);
+
+  const [allUsersList, setAllUsersList] = useState(allUsersData);
 
   const [loading, setLoading] = useState(false);
   //pagination
@@ -25,6 +27,14 @@ export default function RegionAndBranches() {
 
   const [data, setData] = useState([]);
 
+  useEffect(() => {
+    fetchBranchManagers();
+  }, []);
+
+  useEffect(() => {
+    setAllUsersList(allUsersData);
+  }, [allUsersData]);
+
   const fetchBranchManagers = async () => {
     try {
       setLoading(true);
@@ -35,7 +45,7 @@ export default function RegionAndBranches() {
     } catch (error) {
       console.error(error);
     } finally {
-      getUsersData();
+      setLoading(false);
     }
   };
 
@@ -65,6 +75,8 @@ export default function RegionAndBranches() {
   ) => {
     Modal.confirm({
       title: "Confirm Assignment",
+      okText: "Yes",
+      cancelText: "No",
       content: (
         <span style={{ fontSize: "13px" }}>
           Are you sure you want to change the{" "}
@@ -164,10 +176,6 @@ export default function RegionAndBranches() {
       limit: limit,
     });
   };
-
-  useEffect(() => {
-    fetchBranchManagers();
-  }, []);
 
   return (
     <div>
