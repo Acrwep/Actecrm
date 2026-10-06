@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Typography, Spin, Rate, Empty } from "antd";
+import { Row, Col, Typography, Spin, Rate, Empty, Tooltip } from "antd";
 import { Country, State } from "country-state-city";
 import moment from "moment";
-import { FaRegUser } from "react-icons/fa";
+import { FaRegUser, FaRegEye } from "react-icons/fa";
 import {
   MdPerson,
   MdPhone,
@@ -14,12 +14,16 @@ import {
 import { getLeadById } from "../ApiService/action";
 import CommonAvatar from "../Common/CommonAvatar";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CustomerHistory from "../Customers/CustomerHistory";
 
 const { Text } = Typography;
 
 export default function ViewLeadDetails({ leadData: initialData }) {
   const [leadData, setLeadData] = useState(initialData);
   const [loading, setLoading] = useState(false);
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
   useEffect(() => {
     if (initialData?.id) {
@@ -213,6 +217,69 @@ export default function ViewLeadDetails({ leadData: initialData }) {
             )}
           </Col>
           <Col span={6}>{renderField("Area", leadData.area_id)}</Col>
+          <Col span={6}>
+            <div style={{ marginBottom: "8px" }}>
+              <Text
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "2px",
+                  color: "#64748b",
+                  fontWeight: 500,
+                }}
+              >
+                Is Customer
+              </Text>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  alignItems: "center",
+                  marginTop: "2px",
+                }}
+              >
+                {leadData?.is_customer_reg === 1 ? (
+                  <>
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        color: "#2e7a07ff",
+                        fontSize: "13px",
+                      }}
+                    >
+                      Yes
+                    </span>
+                    <Tooltip
+                      placement="bottom"
+                      title="View Customer Track"
+                      className="leadtable_comments_tooltip"
+                    >
+                      <FaRegEye
+                        color="#333"
+                        size={14}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setSelectedCustomerId(leadData?.customer_id || null);
+                          setIsOpenCustomerHistoryDrawer(true);
+                        }}
+                      />
+                    </Tooltip>
+                  </>
+                ) : (
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "#dc2626",
+                      fontSize: "13px",
+                    }}
+                  >
+                    No
+                  </span>
+                )}
+              </div>
+            </div>
+          </Col>
         </Row>
       </div>
 
@@ -684,6 +751,15 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           <Empty description="No follow-up history found" />
         )}
       </div>
+
+      <CustomerHistory
+        customerId={selectedCustomerId}
+        isOpen={isOpenCustomerHistoryDrawer}
+        onClose={() => {
+          setIsOpenCustomerHistoryDrawer(false);
+          setSelectedCustomerId(null);
+        }}
+      />
     </div>
   );
 }
