@@ -305,30 +305,30 @@ export default function ViewLeadDetails({ leadData: initialData }) {
           <Col span={6}>
             {renderField("Assigned Branch", leadData.assigned_branch_name)}
           </Col>
-          {leadData?.assigned_branch_manager && (
+          {leadData?.assigned_branch_manager_name && (
             <Col span={6}>
               {renderField(
                 "Assigned Manager",
-                `${leadData.branch_manager_id} - ${leadData.assigned_branch_manager}`,
+                `${leadData.assigned_branch_manager_view_user_id} - ${leadData.assigned_branch_manager_name}`,
               )}
             </Col>
           )}
           <Col span={6}>
             {renderField(
               "Region Manager",
-              `${leadData.assigned_manager} - ${leadData.assigned_regional_manager}`,
+              `${leadData.assigned_region_manager_view_user_id} - ${leadData.assigned_region_manager_name}`,
             )}
           </Col>
           <Col span={6}>
             {renderField(
               "Assigned Executive",
-              `${leadData.lead_assigned_to_id} - ${leadData.lead_assigned_to_name}`,
+              `${leadData.lead_assigned_to_view_user_id} - ${leadData.lead_assigned_to_name}`,
             )}
           </Col>
           <Col span={6}>
             {renderField(
               "Lead Owner",
-              `${leadData?.user_id} - ${leadData.user_name}`,
+              `${leadData?.view_user_id} - ${leadData.user_name}`,
             )}
           </Col>
         </Row>
@@ -503,7 +503,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Communication:
                           </span>
                           <span
@@ -530,7 +530,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Mode:
                           </span>
                           <span
@@ -557,7 +557,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Interest Rate:
                           </span>
 
@@ -578,7 +578,7 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontSize: "11px", color: "gray" }}>
+                          <span className="viewlead_followup_history_sublabel">
                             Response Status:
                           </span>
                           <span
@@ -603,6 +603,42 @@ export default function ViewLeadDetails({ leadData: initialData }) {
                             {item.response_status || "-"}
                           </span>
                         </div>
+
+                        {item.next_follow_up_date &&
+                          item.next_follow_up_date !== "0001-01-01T00:00:00" &&
+                          !item.next_follow_up_date.startsWith("0001") && (
+                            <div className="viewlead_next_follow_up_container">
+                              <span className="viewlead_next_follow_up_label">
+                                Next Follow Up:
+                              </span>
+                              <span className="viewlead_next_follow_up_value">
+                                <MdEventNote size={12} />
+                                {moment(item.next_follow_up_date).format(
+                                  "MMM DD, YYYY",
+                                )}
+                                {item.next_followup_time &&
+                                  item.next_followup_time !==
+                                    "0001-01-01T00:00:00" &&
+                                  !item.next_followup_time.startsWith(
+                                    "0001",
+                                  ) && (
+                                    <span style={{ marginLeft: "2px" }}>
+                                      {moment(
+                                        item.next_followup_time,
+                                        "HH:mm:ss",
+                                      ).format("hh:mm A") !== "Invalid date"
+                                        ? moment(
+                                            item.next_followup_time,
+                                            "HH:mm:ss",
+                                          ).format("hh:mm A")
+                                        : moment(
+                                            item.next_followup_time,
+                                          ).format("hh:mm A")}
+                                    </span>
+                                  )}
+                              </span>
+                            </div>
+                          )}
                       </div>
 
                       {item.comments && (

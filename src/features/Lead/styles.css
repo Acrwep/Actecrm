@@ -2160,3 +2160,29 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
+.viewlead_followup_history_sublabel {
+  font-size: 11px;
+  color: gray;
+  font-weight: 600;
+}
+.viewlead_next_follow_up_container {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.viewlead_next_follow_up_label {
+  font-size: 11px;
+  color: gray;
+}
+
+.viewlead_next_follow_up_value {
+  font-size: 11px;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
