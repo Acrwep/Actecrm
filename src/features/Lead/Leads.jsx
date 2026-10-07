@@ -30,7 +30,7 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { MdFormatListNumbered, MdOutlineDateRange } from "react-icons/md";
 import { RxUpdate } from "react-icons/rx";
 import CommonTable from "../Common/CommonTable";
-import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
+import { FaWhatsapp } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
@@ -405,7 +405,7 @@ export default function Leads({
       title: "Candidate Name",
       key: "name",
       dataIndex: "name",
-      width: 170,
+      width: 160,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -414,12 +414,92 @@ export default function Leads({
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 200,
+      width: 160,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "phone", dataIndex: "phone", width: 160 },
+    {
+      title: "Mobile",
+      key: "phone",
+      dataIndex: "phone",
+      width: 150,
+      render: (text, record) => {
+        return (
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip
+              text={
+                text
+                  ? `${
+                      text
+                        ? record.phone_code.startsWith("+")
+                          ? record.phone_code
+                          : `+${record.phone_code}`
+                        : ""
+                    } ${text}`
+                  : "-"
+              }
+            />
+            {record.whatsapp && (
+              <Tooltip
+                title={
+                  <div className="whatsapp-tooltip-container">
+                    <div className="whatsapp-tooltip-icon-bg">
+                      <FaWhatsapp color="#25D366" size={14} />
+                    </div>
+                    <div className="whatsapp-tooltip-text-wrapper">
+                      <span className="whatsapp-tooltip-label">
+                        Chat on WhatsApp
+                      </span>
+                      <span className="whatsapp-tooltip-number">
+                        {`${
+                          record.whatsapp_phone_code
+                            ? record.whatsapp_phone_code.startsWith("+")
+                              ? record.whatsapp_phone_code
+                              : `+${record.whatsapp_phone_code}`
+                            : ""
+                        } ${record.whatsapp}`}
+                      </span>
+                    </div>
+                  </div>
+                }
+                color="#ffffff"
+                styles={{
+                  body: {
+                    padding: "8px 10px",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                    border: "1px solid #f3f4f6",
+                  },
+                }}
+              >
+                <FaWhatsapp
+                  color="#3c9111"
+                  size={14}
+                  style={{ cursor: "pointer", marginTop: "-3px" }}
+                  onClick={() => {
+                    const phoneCode = record.whatsapp_phone_code
+                      ? record.whatsapp_phone_code.startsWith("+")
+                        ? record.whatsapp_phone_code
+                        : `+${record.whatsapp_phone_code}`
+                      : "";
+
+                    const phoneNumber =
+                      `${phoneCode}${record.whatsapp}`.replace(/\D/g, "");
+
+                    window.open(
+                      `https://wa.me/${phoneNumber}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
+    },
     {
       title: "Orgin",
       key: "domain_origin",
@@ -3909,7 +3989,9 @@ export default function Leads({
             label="Region Manager"
             required={false}
             value={
-              regionManager.id ? `${regionManager?.view_id || regionManager.id} - ${regionManager.name}` : ""
+              regionManager.id
+                ? `${regionManager?.view_id || regionManager.id} - ${regionManager.name}`
+                : ""
             }
             error={""}
             height={"35px"}

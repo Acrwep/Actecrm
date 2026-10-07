@@ -650,8 +650,14 @@ const MakeAsCustomer = forwardRef(
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.phone
-                    ? clickedLeadItem.phone
+                  {clickedLeadItem?.phone
+                    ? `${
+                        clickedLeadItem?.phone_code
+                          ? clickedLeadItem.phone_code.startsWith("+")
+                            ? clickedLeadItem.phone_code
+                            : `+${clickedLeadItem.phone_code}`
+                          : ""
+                      } ${clickedLeadItem.phone}`
                     : "-"}
                 </p>
               </Col>
@@ -666,8 +672,14 @@ const MakeAsCustomer = forwardRef(
               </Col>
               <Col span={12}>
                 <p className="customerdetails_text">
-                  {clickedLeadItem && clickedLeadItem.whatsapp
-                    ? clickedLeadItem.whatsapp
+                  {clickedLeadItem?.whatsapp
+                    ? `${
+                        clickedLeadItem?.whatsapp_phone_code
+                          ? clickedLeadItem.whatsapp_phone_code.startsWith("+")
+                            ? clickedLeadItem.whatsapp_phone_code
+                            : `+${clickedLeadItem.whatsapp_phone_code}`
+                          : ""
+                      } ${clickedLeadItem.whatsapp}`
                     : "-"}
                 </p>
               </Col>
