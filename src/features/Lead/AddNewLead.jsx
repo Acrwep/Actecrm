@@ -119,6 +119,7 @@ const AddNewLead = forwardRef(
     const [leadSubSourceOptions, setLeadSubSourceOptions] = useState([]);
     const [leadSubSource, setLeadSubSource] = useState(null);
     const [leadSubSourceError, setLeadSubSourceError] = useState("");
+    const [leadSubSourceLoading, setLeadSubSourceLoading] = useState(false);
     const [referralName, setReferralName] = useState("");
     const [preferredMode, setPreferredMode] = useState(null);
     const [preferredBatch, setPreferredBatch] = useState(1);
@@ -505,7 +506,7 @@ const AddNewLead = forwardRef(
         setPreferredMode(liveLeadItem?.training?.includes("Classroom") ? 2 : 1);
         setLeadSource(4);
         setLeadSubSource(
-          liveLeadItem?.domain_origin?.includes("Google") ? 8 : null,
+          liveLeadItem?.domain_origin?.includes("Google") ? 8 : 3,
         );
         getLeadSubSourceData(4);
         liveLeadEmailValidator(liveLeadItem.email, liveLeadItem.phone);
@@ -765,6 +766,7 @@ const AddNewLead = forwardRef(
     };
 
     const getLeadSubSourceData = async (lead_source_id) => {
+      setLeadSubSourceLoading(true);
       const payload = {
         category_id: lead_source_id,
       };
@@ -775,6 +777,8 @@ const AddNewLead = forwardRef(
       } catch (error) {
         setLeadSubSourceOptions([]);
         console.log("response status error", error);
+      } finally {
+        setLeadSubSourceLoading(false);
       }
     };
 
@@ -995,6 +999,7 @@ const AddNewLead = forwardRef(
         "leadOwner",
         leadOwner.id,
       );
+
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setValidationTrigger(true);
@@ -1166,6 +1171,12 @@ const AddNewLead = forwardRef(
 
         return;
       }
+
+      if (leadSubSourceLoading) {
+        CommonMessage("warning", "Please wait until all fields are set.");
+        return;
+      }
+
       console.log("success");
       // return;
       //-----------------
@@ -1899,13 +1910,14 @@ const AddNewLead = forwardRef(
                       leadSource == 2 ||
                       leadSource == 3 ||
                       leadSource == 6 ||
-                      liveLeadItem?.domain_origin?.includes("Google")
+                      liveLeadItem
                     }
                     disableClearable={false}
                     height={"35px"}
                     labelFontSize={"11.5px"}
                     errorFontSize={"9px"}
                     labelMarginTop={"0px"}
+                    loading={leadSubSourceLoading}
                   />
                 </div>
 

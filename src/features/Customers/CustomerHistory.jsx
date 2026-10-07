@@ -1244,7 +1244,7 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
         width="64%"
         style={{ marginBottom: "20px", top: 10 }}
         className="customer_downloadform_modal"
-        zIndex={1100}
+        zIndex={1500}
         // centered={true}
         closeIcon={
           <span

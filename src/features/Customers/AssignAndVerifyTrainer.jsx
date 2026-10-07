@@ -146,6 +146,12 @@ const AssignAndVerifyTrainer = forwardRef(
 
             if (currentTrainerDetails) {
               setSelectedTrainerId(currentTrainerDetails.trainer_id);
+              setSelectedTrainerObject({
+                id: currentTrainerDetails.trainer_id,
+                name: currentTrainerDetails.trainer_name,
+                trainer_code: currentTrainerDetails.trainer_code,
+                trainer_type: currentTrainerDetails.trainer_type,
+              });
               setCommercial(currentTrainerDetails.commercial);
               setModeOfClass(currentTrainerDetails.mode_of_class);
               setAssignTrainerComments(currentTrainerDetails.comments);
@@ -920,13 +926,7 @@ const AssignAndVerifyTrainer = forwardRef(
                       }
                     >
                       <div style={{ padding: "0 0px" }}>
-                        <Row
-                          gutter={24}
-                          style={{
-                            marginTop: "12px",
-                            marginBottom: "12px",
-                          }}
-                        >
+                        <Row gutter={24}>
                           <Col span={6}>
                             {renderField(
                               "HR Name",

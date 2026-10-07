@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Row, Col } from "antd";
+import { Modal, Row, Col, Skeleton } from "antd";
 import moment from "moment";
 import CommonTable from "../Common/CommonTable";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -170,10 +170,17 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
       width="50%"
     >
       {trainerDetailsLoading ? (
-        <div
-          style={{ display: "flex", justifyContent: "center", padding: "40px" }}
-        >
-          <CommonSpinner />
+        <div style={{ padding: "10px 0" }}>
+          <Row gutter={[24, 24]}>
+            {Array.from({ length: 12 }).map((_, idx) => (
+              <Col span={6} key={idx}>
+                <Skeleton active title={{ width: "60%" }} paragraph={{ rows: 1, width: ["90%"] }} />
+              </Col>
+            ))}
+          </Row>
+          <div style={{ marginTop: "24px" }}>
+            <Skeleton active title={{ width: "30%" }} paragraph={{ rows: 3 }} />
+          </div>
         </div>
       ) : (
         <>

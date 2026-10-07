@@ -54,6 +54,7 @@ import CommonDnd from "../Common/CommonDnd";
 import CommonSelectField from "../Common/CommonSelectField";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function LiveLead({
   setLiveLeadCount,
@@ -388,12 +389,21 @@ export default function LiveLead({
     },
     {
       title: "Moved By",
-      key: "junk_by",
-      dataIndex: "junk_by",
+      key: "junk_by_user",
+      dataIndex: "junk_by_user",
       fixed: "right",
-      width: 140,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      align: "center",
+      width: 90,
+      render: (text, record) => {
+        const lead_executive = text
+          ? `${record.junk_by_view_user_id} - ${text}`
+          : text;
+        return (
+          <OverflowTooltip
+            title={lead_executive}
+            children={record.junk_by_view_user_id}
+          />
+        );
       },
     },
     {
@@ -883,15 +893,20 @@ export default function LiveLead({
                   return <EllipsisTooltip text={text} />;
                 },
               };
-            case "junk_by":
+            case "junk_by_user":
               return {
                 ...col,
                 title: "Moved By",
-                width: 120,
+                align: "center",
+                width: 90,
                 render: (text, record) => {
+                  const lead_executive = text
+                    ? `${record.junk_by_view_user_id} - ${text}`
+                    : text;
                   return (
-                    <EllipsisTooltip
-                      text={text ? `${text} - ${record?.junk_by_user}` : "-"}
+                    <OverflowTooltip
+                      title={lead_executive}
+                      children={record.junk_by_view_user_id}
                     />
                   );
                 },
@@ -1583,7 +1598,7 @@ export default function LiveLead({
           columns={tableColumns
             .filter((col) => {
               if (
-                (col.key === "junk_reason" || col.key === "junk_by") &&
+                (col.key === "junk_reason" || col.key === "junk_by_user") &&
                 selectedBucketRef.current !== "Trash"
               ) {
                 return false;
@@ -1607,7 +1622,7 @@ export default function LiveLead({
                   fixed: selectedBucketRef.current === "Trash" ? "" : "right",
                 };
               }
-              if (col.key === "junk_reason" || col.key === "junk_by") {
+              if (col.key === "junk_reason" || col.key === "junk_by_user") {
                 return {
                   ...col,
                   fixed: "right",

@@ -14,7 +14,16 @@ const DownloadTableAsCSV = (
 
   // Map columns and data to create a worksheet
   const worksheetData = [
-    columns.map((column) => column.title), // headers
+    columns.map((column) => {
+      if (column.dataIndex === "lead_assigned_to_name") return "Lead Executive";
+      if (column.title && typeof column.title === "object") {
+        if (column.title.props && column.title.props.title) {
+          return column.title.props.title;
+        }
+        return column.key || column.dataIndex;
+      }
+      return column.title;
+    }), // headers
     ...data.map((row) =>
       columns.map((column) => {
         // Handle nested in/out times
@@ -229,9 +238,9 @@ const DownloadTableAsCSV = (
         if (column.dataIndex === "lead_assigned_to_name") {
           const lName = row[column.dataIndex];
           if (!lName) return "-";
-          return row.lead_assigned_to_view_user_id
-            ? `${row.lead_assigned_to_view_user_id} - ${lName}`
-            : lName;
+          const viewUserId = row.lead_assigned_to_view_user_id;
+
+          return viewUserId ? `${viewUserId} - ${lName}` : lName;
         }
 
         if (column.dataIndex === "collected_by") {

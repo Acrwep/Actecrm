@@ -807,13 +807,7 @@ export default function AssignTrainerToCustomer({
                     }
                   >
                     <div style={{ padding: "0 0px" }}>
-                      <Row
-                        gutter={24}
-                        style={{
-                          marginTop: "12px",
-                          marginBottom: "12px",
-                        }}
-                      >
+                      <Row gutter={24}>
                         <Col span={6}>
                           {renderField(
                             "HR Name",
