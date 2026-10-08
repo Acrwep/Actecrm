@@ -727,7 +727,6 @@ export default function Receivables({
     }
     prevSelectedUserIdRef.current = stringifiedValue;
 
-    setLoading(true);
     try {
       const response = await getAllDownlineUsers(
         Array.isArray(value) && value.length > 0 ? value : loginUserId,
@@ -746,7 +745,6 @@ export default function Receivables({
         pageNumber: 1,
       });
     } catch (error) {
-      setLoading(false);
       console.log("all downlines error", error);
     }
   };

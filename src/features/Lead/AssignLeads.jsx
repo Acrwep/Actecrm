@@ -36,7 +36,6 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   getAllDownlineUsers,
-  getLeadAndFollowupCount,
   acknowledgeLead,
   getManualAssignLeads,
   getUsers,

@@ -26,10 +26,6 @@ export default function Accounts() {
     Received: true,
   });
 
-  useEffect(() => {
-    setVisitedBuckets((prev) => ({ ...prev, [activeBucket]: true }));
-  }, [activeBucket]);
-
   const fetchTableColumns = useCallback(async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = getLoginUserDetails
@@ -45,6 +41,10 @@ export default function Accounts() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    setVisitedBuckets((prev) => ({ ...prev, [activeBucket]: true }));
+  }, [activeBucket]);
 
   useEffect(() => {
     fetchTableColumns();
@@ -160,7 +160,9 @@ export default function Accounts() {
 
       <div>
         {visitedBuckets["Received"] && (
-          <div style={{ display: activeBucket === "Received" ? "block" : "none" }}>
+          <div
+            style={{ display: activeBucket === "Received" ? "block" : "none" }}
+          >
             <Received
               filterData={filterData}
               setReceivedCount={setReceivedCount}
@@ -174,7 +176,11 @@ export default function Accounts() {
         )}
 
         {visitedBuckets["Receivables"] && (
-          <div style={{ display: activeBucket === "Receivables" ? "block" : "none" }}>
+          <div
+            style={{
+              display: activeBucket === "Receivables" ? "block" : "none",
+            }}
+          >
             <Receivables
               filterData={filterData}
               setReceivableCount={setReceivableCount}
@@ -185,7 +191,11 @@ export default function Accounts() {
         )}
 
         {visitedBuckets["FeeHistory"] && (
-          <div style={{ display: activeBucket === "FeeHistory" ? "block" : "none" }}>
+          <div
+            style={{
+              display: activeBucket === "FeeHistory" ? "block" : "none",
+            }}
+          >
             <FeeHistory
               filterData={filterData}
               setFeeHistoryCount={setFeeHistoryCount}
@@ -195,16 +205,19 @@ export default function Accounts() {
           </div>
         )}
 
-        {permissions.includes("Show Refund Tab") && visitedBuckets["Refund"] && (
-          <div style={{ display: activeBucket === "Refund" ? "block" : "none" }}>
-            <Refund
-              filterData={filterData}
-              setRefundCount={setRefundCount}
-              allTableColumns={allTableColumns}
-              refreshTableColumns={fetchTableColumns}
-            />
-          </div>
-        )}
+        {permissions.includes("Show Refund Tab") &&
+          visitedBuckets["Refund"] && (
+            <div
+              style={{ display: activeBucket === "Refund" ? "block" : "none" }}
+            >
+              <Refund
+                filterData={filterData}
+                setRefundCount={setRefundCount}
+                allTableColumns={allTableColumns}
+                refreshTableColumns={fetchTableColumns}
+              />
+            </div>
+          )}
       </div>
     </div>
   );

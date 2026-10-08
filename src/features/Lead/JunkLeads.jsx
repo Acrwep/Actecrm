@@ -17,7 +17,6 @@ import {
   deleteJunkLeads,
   getAllDownlineUsers,
   getJunkLeads,
-  getLeadAndFollowupCount,
   getLiveLeads,
   moveLiveLeadToJunk,
 } from "../ApiService/action";
@@ -44,7 +43,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
   //usestates
   const [selectedDates, setSelectedDates] = useState([]);
   const filterValuesFromRedux = useSelector(
-    (state) => state.junkleadfiltervalues
+    (state) => state.junkleadfiltervalues,
   );
   const [filterType, setFilterType] = useState(1);
   const [searchValue, setSearchValue] = useState("");
@@ -226,7 +225,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
         ? filterValuesFromRedux.end_date
         : PreviousAndCurrentDate[1],
       filterValuesFromRedux.pageNumber,
-      filterValuesFromRedux.pageLimit
+      filterValuesFromRedux.pageLimit,
     );
 
     setTimeout(() => {
@@ -255,18 +254,18 @@ export default function JunkLeads({ setJunkLeadCount }) {
     startDate,
     endDate,
     pageNumber,
-    limit
+    limit,
   ) => {
     const payload = {
       ...(searchvalue && filterType == 1
         ? { phone: searchvalue }
         : searchvalue && filterType == 2
-        ? { name: searchvalue }
-        : searchvalue && filterType == 3
-        ? { email: searchvalue }
-        : searchvalue && filterType == 4
-        ? { course: searchvalue }
-        : {}),
+          ? { name: searchvalue }
+          : searchvalue && filterType == 3
+            ? { email: searchvalue }
+            : searchvalue && filterType == 4
+              ? { course: searchvalue }
+              : {}),
       start_date: startDate,
       end_date: endDate,
       page: pageNumber,
@@ -290,7 +289,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
         storeJunkLeadFilterValues({
           pageNumber: paginations.page,
           pageLimit: paginations.limit,
-        })
+        }),
       );
     } catch (error) {
       setLeadData([]);
@@ -310,7 +309,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
         searchValue: e.target.value,
         pageNumber: 1,
         pageLimit: pagination.limit,
-      })
+      }),
     );
     setTimeout(() => {
       setPagination({
@@ -321,7 +320,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
         selectedDates[0],
         selectedDates[1],
         1,
-        pagination.limit
+        pagination.limit,
       );
     }, 300);
   };
@@ -331,14 +330,14 @@ export default function JunkLeads({ setJunkLeadCount }) {
       storeJunkLeadFilterValues({
         pageNumber: page,
         pageLimit: limit,
-      })
+      }),
     );
     getJunkLeadsData(
       searchValue,
       selectedDates[0],
       selectedDates[1],
       page,
-      limit
+      limit,
     );
   };
 
@@ -370,7 +369,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
           selectedDates[0],
           selectedDates[1],
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -378,7 +377,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -403,7 +402,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
           selectedDates[0],
           selectedDates[1],
           pagination.page,
-          pagination.limit
+          pagination.limit,
         );
       }, 300);
     } catch (error) {
@@ -411,7 +410,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
       CommonMessage(
         "error",
         error?.response?.data?.details ||
-          "Something went wrong. Try again later"
+          "Something went wrong. Try again later",
       );
     }
   };
@@ -427,12 +426,12 @@ export default function JunkLeads({ setJunkLeadCount }) {
                     filterType == 1
                       ? "Search By Mobile"
                       : filterType == 2
-                      ? "Search By Name"
-                      : filterType == 3
-                      ? "Search by Email"
-                      : filterType == 4
-                      ? "Search by Course"
-                      : ""
+                        ? "Search By Name"
+                        : filterType == 3
+                          ? "Search by Email"
+                          : filterType == 4
+                            ? "Search by Course"
+                            : ""
                   }
                   width="100%"
                   height="33px"
@@ -452,14 +451,14 @@ export default function JunkLeads({ setJunkLeadCount }) {
                               searchValue: null,
                               pageNumber: 1,
                               pageLimit: pagination.limit,
-                            })
+                            }),
                           );
                           getJunkLeadsData(
                             null,
                             selectedDates[0],
                             selectedDates[1],
                             1,
-                            pagination.limit
+                            pagination.limit,
                           );
                         }}
                       >
@@ -498,7 +497,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
                             dispatch(
                               storeJunkLeadFilterValues({
                                 filterType: e.target.value,
-                              })
+                              }),
                             );
                             if (searchValue == "") {
                               return;
@@ -509,7 +508,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
                                   searchValue: "",
                                   pageNumber: 1,
                                   pageLimit: pagination.limit,
-                                })
+                                }),
                               );
                               setPagination({
                                 page: 1,
@@ -519,7 +518,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
                                 selectedDates[0],
                                 selectedDates[1],
                                 1,
-                                pagination.limit
+                                pagination.limit,
                               );
                             }
                           }}
@@ -562,7 +561,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
                       end_date: dates[1],
                       pageNumber: 1,
                       pageLimit: pagination.limit,
-                    })
+                    }),
                   );
                   setPagination({
                     page: 1,
@@ -572,7 +571,7 @@ export default function JunkLeads({ setJunkLeadCount }) {
                     dates[0],
                     dates[1],
                     1,
-                    pagination.limit
+                    pagination.limit,
                   );
                 }}
               />

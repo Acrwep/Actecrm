@@ -18,7 +18,6 @@ import { FiFilter } from "react-icons/fi";
 import {
   assignLiveLead,
   getAllDownlineUsers,
-  getLeadAndFollowupCount,
   getLiveLeads,
   getTableColumns,
   getUsers,

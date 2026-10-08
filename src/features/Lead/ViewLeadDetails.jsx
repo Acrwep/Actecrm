@@ -176,6 +176,81 @@ export default function ViewLeadDetails({ leadData: initialData }) {
         gap: "16px",
       }}
     >
+      {/* 5. Assignment */}
+      <div style={cardStyle}>
+        <HeaderTitle
+          icon={<MdAssignment size={18} color="#2563eb" />}
+          title="Assignment"
+        />
+        <Row gutter={24}>
+          <Col span={6}>
+            <div style={{ marginBottom: "8px" }}>
+              <Text
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "2px",
+                  color: "#64748b",
+                  fontWeight: 500,
+                }}
+              >
+                Is Re-Assigned
+              </Text>
+              <div style={{ marginTop: "4px" }}>
+                {leadData?.re_assigned_date ? (
+                  <div className="viewlead_iscustomer_badge_yes">
+                    <div className="viewlead_iscustomer_dot"></div>
+                    <span>Yes</span>
+                  </div>
+                ) : (
+                  <div className="viewlead_iscustomer_badge_no">
+                    <span>No</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Col>
+
+          {leadData?.re_assigned_date && (
+            <Col span={6}>
+              {renderField(
+                "Re-Assign Date",
+                formatDateTime(leadData.re_assigned_date),
+              )}
+            </Col>
+          )}
+          <Col span={6}>
+            {renderField("Assigned Branch", leadData.assigned_branch_name)}
+          </Col>
+          {leadData?.assigned_branch_manager_name && (
+            <Col span={6}>
+              {renderField(
+                "Assigned Manager",
+                `${leadData.assigned_branch_manager_view_user_id} - ${leadData.assigned_branch_manager_name}`,
+              )}
+            </Col>
+          )}
+          <Col span={6}>
+            {renderField(
+              "Region Manager",
+              `${leadData.assigned_region_manager_view_user_id} - ${leadData.assigned_region_manager_name}`,
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Assigned Executive",
+              `${leadData.lead_assigned_to_view_user_id} - ${leadData.lead_assigned_to_name}`,
+            )}
+          </Col>
+          <Col span={6}>
+            {renderField(
+              "Lead Owner",
+              `${leadData?.view_user_id} - ${leadData.user_name}`,
+            )}
+          </Col>
+        </Row>
+      </div>
       {/* 1. Basic Information */}
       <div style={cardStyle}>
         <HeaderTitle
@@ -329,53 +404,6 @@ export default function ViewLeadDetails({ leadData: initialData }) {
             {renderField(
               "Expected Join Date",
               formatDateTime(leadData.expected_join_date, "DD MMM YYYY"),
-            )}
-          </Col>
-        </Row>
-      </div>
-
-      {/* 5. Assignment */}
-      <div style={cardStyle}>
-        <HeaderTitle
-          icon={<MdAssignment size={18} color="#2563eb" />}
-          title="Assignment"
-        />
-        <Row gutter={24}>
-          {leadData?.re_assigned_date && (
-            <Col span={6}>
-              {renderField(
-                "Re-Assign Date",
-                formatDateTime(leadData.re_assigned_date),
-              )}
-            </Col>
-          )}
-          <Col span={6}>
-            {renderField("Assigned Branch", leadData.assigned_branch_name)}
-          </Col>
-          {leadData?.assigned_branch_manager_name && (
-            <Col span={6}>
-              {renderField(
-                "Assigned Manager",
-                `${leadData.assigned_branch_manager_view_user_id} - ${leadData.assigned_branch_manager_name}`,
-              )}
-            </Col>
-          )}
-          <Col span={6}>
-            {renderField(
-              "Region Manager",
-              `${leadData.assigned_region_manager_view_user_id} - ${leadData.assigned_region_manager_name}`,
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Assigned Executive",
-              `${leadData.lead_assigned_to_view_user_id} - ${leadData.lead_assigned_to_name}`,
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Lead Owner",
-              `${leadData?.view_user_id} - ${leadData.user_name}`,
             )}
           </Col>
         </Row>

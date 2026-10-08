@@ -745,7 +745,6 @@ export default function Received({
     }
     prevSelectedUserIdRef.current = stringifiedValue;
 
-    setLoading(true);
     try {
       const response = await getAllDownlineUsers(
         Array.isArray(value) && value.length > 0 ? value : loginUserId,
@@ -761,7 +760,6 @@ export default function Received({
       });
       fetchReceivedPaymentsData({ downliners: downliners_ids, pageNumber: 1 });
     } catch (error) {
-      setLoading(false);
       console.log("all downlines error", error);
     }
   };

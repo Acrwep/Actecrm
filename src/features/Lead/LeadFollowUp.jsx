@@ -26,7 +26,6 @@ import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import {
   downloadLeadFollowUps,
   getAllDownlineUsers,
-  getLeadAndFollowupCount,
   getLeadFollowUps,
   getLeadFollowUpsCountByUserIds,
   getTableColumns,
