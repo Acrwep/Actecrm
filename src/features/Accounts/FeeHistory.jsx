@@ -464,8 +464,6 @@ export default function FeeHistory({
       });
     } catch (error) {
       console.log("all downlines error", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -578,9 +576,7 @@ export default function FeeHistory({
         total: totalElements,
         totalPages: paginations?.totalPages || 0,
       });
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     } catch (error) {
       setFeeHistoryData([]);
       setRegionCounts(null);
@@ -608,6 +604,7 @@ export default function FeeHistory({
     }
     prevSelectedUserIdRef.current = stringifiedValue;
 
+    setLoading(true);
     try {
       const response = await getAllDownlineUsers(
         Array.isArray(value) && value.length > 0 ? value : loginUserId,
@@ -624,9 +621,8 @@ export default function FeeHistory({
       });
       setPagination({ ...pagination, page: 1 });
     } catch (error) {
-      console.log("all downlines error", error);
-    } finally {
       setLoading(false);
+      console.log("all downlines error", error);
     }
   };
 

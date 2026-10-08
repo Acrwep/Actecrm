@@ -320,7 +320,14 @@ export default function Settings() {
         (f) => f.section === "Accounts Module",
       );
 
-      const feesPendingCustomOrder = ["Accounts Page", "Add Part Payment"];
+      const feesPendingCustomOrder = [
+        "Accounts Page",
+        "Finance Verify",
+        "Add Part Payment",
+        "Show Refund Tab",
+        "Refund Approval",
+        "Refund Completion",
+      ];
 
       const feesPendingSortedArray = feesPendingModule.sort(
         (a, b) =>

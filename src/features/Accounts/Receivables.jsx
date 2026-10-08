@@ -611,8 +611,6 @@ export default function Receivables({
       });
     } catch (error) {
       console.log("all downlines error", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -674,10 +672,7 @@ export default function Receivables({
         total: paginations.total,
         totalPages: paginations.totalPages,
       });
-
-      setTimeout(() => {
-        setLoading(false);
-      }, 300);
+      setLoading(false);
     } catch (error) {
       setCustomersData([]);
       setRegionCounts(null);
@@ -732,6 +727,7 @@ export default function Receivables({
     }
     prevSelectedUserIdRef.current = stringifiedValue;
 
+    setLoading(true);
     try {
       const response = await getAllDownlineUsers(
         Array.isArray(value) && value.length > 0 ? value : loginUserId,
@@ -750,6 +746,7 @@ export default function Receivables({
         pageNumber: 1,
       });
     } catch (error) {
+      setLoading(false);
       console.log("all downlines error", error);
     }
   };

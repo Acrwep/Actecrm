@@ -1600,7 +1600,9 @@ export default function PageAccess({
                         );
                       }}
                     >
-                      {item.permission_name}
+                      {item.permission_name === "Finance Verify"
+                        ? "Payment Verify"
+                        : item.permission_name}
                     </Checkbox>{" "}
                   </Col>
                 );
