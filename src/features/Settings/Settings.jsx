@@ -300,6 +300,8 @@ export default function Settings() {
         "Review Verify",
         "Others Checkbox",
         "Download Customers Data",
+        "Refund Approval",
+        "Refund Completion",
       ];
 
       const customersSortedArray = customersModule.sort(

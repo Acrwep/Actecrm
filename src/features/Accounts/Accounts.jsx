@@ -7,6 +7,8 @@ import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import { getTableColumns } from "../ApiService/action";
 import { useSelector } from "react-redux";
+import Refund from "./Refund";
+import "./styles.css";
 
 export default function Accounts() {
   const location = useLocation();
@@ -15,13 +17,16 @@ export default function Accounts() {
   const [receivedCount, setReceivedCount] = useState(0);
   const [receivableCount, setReceivableCount] = useState(0);
   const [feeHistoryCount, setFeeHistoryCount] = useState(0);
+  const [refundCount, setRefundCount] = useState(0);
   const [allTableColumns, setAllTableColumns] = useState(null);
 
   const permissions = useSelector((state) => state.userpermissions);
 
   const fetchTableColumns = useCallback(async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = getLoginUserDetails ? JSON.parse(getLoginUserDetails) : null;
+    const convertAsJson = getLoginUserDetails
+      ? JSON.parse(getLoginUserDetails)
+      : null;
     if (convertAsJson?.user_id) {
       try {
         const response = await getTableColumns(convertAsJson.user_id);
@@ -63,6 +68,8 @@ export default function Accounts() {
       window.dispatchEvent(new CustomEvent("refreshReceivablesTab"));
     } else if (activeBucket === "FeeHistory") {
       window.dispatchEvent(new CustomEvent("refreshFeeHistoryTab"));
+    } else if (activeBucket === "Refund") {
+      window.dispatchEvent(new CustomEvent("refreshRefundTab"));
     }
   };
 
@@ -106,7 +113,7 @@ export default function Accounts() {
             >
               <p>{`Receivable (${receivableCount})`}</p>
             </div>
-            
+
             <div
               className={
                 activeBucket === "FeeHistory"
@@ -116,6 +123,17 @@ export default function Accounts() {
               onClick={() => setActiveBucket("FeeHistory")}
             >
               <p>{`Fees History (${feeHistoryCount})`}</p>
+            </div>
+
+            <div
+              className={
+                activeBucket === "Refund"
+                  ? "accounts_active_refund_container"
+                  : "accounts_refund_container"
+              }
+              onClick={() => setActiveBucket("Refund")}
+            >
+              <p>{`Refund (${refundCount})`}</p>
             </div>
           </div>
 
@@ -131,36 +149,44 @@ export default function Accounts() {
       </div>
 
       <div>
-        <div
-          style={{ display: activeBucket === "Received" ? "block" : "none" }}
-        >
+        {activeBucket === "Received" && (
           <Received
             filterData={filterData}
             setReceivedCount={setReceivedCount}
+            setReceivableCount={setReceivableCount}
+            setFeeHistoryCount={setFeeHistoryCount}
+            setRefundCount={setRefundCount}
             allTableColumns={allTableColumns}
             refreshTableColumns={fetchTableColumns}
           />
-        </div>
-        <div
-          style={{ display: activeBucket === "Receivables" ? "block" : "none" }}
-        >
+        )}
+
+        {activeBucket === "Receivables" && (
           <Receivables
             filterData={filterData}
             setReceivableCount={setReceivableCount}
             allTableColumns={allTableColumns}
             refreshTableColumns={fetchTableColumns}
           />
-        </div>
-        <div
-          style={{ display: activeBucket === "FeeHistory" ? "block" : "none" }}
-        >
+        )}
+
+        {activeBucket === "FeeHistory" && (
           <FeeHistory
             filterData={filterData}
             setFeeHistoryCount={setFeeHistoryCount}
             allTableColumns={allTableColumns}
             refreshTableColumns={fetchTableColumns}
           />
-        </div>
+        )}
+
+        {activeBucket === "Refund" && (
+          <Refund
+            filterData={filterData}
+            setRefundCount={setRefundCount}
+            allTableColumns={allTableColumns}
+            refreshTableColumns={fetchTableColumns}
+          />
+        )}
       </div>
     </div>
   );

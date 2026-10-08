@@ -4,12 +4,9 @@ import {
   Col,
   Tooltip,
   Flex,
-  Radio,
   Button,
   Drawer,
   Checkbox,
-  Skeleton,
-  Upload,
   Divider,
   Modal,
 } from "antd";
@@ -17,11 +14,16 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { FiFilter } from "react-icons/fi";
+import { FaRegEye } from "react-icons/fa";
+import { LuFileClock } from "react-icons/lu";
+import { SlActionUndo } from "react-icons/sl";
+import { RiRefund2Fill } from "react-icons/ri";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import {
   formatToBackendIST,
   getPreviousYearDec26ToCurrentYearDec25,
+  selectValidator,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
@@ -30,7 +32,11 @@ import {
   getCustomerById,
   getBranches,
   getUsers,
-  accountsOverallCounts,
+  getRefundCustomers,
+  updateCustomerStatus,
+  inserCustomerTrack,
+  addRefundCustomers,
+  getRefundCustomer,
 } from "../ApiService/action";
 import { useSelector } from "react-redux";
 import CommonTable from "../Common/CommonTable";
@@ -40,37 +46,35 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonDnd from "../Common/CommonDnd";
 import ParticularCustomerDetails from "../Customers/ParticularCustomerDetails";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import FinanceVerify from "../Customers/FinanceVerify";
-import CommonSpinner from "../Common/CommonSpinner";
-import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSelectField from "../Common/CommonSelectField";
 import "./styles.css";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import OverflowTooltip from "../Common/OverflowTooltip";
-import CustomerOverview from "../Customers/CustomerOverview";
+import CustomerHistory from "../Customers/CustomerHistory";
+import CommonSpinner from "../Common/CommonSpinner";
 import CustomerOverviewSkeleton from "../Customers/CustomerOverviewSkeleton";
+import CustomerOverview from "../Customers/CustomerOverview";
+import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
+import CommonInputField from "../Common/CommonInputField";
 
-export default function Received({
+export default function Refund({
   filterData,
   setReceivedCount,
-  setReceivableCount,
-  setFeeHistoryCount,
-  setRefundCount,
   allTableColumns,
   refreshTableColumns,
 }) {
   const mounted = useRef(false);
-  const financeVerifyRef = useRef();
   const searchTimeoutRef = useRef(null);
   const [paymentType, setPaymentType] = useState("NEW");
   const [statusCount, setStatusCount] = useState({});
+  const [regionCounts, setRegionCounts] = useState(null);
 
   useEffect(() => {
     if (filterData && mounted.current && allDownliners.length > 0) {
       const startDate = new Date(filterData.startDate);
       const endDate = new Date(filterData.endDate);
       setSelectedDates([startDate, endDate]);
-      fetchReceivedPaymentsData({});
+      fetchRefundCustomersData({});
     }
   }, [filterData]);
 
@@ -80,20 +84,22 @@ export default function Received({
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [searchValue, setSearchValue] = useState("");
+  const [status, setStatus] = useState("");
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
   const [receivedPaymentsData, setReceivedPaymentsData] = useState([]);
-  const [customerDetails, setCustomerDetails] = useState(null);
-  const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [selectedDates, setSelectedDates] = useState([]);
-  const [totalAmountOfReceived, setTotalAmountOfReceived] = useState(null);
   //verify payment
+  const [selectedRefundCustomerDetails, setSelectedRefundCustomerDetails] =
+    useState(null);
   const [isStatusUpdateDrawer, setIsStatusUpdateDrawer] = useState(false);
   const [drawerContentStatus, setDrawerContentStatus] = useState("");
   const [isStatusUpdateDrawerLoading, setIsStatusUpdateDrawerLoading] =
     useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  const [isOpenCustomerDetailsModal, setIsOpenCustomerDetailsModal] =
-    useState(false);
   const [loginUserId, setLoginUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [downloadLoading, setDownloadLoading] = useState(false);
@@ -108,7 +114,28 @@ export default function Received({
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [branchOptions, setBranchOptions] = useState([]);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
-
+  //history and details drawer
+  const [customerDetails, setCustomerDetails] = useState(null);
+  const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  //approve usestates
+  const [isOpenApproveModal, setIsOpenApproveModal] = useState(false);
+  const [approveButtonLoading, setApproveButtonLoading] = useState(false);
+  // revert usestates
+  const [isOpenRevertModal, setIsOpenRevertModal] = useState(false);
+  //refund fields usestates
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundAmountError, setRefundAmountError] = useState("");
+  const [paymentDate, setPaymentDate] = useState(null);
+  const [paymentDateError, setPaymentDateError] = useState("");
+  const [paymentMode, setPaymentMode] = useState("");
+  const [paymentModeError, setPaymentModeError] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [transactionIdError, setTransactionIdError] = useState("");
+  const [validationTrigger, setValidationTrigger] = useState("");
+  //refund completed usestates
+  const [refundedDetails, setRefundedDetails] = useState(null);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -119,148 +146,19 @@ export default function Received({
 
   const nonChangeColumns = [
     {
-      title: "Entry Date",
-      key: "entry_date",
-      dataIndex: "entry_date",
+      title: "Date Of Joining",
+      key: "date_of_joining",
+      dataIndex: "date_of_joining",
       width: 120,
-      fixed: "left",
+      defaultSortOrder: "descend", // Optional
       render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
-    {
-      title: "Paid Date",
-      key: "paid_date",
-      dataIndex: "paid_date",
-      width: 120,
-      fixed: "left",
-      render: (text) => {
-        return <p>{moment(text).format("DD/MM/YYYY")}</p>;
-      },
-    },
-    ...(paymentType === "REPAYMENT"
-      ? [
-          {
-            title: "T.Days Count",
-            key: "total_days_taken",
-            dataIndex: "total_days_taken",
-            width: 120,
-            sorter: (a, b) =>
-              moment(a.total_days_taken).valueOf() -
-              moment(b.total_days_taken).valueOf(),
-            sortDirections: ["ascend", "descend"],
-          },
-        ]
-      : []),
-    {
-      title: "Region",
-      key: "region_name",
-      dataIndex: "region_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Place Of Sale",
-      key: "branch_name",
-      dataIndex: "branch_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Mode Of Training",
-      key: "mode_of_class",
-      dataIndex: "mode_of_class",
-      width: 125,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Place Of Service",
-      key: "place_of_service_name",
-      dataIndex: "place_of_service_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    ...(permissions.includes("Show Lead Executive Id")
-      ? [
-          {
-            title: "Collected By",
-            key: "collected_by",
-            dataIndex: "collected_by",
-            width: 100,
-            render: (text, record) => {
-              const user = `${record.collected_by_view_user_id} - ${text}`;
-              return (
-                <div style={{ textAlign: "center", width: "100%" }}>
-                  <OverflowTooltip
-                    title={user}
-                    children={record.collected_by_view_user_id}
-                  />
-                </div>
-              );
-            },
-          },
-        ]
-      : []),
-    // {
-    //   title: "Collection Type",
-    //   key: "collection_type",
-    //   dataIndex: "collection_type",
-    //   width: 120,
-    //   render: (text) => {
-    //     if (text) {
-    //       const type = text.toLowerCase();
-    //       if (type.includes("new")) {
-    //         return <div className="transactionreport_new_type">{text}</div>;
-    //       } else if (type.includes("lmj")) {
-    //         return <div className="transactionreport_lmj_type">{text}</div>;
-    //       } else if (type.includes("cmj")) {
-    //         return <div className="transactionreport_cmj_type">{text}</div>;
-    //       } else if (type.includes("pmj")) {
-    //         return <div className="transactionreport_pmj_type">{text}</div>;
-    //       } else {
-    //         <p>{text}</p>;
-    //       }
-    //     } else {
-    //       return <p>-</p>;
-    //     }
-    //   },
-    // },
-    // {
-    //   title: "Student Id",
-    //   key: "student_id",
-    //   dataIndex: "student_id",
-    //   width: 120,
-    //   render: (text, record) => {
-    //     const user_id = text ? text : record?.cus_name ? record?.cus_name : "-";
-    //     return (
-    //       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-    //         <EllipsisTooltip text={user_id} />
-    //         {user_id && (
-    //           <FaRegEye
-    //             size={13}
-    //             className="trainers_action_icons"
-    //             style={{ cursor: "pointer" }}
-    //             onClick={() => {
-    //               getParticularCustomerDetails(record?.customer_id, true);
-    //             }}
-    //           />
-    //         )}
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       title: "Candidate Name / ID",
-      key: "cus_name",
-      dataIndex: "cus_name",
+      key: "name",
+      dataIndex: "name",
       width: 160,
       render: (text, record) => {
         return (
@@ -276,21 +174,44 @@ export default function Received({
       },
     },
     {
-      title: "Course",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 120,
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 160,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
     {
-      title: "Total Fees (With GST)",
-      key: "total_course_fees",
-      dataIndex: "total_course_fees",
-      width: 155,
+      title: "Mobile",
+      key: "phone",
+      dataIndex: "phone",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <EllipsisTooltip
+            text={
+              text
+                ? `${
+                    text
+                      ? record.phonecode.startsWith("+")
+                        ? record.phonecode
+                        : `+${record.phonecode}`
+                      : ""
+                  } ${text}`
+                : "-"
+            }
+          />
+        );
+      },
+    },
+    {
+      title: "Course ",
+      key: "course_name",
+      dataIndex: "course_name",
+      width: 150,
       render: (text) => {
-        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -304,8 +225,8 @@ export default function Received({
     },
     {
       title: "Balance",
-      key: "balance_due",
-      dataIndex: "balance_due",
+      key: "balance_amount",
+      dataIndex: "balance_amount",
       width: 95,
       render: (text) => {
         const amount = Number(text);
@@ -319,83 +240,189 @@ export default function Received({
             }}
           >
             {text !== null && text !== undefined
-              ? `₹${amount.toLocaleString("en-IN")}`
+              ? amount.toLocaleString("en-IN")
               : "-"}
           </p>
         );
       },
     },
     {
-      title: "Transaction Mode",
-      key: "transacted_to",
-      dataIndex: "transacted_to",
-      width: 135,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Transaction To",
-      key: "bank_name",
-      dataIndex: "bank_name",
-      width: 120,
-      render: (text) => {
-        return <EllipsisTooltip text={text ? text : "-"} />;
-      },
-    },
-    {
-      title: "Payment Status",
-      key: "payment_status",
-      dataIndex: "payment_status",
-      width: 140,
-      fixed: "right",
+      title: "Sale Executive",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 110,
       render: (text, record) => {
+        const salse_executive = `${record.lead_assigned_to_view_user_id} - ${text}`;
         return (
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {text === "Verify Pending" ? (
-              <div>
-                <Tooltip
-                  placement="top"
-                  title="Verify the Payment"
-                  trigger={["hover", "click"]}
-                >
-                  <Button
-                    className="customers_status_awaitfinance_button"
-                    onClick={() => {
-                      if (!permissions.includes("Finance Verify")) {
-                        console.log("eeeeeeeeeeeeeeeee");
-                        CommonMessage("error", "Access Denied");
-                        return;
-                      }
-                      getParticularCustomerDetails(record?.customer_id);
-                      setDrawerContentStatus("Finance Verify");
-                      setIsStatusUpdateDrawer(true);
-                    }}
-                  >
-                    Payment Verify
-                  </Button>
-                </Tooltip>
-              </div>
-            ) : (
-              <Tooltip
-                placement="top"
-                title="Update Payment"
-                trigger={["hover", "click"]}
-              >
-                <Button
-                  className="trainers_rejected_button"
-                  onClick={() => {
-                    getParticularCustomerDetails(record?.customer_id);
-                    setDrawerContentStatus("Update Payment");
-                    setIsStatusUpdateDrawer(true);
-                  }}
-                >
-                  {text}
-                </Button>
-              </Tooltip>
-            )}
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={salse_executive}
+              children={record.lead_assigned_to_view_user_id}
+            />
           </div>
         );
+      },
+    },
+
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      width: 110,
+      fixed: "right",
+      render: (text, record) => {
+        return {
+          children: (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Tooltip
+                placement="top"
+                title={
+                  record?.status === "Refund Request"
+                    ? "Click to Approve"
+                    : "Click to Pay"
+                }
+                trigger={["hover", "click"]}
+              >
+                {record?.status === "Refund Request" ? (
+                  <Button
+                    className="trainers_pending_button"
+                    onClick={() => {
+                      if (permissions.includes("Refund Approval")) {
+                        setIsOpenApproveModal(true);
+                        setSelectedRefundCustomerDetails(record);
+                      } else {
+                        CommonMessage("error", "Access Denied");
+                      }
+                    }}
+                  >
+                    Approve
+                  </Button>
+                ) : record?.status === "Refund Ready to Pay" ? (
+                  <Button
+                    className="trainers_verified_button"
+                    onClick={() => {
+                      if (record?.status == "Refund Ready to Pay") {
+                        if (permissions.includes("Refund Completion")) {
+                          setSelectedRefundCustomerDetails(record);
+                          setIsStatusUpdateDrawer(true);
+                          getParticularCustomerDetails(record.id);
+                        } else {
+                          CommonMessage("error", "Access Denied");
+                        }
+                      } else {
+                        CommonMessage("warning", "Refund not approved yet");
+                      }
+                    }}
+                  >
+                    Pay
+                  </Button>
+                ) : (
+                  <p style={{ marginLeft: "6px" }}>-</p>
+                )}
+              </Tooltip>
+
+              {record?.status === "Refund Ready to Pay" && (
+                <Tooltip
+                  placement="top"
+                  title={"Move to Requested"}
+                  trigger={["hover", "click"]}
+                >
+                  <SlActionUndo
+                    size={14}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      if (
+                        permissions.includes("Refund Request") ||
+                        permissions.includes("Refund Completion")
+                      ) {
+                        setIsOpenRevertModal(true);
+                        setSelectedRefundCustomerDetails(record);
+                      }
+                    }}
+                  />
+                </Tooltip>
+              )}
+            </div>
+          ),
+        };
+      },
+    },
+
+    {
+      title: "Details",
+      key: "details",
+      dataIndex: "details",
+      fixed: "right",
+      width: 100,
+      render: (text, record) => {
+        return {
+          children: (
+            <div className="trainers_actionbuttonContainer">
+              <Tooltip
+                placement="top"
+                title="View Candidate Details"
+                trigger={["hover", "click"]}
+              >
+                <FaRegEye
+                  size={15}
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenDetailsDrawer(true);
+                    setSelectedRefundCustomerDetails(record);
+                  }}
+                  style={{
+                    visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                  }}
+                />
+              </Tooltip>
+              {record?.status === "Refunded" &&
+                statusRef.current === "Refunded" && (
+                  <Tooltip
+                    placement="left"
+                    title="View Refund Details"
+                    trigger={["hover", "click"]}
+                  >
+                    <RiRefund2Fill
+                      size={15}
+                      className="trainers_action_icons"
+                      style={{ cursor: "pointer", marginLeft: "4px" }}
+                      onClick={() => {
+                        setSelectedRefundCustomerDetails(record);
+                        setIsStatusUpdateDrawer(true);
+                        setDrawerContentStatus("View Refund Details");
+                        getParticularCustomerDetails(record.id, true);
+                      }}
+                    />
+                  </Tooltip>
+                )}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                  justifyContent: "center",
+                }}
+              >
+                <Tooltip
+                  placement="left"
+                  title="View Candidate Track"
+                  trigger={["hover", "click"]}
+                >
+                  <LuFileClock
+                    size={15}
+                    className="trainers_action_icons"
+                    style={{ cursor: "pointer", marginLeft: "4px" }}
+                    onClick={() => {
+                      setSelectedRefundCustomerDetails(record);
+                      setIsOpenCustomerHistoryDrawer(true);
+                    }}
+                  />
+                </Tooltip>
+              </div>
+            </div>
+          ),
+          // props: { rowSpan: flatRecord.rowSpan },
+        };
       },
     },
   ];
@@ -435,7 +462,7 @@ export default function Received({
     if (allTableColumns !== null) {
       processTableColumnsData(allTableColumns);
     }
-  }, [allTableColumns, paymentType]);
+  }, [allTableColumns]);
 
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -458,7 +485,7 @@ export default function Received({
         return updateTableColumnsData(newCols);
       }
 
-      const filterPage = data.find((f) => f.page_name === "Received");
+      const filterPage = data.find((f) => f.page_name === "Refund");
 
       if (!filterPage) {
         setUpdateTableId(null);
@@ -494,21 +521,7 @@ export default function Received({
 
       nonChangeColumns.forEach((c) => {
         if (!filteredBackendColumns.some((b) => b.key === c.key)) {
-          if (c.key === "total_days_taken") {
-            const paidDateIndex = filteredBackendColumns.findIndex(
-              (b) => b.key === "paid_date",
-            );
-            if (paidDateIndex !== -1) {
-              filteredBackendColumns.splice(paidDateIndex + 1, 0, {
-                ...c,
-                isChecked: true,
-              });
-            } else {
-              filteredBackendColumns.push({ ...c, isChecked: true });
-            }
-          } else {
-            filteredBackendColumns.push({ ...c, isChecked: true });
-          }
+          filteredBackendColumns.push({ ...c, isChecked: true });
         }
       });
 
@@ -539,30 +552,11 @@ export default function Received({
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setSubUsers(downlineUsers);
-      getAllDownlineUsersData(convertAsJson?.user_id, true);
+      getAllDownlineUsersData(convertAsJson?.user_id);
     }
   }, [childUsers]);
 
-  useEffect(() => {
-    const handleRefreshReceived = () => {
-      if (allDownliners.length > 0) {
-        fetchReceivedPaymentsData({});
-      }
-    };
-    window.addEventListener("refreshReceived", handleRefreshReceived);
-    return () => {
-      window.removeEventListener("refreshReceived", handleRefreshReceived);
-    };
-  }, [
-    selectedDates,
-    searchValue,
-    allDownliners,
-    pagination.page,
-    pagination.limit,
-    paymentType,
-  ]);
-
-  const getAllDownlineUsersData = async (user_id, is_initial_call) => {
+  const getAllDownlineUsersData = async (user_id) => {
     try {
       const response = await getAllDownlineUsers(user_id);
       console.log("all downlines response", response);
@@ -580,18 +574,14 @@ export default function Received({
       const endDate = filterData?.endDate
         ? new Date(filterData.endDate)
         : PreviousYearDec26ToCurrentDate[1];
-
-      if (is_initial_call) {
-        getAccountsOverAllCounts(downliners_ids);
-      }
-      fetchReceivedPaymentsData({
-        payment_type: "NEW",
+      fetchRefundCustomersData({
         startDate: startDate,
         endDate: endDate,
         searchvalue: "",
         regionId: null,
         branchId: null,
         downliners: downliners_ids,
+        status: null,
         pageNumber: 1,
         limit: 10,
       });
@@ -600,30 +590,8 @@ export default function Received({
     }
   };
 
-  const getAccountsOverAllCounts = async (downliners) => {
-    const PreviousYearDec26ToCurrentDate =
-      getPreviousYearDec26ToCurrentYearDec25();
-    const payload = {
-      start_date: PreviousYearDec26ToCurrentDate[0],
-      end_date: PreviousYearDec26ToCurrentDate[1],
-      user_ids: downliners,
-    };
-    try {
-      const response = await accountsOverallCounts(payload);
-      console.log("get accounts overall counts response", response);
-      setReceivableCount(response?.data?.pending_fees_total || 0);
-      setFeeHistoryCount(response?.data?.fee_history_total || 0);
-      setRefundCount(response?.data?.refund_total || 0);
-    } catch (error) {
-      console.log("get accounts overall counts error", error);
-    }
-  };
-
-  const fetchReceivedPaymentsData = (overrides = {}) => {
-    getPaymentRecievedData(
-      overrides.payment_type !== undefined
-        ? overrides.payment_type
-        : paymentType,
+  const fetchRefundCustomersData = (overrides = {}) => {
+    getRefundCustomersData(
       overrides.startDate !== undefined
         ? overrides.startDate
         : selectedDates?.[0] || null,
@@ -634,6 +602,7 @@ export default function Received({
       overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
       overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
       overrides.downliners !== undefined ? overrides.downliners : allDownliners,
+      overrides.status !== undefined ? overrides.status : status,
       overrides.pageNumber !== undefined
         ? overrides.pageNumber
         : pagination?.page || 1,
@@ -641,14 +610,14 @@ export default function Received({
     );
   };
 
-  const getPaymentRecievedData = async (
-    payment_type,
+  const getRefundCustomersData = async (
     startDate,
     endDate,
     searchvalue,
     regionId,
     branchId,
     downliners,
+    status,
     pageNumber,
     limit,
   ) => {
@@ -658,29 +627,24 @@ export default function Received({
     const to_date = formatToBackendIST(endDate);
 
     const payload = {
-      ...(payment_type && { payment_type }),
       start_date: moment(from_date).format("YYYY-MM-DD"),
       end_date: moment(to_date).format("YYYY-MM-DD"),
       ...(searchvalue && { search_filter: searchvalue }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
       user_ids: downliners,
+      ...(status && { status: status }),
       page: pageNumber,
       limit: limit,
     };
     try {
-      const response = await getPaymentRecievedList(payload);
-      console.log("received payments response", response);
-      setReceivedPaymentsData(response?.data?.result?.data || []);
-      const status_count = response?.data?.result?.status_count || {};
-      setStatusCount(status_count);
-      setTotalAmountOfReceived(
-        response?.data?.result?.page_total_paid_amount || null,
-      );
-      const paginations = response?.data?.result?.pagination;
-      setReceivedCount(
-        Number(status_count?.new_payment) + Number(status_count?.re_payment),
-      );
+      const response = await getRefundCustomers(payload);
+      console.log("refund customers response", response);
+      setReceivedPaymentsData(response?.data?.customers || []);
+      setRegionCounts(response?.data?.region_counts || null);
+      setStatusCount(response?.data?.refund_counts || null);
+      const paginations = response?.data?.pagination;
+
       setPagination({
         page: paginations.page,
         limit: paginations.limit,
@@ -690,14 +654,15 @@ export default function Received({
       setLoading(false);
     } catch (error) {
       setReceivedPaymentsData([]);
-      setTotalAmountOfReceived(null);
+      setRegionCounts(null);
+      setStatusCount(null);
       setLoading(false);
-      console.log("received payments error", error);
+      console.log("refund customers error", error);
     }
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    fetchReceivedPaymentsData({ pageNumber: page, limit: limit });
+    fetchRefundCustomersData({ pageNumber: page, limit: limit });
   };
 
   const handleSearch = (e) => {
@@ -711,7 +676,7 @@ export default function Received({
 
     if (!input) {
       setPagination((prev) => ({ ...prev, page: 1 }));
-      fetchReceivedPaymentsData({
+      fetchRefundCustomersData({
         searchvalue: "",
         pageNumber: 1,
         limit: pagination.limit,
@@ -721,7 +686,7 @@ export default function Received({
 
     searchTimeoutRef.current = setTimeout(() => {
       setPagination((prev) => ({ ...prev, page: 1 }));
-      fetchReceivedPaymentsData({
+      fetchRefundCustomersData({
         searchvalue: input,
         pageNumber: 1,
         limit: pagination.limit,
@@ -758,7 +723,7 @@ export default function Received({
       setPagination({
         page: 1,
       });
-      fetchReceivedPaymentsData({ downliners: downliners_ids, pageNumber: 1 });
+      fetchRefundCustomersData({ downliners: downliners_ids, pageNumber: 1 });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -781,28 +746,6 @@ export default function Received({
 
       return [...updatedDrawerColumns, ...hiddenColumns];
     });
-  };
-
-  //get particular customer full details
-  const getParticularCustomerDetails = async (
-    customer_Id,
-    isOpenModal = false,
-  ) => {
-    setIsStatusUpdateDrawerLoading(true);
-    try {
-      const response = await getCustomerById(customer_Id);
-      console.log("particular customer response", response);
-      const customer_details = response?.data?.data;
-      setCustomerDetails(customer_details);
-      if (isOpenModal) {
-        setIsOpenCustomerDetailsModal(true);
-      }
-    } catch (error) {
-      console.log("getcustomer by id error", error);
-      setCustomerDetails(null);
-    } finally {
-      setIsStatusUpdateDrawerLoading(false);
-    }
   };
 
   const handlePreview = async (file) => {
@@ -847,7 +790,7 @@ export default function Received({
       }
     } catch (error) {
       setBranchOptions([]);
-      console.log("response status error", error);
+      console.log("get branches error", error);
     }
   };
 
@@ -865,6 +808,156 @@ export default function Received({
     } catch (error) {
       setSubUsers([]);
       console.log("get all users error", error);
+    }
+  };
+
+  //get particular customer full details
+  const getParticularCustomerDetails = async (customer_Id, is_refunded) => {
+    setIsStatusUpdateDrawerLoading(true);
+    try {
+      const response = await getCustomerById(customer_Id);
+      console.log("particular customer response", response);
+      const customer_details = response?.data?.data;
+      setCustomerDetails(customer_details);
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setCustomerDetails(null);
+    } finally {
+      if (is_refunded) {
+        getRefundCustomerDetails(customer_Id);
+      } else {
+        setIsStatusUpdateDrawerLoading(false);
+      }
+    }
+  };
+
+  const getRefundCustomerDetails = async (customer_Id) => {
+    try {
+      const response = await getRefundCustomer(customer_Id);
+      console.log("refund customer response", response);
+      setRefundedDetails(response?.data?.data || null);
+    } catch (error) {
+      console.log("getcustomer by id error", error);
+      setRefundedDetails(null);
+    } finally {
+      setIsStatusUpdateDrawerLoading(false);
+    }
+  };
+
+  const handleRefund = async () => {
+    setValidationTrigger(true);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
+    const refundAmountValidate = selectValidator(refundAmount);
+    const paymentDateValidate = selectValidator(paymentDate);
+    const paymentModeValidate = selectValidator(paymentMode);
+    const transactionIdValidate = selectValidator(transactionId);
+
+    setRefundAmountError(refundAmountValidate);
+    setPaymentDateError(paymentDateValidate);
+    setPaymentModeError(paymentModeValidate);
+    setTransactionIdError(transactionIdValidate);
+
+    if (
+      refundAmountValidate ||
+      paymentDateValidate ||
+      paymentModeValidate ||
+      transactionIdValidate
+    ) {
+      CommonMessage("error", "Please fill all mandatory fields");
+      return;
+    }
+
+    setApproveButtonLoading(true);
+
+    const payload = {
+      customer_id: selectedRefundCustomerDetails?.id,
+      refund_amount: refundAmount,
+      payment_mode: paymentMode,
+      paid_date: formatToBackendIST(paymentDate),
+      created_date: formatToBackendIST(new Date()),
+      paid_by: convertAsJson?.user_id,
+      transaction_id: transactionId,
+    };
+    try {
+      await addRefundCustomers(payload);
+      handleCustomerStatus("Refunded");
+
+      formReset();
+    } catch (error) {
+      setApproveButtonLoading(false);
+      console.log("move to refunded error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleCustomerStatus = async (updatestatus, isRevert = false) => {
+    setApproveButtonLoading(true);
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+
+    const customer_ids = [
+      {
+        customer_id: selectedRefundCustomerDetails.id,
+        status: updatestatus,
+        updated_at: formatToBackendIST(new Date()),
+        updated_by: converAsJson?.user_id || "",
+      },
+    ];
+
+    const payload = { customer_ids };
+    try {
+      await updateCustomerStatus(payload);
+      CommonMessage(
+        "success",
+        isRevert
+          ? "Refund Approval Reverted Successfully"
+          : updatestatus === "Refund Ready to Pay"
+            ? "Refund Approved Successfully"
+            : "Moved to Refunded Successfully",
+      );
+      handleCustomerTrack(isRevert ? "Reverted Refund Approval" : updatestatus);
+    } catch (error) {
+      setApproveButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleCustomerTrack = async (updatestatus) => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+
+    const customers = [
+      {
+        customer_id: selectedRefundCustomerDetails.id,
+        status:
+          updatestatus === "Refund Ready to Pay"
+            ? "Refund Approved"
+            : updatestatus,
+        updated_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+        status_date: formatToBackendIST(new Date()),
+      },
+    ];
+
+    const payload = { customers };
+
+    try {
+      await inserCustomerTrack(payload);
+      formReset();
+      fetchRefundCustomersData({});
+    } catch (error) {
+      setApproveButtonLoading(false);
+      console.log("customer track error", error);
     }
   };
 
@@ -909,9 +1002,23 @@ export default function Received({
 
   const formReset = () => {
     setIsOpenDetailsDrawer(false);
-    setCustomerDetails(null);
-    setDrawerContentStatus("");
+    setIsOpenCustomerHistoryDrawer(false);
+    setIsOpenApproveModal(false);
+    setIsOpenRevertModal(false);
+    setApproveButtonLoading(false);
     setIsStatusUpdateDrawer(false);
+    setDrawerContentStatus("");
+    setSelectedRefundCustomerDetails(null);
+    setCustomerDetails(null);
+    setValidationTrigger(false);
+    setRefundAmount("");
+    setRefundAmountError("");
+    setPaymentDate(null);
+    setPaymentDateError("");
+    setPaymentMode("");
+    setPaymentModeError("");
+    setTransactionId("");
+    setTransactionIdError("");
   };
 
   const handleRefresh = () => {
@@ -922,7 +1029,7 @@ export default function Received({
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
-    setPaymentType("NEW");
+    setStatus("");
     const PreviousYearDec26ToCurrentDate =
       getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousYearDec26ToCurrentDate);
@@ -931,9 +1038,8 @@ export default function Received({
 
   useEffect(() => {
     const triggerRefresh = () => handleRefresh();
-    window.addEventListener("refreshReceivedTab", triggerRefresh);
-    return () =>
-      window.removeEventListener("refreshReceivedTab", triggerRefresh);
+    window.addEventListener("refreshRefundTab", triggerRefresh);
+    return () => window.removeEventListener("refreshRefundTab", triggerRefresh);
   });
 
   return (
@@ -974,7 +1080,7 @@ export default function Received({
                           setPagination({
                             page: 1,
                           });
-                          fetchReceivedPaymentsData({
+                          fetchRefundCustomersData({
                             searchvalue: "",
                             pageNumber: 1,
                           });
@@ -1028,7 +1134,7 @@ export default function Received({
                       setPagination({
                         page: 1,
                       });
-                      fetchReceivedPaymentsData({
+                      fetchRefundCustomersData({
                         regionId: value,
                         branchId: null,
                         downliners: defaultAllDownliners,
@@ -1062,7 +1168,7 @@ export default function Received({
                       setPagination({
                         page: 1,
                       });
-                      fetchReceivedPaymentsData({
+                      fetchRefundCustomersData({
                         branchId: value,
                         downliners: defaultAllDownliners,
                         page: 1,
@@ -1091,7 +1197,7 @@ export default function Received({
             )}
             <Col flex="1.5 1 0%">
               <div style={{ position: "relative" }}>
-                <p className="accounts_datepicket_label">Entry Date</p>
+                <p className="accounts_datepicket_label">Joining Date</p>
                 <CommonMuiCustomDatePicker
                   width="100%"
                   value={selectedDates}
@@ -1100,7 +1206,7 @@ export default function Received({
                     setPagination({
                       page: 1,
                     });
-                    fetchReceivedPaymentsData({
+                    fetchRefundCustomersData({
                       startDate: dates[0],
                       endDate: dates[1],
                       pageNumber: 1,
@@ -1162,37 +1268,37 @@ export default function Received({
               >
                 {[
                   {
-                    label: "New",
-                    value: "NEW",
-                    baseColor: "#0f8753",
-                    count: statusCount?.new_payment || 0,
+                    label: "Requested",
+                    value: "Refund Request",
+                    baseColor: "#607d8b",
+                    count: statusCount?.refund_request_count || 0,
                   },
                   {
-                    label: "Repayment",
-                    value: "REPAYMENT",
+                    label: "Ready to Pay",
+                    value: "Refund Ready to Pay",
                     baseColor: "#ffa502",
-                    count: statusCount?.re_payment || 0,
+                    count: statusCount?.refund_ready_to_pay_count || 0,
                   },
                   {
-                    label: "Rejected",
-                    value: "REJECTED",
-                    baseColor: "#e11d48",
-                    count: statusCount?.rejected || 0,
+                    label: "Refunded",
+                    value: "Refunded",
+                    baseColor: "#3c9111",
+                    count: statusCount?.refunded_count || 0,
                   },
                 ].map((bucket) => {
-                  const isActive = paymentType === bucket.value;
+                  const isActive = status === bucket.value;
                   const baseColor = bucket.baseColor;
                   return (
                     <div
                       key={bucket.label}
                       onClick={() => {
-                        if (paymentType == bucket?.value) {
+                        if (status == bucket?.value) {
                           return;
                         }
-                        setPaymentType(bucket.value);
+                        setStatus(bucket.value);
                         setPagination({ ...pagination, page: 1 });
-                        fetchReceivedPaymentsData({
-                          payment_type: bucket.value,
+                        fetchRefundCustomersData({
+                          status: bucket.value,
                           pageNumber: 1,
                         });
                       }}
@@ -1231,7 +1337,7 @@ export default function Received({
                   <p className="livelead_badge_text">
                     Hub{" "}
                     <span className="livelead_badge_count">
-                      {statusCount?.hub ?? "-"}
+                      {regionCounts?.hub_region ?? "-"}
                     </span>
                   </p>
                 </div>
@@ -1244,7 +1350,7 @@ export default function Received({
                   <p className="livelead_badge_text">
                     Chennai{" "}
                     <span className="livelead_badge_count">
-                      {statusCount?.chennai ?? "-"}
+                      {regionCounts?.chennai_region ?? "-"}
                     </span>
                   </p>
                 </div>
@@ -1257,7 +1363,7 @@ export default function Received({
                   <p className="livelead_badge_text">
                     Bangalore{" "}
                     <span className="livelead_badge_count">
-                      {statusCount?.bangalore ?? "-"}
+                      {regionCounts?.bangalore_region ?? "-"}
                     </span>
                   </p>
                 </div>
@@ -1273,26 +1379,6 @@ export default function Received({
               </span>
             </p>
           </div> */}
-              </div>
-            </Col>
-            <Col
-              span={12}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-              }}
-            >
-              <div
-                className="overall_pending_amount_card"
-                style={{ padding: "8px 16px" }}
-              >
-                <span className="overall_pending_amount_label">
-                  Total Amount to Be Verified:
-                </span>
-                <span className="overall_pending_amount_value">
-                  ₹{Number(totalAmountOfReceived)?.toLocaleString("en-IN") || 0}
-                </span>
               </div>
             </Col>
           </Row>
@@ -1335,7 +1421,7 @@ export default function Received({
                       }
                       setPaymentType(bucket.value);
                       setPagination({ ...pagination, page: 1 });
-                      fetchReceivedPaymentsData({
+                      fetchRefundCustomersData({
                         payment_type: bucket.value,
                         pageNumber: 1,
                       });
@@ -1355,27 +1441,6 @@ export default function Received({
               })}
             </Flex>
           </Col>
-
-          <Col
-            span={12}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-            }}
-          >
-            <div
-              className="overall_pending_amount_card"
-              style={{ padding: "8px 16px" }}
-            >
-              <span className="overall_pending_amount_label">
-                Total Amount to Be Verified:
-              </span>
-              <span className="overall_pending_amount_value">
-                ₹{Number(totalAmountOfReceived)?.toLocaleString("en-IN") || 0}
-              </span>
-            </div>
-          </Col>
         </Row>
       )}
 
@@ -1383,12 +1448,24 @@ export default function Received({
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{
-            x: tableColumns.reduce(
-              (total, col) => total + (col.width || 150),
-              0,
-            ),
+            x: (status === "Refunded"
+              ? tableColumns
+                  .filter((col) => col.key !== "action")
+                  .map((col) =>
+                    col.key === "details" ? { ...col, width: 110 } : col,
+                  )
+              : tableColumns
+            ).reduce((total, col) => total + (col.width || 150), 0),
           }}
-          columns={tableColumns}
+          columns={
+            status === "Refunded" || status === ""
+              ? tableColumns
+                  .filter((col) => col.key !== "action")
+                  .map((col) =>
+                    col.key === "details" ? { ...col, width: 110 } : col,
+                  )
+              : tableColumns
+          }
           dataSource={receivedPaymentsData}
           dataPerPage={10}
           loading={loading}
@@ -1480,7 +1557,7 @@ export default function Received({
                 const payload = {
                   user_id: convertAsJson?.user_id,
                   id: updateTableId,
-                  page_name: "Received",
+                  page_name: "Refund",
                   column_names: columns,
                 };
 
@@ -1499,19 +1576,34 @@ export default function Received({
           </div>
         </div>
       </Drawer>
+
+      {/* Customer Details Drawer */}
       <Drawer
         title="Customer Details"
         open={isOpenDetailsDrawer}
         onClose={formReset}
-        width="45%"
+        width="50%"
         style={{ position: "relative" }}
       >
         {isOpenDetailsDrawer ? (
-          <ParticularCustomerDetails customerId={customerDetails?.id} />
+          <ParticularCustomerDetails
+            customerId={selectedRefundCustomerDetails?.id}
+          />
         ) : (
           ""
         )}
       </Drawer>
+
+      {/* Customer History Drawer */}
+      <CustomerHistory
+        customerId={selectedRefundCustomerDetails?.id}
+        isOpen={isOpenCustomerHistoryDrawer}
+        onClose={() => {
+          setIsOpenCustomerHistoryDrawer(false);
+          setSelectedRefundCustomerDetails(null);
+        }}
+      />
+
       <Drawer
         title={"Update Status"}
         open={isStatusUpdateDrawer}
@@ -1519,11 +1611,7 @@ export default function Received({
         width="50%"
         style={{
           position: "relative",
-          paddingBottom:
-            drawerContentStatus === "Finance Verify" ||
-            drawerContentStatus === "Update Payment"
-              ? "0px"
-              : "65px",
+          paddingBottom: "65px",
         }}
         className="customer_statusupdate_drawer"
       >
@@ -1535,25 +1623,199 @@ export default function Received({
 
             <Divider className="customer_statusupdate_divider" />
 
-            {drawerContentStatus === "Finance Verify" ||
-            drawerContentStatus === "Update Payment" ? (
-              <FinanceVerify
-                ref={financeVerifyRef}
-                customerDetails={customerDetails}
-                drawerContentStatus={drawerContentStatus}
-                callgetCustomersApi={() => {
-                  formReset();
-                  fetchReceivedPaymentsData({});
-                  window.dispatchEvent(new CustomEvent("refreshReceivables"));
-                  window.dispatchEvent(new CustomEvent("refreshFeesHistory"));
-                }}
-              />
+            {drawerContentStatus === "View Refund Details" ? (
+              <div style={{ padding: "4px 24px" }}>
+                <div className="refunded-details-container">
+                  <p className="refunded-details-title">Refunded Details:</p>
+
+                  <Row gutter={[16, 8]} style={{ marginTop: "8px" }}>
+                    {[
+                      {
+                        label: "Refunded Amount",
+                        value: refundedDetails?.refund_amount || "-",
+                      },
+                      {
+                        label: "Transaction Id",
+                        value: refundedDetails?.transaction_id || "-",
+                      },
+                      {
+                        label: "Paid Date",
+                        value: refundedDetails.paid_date
+                          ? moment(refundedDetails.paid_date).format(
+                              "DD/MM/YYYY",
+                            )
+                          : "-",
+                      },
+                      {
+                        label: "Paid By",
+                        value: refundedDetails.paid_by_user_id
+                          ? `${refundedDetails.paid_by_view_user_id} - ${refundedDetails.paid_by_name}`
+                          : "-",
+                      },
+                      {
+                        label: "Payment Mode",
+                        value: refundedDetails?.payment_mode || "-",
+                      },
+                    ].map((item, index) => (
+                      <Col span={12} key={index}>
+                        <div
+                          style={{
+                            fontSize: "12.5px",
+                            display: "flex",
+                            flexWrap: "wrap",
+                            alignItems: "flex-start",
+                            gap: "6px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              textTransform: "capitalize",
+                              minWidth: "140px",
+                            }}
+                          >
+                            {item.label}:
+                          </span>
+                          <span
+                            style={{
+                              color: "#333",
+                            }}
+                          >
+                            {item.value || "-"}
+                          </span>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+              </div>
             ) : (
-              ""
+              <div style={{ padding: "4px 24px" }}>
+                <p
+                  style={{
+                    fontWeight: 600,
+                    color: "#333",
+                    fontSize: "14px",
+                  }}
+                >
+                  Add Details
+                </p>
+
+                <Row
+                  gutter={[12, 24]}
+                  style={{ marginTop: "12px", marginBottom: "40px" }}
+                >
+                  <Col span={8}>
+                    <CommonInputField
+                      label={"Refund Amount"}
+                      required={true}
+                      type="number"
+                      fontSize={"11px"}
+                      height={"33px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"0px"}
+                      onChange={(e) => {
+                        setRefundAmount(e.target.value);
+                        if (validationTrigger) {
+                          setRefundAmountError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={refundAmount}
+                      error={refundAmountError}
+                      errorFontSize={"9px"}
+                    />
+                  </Col>
+
+                  <Col span={8}>
+                    <CommonMuiDatePicker
+                      label={"Payment Date"}
+                      required={true}
+                      height={"33px"}
+                      fontSize={"11px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"0px"}
+                      iconSize={"14px"}
+                      onChange={(value) => {
+                        setPaymentDate(value);
+                        if (validationTrigger) {
+                          setPaymentDateError(selectValidator(value));
+                        }
+                      }}
+                      value={paymentDate}
+                      error={paymentDateError}
+                      errorFontSize={"9px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonSelectField
+                      label={"Payment Mode"}
+                      required={true}
+                      height={"33px"}
+                      fontSize={"11px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"0px"}
+                      options={[
+                        { id: "Bank - NEFT/IMPS", name: "Bank - NEFT/IMPS" },
+                        { id: "UPI", name: "UPI" },
+                      ]}
+                      onChange={(e) => {
+                        setPaymentMode(e.target.value);
+                        if (validationTrigger) {
+                          setPaymentModeError(selectValidator(e.target.value));
+                        }
+                      }}
+                      value={paymentMode}
+                      error={paymentModeError}
+                      errorFontSize={"9px"}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <CommonInputField
+                      label={"Reference Id"}
+                      required={true}
+                      fontSize={"11px"}
+                      height={"33px"}
+                      labelFontSize={"11px"}
+                      labelMarginTop={"0px"}
+                      onChange={(e) => {
+                        setTransactionId(e.target.value);
+                        if (validationTrigger) {
+                          setTransactionIdError(
+                            selectValidator(e.target.value),
+                          );
+                        }
+                      }}
+                      value={transactionId}
+                      error={transactionIdError}
+                      errorFontSize={"9px"}
+                    />
+                  </Col>
+                </Row>
+              </div>
             )}
           </>
         )}
+
+        {drawerContentStatus != "View Refund Details" && (
+          <div className="leadmanager_tablefiler_footer">
+            <div className="leadmanager_submitlead_buttoncontainer">
+              {approveButtonLoading ? (
+                <button className="users_adddrawer_loadingcreatebutton">
+                  <CommonSpinner />
+                </button>
+              ) : (
+                <button
+                  className="users_adddrawer_createbutton"
+                  onClick={handleRefund}
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </Drawer>
+
       {/* profile image modal */}
       <Modal
         open={previewOpen}
@@ -1564,12 +1826,105 @@ export default function Received({
         <img alt="preview" style={{ width: "100%" }} src={previewImage} />
       </Modal>
 
-      {/* customer details modal */}
-      <DraggableStudentModal
-        open={isOpenCustomerDetailsModal}
-        onClose={() => setIsOpenCustomerDetailsModal(false)}
-        customerDetails={customerDetails}
-      />
+      {/* approval confirm modal */}
+      <Modal
+        open={isOpenApproveModal}
+        onCancel={() => {
+          setIsOpenApproveModal(false);
+          setSelectedRefundCustomerDetails(null);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Approve the Refund for customer{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            {selectedRefundCustomerDetails?.name || ""}
+          </span>
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenApproveModal(false);
+              setSelectedRefundCustomerDetails(null);
+            }}
+          >
+            No
+          </Button>
+          {approveButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleCustomerStatus("Refund Ready to Pay");
+              }}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
+
+      {/* revert confirm modal */}
+      <Modal
+        open={isOpenRevertModal}
+        onCancel={() => {
+          setIsOpenRevertModal(false);
+          setSelectedRefundCustomerDetails(null);
+        }}
+        footer={false}
+        width="30%"
+        zIndex={1100}
+      >
+        <p className="customer_classcompletemodal_heading">Are you sure?</p>
+
+        <p className="customer_classcompletemodal_text">
+          You Want To Revert the Refund Approval for customer{" "}
+          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
+            {selectedRefundCustomerDetails?.name || ""}
+          </span>
+        </p>
+        <div className="customer_classcompletemodal_button_container">
+          <Button
+            className="customer_classcompletemodal_cancelbutton"
+            onClick={() => {
+              setIsOpenRevertModal(false);
+              setSelectedRefundCustomerDetails(null);
+            }}
+          >
+            No
+          </Button>
+          {approveButtonLoading ? (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_loading_okbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              className="customer_classcompletemodal_okbutton"
+              onClick={() => {
+                handleCustomerStatus("Refund Request", true);
+              }}
+            >
+              Yes
+            </Button>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

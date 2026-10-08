@@ -423,7 +423,7 @@ export default function Leads({
       title: "Mobile",
       key: "phone",
       dataIndex: "phone",
-      width: 150,
+      width: 140,
       render: (text, record) => {
         return (
           <div className="customers_candidatename_container">
@@ -445,7 +445,7 @@ export default function Leads({
                 title={
                   <div className="whatsapp-tooltip-container">
                     <div className="whatsapp-tooltip-icon-bg">
-                      <FaWhatsapp color="#25D366" size={14} />
+                      <FaWhatsapp color="#fff" size={15} />
                     </div>
                     <div className="whatsapp-tooltip-text-wrapper">
                       <span className="whatsapp-tooltip-label">
@@ -466,16 +466,16 @@ export default function Leads({
                 color="#ffffff"
                 styles={{
                   body: {
-                    padding: "8px 10px",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                    padding: "8px 14px",
+                    borderRadius: "10px",
+                    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
                     border: "1px solid #f3f4f6",
                   },
                 }}
               >
                 <FaWhatsapp
                   color="#3c9111"
-                  size={14}
+                  size={15}
                   style={{ cursor: "pointer", marginTop: "-3px" }}
                   onClick={() => {
                     const phoneCode = record.whatsapp_phone_code

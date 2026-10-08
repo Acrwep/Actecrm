@@ -561,7 +561,9 @@ button:focus-visible {
 .trainers_ongoing_existing_container,
 .trainers_active_ongoing_existing_container,
 .trainers_ongoing_new_container,
-.trainers_active_ongoing_new_container {
+.trainers_active_ongoing_new_container,
+.accounts_refund_container,
+.accounts_active_refund_container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -596,7 +598,8 @@ button:focus-visible {
 .trainers_stage3_container:active,
 .trainers_stage4_container:active,
 .trainers_ongoing_existing_container:active,
-.trainers_ongoing_new_container:active {
+.trainers_ongoing_new_container:active,
+.accounts_refund_container:active {
   transform: translateY(0) !important;
 }
 
@@ -647,7 +650,9 @@ button:focus-visible {
 .trainers_ongoing_existing_container p,
 .trainers_active_ongoing_existing_container p,
 .trainers_ongoing_new_container p,
-.trainers_active_ongoing_new_container p {
+.trainers_active_ongoing_new_container p,
+.accounts_refund_container p,
+.accounts_active_refund_container p {
   margin: 0 !important;
 }
 /* Global Ant Design Collapse Beautiful UI Overrides */

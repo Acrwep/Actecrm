@@ -197,6 +197,7 @@ const AddNewLead = forwardRef(
     const [responseStatusError, setResponseStatusError] = useState(null);
     const [interestRate, setInterestRate] = useState(5);
     const [comments, setComments] = useState("");
+    const [commentsError, setCommentsError] = useState("");
     const [validationTrigger, setValidationTrigger] = useState(false);
 
     //add course usestates
@@ -1055,6 +1056,7 @@ const AddNewLead = forwardRef(
           : communicationStatus && contactMode != 6
             ? selectValidator(nxtFollowupDate)
             : "";
+      const commentsValidate = addressValidator(comments);
       if (email && emailAndMobileValidation.email == 0) {
         emailValidate = " is already exist";
       }
@@ -1097,6 +1099,7 @@ const AddNewLead = forwardRef(
       setNxtFollowupDateError(nxtFollowupDateValidate);
       setRegionError(regionIdValidate);
       setBranchError(branchValidate);
+      setCommentsError(commentsValidate);
 
       if (
         nameValidate ||
@@ -1116,7 +1119,8 @@ const AddNewLead = forwardRef(
         followUpStatusIdValidate ||
         nxtFollowupDateValidate ||
         regionIdValidate ||
-        branchValidate
+        branchValidate ||
+        commentsValidate
       ) {
         console.log({
           nameValidate,
@@ -1137,6 +1141,7 @@ const AddNewLead = forwardRef(
           nxtFollowupDateValidate,
           regionIdValidate,
           branchValidate,
+          commentsValidate,
         });
 
         setTimeout(() => {
@@ -2753,8 +2758,9 @@ const AddNewLead = forwardRef(
                     value={comments}
                     onChange={(e) => {
                       setComments(e.target.value);
+                      setCommentsError(addressValidator(e.target.value));
                     }}
-                    error={""}
+                    error={commentsError ? `Comments ${commentsError}` : ""}
                     disabled={contactMode == 6}
                   />
                 </div>

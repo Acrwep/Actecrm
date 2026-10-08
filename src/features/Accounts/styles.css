@@ -5,3 +5,31 @@
   font-size: 11px;
   color: gray;
 }
+
+.accounts_refund_container {
+  border: 1px solid #9333ea66;
+  background-color: #9333ea15;
+  color: #9333ea;
+}
+
+.accounts_active_refund_container {
+  border: 1px solid #9333ea;
+  background-color: #9333ea;
+  color: #fff;
+}
+
+.refunded-details-container {
+  margin-bottom: 12px;
+  border: 1px solid #f0f0f0;
+  padding: 8px 10px 10px;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.refunded-details-title {
+  font-weight: 500;
+  font-size: 12px;
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e0e0e0;
+}

@@ -1610,7 +1610,7 @@ export default function Customers() {
                       ""
                     )}
 
-                    {classPercent > 50 &&
+                    {classPercent > 25 &&
                       (record.status === "Class Going" ||
                         record.status === "Passedout process" ||
                         record.status === "Completed") && (
@@ -1760,7 +1760,7 @@ export default function Customers() {
                 //     </Button>
                 //   </div>
                 // ):
-                text === "Form Pending" ? (
+                text === "Form Pending" || text === "Refunded" ? (
                   <div>
                     <Button className="customers_status_formpending_button">
                       {text}
@@ -1780,10 +1780,14 @@ export default function Customers() {
                       Payment Verify
                     </Button>
                   </div>
-                ) : text === "Awaiting Verify" || text === "Hold" ? (
+                ) : text === "Awaiting Verify" ||
+                  text === "Hold" ||
+                  text === "Refund Ready to Pay" ? (
                   <div>
                     <Button className="customers_status_awaitverify_button">
-                      {text}
+                      {text === "Refund Ready to Pay"
+                        ? "Ready for Refund"
+                        : text}
                     </Button>
                   </div>
                 ) : text === "Awaiting Trainer" ? (
@@ -1804,10 +1808,10 @@ export default function Customers() {
                       {text}
                     </Button>
                   </div>
-                ) : text === "Awaiting Class" ? (
+                ) : text === "Awaiting Class" || text === "Refund Request" ? (
                   <div>
                     <Button className="customers_status_awaitingclass_button">
-                      {text}
+                      {text === "Refund Request" ? "Refund Requested" : text}
                     </Button>
                   </div>
                 ) : text === "Class Scheduled" ? (
@@ -3755,7 +3759,7 @@ export default function Customers() {
       </div>
 
       <Drawer
-        title="Customer Details"
+        title="Candidate Details"
         open={isOpenDetailsDrawer}
         onClose={() => {
           setIsOpenDetailsDrawer(false);

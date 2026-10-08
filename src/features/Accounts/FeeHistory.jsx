@@ -570,9 +570,7 @@ export default function FeeHistory({
         response?.data?.result?.pagination || response?.data?.pagination || {};
 
       const totalElements = paginations?.total || resultData.length;
-      if (setFeeHistoryCount) {
-        setFeeHistoryCount(totalElements);
-      }
+      setFeeHistoryCount(totalElements);
 
       setPagination({
         page: paginations?.page || pageNumber,

@@ -905,6 +905,15 @@ export const getAdmissions = async (payload) => {
   }
 };
 
+export const accountsOverallCounts = async (payload) => {
+  try {
+    const response = await api.post("/api/accountsOverallCounts", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getPendingFeesCustomers = async (payload) => {
   try {
     const response = await api.post("/api/pendingFeesListV1", payload);
@@ -917,6 +926,15 @@ export const getPendingFeesCustomers = async (payload) => {
 export const getPaymentRecievedList = async (payload) => {
   try {
     const response = await api.post("/api/recievedList", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRefundCustomers = async (payload) => {
+  try {
+    const response = await api.post(`/api/refundList`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -2148,6 +2166,26 @@ export const getFeeHistory = async (payload) => {
 export const getTrainerBankAccounts = async (payload) => {
   try {
     const response = await api.post(`/api/getTrainerBankAccounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+//refund
+export const addRefundCustomers = async (payload) => {
+  try {
+    const response = await api.post(`/api/addRefundCustomers`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRefundCustomer = async (customer_id) => {
+  try {
+    const response = await api.get(
+      `/api/getRefundCustomer?customer_id=${customer_id}`,
+    );
     return response;
   } catch (error) {
     throw error;

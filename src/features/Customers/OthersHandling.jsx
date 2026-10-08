@@ -29,6 +29,7 @@ const OthersHandling = forwardRef(
       { id: "Videos Given", name: "Videos Given" },
       { id: "Demo Completed", name: "Demo Completed" },
       { id: "Hold", name: "Hold" },
+      { id: "Refund Request", name: "Refund" },
     ];
     const [othersId, setOthersId] = useState(null);
     const [othersIdError, setOthersIdError] = useState("");
@@ -111,7 +112,10 @@ const OthersHandling = forwardRef(
           : [
               {
                 customer_id: customerDetails.id,
-                status: updatestatus,
+                status:
+                  updatestatus === "Refund Request"
+                    ? "Refund Request Raised"
+                    : updatestatus,
                 updated_by:
                   converAsJson && converAsJson.user_id
                     ? converAsJson.user_id
