@@ -259,7 +259,7 @@ export default function Receivables({
       key: "status",
       dataIndex: "status",
       fixed: "right",
-      width: 190,
+      width: 170,
       sorter: (a, b) =>
         customersStatusDisplay(a).localeCompare(customersStatusDisplay(b)),
       sortDirections: ["ascend", "descend"],

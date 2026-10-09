@@ -2,27 +2,18 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Row,
   Col,
-  Flex,
   Tooltip,
-  Radio,
   Button,
   Badge,
   Spin,
   Modal,
   Drawer,
   Checkbox,
-  Divider,
 } from "antd";
 import { IoIosClose } from "react-icons/io";
-import { IoFilter } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { FiFilter } from "react-icons/fi";
 import { FaRegEye } from "react-icons/fa";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { IoLocationOutline } from "react-icons/io5";
-import { FaRegUser } from "react-icons/fa";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -45,8 +36,6 @@ import {
   leadReEntry,
   getTableColumns,
   updateTableColumns,
-  getCustomerById,
-  getCustomerFullHistory,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -829,17 +818,13 @@ export default function AssignLeads({
   };
 
   useEffect(() => {
-    if (tabName !== "assign_leads") return;
     if (permissions.length >= 1) {
-      const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
       fetchAllManualAssignLeadsData();
     }
-  }, [refreshToggle, tabName]);
+  }, [refreshToggle]);
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
     const pickedData = {
       id: item.id,
       name: item.name,

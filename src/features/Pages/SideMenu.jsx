@@ -5,7 +5,8 @@ import { GrAppsRounded } from "react-icons/gr";
 import { PiUsersThreeBold } from "react-icons/pi";
 import { PiHandCoins } from "react-icons/pi";
 import { MdOutlineGroupAdd } from "react-icons/md";
-import { FaChalkboardTeacher } from "react-icons/fa";
+import { FaChalkboardTeacher, FaHandshake } from "react-icons/fa";
+import { FaRegHandshake } from "react-icons/fa";
 import { IoServerOutline } from "react-icons/io5";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlinePendingActions } from "react-icons/md";
@@ -72,31 +73,36 @@ export default function SideMenu() {
       path: "server",
     },
     8: {
+      title: "Placement",
+      icon: <FaRegHandshake size={17} />,
+      path: "placement",
+    },
+    9: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    9: {
+    10: {
       title: "Trainer Payment",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainer-payment",
     },
-    10: {
+    11: {
       title: "Bulk Search",
       icon: <IoSearch size={17} />,
       path: "bulk-search",
     },
-    11: {
+    12: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
     },
-    12: {
+    13: {
       title: "Tickets",
       icon: <IoTicketOutline size={17} />,
       path: "tickets",
     },
-    13: {
+    14: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -145,31 +151,36 @@ export default function SideMenu() {
       path: "server",
     },
     8: {
+      title: "Placement",
+      icon: <FaRegHandshake size={17} />,
+      path: "placement",
+    },
+    9: {
       title: "Trainers",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainers",
     },
-    9: {
+    10: {
       title: "Trainer Payment",
       icon: <FaChalkboardTeacher size={17} />,
       path: "trainer-payment",
     },
-    10: {
+    11: {
       title: "Bulk Search",
       icon: <IoSearch size={17} />,
       path: "bulk-search",
     },
-    11: {
+    12: {
       title: "Reports",
       icon: <TbReport size={17} />,
       path: "reports",
     },
-    12: {
+    13: {
       title: "Tickets",
       icon: <IoTicketOutline size={17} />,
       path: "tickets",
     },
-    13: {
+    14: {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
@@ -197,24 +208,28 @@ export default function SideMenu() {
       delete updatedMenu[7];
     }
 
-    if (!permissions.includes("Trainers Page")) {
+    if (!permissions.includes("Placement Page")) {
       delete updatedMenu[8];
     }
 
-    if (!permissions.includes("Trainer Payment Page")) {
+    if (!permissions.includes("Trainers Page")) {
       delete updatedMenu[9];
     }
 
-    if (!permissions.includes("Bulk Search Page")) {
+    if (!permissions.includes("Trainer Payment Page")) {
       delete updatedMenu[10];
     }
 
-    if (!permissions.includes("Reports Page")) {
+    if (!permissions.includes("Bulk Search Page")) {
       delete updatedMenu[11];
     }
 
+    if (!permissions.includes("Reports Page")) {
+      delete updatedMenu[12];
+    }
+
     if (!permissions.includes("Settings Page")) {
-      delete updatedMenu[13];
+      delete updatedMenu[14];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -289,24 +304,28 @@ export default function SideMenu() {
         delete updatedMenu[7];
       }
 
-      if (!updateData.includes("Trainers Page")) {
+      if (!permissions.includes("Placement Page")) {
         delete updatedMenu[8];
       }
 
-      if (!updateData.includes("Trainer Payment Page")) {
+      if (!updateData.includes("Trainers Page")) {
         delete updatedMenu[9];
       }
 
-      if (!updateData.includes("Bulk Search Page")) {
+      if (!updateData.includes("Trainer Payment Page")) {
         delete updatedMenu[10];
       }
 
-      if (!updateData.includes("Reports Page")) {
+      if (!updateData.includes("Bulk Search Page")) {
         delete updatedMenu[11];
       }
 
+      if (!updateData.includes("Reports Page")) {
+        delete updatedMenu[12];
+      }
+
       if (!updateData.includes("Settings Page")) {
-        delete updatedMenu[13];
+        delete updatedMenu[14];
       }
 
       setSideMenuOptions(updatedMenu);

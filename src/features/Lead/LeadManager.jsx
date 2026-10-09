@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./styles.css";
 import Leads from "./Leads";
-import LeadFollowUp from "./LeadFollowUp";
 import { Button, Tooltip } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import {
   getAllAreas,
-  getAllDownlineUsers,
-  getLeadAndFollowupCount,
+  getLiveLeadCountOnly,
   getLeadType,
   getRegions,
   getTechnologies,
@@ -31,7 +29,6 @@ import {
   storeLiveLeadSelectedDates,
 } from "../Redux/Slice";
 import LiveLead from "./LiveLeads";
-import JunkLeads from "./JunkLeads";
 import AssignLeads from "./AssignLeads";
 import AddNewLead from "./AddNewLead";
 import moment from "moment";
@@ -100,8 +97,6 @@ export default function LeadManager() {
   }, []);
 
   const [triggerApi, setTriggerApi] = useState(true);
-  const [followupCount, setFollowupCount] = useState(0);
-  const [leadCount, setLeadCount] = useState(0);
   const [bucketCounts, setBucketCounts] = useState({
     all: 0,
     valid_leads: 0,
@@ -111,14 +106,11 @@ export default function LeadManager() {
     open_leads: 0,
   });
   const [liveLeadCount, setLiveLeadCount] = useState(0);
-  const [junkLeadCount, setJunkLeadCount] = useState(0);
   const [assignLeadCount, setAssignLeadCount] = useState(0);
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
   const [regionOptions, setRegionOptions] = useState([]);
-  const [courseOptions, setCourseOptions] = useState([]);
-  const [areaOptions, setAreaOptions] = useState([]);
   const [allBranchesData, setAllBranchesData] = useState([]);
   const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   //quality tab section
@@ -227,8 +219,7 @@ export default function LeadManager() {
         }),
       );
       setIsReduxReset(true);
-      getAllDownlineUsersData(convertAsJson?.user_id);
-      // getLeadAndFollowupCountData(childUsers);
+      getLiveLeadCountOnlyData();
     }
   }, [childUsers, permissions, location.state]);
 
@@ -303,54 +294,16 @@ export default function LeadManager() {
     };
   }, [activePage]); // 👈 important dependency
 
-  const getAllDownlineUsersData = async (user_id) => {
+  const getLiveLeadCountOnlyData = async () => {
     try {
-      const response = await getAllDownlineUsers(user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
-      getLeadAndFollowupCountData(downliners_ids);
-    } catch (error) {
-      console.log("all downlines error", error);
-    }
-  };
-
-  const getLeadAndFollowupCountData = async (downliners) => {
-    const today = new Date();
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-
-    const payload = {
-      user_ids: downliners,
-      start_date: moment(today).format("YYYY-MM-DD"),
-      end_date: moment(today).format("YYYY-MM-DD"),
-      ...(!permissions.includes("View All Assigned Leads")
-        ? { login_by: convertAsJson?.user_id }
-        : {}),
-    };
-    try {
-      const response = await getLeadAndFollowupCount(payload);
-      console.log("lead count response", response);
+      const response = await getLiveLeadCountOnly();
+      console.log("live lead count response", response);
       const countDetails = response?.data?.data;
-      setLeadCount(countDetails.total_lead_count);
-      setBucketCounts((prev) => ({
-        ...prev,
-        all: countDetails.total_lead_count,
-      }));
       setLiveLeadCount(countDetails.web_lead_count);
-      setJunkLeadCount(countDetails.junk_lead_count);
-      // setAssignLeadCount(countDetails.assign_lead_count);
-      // dispatch(storeUsersList(response?.data?.data || []));
     } catch (error) {
-      console.log("lead count error", error);
-      // dispatch(storeUsersList([]));
+      console.log("live lead count error", error);
     } finally {
-      setTimeout(() => {
-        // setUserTableLoading(false);
-        loadInitialData();
-      }, 150);
+      loadInitialData();
     }
   };
 
@@ -361,17 +314,7 @@ export default function LeadManager() {
     isFetchingLiveLead.current = true;
 
     try {
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-
-      const payload = {
-        user_ids: null,
-        start_date: moment(liveLeadSelecteDates[0]).format("YYYY-MM-DD"),
-        end_date: moment(liveLeadSelecteDates[1]).format("YYYY-MM-DD"),
-        login_by: convertAsJson?.user_id,
-      };
-
-      const response = await getLeadAndFollowupCount(payload);
+      const response = await getLiveLeadCountOnly();
 
       const countDetails = response?.data?.data;
       setLiveLeadCount(countDetails?.web_lead_count || 0);
@@ -782,19 +725,6 @@ export default function LeadManager() {
               style={{ margin: 0 }}
             >{`Open Leads (${bucketCounts.open_leads || 0})`}</p>
           </div>
-
-          {/* {permissions.includes("Junk Leads Tab") && (
-            <button
-              className={
-                activePage === "junk"
-                  ? "junk_tab_activebutton"
-                  : "junk_tab_inactivebutton"
-              }
-              onClick={() => handleTabClick("junk")}
-            >
-              <p style={{ margin: 0 }}>{`Junk (${junkLeadCount})`}</p>
-            </button>
-          )} */}
         </ScrollableTabContainer>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -808,27 +738,6 @@ export default function LeadManager() {
           </Tooltip>
         </div>
       </div>
-
-      {/* Mount only when first opened, keep mounted afterward */}
-      {loadedTabs.followup && (
-        <div
-          style={{
-            display: activePage === "followup" ? "block" : "none",
-          }}
-        >
-          <LeadFollowUp
-            key={tabKeys.followup}
-            setFollowupCount={setFollowupCount}
-            refreshLeads={refreshLeads}
-            leadTypeOptions={leadTypeOptions}
-            regionOptions={regionOptions}
-            courseOptions={courseOptions}
-            setCourseOptions={setCourseOptions}
-            areaOptions={areaOptions}
-            setAreaOptions={setAreaOptions}
-          />
-        </div>
-      )}
 
       {loadedTabs.leads && (
         <div
@@ -852,7 +761,6 @@ export default function LeadManager() {
             setTriggerApi={setTriggerApi}
             key={tabKeys.leads}
             refreshLeadFollowUp={refreshLeadFollowUp}
-            setLeadCount={setLeadCount}
             setBucketCounts={setBucketCounts}
             leadTypeOptions={leadTypeOptions}
             regionOptions={regionOptions}
@@ -902,7 +810,6 @@ export default function LeadManager() {
           <AssignLeads
             key={tabKeys.assign_leads}
             refreshToggle={refreshToggle}
-            setLiveLeadCount={setLiveLeadCount}
             refreshLeads={refreshLeads}
             refreshLeadFollowUp={refreshLeadFollowUp}
             leadTypeOptions={leadTypeOptions}
@@ -914,16 +821,6 @@ export default function LeadManager() {
               handleTabClick("add_lead");
             }}
           />
-        </div>
-      )}
-
-      {loadedTabs.junk && (
-        <div
-          style={{
-            display: activePage === "junk" ? "block" : "none",
-          }}
-        >
-          <JunkLeads key={tabKeys.junk} setJunkLeadCount={setJunkLeadCount} />
         </div>
       )}
 

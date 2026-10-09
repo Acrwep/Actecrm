@@ -227,6 +227,17 @@ const serverModulePermissionListSlice = createSlice({
   },
 });
 
+const placementModulePermissionListSlice = createSlice({
+  name: "placementmodulepermissionlist",
+  initialState,
+  reducers: {
+    storePlacementModulePermissionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const trainersModulePermissionListSlice = createSlice({
   name: "trainersmodulepermissionlist",
   initialState,
@@ -541,6 +552,8 @@ export const { storeBulkSearchModulePermissionList } =
   bulkSearchModulePermissionListSlice.actions;
 export const { storeServerModulePermissionList } =
   serverModulePermissionListSlice.actions;
+export const { storePlacementModulePermissionList } =
+  placementModulePermissionListSlice.actions;
 export const { storeTrainersModulePermissionList } =
   trainersModulePermissionListSlice.actions;
 export const { storeTrainerPaymentModulePermissionList } =
@@ -605,6 +618,8 @@ export const bulkSearchModulePermissionListReducer =
   bulkSearchModulePermissionListSlice.reducer;
 export const serverModulePermissionListReducer =
   serverModulePermissionListSlice.reducer;
+export const placementModulePermissionListReducer =
+  placementModulePermissionListSlice.reducer;
 export const trainersModulePermissionListReducer =
   trainersModulePermissionListSlice.reducer;
 export const trainerPaymentModulePermissionListReducer =

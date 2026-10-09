@@ -723,7 +723,7 @@ export const getLeadsCountByUserIds = async (payload) => {
   }
 };
 
-export const getLeadAndFollowupCount = async (payload) => {
+export const getLiveLeadCountOnly = async (payload) => {
   try {
     const response = await api.post("/api/getLeadCount", payload);
     return response;
@@ -2186,6 +2186,15 @@ export const getRefundCustomer = async (customer_id) => {
     const response = await api.get(
       `/api/getRefundCustomer?customer_id=${customer_id}`,
     );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+//placement
+export const getPlacementSupport = async (payload) => {
+  try {
+    const response = await api.post(`/api/getPlacementSupport`, payload);
     return response;
   } catch (error) {
     throw error;

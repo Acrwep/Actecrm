@@ -20,6 +20,7 @@ import {
   feesPendingModulePermissionListReducer,
   bulkSearchModulePermissionListReducer,
   serverModulePermissionListReducer,
+  placementModulePermissionListReducer,
   trainersModulePermissionListReducer,
   trainerPaymentModulePermissionListReducer,
   emailTemplateModulePermissionListReducer,
@@ -68,6 +69,7 @@ export const reduxStore = configureStore({
     feespendingmodulepermissionlist: feesPendingModulePermissionListReducer,
     bulksearchmodulepermissionlist: bulkSearchModulePermissionListReducer,
     servermodulepermissionlist: serverModulePermissionListReducer,
+    placementmodulepermissionlist: placementModulePermissionListReducer,
     trainersmodulepermissionlist: trainersModulePermissionListReducer,
     trainerpaymentmodulepermissionlist:
       trainerPaymentModulePermissionListReducer,

@@ -1,16 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Row,
-  Col,
-  Tooltip,
-  Drawer,
-  Flex,
-  Button,
-  Radio,
-  Divider,
-  Checkbox,
-  Progress,
-} from "antd";
+import { Row, Col, Tooltip, Drawer, Button, Checkbox, Progress } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
@@ -20,13 +9,14 @@ import "./styles.css";
 import {
   getAllDownlineUsers,
   getCustomerById,
-  getAdmissions,
   getTableColumns,
   updateTableColumns,
   getBranches,
   getUsers,
+  getPlacementSupport,
 } from "../ApiService/action";
 import {
+  customersStatusDisplay,
   getCurrentandPreviousweekDate,
   regionOptions,
 } from "../Common/Validation";
@@ -35,37 +25,8 @@ import { RedoOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import { FiFilter } from "react-icons/fi";
-import { GiCheckMark } from "react-icons/gi";
-import { FaXmark } from "react-icons/fa6";
 import { FaRegCopy } from "react-icons/fa6";
-import { PiPhoneCallFill } from "react-icons/pi";
-import { LuNotepadText } from "react-icons/lu";
-import {
-  FaUser,
-  FaPhoneAlt,
-  FaWhatsapp,
-  FaRegEnvelope,
-  FaLink,
-  FaDesktop,
-  FaUserCheck,
-  FaChartLine,
-  FaHeadset,
-  FaRegCommentDots,
-  FaCheckDouble,
-  FaRegFileAlt,
-  FaFileSignature,
-  FaStar,
-  FaLinkedin,
-  FaCertificate,
-  FaGraduationCap,
-  FaPhoneSlash,
-  FaHandshake,
-} from "react-icons/fa";
-import { FiBookOpen } from "react-icons/fi";
-import { FcGoogle } from "react-icons/fc";
 import { LuFileClock } from "react-icons/lu";
-import { PiSealCheckFill } from "react-icons/pi";
-import { TbStack3 } from "react-icons/tb";
 import CommonDnd from "../Common/CommonDnd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useSelector } from "react-redux";
@@ -75,10 +36,9 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSelectField from "../Common/CommonSelectField";
 import CustomerHistory from "../Customers/CustomerHistory";
-import CommonSpinner from "../Common/CommonSpinner";
 import OverflowTooltip from "../Common/OverflowTooltip";
 
-export default function Admissions() {
+export default function Placement() {
   const mounted = useRef(false);
   //search userefs start
   const searchTimeoutRef = useRef(null);
@@ -129,166 +89,64 @@ export default function Admissions() {
   const [updateTableId, setUpdateTableId] = useState(null);
   const [checkAll, setCheckAll] = useState(false);
 
-  const renderCellWithBackground = (
-    status,
-    extraProps = {},
-    { showCopy = false, onCopy } = {},
-  ) => {
-    return {
-      children: (
-        <div
-          className="admissions_column_status_container"
-          style={{
-            color: status ? "#2e7d32" : "#c62828",
-          }}
-        >
-          {status ? (
-            <GiCheckMark size={14} />
-          ) : (
-            <>
-              <FaXmark size={14} />
-              {showCopy && (
-                <Tooltip
-                  placement="top"
-                  title="Copy Acknowledgement Link"
-                  trigger={["hover", "click"]}
-                >
-                  <FaRegCopy
-                    size={13}
-                    color="#33333398"
-                    style={{ cursor: "pointer", marginLeft: "6px" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCopy?.();
-                    }}
-                  />
-                </Tooltip>
-              )}
-            </>
-          )}
-        </div>
-      ),
-      props: {
-        ...extraProps,
-        style: {
-          // backgroundColor: status ? "#e8f5e9" : "#ffebee",
-          backgroundColor: "#fff",
-          ...(extraProps.style || {}),
-        },
-      },
-    };
-  };
-
-  const renderServerAndTicketStatus = (isRequired, status) => {
-    if (!isRequired) {
-      return <p style={{ textAlign: "center" }}>-</p>;
-    }
-
-    const isSuccess = status === "Issued" || status === "Closed";
-
-    return (
-      <div
-        className="admissions_column_status_container"
-        style={{
-          color: isSuccess ? "#2e7d32" : "#8b8b8b",
-        }}
-      >
-        <GiCheckMark size={14} />
-      </div>
-    );
-  };
-
-  const renderClassMonitoring = (text, class_percentage) => {
-    if (!text) {
-      return (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <FaXmark size={14} color="#c62828" style={{ textAlign: "center" }} />
-        </div>
-      );
-    }
-
-    const classPercentage = Number(class_percentage);
-
-    return (
-      <div
-        className="admissions_column_status_container"
-        style={{
-          color:
-            classPercentage <= 25
-              ? "#0984e3"
-              : classPercentage <= 50
-                ? "#6c5ce7"
-                : classPercentage <= 75
-                  ? "#e84393"
-                  : "#047857",
-        }}
-      >
-        <GiCheckMark size={14} />
-      </div>
-    );
-  };
-
   const nonChangeColumns = [
     {
-      title: "Sl. No",
-      key: "row_num",
-      dataIndex: "row_num",
-      width: 70,
-      group: "General Info",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (text) => {
-        return <p style={{ margin: 0, textAlign: "center" }}>{text}</p>;
-      },
-    },
-    {
-      title: "Joined Date",
+      title: "Date Of Joining",
       key: "date_of_joining",
       dataIndex: "date_of_joining",
-      width: 100,
-      group: "General Info",
-      align: "center",
+      width: 120,
+      defaultSortOrder: "descend", // Optional
       render: (text) => {
-        return (
-          <p style={{ margin: 0, textAlign: "center" }}>
-            {text ? moment(text).format("DD/MM/YYYY") : "-"}
-          </p>
-        );
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     {
       title: "Candidate Name / ID",
-      key: "customer_name",
-      dataIndex: "customer_name",
-      width: 170,
-      group: "General Info",
+      key: "name",
+      dataIndex: "name",
+      width: 160,
       render: (text, record) => {
-        const isLoading =
-          customerDetailsLoadingRef.current == record?.customer_id;
-
         return (
-          <div
-            className="customers_candidatename_container"
-            style={{ justifyContent: "center" }}
-          >
+          <div className="customers_candidatename_container">
             <EllipsisTooltip text={text} />
             {record.student_id && (
               <span className="customers_studentid_badge">
                 {record.student_id}
               </span>
             )}
-            {isLoading ? (
-              <CommonSpinner color="#333" size={14} />
-            ) : (
-              <FaRegEye
-                size={13}
-                className="trainers_action_icons"
-                style={{ cursor: "pointer", flexShrink: 0 }}
-                onClick={() => {
-                  getParticularCustomerDetails(record?.customer_id);
-                }}
-              />
-            )}
           </div>
+        );
+      },
+    },
+    {
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 160,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Mobile",
+      key: "phone",
+      dataIndex: "phone",
+      width: 120,
+      render: (text, record) => {
+        return (
+          <EllipsisTooltip
+            text={
+              text
+                ? `${
+                    text
+                      ? record.phonecode.startsWith("+")
+                        ? record.phonecode
+                        : `+${record.phonecode}`
+                      : ""
+                  } ${text}`
+                : "-"
+            }
+          />
         );
       },
     },
@@ -296,492 +154,258 @@ export default function Admissions() {
       title: "Course ",
       key: "course_name",
       dataIndex: "course_name",
-      width: 140,
-      group: "General Info",
+      width: 150,
       render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Paid Amount",
+      key: "paid_amount",
+      dataIndex: "paid_amount",
+      width: 120,
+      render: (text) => {
+        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+      },
+    },
+    {
+      title: "Balance",
+      key: "balance_amount",
+      dataIndex: "balance_amount",
+      width: 95,
+      render: (text) => {
+        const amount = Number(text);
+
         return (
-          <div style={{ textAlign: "center", width: "100%" }}>
-            <EllipsisTooltip text={text} />
-          </div>
+          <p
+            style={{
+              color: amount === 0 ? "green" : "#D32F2F",
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {text !== null && text !== undefined
+              ? amount.toLocaleString("en-IN")
+              : "-"}
+          </p>
         );
       },
     },
     {
       title: "Sale Executive",
-      key: "sale_executive",
-      dataIndex: "sale_executive",
-      width: 120,
-      group: "General Info",
+      key: "lead_assigned_to_name",
+      dataIndex: "lead_assigned_to_name",
+      width: 110,
       render: (text, record) => {
-        const lead_executive = `${record.assigned_to_view_user_id} - ${text}`;
+        const salse_executive = `${record.lead_assigned_to_view_user_id} - ${text}`;
         return (
           <div style={{ textAlign: "center", width: "100%" }}>
             <OverflowTooltip
-              title={lead_executive}
-              children={record.assigned_to_view_user_id}
+              title={salse_executive}
+              children={record.lead_assigned_to_view_user_id}
             />
           </div>
         );
       },
     },
     {
-      title: "RA",
-      key: "ra_user_name",
-      dataIndex: "ra_user_name",
-      width: 100,
-      group: "General Info",
-      align: "center",
-      render: (text, record) => {
-        if (text) {
-          const ra = `${record.ra_view_user_id} - ${text}`;
-          return (
-            <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={ra} children={record.ra_view_user_id} />
-            </div>
-          );
-        } else {
-          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
-        }
-      },
-    },
-    {
-      title: "HR",
-      key: "hr_user_name",
-      dataIndex: "hr_user_name",
-      width: 100,
-      align: "center",
-      group: "General Info",
-      render: (text, record) => {
-        if (text) {
-          const hr = `${record.hr_view_user_id} - ${text}`;
-          return (
-            <div style={{ textAlign: "center", width: "100%" }}>
-              <OverflowTooltip title={hr} children={record.hr_view_user_id} />
-            </div>
-          );
-        } else {
-          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
-        }
-      },
-    },
-    {
-      title: (
-        <Tooltip title="Welcome Call" placement="top">
-          <div className="admissions_table_icons_container">
-            <PiPhoneCallFill size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "welcome_call_status",
-      dataIndex: "welcome_call_status",
-      width: 80,
-      group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Requirement Verification" placement="top">
-          <div className="admissions_table_icons_container">
-            <LuNotepadText size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "technology_verified",
-      dataIndex: "technology_verified",
-      width: 80,
-      group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Trainer Assignment Request" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaUser size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "trainer_assignment_request",
-      dataIndex: "trainer_assignment_request",
-      width: 80,
-      group: "Student Onboarding",
-      render: (text, record) => {
-        let trainer_assigned = false;
-        if (record?.trainer_mapping_id) {
-          trainer_assigned = true;
-        }
-        return renderCellWithBackground(trainer_assigned);
-      },
-    },
-    {
-      title: (
-        <Tooltip title="Trainer Fixation Call" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaPhoneAlt size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "trainer_fixation_call",
-      dataIndex: "trainer_fixation_call",
-      width: 80,
-      group: "Student Onboarding",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="WhatsApp Group Creation" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaWhatsapp size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "whatsapp_group_creation",
-      dataIndex: "whatsapp_group_creation",
-      width: 80,
-      group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Welcome Message" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaRegEnvelope size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "hr_welcome_message",
-      dataIndex: "hr_welcome_message",
-      width: 80,
-      group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="ShareTeams Link & Attendance Link" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaLink size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "shared_attendance_link",
-      dataIndex: "shared_attendance_link",
-      width: 80,
-      group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="First class Monitoring" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaDesktop size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "first_class_monitoring",
-      dataIndex: "first_class_monitoring",
-      width: 80,
-      group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Trainer Confirmation" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaUserCheck size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "trainer_confirmation",
-      dataIndex: "trainer_confirmation",
-      width: 80,
-      group: "Trainer Coordination",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Class Progress Monitoring" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaChartLine size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "class_progress_monitoring",
-      dataIndex: "class_progress_monitoring",
-      width: 80,
-      group: "Progress Monitoring",
-      render: (text, record) =>
-        renderClassMonitoring(text ?? false, record.class_percentage),
-    },
-    {
-      title: (
-        <Tooltip title="Student Support" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaHeadset size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "ticket_raised",
-      dataIndex: "ticket_raised",
-      width: 80,
-      group: "Progress Monitoring",
-      render: (text, record) =>
-        renderServerAndTicketStatus(text, record.ticket_status),
-    },
-    {
-      title: (
-        <Tooltip title="Mid Course Feedback" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaRegCommentDots size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "mid_course_feedback",
-      dataIndex: "mid_course_feedback",
-      width: 80,
-      group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="LMS Access" placement="top">
-          <div className="admissions_table_icons_container">
-            <FiBookOpen size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "lms_access",
-      dataIndex: "lms_access",
-      width: 80,
-      group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Server Status" placement="top">
-          <div className="admissions_table_icons_container">
-            <TbStack3 size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "is_server_required",
-      dataIndex: "is_server_required",
-      width: 80,
-      group: "Progress Monitoring",
-      render: (text, record) =>
-        renderServerAndTicketStatus(text, record.server_master_status),
-    },
-    {
-      title: (
-        <Tooltip title="Placement Handover" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaHandshake size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "placement_handover",
-      dataIndex: "placement_handover",
-      width: 80,
-      group: "Progress Monitoring",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Class completion Confirmation" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaCheckDouble size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "class_completion_confirmation",
-      dataIndex: "class_completion_confirmation",
-      width: 80,
-      group: "Course Completion",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Trainer Completion report" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaRegFileAlt size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "trainer_completion_report",
-      dataIndex: "trainer_completion_report",
-      width: 80,
-      group: "Course Completion",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Student Completion Report" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaFileSignature size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "student_completion_report",
-      dataIndex: "student_completion_report",
-      width: 80,
-      group: "Course Completion",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Google Review Collection" placement="top">
-          <div className="admissions_table_icons_container">
-            <FcGoogle size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "google_review_collection",
-      dataIndex: "google_review_collection",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="LinkedIn Review Collection" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaLinkedin size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "linkedin_review_collection",
-      dataIndex: "linkedin_review_collection",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Review Verification" placement="top">
-          <div className="admissions_table_icons_container">
-            <PiSealCheckFill size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "review_verification_status",
-      dataIndex: "review_verification_status",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Course Completion Certificate" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaCertificate size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "course_completion_certificate",
-      dataIndex: "course_completion_certificate",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Course Completed" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaGraduationCap size={16} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "is_course_completed",
-      dataIndex: "is_course_completed",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: (
-        <Tooltip title="Course Closure Call" placement="top">
-          <div className="admissions_table_icons_container">
-            <FaPhoneSlash size={15} style={{ flexShrink: 0 }} />
-          </div>
-        </Tooltip>
-      ),
-      key: "course_closure_call",
-      dataIndex: "course_closure_call",
-      width: 80,
-      group: "Review & Certifications",
-      render: (text) => renderCellWithBackground(text ?? false),
-    },
-    {
-      title: "View",
-      key: "action",
-      dataIndex: "action",
-      width: 75,
+      title: "Status",
+      key: "status",
+      dataIndex: "status",
       fixed: "right",
-      group: "Action",
+      width: 170,
+      sorter: (a, b) =>
+        customersStatusDisplay(a).localeCompare(customersStatusDisplay(b)),
+      sortDirections: ["ascend", "descend"],
       render: (text, record) => {
-        return (
-          <Tooltip
-            placement="top"
-            title="View Customer Full Details"
-            trigger={["hover", "click"]}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: "4px",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setIsOpenDetailsDrawer(true);
-                setCustomerId(record?.customer_id);
-              }}
-            >
-              <FaRegEye
-                size={15}
-                className="trainers_action_icons"
-                style={{ flexShrink: 0 }}
-              />
-            </div>
-          </Tooltip>
-        );
-      },
-    },
+        let classPercent = 0;
 
-    {
-      title: "History",
-      key: "history",
-      dataIndex: "history",
-      width: 75,
-      fixed: "right",
-      group: "Action",
-      render: (text, record) => {
+        if (
+          record.class_percentage !== null &&
+          record.class_percentage !== undefined
+        ) {
+          const parsed = parseFloat(record.class_percentage);
+          classPercent = isNaN(parsed) ? 0 : parsed;
+        }
         return (
-          <Tooltip
-            placement="top"
-            title="View Customer History"
-            trigger={["hover", "click"]}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: "4px",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setCustomerId(record?.customer_id);
-                setIsOpenCustomerHistoryDrawer(true);
-              }}
-            >
-              <LuFileClock
-                size={15}
-                className="trainers_action_icons"
-                style={{ flexShrink: 0 }}
-              />
-            </div>
-          </Tooltip>
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            {record.is_second_due === 1 ? (
+              <div>
+                <Button className="customers_status_awaitfinance_button">
+                  Payment Verify
+                </Button>
+              </div>
+            ) : text === "Form Pending" ? (
+              <div>
+                <Button className="customers_status_formpending_button">
+                  {text}
+                </Button>
+              </div>
+            ) : record.is_last_pay_rejected === 1 ? (
+              <div>
+                <Button className="trainers_rejected_button">
+                  Payment Rejected
+                </Button>
+              </div>
+            ) : text === "Awaiting Finance" ? (
+              <div>
+                <Button className="customers_status_awaitfinance_button">
+                  Payment Verify
+                </Button>
+              </div>
+            ) : text === "Awaiting Verify" ? (
+              <div>
+                <Button className="customers_status_awaitverify_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Trainer" ? (
+              <div>
+                <Button className="customers_status_awaittrainer_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Trainer Verify" ? (
+              <div>
+                <Button className="customers_status_awaittrainerverify_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Trainer Approval" ? (
+              <div>
+                <Button className="customers_status_trainerapproval_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Class" ? (
+              <div>
+                <Button className="customers_status_awaitingclass_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Class Scheduled" ? (
+              <div>
+                <Button className="customers_status_classscheduled_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Passedout process" ? (
+              <div>
+                <Button className="customers_status_awaitfeedback_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Completed" ? (
+              <div>
+                <Button className="customers_status_completed_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Rejected" ||
+              text === "REJECTED" ||
+              text === "Trainer Rejected" ||
+              text === "Payment Rejected" ||
+              text === "Escalated" ||
+              text === "Hold" ||
+              text === "Partially Closed" ||
+              text === "Discontinued" ||
+              text === "Videos Given" ||
+              text === "Refund" ? (
+              <Button className="trainers_rejected_button">{text}</Button>
+            ) : text === "Class Going" ? (
+              <div style={{ display: "flex", gap: "12px" }}>
+                <Button className="customers_status_classgoing_button">
+                  {text}
+                </Button>
+
+                <p className="customer_classgoing_percentage">{`${parseFloat(
+                  classPercent,
+                )}%`}</p>
+              </div>
+            ) : (
+              <p style={{ marginLeft: "6px" }}>-</p>
+            )}
+            {record.status === "Form Pending" && (
+              <Tooltip
+                placement="top"
+                title="Copy form link"
+                trigger={["hover", "click"]}
+              >
+                <FaRegCopy
+                  size={14}
+                  className="customers_formlink_copybutton"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${
+                        import.meta.env.VITE_EMAIL_URL
+                      }/customer-registration/${record.id}`,
+                    );
+                    CommonMessage("success", "Link Copied");
+                    console.log("Copied: eeee");
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
         );
+      },
+    },
+    {
+      title: "Details",
+      key: "details",
+      dataIndex: "details",
+      fixed: "right",
+      width: 100,
+      render: (text, record) => {
+        return {
+          children: (
+            <div className="trainers_actionbuttonContainer">
+              <Tooltip
+                placement="top"
+                title="View Candidate Details"
+                trigger={["hover", "click"]}
+              >
+                <FaRegEye
+                  size={15}
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsOpenDetailsDrawer(true);
+                    setCustomerId(record.id);
+                  }}
+                  style={{
+                    visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                  }}
+                />
+              </Tooltip>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "16px",
+                  justifyContent: "center",
+                }}
+              >
+                <Tooltip
+                  placement="left"
+                  title="View Candidate Track"
+                  trigger={["hover", "click"]}
+                >
+                  <LuFileClock
+                    size={15}
+                    className="trainers_action_icons"
+                    style={{ cursor: "pointer", marginLeft: "4px" }}
+                    onClick={() => {
+                      setIsOpenCustomerHistoryDrawer(true);
+                      setCustomerId(record.id);
+                    }}
+                  />
+                </Tooltip>
+              </div>
+            </div>
+          ),
+          // props: { rowSpan: flatRecord.rowSpan },
+        };
       },
     },
   ];
@@ -790,7 +414,7 @@ export default function Admissions() {
     nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
-  const [customersData, setCustomersData] = useState([]);
+  const [placementCustomersData, setPlacementCustomersData] = useState([]);
 
   useEffect(() => {
     customerDetailsLoadingRef.current = customerDetailsLoading;
@@ -824,33 +448,6 @@ export default function Admissions() {
     }
   }, [childUsers]);
 
-  useEffect(() => {
-    const handler = async (e) => {
-      const data = e.detail;
-      console.log("Received via event:", data, allDownliners);
-      setSearchValue("");
-      setSelectedUserId(null);
-
-      // Re-run your existing logic
-      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-      const convertAsJson = JSON.parse(getLoginUserDetails);
-      try {
-        const response = await getAllDownlineUsers(convertAsJson.user_id);
-        console.log("all downlines response", response);
-        const downliners = response?.data?.data || [];
-        const downliners_ids = downliners.map((u) => {
-          return u.user_id;
-        });
-        setAllDownliners(downliners_ids);
-      } catch (error) {
-        console.log("all downlines error", error);
-      }
-    };
-
-    window.addEventListener("notificationFilter", handler);
-    return () => window.removeEventListener("notificationFilter", handler);
-  }, []);
-
   const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -868,7 +465,7 @@ export default function Admissions() {
       });
       setAllDownliners(downliners_ids);
       setDefaultAllDownliners(downliners_ids);
-      fetchAdmissionsData({
+      fetchPlacementSupportData({
         startDate: PreviousAndCurrentDate[0],
         endDate: PreviousAndCurrentDate[1],
         searchvalue: null,
@@ -884,8 +481,8 @@ export default function Admissions() {
     }
   };
 
-  const fetchAdmissionsData = (overrides = {}) => {
-    getAdmissionsData(
+  const fetchPlacementSupportData = (overrides = {}) => {
+    getPlacementSupportCustomersData(
       overrides.startDate !== undefined
         ? overrides.startDate
         : selectedDates?.[0] || null,
@@ -904,7 +501,7 @@ export default function Admissions() {
     );
   };
 
-  const getAdmissionsData = async (
+  const getPlacementSupportCustomersData = async (
     startDate,
     endDate,
     searchvalue,
@@ -929,12 +526,12 @@ export default function Admissions() {
     };
 
     try {
-      const response = await getAdmissions(payload);
-      console.log("admissions response", response);
+      const response = await getPlacementSupport(payload);
+      console.log("placement response", response);
       const customers = response?.data?.data?.customers || [];
       const pagination = response?.data?.data?.pagination;
 
-      setCustomersData(customers);
+      setPlacementCustomersData(customers);
       setPagination({
         page: pagination.page,
         limit: pagination.limit,
@@ -950,8 +547,8 @@ export default function Admissions() {
         classroom_mode: response?.data?.data?.classroom_mode || 0,
       });
     } catch (error) {
-      setCustomersData([]);
-      console.log("get customers error", error);
+      setPlacementCustomersData([]);
+      console.log("get placement error", error);
     } finally {
       setLoading(false);
     }
@@ -972,7 +569,7 @@ export default function Admissions() {
         return updateTableColumnsData(newCols);
       }
 
-      const filterPage = data.find((f) => f.page_name === "Admissions");
+      const filterPage = data.find((f) => f.page_name === "Placement Support");
       console.log("filterPage", filterPage);
       if (!filterPage) {
         setUpdateTableId(null);
@@ -1024,23 +621,6 @@ export default function Admissions() {
     }
   };
 
-  // const updateTableColumnsData = async () => {
-  //   const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-  //   const convertAsJson = JSON.parse(getLoginUserDetails);
-
-  //   const payload = {
-  //     user_id: convertAsJson?.user_id,
-  //     page_name: "Admissions",
-  //     column_names: columns,
-  //   };
-  //   console.log("updateTableColumnsData", payload);
-  //   try {
-  //     await updateTableColumns(payload);
-  //   } catch (error) {
-  //     console.log("update table columns error", error);
-  //   }
-  // };
-
   const updateTableColumnsData = async () => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -1056,7 +636,7 @@ export default function Admissions() {
 
     const payload = {
       user_id: convertAsJson?.user_id,
-      page_name: "Admissions",
+      page_name: "Placement Support",
       column_names: serializableColumns,
     };
 
@@ -1088,7 +668,7 @@ export default function Admissions() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    fetchAdmissionsData({
+    fetchPlacementSupportData({
       pageNumber: page,
       limit: limit,
     });
@@ -1104,7 +684,7 @@ export default function Admissions() {
 
     if (!input) {
       setPagination((prev) => ({ ...prev, page: 1 }));
-      fetchAdmissionsData({
+      fetchPlacementSupportData({
         searchvalue: null,
         pageNumber: 1,
       });
@@ -1113,7 +693,7 @@ export default function Admissions() {
 
     searchTimeoutRef.current = setTimeout(() => {
       setPagination((prev) => ({ ...prev, page: 1 }));
-      fetchAdmissionsData({
+      fetchPlacementSupportData({
         searchvalue: e.target.value,
         pageNumber: 1,
       });
@@ -1149,7 +729,7 @@ export default function Admissions() {
       setPagination({
         page: 1,
       });
-      fetchAdmissionsData({
+      fetchPlacementSupportData({
         downliners: downliners_ids,
         pageNumber: 1,
       });
@@ -1269,7 +849,7 @@ export default function Admissions() {
                           setPagination({
                             page: 1,
                           });
-                          fetchAdmissionsData({
+                          fetchPlacementSupportData({
                             searchvalue: null,
                             pageNumber: 1,
                           });
@@ -1309,7 +889,7 @@ export default function Admissions() {
                       setPagination({
                         page: 1,
                       });
-                      fetchAdmissionsData({
+                      fetchPlacementSupportData({
                         regionId: value,
                         branchId: null,
                         downliners: defaultAllDownliners,
@@ -1343,7 +923,7 @@ export default function Admissions() {
                       setPagination({
                         page: 1,
                       });
-                      fetchAdmissionsData({
+                      fetchPlacementSupportData({
                         branchId: value,
                         downliners: defaultAllDownliners,
                         pageNumber: 1,
@@ -1394,7 +974,7 @@ export default function Admissions() {
                         setPagination({
                           page: 1,
                         });
-                        fetchAdmissionsData({
+                        fetchPlacementSupportData({
                           startDate: dates[0],
                           endDate: dates[1],
                           pageNumber: 1,
@@ -1429,59 +1009,6 @@ export default function Admissions() {
               getTableColumnsData(loginUserId);
             }}
           />
-
-          {/* {permissions.includes("Download Customers Data") && (
-            <Tooltip placement="top" title="Download">
-              <Button
-                className="reports_download_button"
-                // onClick={() => {
-                //   const isWithIn30days = isWithin30Days(
-                //     selectedDates[0],
-                //     selectedDates[1],
-                //   );
-                //   console.log("isWithIn30days", isWithIn30days);
-                //   const googleReview = {
-                //     title: "Google Review",
-                //     key: "google_review",
-                //     dataIndex: "google_review",
-                //   };
-
-                //   const linkedinReview = {
-                //     title: "Linkedin Review",
-                //     key: "linkedin_review",
-                //     dataIndex: "linkedin_review",
-                //   };
-
-                //   const alterColumns = columns
-                //     // Remove Action and Review Status columns
-                //     .filter(
-                //       (f) =>
-                //         f.title !== "Action" && f.title !== "Review Status",
-                //     )
-                //     // Insert Google Review & Linkedin Review after TR Number
-                //     .flatMap((col) => {
-                //       if (col.title === "TR Number") {
-                //         return [col, googleReview, linkedinReview];
-                //       }
-
-                //       return [col];
-                //     });
-                //   console.log("alterColumns", alterColumns);
-                //   DownloadTableAsCSV(
-                //     customersData,
-                //     alterColumns,
-                //     `${moment(selectedDates[0]).format(
-                //       "DD-MM-YYYY",
-                //     )} to ${moment(selectedDates[1]).format("DD-MM-YYYY")} ${
-                //       status == "" ? "All" : status
-                //     } Customers.csv`,
-                //   );
-                // }}
-              >
-                <DownloadOutlined size={10} className="download_icon" />
-              </Button>
-            </Tooltip>
-          )} */}
 
           <Tooltip placement="top" title="Refresh">
             <Button
@@ -1523,7 +1050,7 @@ export default function Admissions() {
                   setPagination({
                     page: 1,
                   });
-                  fetchAdmissionsData({
+                  fetchPlacementSupportData({
                     bucket: "Online",
                     pageNumber: 1,
                   });
@@ -1548,7 +1075,7 @@ export default function Admissions() {
                   setPagination({
                     page: 1,
                   });
-                  fetchAdmissionsData({
+                  fetchPlacementSupportData({
                     bucket: "Classroom",
                     pageNumber: 1,
                   });
@@ -1632,25 +1159,7 @@ export default function Admissions() {
                 display: "flex",
                 justifyContent: "flex-end",
               }}
-            >
-              <div className="admissions_progress_container">
-                <span className="admissions_progress_label">
-                  Overall Progress:
-                </span>
-                <Progress
-                  percent={65}
-                  showInfo={false}
-                  strokeWidth={6}
-                  strokeColor={{
-                    "0%": "#8a9bf8",
-                    "100%": "#5b69ca",
-                  }}
-                  trailColor="#f1f5f9"
-                  className="admissions_progress_bar"
-                />
-                <span className="admissions_progress_text">65%</span>
-              </div>
-            </Col>
+            ></Col>
           </Row>
         </>
       ) : (
@@ -1683,7 +1192,7 @@ export default function Admissions() {
                     setPagination({
                       page: 1,
                     });
-                    fetchAdmissionsData({
+                    fetchPlacementSupportData({
                       bucket: "Online",
                       pageNumber: 1,
                     });
@@ -1709,7 +1218,7 @@ export default function Admissions() {
                     setPagination({
                       page: 1,
                     });
-                    fetchAdmissionsData({
+                    fetchPlacementSupportData({
                       bucket: "Classroom",
                       pageNumber: 1,
                     });
@@ -1755,124 +1264,26 @@ export default function Admissions() {
       )}
 
       <div style={{ marginTop: "22px" }}>
-        {(() => {
-          const colorPalette = {
-            "General Info": {
-              groupHeaderClass: "group-header-violet",
-              headerClass: "header-violet",
-            },
-            "Student Onboarding": {
-              groupHeaderClass: "group-header-blue",
-              headerClass: "header-blue",
-            },
-            "Trainer Coordination": {
-              groupHeaderClass: "group-header-green",
-              headerClass: "header-green",
-            },
-            "Progress Monitoring": {
-              groupHeaderClass: "group-header-yellow",
-              headerClass: "header-yellow",
-            },
-            "Course Completion": {
-              groupHeaderClass: "group-header-orange",
-              headerClass: "header-orange",
-            },
-            "Review & Certifications": {
-              groupHeaderClass: "group-header-purple",
-              headerClass: "header-purple",
-            },
-            Action: {
-              groupHeaderClass: "group-header-violet",
-              headerClass: "header-violet",
-            },
-          };
-
-          const groupedTableColumns = [];
-          let currentTableColumns = [...tableColumns];
-
-          if (modeStatus === "Classroom") {
-            const placementIndex = currentTableColumns.findIndex((col) => col.key === "placement_handover");
-            if (placementIndex !== -1) {
-              const placementCol = { ...currentTableColumns[placementIndex], group: "Review & Certifications" };
-              currentTableColumns.splice(placementIndex, 1);
-              
-              let insertIndex = currentTableColumns.length;
-              for (let i = currentTableColumns.length - 1; i >= 0; i--) {
-                if (currentTableColumns[i].group === "Review & Certifications") {
-                  insertIndex = i + 1;
-                  break;
-                }
-              }
-              currentTableColumns.splice(insertIndex, 0, placementCol);
-            }
-          }
-
-          currentTableColumns.forEach((col) => {
-            if (col.group) {
-              const palette = colorPalette[col.group];
-              let group = groupedTableColumns.find((g) => g.key === col.group);
-              if (!group) {
-                group = {
-                  title: (
-                    <div
-                      style={{
-                        minHeight: "24px",
-                        lineHeight: "24px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {col.group}
-                    </div>
-                  ),
-                  key: col.group,
-                  children: [],
-                  className: palette?.groupHeaderClass,
-                  onHeaderCell: () => ({
-                    className: palette?.groupHeaderClass,
-                  }),
-                };
-                groupedTableColumns.push(group);
-              }
-              group.children.push({
-                ...col,
-                onHeaderCell: () => ({
-                  className: palette?.headerClass,
-                }),
-                onCell: () => ({
-                  className: palette?.cellClass,
-                }),
-              });
-            } else {
-              groupedTableColumns.push(col);
-            }
-          });
-
-          return (
-            <CommonTable
-              // scroll={{ x: 2350 }}
-              key={tableColumns.map((col) => col.key).join("-")}
-              scroll={{
-                x: tableColumns.reduce(
-                  (total, col) => total + (col.width || 150),
-                  0,
-                ),
-              }}
-              columns={groupedTableColumns}
-              dataSource={customersData}
-              dataPerPage={10}
-              loading={loading}
-              checkBox="false"
-              size="small"
-              className="admissions_table"
-              onPaginationChange={handlePaginationChange} // callback to fetch new data
-              limit={pagination.limit} // page size
-              page_number={pagination.page} // current page
-              totalPageNumber={pagination.total} // total rows
-            />
-          );
-        })()}
+        <CommonTable
+          // scroll={{ x: 2350 }}
+          scroll={{
+            x: tableColumns.reduce(
+              (total, col) => total + (col.width || 150),
+              0,
+            ),
+          }}
+          columns={tableColumns}
+          dataSource={placementCustomersData}
+          dataPerPage={10}
+          loading={loading}
+          checkBox="false"
+          size="small"
+          className="questionupload_table"
+          onPaginationChange={handlePaginationChange} // callback to fetch new data
+          limit={pagination.limit} // page size
+          page_number={pagination.page} // current page
+          totalPageNumber={pagination.total} // total rows
+        />
       </div>
 
       <Drawer
@@ -1948,10 +1359,10 @@ export default function Admissions() {
                 const payload = {
                   user_id: loginUserId,
                   id: updateTableId,
-                  page_name: "Admissions",
+                  page_name: "Placement Support",
                   column_names: columns,
                 };
-                fetchAdmissionsData({});
+                fetchPlacementSupportData({});
                 try {
                   await updateTableColumns(payload);
                   setTimeout(() => {

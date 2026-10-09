@@ -23,6 +23,7 @@ import {
   storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
   storePermissionsList,
+  storePlacementModulePermissionList,
   storeReportsModulePermissionList,
   storeRoleList,
   storeRoleSearchValue,
@@ -380,6 +381,23 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storeServerModulePermissionList(updateServerModule));
+
+      //filter placement module
+      const placementModule = allPermissions.filter(
+        (f) => f.section === "Placement Module",
+      );
+      const placementCustomOrder = ["Placement Page"];
+
+      const placementSortedArray = placementModule.sort(
+        (a, b) =>
+          placementCustomOrder.indexOf(a.permission_name) -
+          placementCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updatePlacementModule = placementSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storePlacementModulePermissionList(updatePlacementModule));
 
       //filter trainers module
       const trainersModule = allPermissions.filter(

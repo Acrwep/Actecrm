@@ -810,7 +810,7 @@ export default function Customers() {
       key: "status",
       dataIndex: "status",
       fixed: "right",
-      width: 182,
+      width: 170,
       ...(status === "" || status === "Others"
         ? {
             sorter: (a, b) =>

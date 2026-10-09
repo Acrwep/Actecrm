@@ -89,7 +89,7 @@ export default function Refund({
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
-  const [receivedPaymentsData, setReceivedPaymentsData] = useState([]);
+  const [refundData, setRefundData] = useState([]);
   const [selectedDates, setSelectedDates] = useState([]);
   //verify payment
   const [selectedRefundCustomerDetails, setSelectedRefundCustomerDetails] =
@@ -142,6 +142,7 @@ export default function Refund({
     limit: 10,
     total: 0,
     totalPages: 0,
+    overall_refunded_amount: 0,
   });
 
   const nonChangeColumns = [
@@ -448,7 +449,7 @@ export default function Refund({
 
     const payload = {
       user_id: convertAsJson?.user_id,
-      page_name: "Received",
+      page_name: "Refund",
       column_names: defaultColumns || columns,
     };
     try {
@@ -640,7 +641,7 @@ export default function Refund({
     try {
       const response = await getRefundCustomers(payload);
       console.log("refund customers response", response);
-      setReceivedPaymentsData(response?.data?.customers || []);
+      setRefundData(response?.data?.customers || []);
       setRegionCounts(response?.data?.region_counts || null);
       setStatusCount(response?.data?.refund_counts || null);
       const paginations = response?.data?.pagination;
@@ -650,10 +651,11 @@ export default function Refund({
         limit: paginations.limit,
         total: paginations.total,
         totalPages: paginations.totalPages,
+        overall_refunded_amount: paginations.overall_refunded_amount,
       });
       setLoading(false);
     } catch (error) {
-      setReceivedPaymentsData([]);
+      setRefundData([]);
       setRegionCounts(null);
       setStatusCount(null);
       setLoading(false);
@@ -988,7 +990,7 @@ export default function Refund({
           nonChangeColumns,
           `${moment(selectedDates[0]).format("DD-MM-YYYY")} to ${moment(
             selectedDates[1],
-          ).format("DD-MM-YYYY")} Received Payments.csv`,
+          ).format("DD-MM-YYYY")} Refund Customers.csv`,
         );
       } else {
         CommonMessage("error", "No Data Found");
@@ -1367,20 +1369,40 @@ export default function Refund({
                     </span>
                   </p>
                 </div>
-                {/* <div className="livelead_badge_item total">
-            <div
-              className="livelead_badge_dot"
-              style={{ backgroundColor: "#5b69ca" }}
-            />
-            <p className="livelead_badge_text">
-              Total{" "}
-              <span className="livelead_badge_count">
-                {allLeadsRegionCounts?.total || 0}
-              </span>
-            </p>
-          </div> */}
               </div>
             </Col>
+
+            {status === "Refunded" && (
+              <Col
+                span={12}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <div
+                  className="overall_pending_amount_card"
+                  style={{
+                    padding: "8px 16px",
+                    borderLeft: "5px solid #3C9111",
+                  }}
+                >
+                  <span className="overall_pending_amount_label">
+                    Total Refunded Amount:
+                  </span>
+                  <span
+                    className="overall_pending_amount_value"
+                    style={{ color: "#3C9111" }}
+                  >
+                    ₹
+                    {Number(pagination.overall_refunded_amount)?.toLocaleString(
+                      "en-IN",
+                    ) || 0}
+                  </span>
+                </div>
+              </Col>
+            )}
           </Row>
         </>
       ) : (
@@ -1392,37 +1414,37 @@ export default function Refund({
             <Flex gap="middle" wrap="wrap" align="center">
               {[
                 {
-                  label: "New",
-                  value: "NEW",
-                  baseColor: "#0f8753",
-                  count: statusCount?.new_payment || 0,
+                  label: "Requested",
+                  value: "Refund Request",
+                  baseColor: "#607d8b",
+                  count: statusCount?.refund_request_count || 0,
                 },
                 {
-                  label: "Repayment",
-                  value: "REPAYMENT",
+                  label: "Ready to Pay",
+                  value: "Refund Ready to Pay",
                   baseColor: "#ffa502",
-                  count: statusCount?.re_payment || 0,
+                  count: statusCount?.refund_ready_to_pay_count || 0,
                 },
                 {
-                  label: "Rejected",
-                  value: "REJECTED",
-                  baseColor: "#e11d48",
-                  count: statusCount?.rejected || 0,
+                  label: "Refunded",
+                  value: "Refunded",
+                  baseColor: "#3c9111",
+                  count: statusCount?.refunded_count || 0,
                 },
               ].map((bucket) => {
-                const isActive = paymentType === bucket.value;
+                const isActive = status === bucket.value;
                 const baseColor = bucket.baseColor;
                 return (
                   <div
                     key={bucket.label}
                     onClick={() => {
-                      if (paymentType == bucket?.value) {
+                      if (status == bucket?.value) {
                         return;
                       }
-                      setPaymentType(bucket.value);
+                      setStatus(bucket.value);
                       setPagination({ ...pagination, page: 1 });
                       fetchRefundCustomersData({
-                        payment_type: bucket.value,
+                        status: bucket.value,
                         pageNumber: 1,
                       });
                     }}
@@ -1441,6 +1463,35 @@ export default function Refund({
               })}
             </Flex>
           </Col>
+
+          {status === "Refunded" && (
+            <Col
+              span={12}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+              }}
+            >
+              <div
+                className="overall_pending_amount_card"
+                style={{ padding: "8px 16px", borderLeft: "5px solid #3C9111" }}
+              >
+                <span className="overall_pending_amount_label">
+                  Total Refunded Amount:
+                </span>
+                <span
+                  className="overall_pending_amount_value"
+                  style={{ color: "#3C9111" }}
+                >
+                  ₹
+                  {Number(pagination.overall_refunded_amount)?.toLocaleString(
+                    "en-IN",
+                  ) || 0}
+                </span>
+              </div>
+            </Col>
+          )}
         </Row>
       )}
 
@@ -1466,7 +1517,7 @@ export default function Refund({
                   )
               : tableColumns
           }
-          dataSource={receivedPaymentsData}
+          dataSource={refundData}
           dataPerPage={10}
           loading={loading}
           checkBox="false"

@@ -786,13 +786,15 @@ Course Advisor
                                       ? "Trainer Payment"
                                       : location.pathname === "/server"
                                         ? "Server"
-                                        : location.pathname === "/tickets"
-                                          ? "Tickets"
-                                          : location.pathname === "/settings"
-                                            ? "Settings"
-                                            : location.pathname === "/reports"
-                                              ? "Reports"
-                                              : ""}
+                                        : location.pathname === "/placement"
+                                          ? "Placement"
+                                          : location.pathname === "/tickets"
+                                            ? "Tickets"
+                                            : location.pathname === "/settings"
+                                              ? "Settings"
+                                              : location.pathname === "/reports"
+                                                ? "Reports"
+                                                : ""}
           </p>
         </div>
 

@@ -53,6 +53,7 @@ import AcknowledgeClassCompletion from "../Trainers/AcknowledgeClassCompletion";
 import Admissions from "../Admissions/Admissions";
 import Accounts from "../Accounts/Accounts";
 import BatchManagement from "../Batches/BatchManagement";
+import Placement from "../Placement/Placement";
 
 const { Sider, Content, Header } = Layout;
 
@@ -295,6 +296,7 @@ export default function Pages() {
             <Route element={<Tickets />} path="/tickets" />
             <Route element={<WorkSheet />} path="/react-worksheet" />
             <Route element={<Accounts />} path="/accounts" />
+            <Route element={<Placement />} path="/placement" />
             <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>
         </Content>

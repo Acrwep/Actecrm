@@ -675,7 +675,7 @@ export default function Received({
       const status_count = response?.data?.result?.status_count || {};
       setStatusCount(status_count);
       setTotalAmountOfReceived(
-        response?.data?.result?.page_total_paid_amount || null,
+        response?.data?.result?.total_paid_amount || null,
       );
       const paginations = response?.data?.result?.pagination;
       setReceivedCount(

@@ -75,7 +75,6 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function Leads({
   refreshLeadFollowUp,
-  setLeadCount,
   setBucketCounts,
   leadTypeOptions,
   regionOptions,
@@ -1901,7 +1900,6 @@ export default function Leads({
       }));
 
       setLeadData(updatedData);
-      setLeadCount(bucket_counts["all"] || 0);
       setPagination({
         page: pageNumber,
         limit: limit,
@@ -1918,7 +1916,6 @@ export default function Leads({
       setLeadCountLoading(false);
     } catch (error) {
       setLeadData([]);
-      setLeadCount(0);
       console.log("get leads error", error);
     } finally {
       setLoading(false);
