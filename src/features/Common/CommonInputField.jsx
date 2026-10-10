@@ -28,6 +28,7 @@ export default function CommonInputField({
   errorLabel,
   endAdornment,
   startAdornment,
+  disableAutoCapitalize = false,
 }) {
   const inputRef = useRef(null);
   const cursorRef = useRef(null);
@@ -53,20 +54,10 @@ export default function CommonInputField({
     }
 
     if (
+      disableAutoCapitalize ||
       label === "Email" ||
-      label === "Email Address" ||
-      label === "Profile Name" ||
       label === "Trainer Email" ||
-      errorLabel === "Trainer Email" ||
-      label === "User Id" ||
-      label === "Role Name" ||
-      label === "IFSC Code" ||
-      label === "Address" ||
-      label == "Brouchures Link" ||
-      label == "Syllabus" ||
-      label === "Attendance Sheet Link" ||
-      label === "Whatsapp Invite Link" ||
-      label === "Reference Id"
+      errorLabel === "Trainer Email"
     ) {
       if (onChange) {
         onChange({ target: { value: rawValue } });

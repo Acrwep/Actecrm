@@ -159,6 +159,7 @@ const TrainerPayslip = forwardRef(
               value={transactionId}
               error={transactionIdError}
               errorFontSize={"10px"}
+              disableAutoCapitalize={true}
             />
           </Col>
         </Row>

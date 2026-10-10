@@ -1222,6 +1222,7 @@ export default function PageAccess({
               }}
               value={roleName}
               error={roleNameError}
+              disableAutoCapitalize={true}
             />
           </div>
 

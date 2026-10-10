@@ -992,6 +992,7 @@ const ClassSchedule = forwardRef(
                       labelFontSize={"11px"}
                       labelMarginTop={"0px"}
                       errorFontSize="9px"
+                      disableAutoCapitalize={true}
                     />
                   </Col>
                 )}
@@ -1077,6 +1078,7 @@ const ClassSchedule = forwardRef(
                           labelFontSize={"11px"}
                           labelMarginTop={"0px"}
                           errorFontSize="9px"
+                          disableAutoCapitalize={true}
                         />
                       </Col>
                     ) : (

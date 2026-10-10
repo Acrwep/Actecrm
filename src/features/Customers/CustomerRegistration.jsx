@@ -722,6 +722,7 @@ export default function CustomerRegistration() {
               disabled={isOtpSent}
               errorFontSize={"9px"}
               required={true}
+              disableAutoCapitalize={true}
             />
           </div>
 
@@ -1023,6 +1024,7 @@ export default function CustomerRegistration() {
                           error={addressError}
                           multiline={true}
                           errorFontSize={"9px"}
+                          disableAutoCapitalize={true}
                         />
                       </Col>
 

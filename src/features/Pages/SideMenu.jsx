@@ -4,7 +4,7 @@ import { Menu } from "antd";
 import { GrAppsRounded } from "react-icons/gr";
 import { PiUsersThreeBold } from "react-icons/pi";
 import { PiHandCoins } from "react-icons/pi";
-import { MdOutlineGroupAdd } from "react-icons/md";
+import { MdOutlineGroupAdd, MdOutlineCampaign } from "react-icons/md";
 import { FaChalkboardTeacher, FaHandshake } from "react-icons/fa";
 import { FaRegHandshake } from "react-icons/fa";
 import { IoServerOutline } from "react-icons/io5";
@@ -107,6 +107,11 @@ export default function SideMenu() {
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
     },
+    15: {
+      title: "Marketing",
+      icon: <MdOutlineCampaign size={17} />,
+      path: "marketing",
+    },
     // 14: {
     //   title: "Accounts",
     //   icon: <BiRupee size={17} />,
@@ -184,6 +189,11 @@ export default function SideMenu() {
       title: "Settings",
       icon: <IoSettingsOutline size={17} />,
       path: "settings",
+    },
+    15: {
+      title: "Marketing",
+      icon: <MdOutlineCampaign size={17} />,
+      path: "marketing",
     },
     // 14: {
     //   title: "Accounts",

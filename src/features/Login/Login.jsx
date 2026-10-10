@@ -235,6 +235,7 @@ export default function Login() {
                     }}
                     value={userId}
                     error={userIdError}
+                    disableAutoCapitalize={true}
                   />
                 </div>
 

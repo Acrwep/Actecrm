@@ -687,6 +687,7 @@ export default function TrainerRegistration() {
               disabled={isOtpSent}
               errorFontSize={"9px"}
               required={true}
+              disableAutoCapitalize={true}
             />
           </div>
 
@@ -1336,6 +1337,7 @@ export default function TrainerRegistration() {
                         value={ifscCode}
                         error={ifscCodeError}
                         errorFontSize={"9px"}
+                        disableAutoCapitalize={true}
                       />
                     </Col>
                     <Col

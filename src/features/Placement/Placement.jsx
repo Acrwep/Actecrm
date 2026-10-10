@@ -54,8 +54,6 @@ export default function Placement() {
   //======
 
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
-  const [selectedDates, setSelectedDates] = useState([]);
-  const [searchValue, setSearchValue] = useState("");
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
   const [allAdmissionsRegionCounts, setAllAdmissionsRegionCounts] =
@@ -69,6 +67,8 @@ export default function Placement() {
   //feedback usestates
   const [loading, setLoading] = useState(true);
   //filter usestates
+  const [selectedDates, setSelectedDates] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const prevSelectedUserIdRef = useRef("[]");
@@ -1021,245 +1021,142 @@ export default function Placement() {
         </Col>
       </Row>
 
-      {permissions.includes("Show Region Summary") ? (
-        <>
+      <div
+        className="customers_scroll_wrapper"
+        style={{ marginTop: "12px", marginBottom: "0px" }}
+      >
+        <div
+          className="customers_status_mainContainer"
+          style={{
+            marginTop: "0px",
+            marginBottom: "0px",
+            display: "flex",
+            gap: "12px",
+          }}
+        >
           <div
-            className="customers_scroll_wrapper"
-            style={{ marginTop: "12px", marginBottom: "0px" }}
+            className={
+              modeStatus === "Online"
+                ? "customers_active_completed_container"
+                : "customers_completed_container"
+            }
+            onClick={() => {
+              if (modeStatus == "Online") {
+                return;
+              }
+              setModeStatus("Online");
+              setPagination({
+                page: 1,
+              });
+              fetchPlacementSupportData({
+                bucket: "Online",
+                pageNumber: 1,
+              });
+            }}
           >
-            <div
-              className="customers_status_mainContainer"
-              style={{
-                marginTop: "0px",
-                marginBottom: "0px",
-                display: "flex",
-                gap: "12px",
-              }}
-            >
-              <div
-                className={
-                  modeStatus === "Online"
-                    ? "customers_active_completed_container"
-                    : "customers_completed_container"
-                }
-                onClick={() => {
-                  if (modeStatus == "Online") {
-                    return;
-                  }
-                  setModeStatus("Online");
-                  setPagination({
-                    page: 1,
-                  });
-                  fetchPlacementSupportData({
-                    bucket: "Online",
-                    pageNumber: 1,
-                  });
-                }}
-              >
-                <p>
-                  Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}
-                </p>
-              </div>
-
-              <div
-                className={
-                  modeStatus === "Classroom"
-                    ? "customers_active_verifytrainers_container"
-                    : "customers_verifytrainers_container"
-                }
-                onClick={() => {
-                  if (modeStatus == "Classroom") {
-                    return;
-                  }
-                  setModeStatus("Classroom");
-                  setPagination({
-                    page: 1,
-                  });
-                  fetchPlacementSupportData({
-                    bucket: "Classroom",
-                    pageNumber: 1,
-                  });
-                }}
-              >
-                <p>
-                  Classroom{" "}
-                  {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
-                </p>
-              </div>
-            </div>
+            <p>Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}</p>
           </div>
 
-          <Row>
-            <Col span={12}>
-              <div
-                className="livelead_today_summary_container"
-                style={{ marginTop: "12px" }}
-              >
-                <p className="livelead_today_label">REGION SUMMARY</p>
+          <div
+            className={
+              modeStatus === "Classroom"
+                ? "customers_active_verifytrainers_container"
+                : "customers_verifytrainers_container"
+            }
+            onClick={() => {
+              if (modeStatus == "Classroom") {
+                return;
+              }
+              setModeStatus("Classroom");
+              setPagination({
+                page: 1,
+              });
+              fetchPlacementSupportData({
+                bucket: "Classroom",
+                pageNumber: 1,
+              });
+            }}
+          >
+            <p>
+              Classroom{" "}
+              {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
+            </p>
+          </div>
+        </div>
+      </div>
 
-                <div className="livelead_badge_item online">
-                  <div
-                    className="livelead_badge_dot"
-                    style={{ backgroundColor: "#3c9111" }}
-                  />
-                  <p className="livelead_badge_text">
-                    Hub{" "}
-                    <span className="livelead_badge_count">
-                      {allAdmissionsRegionCounts?.hub_region ?? 0}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="livelead_badge_item classroom">
-                  <div
-                    className="livelead_badge_dot"
-                    style={{ backgroundColor: "#1e90ff" }}
-                  />
-                  <p className="livelead_badge_text">
-                    Chennai{" "}
-                    <span className="livelead_badge_count">
-                      {allAdmissionsRegionCounts?.chennai_region ?? 0}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="livelead_badge_item classroom">
-                  <div
-                    className="livelead_badge_dot"
-                    style={{ backgroundColor: "#5b69ca" }}
-                  />
-                  <p className="livelead_badge_text">
-                    Bangalore{" "}
-                    <span className="livelead_badge_count">
-                      {allAdmissionsRegionCounts?.bangalore_region ?? 0}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="livelead_badge_item total">
-                  <div
-                    className="livelead_badge_dot"
-                    style={{ backgroundColor: "#5b69ca" }}
-                  />
-                  <p className="livelead_badge_text">
-                    Total{" "}
-                    <span className="livelead_badge_count">
-                      {(allAdmissionsRegionCounts?.hub_region ?? 0) +
-                        (allAdmissionsRegionCounts?.chennai_region ?? 0) +
-                        (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </Col>
-            <Col
-              span={12}
-              style={{
-                marginTop: "12px",
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            ></Col>
-          </Row>
-        </>
-      ) : (
-        <Row style={{ marginTop: "12px" }}>
+      {permissions.includes("Show Region Summary") && (
+        <Row>
           <Col span={12}>
             <div
-              className="customers_scroll_wrapper"
-              style={{ marginTop: "12px", marginBottom: "0px" }}
+              className="livelead_today_summary_container"
+              style={{ marginTop: "12px" }}
             >
-              <div
-                className="customers_status_mainContainer"
-                style={{
-                  marginTop: "0px",
-                  marginBottom: "0px",
-                  display: "flex",
-                  gap: "12px",
-                }}
-              >
-                <div
-                  className={
-                    modeStatus === "Online"
-                      ? "customers_active_completed_container"
-                      : "customers_completed_container"
-                  }
-                  onClick={() => {
-                    if (modeStatus == "Online") {
-                      return;
-                    }
-                    setModeStatus("Online");
-                    setPagination({
-                      page: 1,
-                    });
-                    fetchPlacementSupportData({
-                      bucket: "Online",
-                      pageNumber: 1,
-                    });
-                  }}
-                >
-                  <p>
-                    Online{" "}
-                    {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}
-                  </p>
-                </div>
+              <p className="livelead_today_label">REGION SUMMARY</p>
 
+              <div className="livelead_badge_item online">
                 <div
-                  className={
-                    modeStatus === "Classroom"
-                      ? "customers_active_verifytrainers_container"
-                      : "customers_verifytrainers_container"
-                  }
-                  onClick={() => {
-                    if (modeStatus == "Classroom") {
-                      return;
-                    }
-                    setModeStatus("Classroom");
-                    setPagination({
-                      page: 1,
-                    });
-                    fetchPlacementSupportData({
-                      bucket: "Classroom",
-                      pageNumber: 1,
-                    });
-                  }}
-                >
-                  <p>
-                    Classroom{" "}
-                    {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
-                  </p>
-                </div>
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#3c9111" }}
+                />
+                <p className="livelead_badge_text">
+                  Hub{" "}
+                  <span className="livelead_badge_count">
+                    {allAdmissionsRegionCounts?.hub_region ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#1e90ff" }}
+                />
+                <p className="livelead_badge_text">
+                  Chennai{" "}
+                  <span className="livelead_badge_count">
+                    {allAdmissionsRegionCounts?.chennai_region ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item classroom">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#5b69ca" }}
+                />
+                <p className="livelead_badge_text">
+                  Bangalore{" "}
+                  <span className="livelead_badge_count">
+                    {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+                  </span>
+                </p>
+              </div>
+
+              <div className="livelead_badge_item total">
+                <div
+                  className="livelead_badge_dot"
+                  style={{ backgroundColor: "#5b69ca" }}
+                />
+                <p className="livelead_badge_text">
+                  Total{" "}
+                  <span className="livelead_badge_count">
+                    {(allAdmissionsRegionCounts?.hub_region ?? 0) +
+                      (allAdmissionsRegionCounts?.chennai_region ?? 0) +
+                      (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
+                  </span>
+                </p>
               </div>
             </div>
           </Col>
-
           <Col
             span={12}
             style={{
               marginTop: "12px",
               display: "flex",
               justifyContent: "flex-end",
-              alignItems: "center",
             }}
-          >
-            <div className="admissions_progress_container">
-              <span className="admissions_progress_label">
-                Overall Progress:
-              </span>
-              <Progress
-                percent={65}
-                showInfo={false}
-                strokeWidth={6}
-                strokeColor={{
-                  "0%": "#8a9bf8",
-                  "100%": "#5b69ca",
-                }}
-                trailColor="#f1f5f9"
-                className="admissions_progress_bar"
-              />
-              <span className="admissions_progress_text">65%</span>
-            </div>
-          </Col>
+          ></Col>
         </Row>
       )}
 

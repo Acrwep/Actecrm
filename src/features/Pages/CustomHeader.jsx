@@ -788,13 +788,17 @@ Course Advisor
                                         ? "Server"
                                         : location.pathname === "/placement"
                                           ? "Placement"
-                                          : location.pathname === "/tickets"
-                                            ? "Tickets"
-                                            : location.pathname === "/settings"
-                                              ? "Settings"
-                                              : location.pathname === "/reports"
-                                                ? "Reports"
-                                                : ""}
+                                          : location.pathname === "/marketing"
+                                            ? "Marketing"
+                                            : location.pathname === "/tickets"
+                                              ? "Tickets"
+                                              : location.pathname ===
+                                                  "/settings"
+                                                ? "Settings"
+                                                : location.pathname ===
+                                                    "/reports"
+                                                  ? "Reports"
+                                                  : ""}
           </p>
         </div>
 
@@ -1197,6 +1201,7 @@ Course Advisor
               required={true}
               value={profileName}
               disabled={true}
+              disableAutoCapitalize={true}
             />
           </Col>
           <Col span={12}>

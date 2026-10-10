@@ -1323,6 +1323,7 @@ const MakeAsCustomer = forwardRef(
                     value={gstAddress}
                     error={gstAddressError}
                     errorFontSize={"9px"}
+                    disableAutoCapitalize={true}
                   />
                 </Col>
               </Row>

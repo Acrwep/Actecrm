@@ -1839,6 +1839,7 @@ export default function Refund({
                       value={transactionId}
                       error={transactionIdError}
                       errorFontSize={"9px"}
+                      disableAutoCapitalize={true}
                     />
                   </Col>
                 </Row>

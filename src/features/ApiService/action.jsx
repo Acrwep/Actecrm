@@ -2200,3 +2200,38 @@ export const getPlacementSupport = async (payload) => {
     throw error;
   }
 };
+//marketing
+export const getLeadsOnly = async (payload) => {
+  try {
+    const response = await api.post(`/api/getLeadsOnly`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+export const getWhatsAppTemplates = async () => {
+  try {
+    const response = await api.get(`/api/templates?activeOnly=true`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendWhatsAppTemplate = async (payload) => {
+  try {
+    const response = await api.post(`/api/send-template`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createWhatsAppTemplate = async (payload) => {
+  try {
+    const response = await api.post(`/api/templates`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

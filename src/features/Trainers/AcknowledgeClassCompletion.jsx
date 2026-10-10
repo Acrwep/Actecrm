@@ -249,6 +249,7 @@ export default function AcknowledgeClassCompletion() {
               disabled={isOtpSent}
               errorFontSize={"9px"}
               required={true}
+              disableAutoCapitalize={true}
             />
           </div>
 

@@ -1298,6 +1298,7 @@ const AddTrainerPaymentRequest = forwardRef(
                       value={item.attendance_sheetlink}
                       error={item.attendance_sheetlink_error}
                       errorFontSize={"9px"}
+                      disableAutoCapitalize={true}
                     />
                   ) : (
                     <>

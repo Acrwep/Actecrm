@@ -1362,6 +1362,7 @@ const CustomerUpdate = forwardRef(
                   }}
                   value={customerAddress}
                   error={""}
+                  disableAutoCapitalize={true}
                 />
               </Col>
             </Row>

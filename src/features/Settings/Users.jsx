@@ -1197,6 +1197,7 @@ export default function Users({
                 value={viewUserId}
                 error={viewUserIdError}
                 errorFontSize={"9px"}
+                disableAutoCapitalize={true}
               />
             </Col>
             <Col span={8}>
@@ -1214,6 +1215,7 @@ export default function Users({
                 value={profileName}
                 error={profileNameError}
                 errorFontSize={"9px"}
+                disableAutoCapitalize={true}
               />
             </Col>
             <Col span={8}>

@@ -16,6 +16,7 @@ const CommonTextArea = ({
   style,
   disabled = false,
   textAreaStyle,
+  disableAutoCapitalize = false,
 }) => {
   const textAreaRef = useRef(null);
   const cursorRef = useRef(null);
@@ -25,11 +26,15 @@ const CommonTextArea = ({
     // Store cursor position
     cursorRef.current = { start: selectionStart, end: selectionEnd };
 
-    const newValue = capitalizeWords(rawValue);
-
-    if (onChange) {
-      // pass transformed value to parent
-      onChange({ target: { value: newValue } });
+    if (disableAutoCapitalize) {
+      if (onChange) {
+        onChange({ target: { value: rawValue } });
+      }
+    } else {
+      const newValue = capitalizeWords(rawValue);
+      if (onChange) {
+        onChange({ target: { value: newValue } });
+      }
     }
   };
 

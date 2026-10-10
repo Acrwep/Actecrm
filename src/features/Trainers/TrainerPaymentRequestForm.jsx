@@ -995,6 +995,7 @@ const TrainerPaymentRequestForm = forwardRef(
               error={isTrainer ? ifscCodeError : ""}
               errorFontSize={"10px"}
               disabled={!isBankEdit}
+              disableAutoCapitalize={true}
             />
           </Col>
         </Row>
@@ -1592,6 +1593,7 @@ const TrainerPaymentRequestForm = forwardRef(
                       error={item.attendance_sheetlink_error}
                       errorFontSize={"9px"}
                       disabled={isTrainer ? false : true}
+                      disableAutoCapitalize={true}
                     />
                   ) : (
                     <div

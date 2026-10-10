@@ -987,6 +987,7 @@ const TrainerPaymentDirectPaid = forwardRef(
               value={ifscCode}
               error={ifscCodeError}
               errorFontSize={"10px"}
+              disableAutoCapitalize={true}
             />
           </Col>
         </Row>
@@ -1568,6 +1569,7 @@ const TrainerPaymentDirectPaid = forwardRef(
                       value={item.attendance_sheetlink}
                       error={item.attendance_sheetlink_error}
                       errorFontSize={"9px"}
+                      disableAutoCapitalize={true}
                     />
                   ) : (
                     <div
@@ -1665,6 +1667,7 @@ const TrainerPaymentDirectPaid = forwardRef(
               value={transactionId}
               error={transactionIdError}
               errorFontSize={"10px"}
+              disableAutoCapitalize={true}
             />
           </Col>
         </Row>
