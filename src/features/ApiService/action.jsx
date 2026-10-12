@@ -2220,7 +2220,7 @@ export const getWhatsAppTemplates = async () => {
 
 export const sendWhatsAppTemplate = async (payload) => {
   try {
-    const response = await api.post(`/api/send-template`, payload);
+    const response = await api.post(`/api/sendSingleWhatsappMessage`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -2229,7 +2229,39 @@ export const sendWhatsAppTemplate = async (payload) => {
 
 export const createWhatsAppTemplate = async (payload) => {
   try {
-    const response = await api.post(`/api/templates`, payload);
+    const response = await api.post(`/api/createWhatsAppTemplate`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendBulkWhatsAppTemplate = async (payload) => {
+  try {
+    const response = await api.post(`/api/sendBulkWhatsappMessage`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateWhatsAppTemplate = async (id, payload) => {
+  try {
+    const response = await api.put(
+      `/api/updateWhatsAppTemplate/${id}`,
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteWhatsAppTemplate = async (id, payload = {}) => {
+  try {
+    const response = await api.delete(`/api/deleteWhatsAppTemplate/${id}`, {
+      data: payload,
+    });
     return response;
   } catch (error) {
     throw error;

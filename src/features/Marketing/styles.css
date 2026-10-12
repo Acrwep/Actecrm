@@ -267,3 +267,155 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+/* Bulk WhatsApp Styles */
+.marketing_bulk_whatsapp_button {
+  background-color: #3c9111;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.04);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.marketing_bulk_whatsapp_button:hover {
+  opacity: 0.8 !important;
+}
+
+.bulk-whatsapp-recipients-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.bulk-whatsapp-recipients-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.bulk-whatsapp-recipients-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.bulk-whatsapp-recipients-hint {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.bulk-whatsapp-recipients-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 95px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+
+.bulk-recipient-pill {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  font-size: 11px;
+  padding: 2px 8px;
+  font-weight: 500;
+}
+
+.bulk-recipient-pill.more {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.bulk-contacts-selected-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #389e0d;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  white-space: nowrap;
+}
+
+/* WhatsApp Template Select Option with Edit and Delete Icons */
+.whatsapp_template_option_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0px 0;
+}
+
+.whatsapp_template_option_label {
+  font-size: 12px;
+  color: #334155;
+  font-family: "Poppins", sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.whatsapp_template_option_actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.whatsapp_template_option_action_wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.whatsapp_template_option_action_wrapper.edit:hover {
+  background-color: #f1f5f9;
+}
+
+.whatsapp_template_option_action_wrapper.delete:hover {
+  background-color: #fef2f2;
+}
+
+.whatsapp_template_option_edit_icon {
+  font-size: 15px;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.whatsapp_template_option_action_wrapper.edit:hover
+  .whatsapp_template_option_edit_icon {
+  color: #4f46e5;
+}
+
+.whatsapp_template_option_delete_icon {
+  font-size: 15px;
+  color: #94a3b8;
+  transition: color 0.2s ease;
+}
+
+.whatsapp_template_option_action_wrapper.delete:hover
+  .whatsapp_template_option_delete_icon {
+  color: #ef4444;
+}
+

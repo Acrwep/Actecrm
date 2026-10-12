@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Switch, Space, Row, Col, Drawer } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { createWhatsAppTemplate } from "../ApiService/action";
+import {
+  createWhatsAppTemplate,
+  updateWhatsAppTemplate,
+} from "../ApiService/action";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTextArea from "../Common/CommonTextArea";
 import { CommonMessage } from "../Common/CommonMessage";
-import { selectValidator } from "../Common/Validation";
+import { formatToBackendIST, selectValidator } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 
-export default function CreateTemplateModal({ isOpen, onClose }) {
+export default function CreateTemplateModal({
+  isOpen,
+  onClose,
+  editData = null,
+  onSuccess,
+}) {
   const [validationTrigger, setValidationTrigger] = useState(false);
 
   // Form Fields
@@ -43,10 +51,61 @@ export default function CreateTemplateModal({ isOpen, onClose }) {
   const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      if (editData) {
+        setTemplateLabel(editData.template_label || "");
+        setTemplateLabelError("");
+        setTemplateKey(editData.template_key || "");
+        setTemplateKeyError("");
+        setCampaignName(editData.campaign_name || "");
+        setCampaignNameError("");
+        setCategory(editData.category || "UTILITY");
+        setCategoryError("");
+        setLanguage(editData.language || "en");
+        setLanguageError("");
+        setDescription(
+          editData.description ||
+            editData.body ||
+            editData.template_body ||
+            editData.message_body ||
+            "",
+        );
+        setMediaRequired(Boolean(editData.media_required));
+        setMediaType(editData.media_type || null);
+        setMediaTypeError("");
+
+        let parsedParams = [];
+        if (Array.isArray(editData.parameters)) {
+          parsedParams = editData.parameters;
+        } else if (typeof editData.parameters === "string") {
+          try {
+            parsedParams = JSON.parse(editData.parameters);
+          } catch {
+            parsedParams = [];
+          }
+        }
+
+        if (parsedParams && parsedParams.length > 0) {
+          setParameters(
+            parsedParams.map((p) => ({
+              key: p.key || "",
+              label: p.label || "",
+              required: p.required !== undefined ? Boolean(p.required) : true,
+            })),
+          );
+          setParameterErrors(parsedParams.map(() => ({ key: "", label: "" })));
+        } else {
+          setParameters([{ key: "", label: "", required: true }]);
+          setParameterErrors([{ key: "", label: "" }]);
+        }
+        setValidationTrigger(false);
+      } else {
+        resetForm();
+      }
+    } else {
       resetForm();
     }
-  }, [isOpen]);
+  }, [isOpen, editData]);
 
   const resetForm = () => {
     setTemplateLabel("");
@@ -91,7 +150,7 @@ export default function CreateTemplateModal({ isOpen, onClose }) {
     let isValid = true;
 
     const labelErr = selectValidator(templateLabel);
-    const keyErr = selectValidator(templateKey);
+    const keyErr = editData ? "" : selectValidator(templateKey);
     const campaignErr = selectValidator(campaignName);
     const catErr = selectValidator(category);
     const langErr = selectValidator(language);
@@ -112,48 +171,102 @@ export default function CreateTemplateModal({ isOpen, onClose }) {
       if (mediaErr) isValid = false;
     }
 
+    const seenKeys = new Set();
+    let hasDuplicate = false;
+
     const newParamErrors = parameters.map((p) => {
-      const pKeyErr = selectValidator(p.key);
+      let pKeyErr = selectValidator(p.key);
       const pLabelErr = selectValidator(p.label);
+
+      if (!pKeyErr && p.key) {
+        const trimmedKey = p.key.trim().toLowerCase();
+        if (seenKeys.has(trimmedKey)) {
+          pKeyErr = "Duplicate parameter key";
+          hasDuplicate = true;
+        } else {
+          seenKeys.add(trimmedKey);
+        }
+      }
+
       if (pKeyErr || pLabelErr) isValid = false;
       return { key: pKeyErr, label: pLabelErr };
     });
     setParameterErrors(newParamErrors);
+
+    if (hasDuplicate) {
+      isValid = false;
+    }
 
     return isValid;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
 
     setButtonLoading(true);
     try {
-      const payload = {
-        template_key: templateKey,
-        template_label: templateLabel,
-        campaign_name: campaignName,
-        description: description || "",
-        category: category,
-        language: language,
-        parameters: parameters,
-        media_required: mediaRequired,
-        media_type: mediaRequired ? mediaType : null,
-      };
+      if (editData && editData.id) {
+        const payload = {
+          template_label: templateLabel,
+          campaign_name: campaignName,
+          description: description || null,
+          category: category || "UTILITY",
+          language: language || "en",
+          parameters: parameters.map((p) => ({
+            key: p.key.trim(),
+            label: p.label.trim(),
+            required: Boolean(p.required),
+          })),
+          media_required: mediaRequired ? 1 : 0,
+          media_type: mediaRequired ? mediaType : null,
+          updated_at: formatToBackendIST(new Date()),
+          is_active:
+            editData.is_active !== undefined ? (editData.is_active ? 1 : 0) : 1,
+        };
 
-      await createWhatsAppTemplate(payload);
+        await updateWhatsAppTemplate(editData.id, payload);
 
-      CommonMessage(
-        "success",
-        "The new WhatsApp template has been created successfully.",
-      );
-      setButtonLoading(false);
+        CommonMessage("success", "Template updated successfully.");
+      } else {
+        const payload = {
+          template_key: templateKey,
+          template_label: templateLabel,
+          campaign_name: campaignName,
+          description: description || "",
+          category: category,
+          language: language,
+          parameters: parameters.map((p) => ({
+            key: p.key.trim(),
+            label: p.label.trim(),
+            required: Boolean(p.required),
+          })),
+          media_required: mediaRequired,
+          media_type: mediaRequired ? mediaType : null,
+          created_by: convertAsJson?.user_id,
+          created_at: formatToBackendIST(new Date()),
+        };
+
+        await createWhatsAppTemplate(payload);
+
+        CommonMessage(
+          "success",
+          "The new WhatsApp template has been created successfully.",
+        );
+      }
+
+      if (onSuccess) onSuccess();
       onClose();
+      setTimeout(() => {
+        setButtonLoading(false);
+      }, 300);
     } catch (error) {
-      console.error("Error creating template:", error);
+      console.error("Error saving template:", error);
       const errorMessage =
+        error?.response?.data?.message ||
         error?.response?.data?.error?.errorMessage ||
         error?.response?.data?.error?.message ||
-        error?.response?.data?.message ||
         error?.error?.errorMessage ||
         error?.error?.message ||
         "An unexpected error occurred.";
@@ -193,7 +306,9 @@ export default function CreateTemplateModal({ isOpen, onClose }) {
 
   return (
     <Drawer
-      title={"Create New WhatsApp Template"}
+      title={
+        editData ? "Edit WhatsApp Template" : "Create New WhatsApp Template"
+      }
       open={isOpen}
       onClose={onClose}
       width={"50%"}
@@ -225,7 +340,8 @@ export default function CreateTemplateModal({ isOpen, onClose }) {
             <CommonInputField
               label="Template Key"
               placeholder="e.g. standard_invoice"
-              required={true}
+              required={!editData}
+              disabled={Boolean(editData)}
               value={templateKey}
               onChange={(e) => {
                 setTemplateKey(e.target.value);
@@ -479,7 +595,7 @@ export default function CreateTemplateModal({ isOpen, onClose }) {
                 className={"create_whatsapp_template_button"}
                 onClick={handleSubmit}
               >
-                Create Template
+                {editData ? "Update Template" : "Create Template"}
               </button>
             )}
           </>

@@ -482,6 +482,7 @@
   color: gray;
   margin-top: 6px !important;
   line-height: 24px !important;
+  text-align: center;
 }
 .common_deletemodal_footerContainer {
   display: flex;

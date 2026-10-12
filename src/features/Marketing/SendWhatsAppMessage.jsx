@@ -1,19 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, notification, Row, Col, Spin, Drawer } from "antd";
+import {
+  Modal,
+  Button,
+  notification,
+  Row,
+  Col,
+  Spin,
+  Drawer,
+  Tag,
+  Tooltip,
+} from "antd";
 import { MdSend, MdOutlineDescription } from "react-icons/md";
 import { FaWhatsapp } from "react-icons/fa";
+import { AiOutlineEdit } from "react-icons/ai";
+import { RiDeleteBinLine } from "react-icons/ri";
 import {
   getWhatsAppTemplates,
   sendWhatsAppTemplate,
+  sendBulkWhatsAppTemplate,
+  deleteWhatsAppTemplate,
 } from "../ApiService/action";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
+import CreateTemplateModal from "./CreateTemplateModal";
+import CommonDeleteModal from "../Common/CommonDeleteModal";
 import "./styles.css";
 import {
   nameValidator,
   selectValidator,
   mobileValidator,
   urlValidator,
+  formatToBackendIST,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -23,11 +40,19 @@ export default function SendWhatsAppMessage({
   onClose,
   customer,
   leadId,
+  leads = [],
+  isBulk = false,
+  onSuccess,
 }) {
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   // Form states
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [selectedTemplateIdError, setSelectedTemplateIdError] = useState("");
@@ -49,15 +74,25 @@ export default function SendWhatsAppMessage({
 
   const [validationTrigger, setValidationTrigger] = useState(false);
 
+  const isNameParam = (key) =>
+    ["name", "customer_name", "student_name", "candidate_name"].includes(
+      String(key || "").toLowerCase(),
+    );
+
   useEffect(() => {
     if (isOpen) {
       fetchTemplates();
-      setCustomerName(customer?.name || customer?.customer_name || "");
-      setMobile(customer?.mobile || customer?.phone || "");
+      if (!isBulk) {
+        setCustomerName(customer?.name || customer?.customer_name || "");
+        setMobile(customer?.mobile || customer?.phone || "");
+      } else {
+        setCustomerName("");
+        setMobile("");
+      }
     } else {
       resetForm();
     }
-  }, [isOpen, customer]);
+  }, [isOpen, customer, isBulk]);
 
   const resetForm = () => {
     setSelectedTemplate(null);
@@ -81,7 +116,16 @@ export default function SendWhatsAppMessage({
     try {
       const response = await getWhatsAppTemplates();
       if (response?.data?.success) {
-        setTemplates(response.data.data);
+        const list = response.data.data || [];
+        setTemplates(list);
+        if (selectedTemplateId) {
+          const updatedTemplate = list.find(
+            (t) => String(t.id) === String(selectedTemplateId),
+          );
+          if (updatedTemplate) {
+            setSelectedTemplate(updatedTemplate);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -106,7 +150,7 @@ export default function SendWhatsAppMessage({
     const template = templates.find((t) => String(t.id) === String(templateId));
     setSelectedTemplate(template || null);
 
-    if (template && customer) {
+    if (template && customer && !isBulk) {
       const prepopulate = {};
       template.parameters?.forEach((param) => {
         if (customer[param.key]) {
@@ -131,25 +175,41 @@ export default function SendWhatsAppMessage({
     let isValid = true;
 
     const templateValidate = selectValidator(selectedTemplateId);
-    const customerNameValidate = nameValidator(customerName);
-    const mobileValidate = mobileValidator(mobile);
-
     setSelectedTemplateIdError(templateValidate);
-    setCustomerNameError(customerNameValidate);
-    setMobileError(mobileValidate);
-
-    if (templateValidate || customerNameValidate || mobileValidate) {
+    if (templateValidate) {
       isValid = false;
+    }
+
+    if (!isBulk) {
+      const customerNameValidate = nameValidator(customerName);
+      const mobileValidate = mobileValidator(mobile);
+
+      setCustomerNameError(customerNameValidate);
+      setMobileError(mobileValidate);
+
+      if (customerNameValidate || mobileValidate) {
+        isValid = false;
+      }
+    } else {
+      if (!leads || leads.length === 0) {
+        CommonMessage("error", "No leads selected for bulk WhatsApp sending.");
+        return false;
+      }
     }
 
     if (selectedTemplate) {
       const newParamErrors = {};
       selectedTemplate.parameters?.forEach((param) => {
         if (param.required) {
-          const err = selectValidator(parameterValues[param.key]);
-          if (err) {
-            newParamErrors[param.key] = err;
-            isValid = false;
+          // If in bulk mode and it's a candidate name param, each lead's name will automatically populate
+          if (isBulk && isNameParam(param.key)) {
+            // Validated automatically
+          } else {
+            const err = selectValidator(parameterValues[param.key]);
+            if (err) {
+              newParamErrors[param.key] = err;
+              isValid = false;
+            }
           }
         }
       });
@@ -174,25 +234,109 @@ export default function SendWhatsAppMessage({
   const handleSubmit = async () => {
     if (!validateForm() || !selectedTemplate) return;
 
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
+
     setButtonLoading(true);
     try {
-      const payload = {
-        template_id: selectedTemplate.id,
-        mobile: mobile,
-        customer_name: customerName,
-        lead_id: leadId,
-        values: parameterValues,
-      };
+      if (isBulk) {
+        const formattedLeads = leads
+          .filter((lead) => lead.phone || lead.mobile)
+          .map((lead) => {
+            const destMobile = String(lead.phone || lead.mobile).trim();
+            const custName = lead.name || lead.customer_name || "Customer";
+            const leadValues = {};
 
-      if (selectedTemplate.media_required) {
-        payload.media_url = mediaUrl;
-        payload.media_filename = mediaFilename;
+            selectedTemplate.parameters?.forEach((param) => {
+              if (
+                parameterValues[param.key] !== undefined &&
+                parameterValues[param.key] !== ""
+              ) {
+                leadValues[param.key] = parameterValues[param.key];
+              } else if (isNameParam(param.key)) {
+                leadValues[param.key] = custName;
+              } else if (
+                [
+                  "course",
+                  "course_name",
+                  "technology",
+                  "technology_name",
+                ].includes(String(param.key).toLowerCase())
+              ) {
+                leadValues[param.key] =
+                  lead.course_name || lead.course || lead.technology_name || "";
+              } else if (lead[param.key] !== undefined) {
+                leadValues[param.key] = String(lead[param.key]);
+              } else {
+                leadValues[param.key] = "";
+              }
+            });
+
+            const leadObj = {
+              mobile: destMobile,
+              customer_name: custName,
+              lead_id: lead.id || lead.lead_id || null,
+              customer_id: lead.customer_id || null,
+              values: leadValues,
+              sent_by: convertAsJson?.user_id,
+              created_at: formatToBackendIST(new Date()),
+            };
+
+            if (selectedTemplate.media_required && mediaUrl) {
+              leadObj.media_url = mediaUrl;
+              leadObj.media_filename = mediaFilename || "attachment.pdf";
+            }
+
+            return leadObj;
+          });
+
+        if (formattedLeads.length === 0) {
+          CommonMessage(
+            "error",
+            "None of the selected leads have a valid mobile number.",
+          );
+          setButtonLoading(false);
+          return;
+        }
+
+        const bulkPayload = {
+          template_id: selectedTemplate.id,
+          leads: formattedLeads,
+        };
+
+        const res = await sendBulkWhatsAppTemplate(bulkPayload);
+        CommonMessage(
+          "success",
+          res?.data?.message ||
+            `Initiated bulk sending for ${formattedLeads.length} contacts.`,
+        );
+        if (onSuccess) onSuccess();
+        onClose();
+      } else {
+        const payload = {
+          template_id: selectedTemplate.id,
+          mobile: mobile,
+          customer_name: customerName,
+          lead_id: leadId,
+          values: parameterValues,
+          sent_by: convertAsJson?.user_id,
+          created_at: formatToBackendIST(new Date()),
+        };
+
+        if (selectedTemplate.media_required) {
+          payload.media_url = mediaUrl;
+          payload.media_filename = mediaFilename;
+        }
+
+        await sendWhatsAppTemplate(payload);
+
+        CommonMessage(
+          "success",
+          "WhatsApp message has been sent successfully!",
+        );
+        if (onSuccess) onSuccess();
+        onClose();
       }
-
-      await sendWhatsAppTemplate(payload);
-
-      CommonMessage("success", "WhatsApp message has been sent successfully!");
-      onClose();
     } catch (error) {
       console.error("Error sending WhatsApp template message:", error);
 
@@ -209,7 +353,10 @@ export default function SendWhatsAppMessage({
           "Template does not exist. Please add it to AiSensy.",
         );
       } else {
-        CommonMessage("error", "Failed to Send. Please try again later.");
+        CommonMessage(
+          "error",
+          errorMessage || "Failed to Send. Please try again later.",
+        );
       }
     } finally {
       setButtonLoading(false);
@@ -229,8 +376,19 @@ export default function SendWhatsAppMessage({
       selectedTemplate.description ||
       "";
 
+    const previewCustomerName = isBulk
+      ? leads?.[0]?.name || leads?.[0]?.customer_name || "Customer"
+      : customerName || "Customer";
+
     selectedTemplate.parameters?.forEach((param, index) => {
-      const val = parameterValues[param.key] || `[${param.label}]`;
+      let val = parameterValues[param.key];
+      if (!val) {
+        if (isBulk && isNameParam(param.key)) {
+          val = previewCustomerName;
+        } else {
+          val = `[${param.label}]`;
+        }
+      }
       // Replace AiSensy format {{1}}
       text = text.replace(new RegExp(`\\{\\{${index + 1}\\}\\}`, "g"), val);
       // Replace custom format {{key}}
@@ -240,7 +398,115 @@ export default function SendWhatsAppMessage({
     return text;
   };
 
+  const handleEditTemplate = (option, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const fullTemplate =
+      templates.find((t) => String(t.id) === String(option.id)) || option;
+    setEditingTemplate(fullTemplate);
+    setIsEditTemplateModalOpen(true);
+  };
+
+  const handleOpenDeleteModal = (option, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const fullTemplate =
+      templates.find((t) => String(t.id) === String(option.id)) || option;
+    setTemplateToDelete(fullTemplate);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!templateToDelete || !templateToDelete.id) return;
+
+    setDeleteLoading(true);
+    try {
+      const payload = {
+        updated_at: formatToBackendIST(new Date()),
+      };
+      await deleteWhatsAppTemplate(templateToDelete.id, payload);
+      CommonMessage("success", "Template deleted successfully");
+
+      // If deleted template was currently selected, reset selected template fields
+      if (String(selectedTemplateId) === String(templateToDelete.id)) {
+        setSelectedTemplateId("");
+        setSelectedTemplate(null);
+        setParameterValues({});
+        setParameterErrors({});
+        setMediaUrl("");
+        setMediaFilename("");
+      }
+
+      setIsDeleteModalOpen(false);
+      setTemplateToDelete(null);
+      await fetchTemplates();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error?.errorMessage ||
+        error?.response?.data?.error?.message ||
+        error?.message ||
+        "Failed to delete template";
+      CommonMessage("error", errorMessage);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const renderTemplateOption = (props, option) => {
+    return (
+      <li {...props} key={props.key || option.id}>
+        <div className="whatsapp_template_option_row">
+          <span className="whatsapp_template_option_label">
+            {option.template_label || option.name}
+          </span>
+          <div className="whatsapp_template_option_actions">
+            <Tooltip title="Edit Template" placement="top" zIndex={999999999}>
+              <span
+                className="whatsapp_template_option_action_wrapper edit"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleEditTemplate(option, e);
+                }}
+              >
+                <AiOutlineEdit className="whatsapp_template_option_edit_icon" />
+              </span>
+            </Tooltip>
+
+            <Tooltip title="Delete Template" placement="top" zIndex={999999999}>
+              <span
+                className="whatsapp_template_option_action_wrapper delete"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleOpenDeleteModal(option, e);
+                }}
+              >
+                <RiDeleteBinLine className="whatsapp_template_option_delete_icon" />
+              </span>
+            </Tooltip>
+          </div>
+        </div>
+      </li>
+    );
+  };
+
   const templateOptions = templates.map((t) => ({
+    ...t,
     id: String(t.id),
     name: t.template_label,
   }));
@@ -248,9 +514,29 @@ export default function SendWhatsAppMessage({
   return (
     <Drawer
       title={
-        <div className="whatsapp-modal-header">
-          <FaWhatsapp size={20} className="whatsapp-modal-icon" />
-          <span className="whatsapp-modal-title">Send WhatsApp Template</span>
+        <div
+          className="whatsapp-modal-header"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            paddingRight: "20px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <FaWhatsapp size={20} className="whatsapp-modal-icon" />
+            <span className="whatsapp-modal-title">
+              {isBulk
+                ? "Send Bulk WhatsApp Template"
+                : "Send WhatsApp Template"}
+            </span>
+          </div>
+          {isBulk && (
+            <div className="bulk-contacts-selected-tag">
+              {leads.length} Contacts Selected
+            </div>
+          )}
         </div>
       }
       open={isOpen}
@@ -276,49 +562,77 @@ export default function SendWhatsAppMessage({
             errorFontSize="9px"
             labelMarginTop={"0px"}
             loading={templateLoading}
+            renderOption={renderTemplateOption}
           />
         </div>
 
-        <Row gutter={[16, 16]}>
-          <Col span={12}>
-            <CommonInputField
-              label="Candidate Name"
-              placeholder="e.g. John Doe"
-              required={true}
-              value={customerName}
-              onChange={(e) => {
-                setCustomerName(e.target.value);
-                if (validationTrigger) {
-                  setCustomerNameError(nameValidator(e.target.value));
-                }
-              }}
-              error={customerNameError}
-              height="34px"
-              labelFontSize="11px"
-              errorFontSize="9px"
-              labelMarginTop={"0px"}
-            />
-          </Col>
-          <Col span={12}>
-            <CommonInputField
-              label="Mobile Number"
-              placeholder="e.g. 1234567890"
-              required={true}
-              value={mobile}
-              onChange={(e) => {
-                setMobile(e.target.value);
-                if (validationTrigger) {
-                  setMobileError(mobileValidator(e.target.value));
-                }
-              }}
-              error={mobileError}
-              height="35px"
-              labelFontSize="11px"
-              errorFontSize="9px"
-              labelMarginTop={"0px"}
-            />
-          </Col>
-        </Row>
+        {isBulk ? (
+          <div className="bulk-whatsapp-recipients-card">
+            <div className="bulk-whatsapp-recipients-header">
+              <span className="bulk-whatsapp-recipients-title">
+                Recipients {`( ${leads.length} Selected Leads  )`}
+              </span>
+              <span className="bulk-whatsapp-recipients-hint">
+                Candidate names and details will be populated individually for
+                each contact
+              </span>
+            </div>
+            <div className="bulk-whatsapp-recipients-list">
+              {leads.slice(0, 10).map((l, idx) => (
+                <span key={l.id || idx} className="bulk-recipient-pill">
+                  {l.name || "Customer"}{" "}
+                  {`( ${l.phone || l.mobile || "No Mobile"} )`}
+                </span>
+              ))}
+              {leads.length > 10 && (
+                <span className="bulk-recipient-pill more">
+                  +{leads.length - 10} more
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <CommonInputField
+                label="Candidate Name"
+                placeholder="e.g. John Doe"
+                required={true}
+                value={customerName}
+                onChange={(e) => {
+                  setCustomerName(e.target.value);
+                  if (validationTrigger) {
+                    setCustomerNameError(nameValidator(e.target.value));
+                  }
+                }}
+                error={customerNameError}
+                height="34px"
+                labelFontSize="11px"
+                errorFontSize="9px"
+                labelMarginTop={"0px"}
+              />
+            </Col>
+            <Col span={12}>
+              <CommonInputField
+                label="Mobile Number"
+                placeholder="e.g. 1234567890"
+                required={true}
+                value={mobile}
+                onChange={(e) => {
+                  setMobile(e.target.value);
+                  if (validationTrigger) {
+                    setMobileError(mobileValidator(e.target.value));
+                  }
+                }}
+                error={mobileError}
+                height="35px"
+                labelFontSize="11px"
+                errorFontSize="9px"
+                labelMarginTop={"0px"}
+              />
+            </Col>
+          </Row>
+        )}
 
         {selectedTemplate && (
           <div className="dynamic-parameters-container">
@@ -335,8 +649,14 @@ export default function SendWhatsAppMessage({
                 <Col span={12} key={param.key}>
                   <CommonInputField
                     label={param.label}
-                    placeholder={`Enter ${param.label.toLowerCase()}`}
-                    required={param.required}
+                    placeholder={
+                      isBulk && isNameParam(param.key)
+                        ? "Auto from candidate name (or override)"
+                        : `Enter ${param.label.toLowerCase()}`
+                    }
+                    required={
+                      isBulk && isNameParam(param.key) ? false : param.required
+                    }
                     value={parameterValues[param.key] || ""}
                     onChange={(e) => {
                       setParameterValues((prev) => ({
@@ -436,6 +756,29 @@ export default function SendWhatsAppMessage({
           </>
         </div>
       </div>
+
+      <CreateTemplateModal
+        isOpen={isEditTemplateModalOpen}
+        onClose={() => {
+          setIsEditTemplateModalOpen(false);
+          setEditingTemplate(null);
+        }}
+        editData={editingTemplate}
+        onSuccess={async () => {
+          await fetchTemplates();
+        }}
+      />
+
+      <CommonDeleteModal
+        open={isDeleteModalOpen}
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setTemplateToDelete(null);
+        }}
+        content={`Are you sure you want to delete "${templateToDelete?.template_label || templateToDelete?.name || "this template"}" template?`}
+        loading={deleteLoading}
+        onClick={handleConfirmDelete}
+      />
     </Drawer>
   );
 }

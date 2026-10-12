@@ -64,8 +64,11 @@ export default function Marketing() {
   const [leadsData, setLeadsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkMode, setIsBulkMode] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [searchText, setSearchText] = useState("");
 
   const columns = [
@@ -454,10 +457,31 @@ export default function Marketing() {
 
   const handleOpenWhatsApp = (lead) => {
     setSelectedCustomer(lead);
+    setIsBulkMode(false);
     setIsModalOpen(true);
   };
 
+  const handleOpenBulkWhatsApp = () => {
+    if (!selectedRows || selectedRows.length === 0) {
+      CommonMessage(
+        "warning",
+        "Please select at least one lead from the table.",
+      );
+      return;
+    }
+    setIsBulkMode(true);
+    setSelectedCustomer(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSelectedRow = (rows) => {
+    setSelectedRows(rows);
+    setSelectedRowKeys(rows.map((item) => item.id));
+  };
+
   const handlePaginationChange = ({ page, limit }) => {
+    setSelectedRows([]);
+    setSelectedRowKeys([]);
     fetchLeadsData({
       pageNumber: page,
       limit: limit,
@@ -472,6 +496,8 @@ export default function Marketing() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
+    setSelectedRows([]);
+    setSelectedRowKeys([]);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
@@ -695,9 +721,9 @@ export default function Marketing() {
         </Col>
       </Row>
 
-      {permissions.includes("Show Region Summary") ? (
-        <Row style={{ marginTop: "8px", alignItems: "center" }}>
-          <Col span={12}>
+      <Row style={{ marginTop: "8px", alignItems: "center" }}>
+        <Col span={12}>
+          {permissions.includes("Show Region Summary") ? (
             <div
               className="livelead_today_summary_container"
               style={{ marginTop: "12px" }}
@@ -743,36 +769,39 @@ export default function Marketing() {
                 </p>
               </div>
             </div>
-          </Col>
-          <Col
-            span={12}
-            style={{
-              display: "flex",
-              marginTop: "14px",
-              justifyContent: "flex-end",
-            }}
-          >
-            {/* <Button
-              type="primary"
-              icon={<FaPlus />}
-              onClick={() => setIsTemplateModalOpen(true)}
-              style={{ backgroundColor: "#4f46e5" }}
-            >
-              New Template
-            </Button> */}
+          ) : (
+            <div></div>
+          )}
+        </Col>
+        <Col
+          span={12}
+          style={{
+            display: "flex",
+            marginTop: "14px",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          {selectedRowKeys.length > 0 && (
             <button
-              className={"create_whatsapp_template_button"}
-              onClick={() => setIsTemplateModalOpen(true)}
-              style={{ width: "160px" }}
+              className="marketing_bulk_whatsapp_button"
+              onClick={handleOpenBulkWhatsApp}
             >
-              <FaPlus style={{ marginRight: "6px" }} />
-              Create Template
+              <FaWhatsapp style={{ marginRight: "6px" }} size={15} />
+              Send Bulk WhatsApp {`( ${selectedRowKeys.length} )`}
             </button>
-          </Col>
-        </Row>
-      ) : (
-        ""
-      )}
+          )}
+          <button
+            className={"create_whatsapp_template_button"}
+            onClick={() => setIsTemplateModalOpen(true)}
+            style={{ width: "160px" }}
+          >
+            <FaPlus style={{ marginRight: "6px" }} />
+            Create Template
+          </button>
+        </Col>
+      </Row>
 
       <div style={{ marginTop: "22px" }}>
         <CommonTable
@@ -783,7 +812,10 @@ export default function Marketing() {
           dataSource={leadsData}
           dataPerPage={10}
           loading={loading}
-          checkBox="false"
+          checkBox="true"
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
+          rowKey={(record) => record.id}
           size="small"
           className="questionupload_table"
           onPaginationChange={handlePaginationChange} // callback to fetch new data
@@ -795,9 +827,18 @@ export default function Marketing() {
 
       <SendWhatsAppMessage
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setIsBulkMode(false);
+        }}
         customer={selectedCustomer}
         leadId={selectedCustomer?.id}
+        isBulk={isBulkMode}
+        leads={selectedRows}
+        onSuccess={() => {
+          setSelectedRows([]);
+          setSelectedRowKeys([]);
+        }}
       />
 
       <CreateTemplateModal
