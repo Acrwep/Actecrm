@@ -214,6 +214,7 @@ export default function Marketing() {
     {
       title: "Actions",
       key: "actions",
+      width: 150,
       render: (_, record) => (
         <Button
           className="whatsapp-table-action-btn"
@@ -796,7 +797,7 @@ export default function Marketing() {
       <div style={{ marginTop: "22px" }}>
         <CommonTable
           scroll={{
-            x: columns.reduce((total, col) => total + (col.width || 150), 0),
+            x: 600,
           }}
           columns={columns}
           dataSource={leadsData}
