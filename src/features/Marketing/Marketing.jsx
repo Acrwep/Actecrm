@@ -141,9 +141,9 @@ export default function Marketing() {
       },
     },
     {
-      title: "Mobile",
-      key: "phone",
-      dataIndex: "phone",
+      title: "Whatsapp",
+      key: "whatsapp",
+      dataIndex: "whatsapp",
       width: 140,
       render: (text, record) => {
         return (
@@ -152,10 +152,10 @@ export default function Marketing() {
               text={
                 text
                   ? `${
-                      text
-                        ? record.phone_code.startsWith("+")
-                          ? record.phone_code
-                          : `+${record.phone_code}`
+                      record.whatsapp_phone_code
+                        ? record.whatsapp_phone_code.startsWith("+")
+                          ? record.whatsapp_phone_code
+                          : `+${record.whatsapp_phone_code}`
                         : ""
                     } ${text}`
                   : "-"

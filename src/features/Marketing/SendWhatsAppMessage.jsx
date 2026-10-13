@@ -84,7 +84,9 @@ export default function SendWhatsAppMessage({
       fetchTemplates();
       if (!isBulk) {
         setCustomerName(customer?.name || customer?.customer_name || "");
-        setMobile(customer?.mobile || customer?.phone || "");
+        setMobile(
+          customer?.whatsapp || customer?.phone || customer?.mobile || ""
+        );
       } else {
         setCustomerName("");
         setMobile("");
@@ -153,7 +155,18 @@ export default function SendWhatsAppMessage({
     if (template && customer && !isBulk) {
       const prepopulate = {};
       template.parameters?.forEach((param) => {
-        if (customer[param.key]) {
+        if (
+          [
+            "whatsapp",
+            "whatsapp_number",
+            "phone",
+            "mobile",
+            "contact_number",
+          ].includes(String(param.key || "").toLowerCase())
+        ) {
+          prepopulate[param.key] =
+            customer.whatsapp || customer.phone || customer.mobile || "";
+        } else if (customer[param.key]) {
           prepopulate[param.key] = customer[param.key];
         }
       });
@@ -241,9 +254,11 @@ export default function SendWhatsAppMessage({
     try {
       if (isBulk) {
         const formattedLeads = leads
-          .filter((lead) => lead.phone || lead.mobile)
+          .filter((lead) => lead.whatsapp || lead.phone || lead.mobile)
           .map((lead) => {
-            const destMobile = String(lead.phone || lead.mobile).trim();
+            const destMobile = String(
+              lead.whatsapp || lead.phone || lead.mobile || ""
+            ).trim();
             const custName = lead.name || lead.customer_name || "Customer";
             const leadValues = {};
 
@@ -265,6 +280,17 @@ export default function SendWhatsAppMessage({
               ) {
                 leadValues[param.key] =
                   lead.course_name || lead.course || lead.technology_name || "";
+              } else if (
+                [
+                  "whatsapp",
+                  "whatsapp_number",
+                  "phone",
+                  "mobile",
+                  "contact_number",
+                ].includes(String(param.key).toLowerCase())
+              ) {
+                leadValues[param.key] =
+                  lead.whatsapp || lead.phone || lead.mobile || "";
               } else if (lead[param.key] !== undefined) {
                 leadValues[param.key] = String(lead[param.key]);
               } else {
@@ -293,7 +319,7 @@ export default function SendWhatsAppMessage({
         if (formattedLeads.length === 0) {
           CommonMessage(
             "error",
-            "None of the selected leads have a valid mobile number.",
+            "None of the selected leads have a valid WhatsApp or mobile number.",
           );
           setButtonLoading(false);
           return;
@@ -581,7 +607,7 @@ export default function SendWhatsAppMessage({
               {leads.slice(0, 10).map((l, idx) => (
                 <span key={l.id || idx} className="bulk-recipient-pill">
                   {l.name || "Customer"}{" "}
-                  {`( ${l.phone || l.mobile || "No Mobile"} )`}
+                  {`( ${l.whatsapp || l.phone || l.mobile || "No Number"} )`}
                 </span>
               ))}
               {leads.length > 10 && (
@@ -614,7 +640,7 @@ export default function SendWhatsAppMessage({
             </Col>
             <Col span={12}>
               <CommonInputField
-                label="Mobile Number"
+                label="WhatsApp Number"
                 placeholder="e.g. 1234567890"
                 required={true}
                 value={mobile}
