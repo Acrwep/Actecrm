@@ -55,6 +55,7 @@ import Accounts from "../Accounts/Accounts";
 import BatchManagement from "../Batches/BatchManagement";
 import Placement from "../Placement/Placement";
 import Marketing from "../Marketing/Marketing";
+import WhatsAppCampaigns from "../Marketing/WhatsAppCampaigns";
 
 const { Sider, Content, Header } = Layout;
 
@@ -299,6 +300,8 @@ export default function Pages() {
             <Route element={<Accounts />} path="/accounts" />
             <Route element={<Placement />} path="/placement" />
             <Route element={<Marketing />} path="/marketing" />
+            <Route element={<Marketing />} path="/whatsapp-campaigns" />
+            <Route element={<Marketing />} path="/marketing/campaigns" />
             <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>
         </Content>

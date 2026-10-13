@@ -1790,15 +1790,22 @@ export default function Admissions() {
           const groupedTableColumns = [];
           let currentTableColumns = [...tableColumns];
 
-          if (modeStatus === "Classroom") {
-            const placementIndex = currentTableColumns.findIndex((col) => col.key === "placement_handover");
+          if (modeStatus === "Online") {
+            const placementIndex = currentTableColumns.findIndex(
+              (col) => col.key === "placement_handover",
+            );
             if (placementIndex !== -1) {
-              const placementCol = { ...currentTableColumns[placementIndex], group: "Review & Certifications" };
+              const placementCol = {
+                ...currentTableColumns[placementIndex],
+                group: "Review & Certifications",
+              };
               currentTableColumns.splice(placementIndex, 1);
-              
+
               let insertIndex = currentTableColumns.length;
               for (let i = currentTableColumns.length - 1; i >= 0; i--) {
-                if (currentTableColumns[i].group === "Review & Certifications") {
+                if (
+                  currentTableColumns[i].group === "Review & Certifications"
+                ) {
                   insertIndex = i + 1;
                   break;
                 }

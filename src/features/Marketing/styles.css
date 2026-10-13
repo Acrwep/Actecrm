@@ -419,3 +419,573 @@
   color: #ef4444;
 }
 
+/* WhatsApp Campaign Tracking Dashboard Styles */
+
+.whatsapp-campaigns-container {
+  font-family: inherit;
+}
+
+.campaign-summary-cards {
+  margin-bottom: 20px;
+}
+
+.campaign-stat-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.campaign-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stat-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+}
+
+.stat-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.stat-card-main-val {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.stat-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.badge-sub {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 11.5px;
+}
+
+.badge-sub.single {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.badge-sub.bulk {
+  background: #faf5ff;
+  color: #7c3aed;
+}
+
+/* Preset Date Filter Pills */
+.campaign-date-pill {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #4b5563;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.campaign-date-pill:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.campaign-date-pill.active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 2px 0 rgba(79, 70, 229, 0.3);
+}
+
+/* Spin animation for refresh icon */
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Marketing Tabs Layout & Styling */
+.marketing-main-tabs-container {
+  width: 100%;
+}
+
+.marketing-main-tabs-container .ant-tabs-nav {
+  margin-bottom: 18px !important;
+}
+
+.marketing-main-tabs-container .ant-tabs-tab {
+  font-size: 14px !important;
+  padding: 8px 18px !important;
+}
+
+/* Search close icon container */
+.users_filter_closeIconContainer {
+  position: absolute;
+  right: 14px;
+  top: 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #bfbfbf;
+  color: #fff;
+  padding: 1px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.users_filter_closeIconContainer:hover {
+  background-color: #8c8c8c;
+}
+
+/* Inline campaign details view */
+.whatsapp-campaign-details-modal .ant-modal-body {
+  padding: 20px 24px;
+}
+
+/* Header bar */
+.wcd-header-bar {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.wcd-header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.wcd-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wcd-back-btn {
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  color: #374151 !important;
+  border-color: #d1d5db !important;
+}
+
+.wcd-back-btn:hover {
+  color: #5b69ca !important;
+  border-color: #5b69ca !important;
+}
+
+.wcd-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wcd-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.wcd-title.modal-mode {
+  font-size: 18px;
+}
+
+/* Campaign Type & Status Badges */
+.wcd-type-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.wcd-type-badge.bulk,
+.wcd-type-badge.Bulk {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.wcd-type-badge.single,
+.wcd-type-badge.Single {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.wcd-campaign-status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.wcd-campaign-status-badge.completed {
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #52c41a;
+}
+
+.wcd-campaign-status-badge.failed {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+}
+
+.wcd-campaign-status-badge.processing {
+  background-color: #e6f4ff;
+  border: 1px solid #91caff;
+  color: #1677ff;
+}
+
+/* Header metadata */
+.wcd-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.wcd-id-badge {
+  background: #1e40af13;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* Stats and Progress Card */
+.wcd-stats-card {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.wcd-progress-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: #4b5563;
+}
+
+.wcd-progress-label {
+  font-weight: 600;
+}
+
+.wcd-progress-pct {
+  font-weight: 700;
+  color: #111827;
+}
+
+.wcd-quick-stats-group {
+  display: flex;
+  gap: 18px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.wcd-stat-item {
+  text-align: center;
+}
+
+.wcd-stat-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.wcd-stat-value {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.wcd-stat-total .wcd-stat-title {
+  color: #6b7280;
+}
+.wcd-stat-total .wcd-stat-value {
+  color: #111827;
+}
+
+.wcd-stat-sent .wcd-stat-title {
+  color: #059669;
+}
+.wcd-stat-sent .wcd-stat-value {
+  color: #059669;
+}
+
+.wcd-stat-delivered .wcd-stat-title {
+  color: #10b981;
+}
+.wcd-stat-delivered .wcd-stat-value {
+  color: #10b981;
+}
+
+.wcd-stat-read .wcd-stat-title {
+  color: #2563eb;
+}
+.wcd-stat-read .wcd-stat-value {
+  color: #2563eb;
+}
+
+.wcd-stat-failed .wcd-stat-title {
+  color: #dc2626;
+}
+.wcd-stat-failed .wcd-stat-value {
+  color: #dc2626;
+}
+
+.wcd-stat-pending .wcd-stat-title {
+  color: #d97706;
+}
+.wcd-stat-pending .wcd-stat-value {
+  color: #d97706;
+}
+
+.wcd-dates-row {
+  font-size: 11.5px;
+  color: #6b7280;
+  margin-top: 10px;
+  display: flex;
+  gap: 20px;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 8px;
+}
+
+/* Status Badges in Table */
+.wcd-status-badge {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.wcd-status-badge.delivered {
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #52c41a;
+}
+
+.wcd-status-badge.read {
+  background-color: #e6f4ff;
+  border: 1px solid #91caff;
+  color: #1677ff;
+}
+
+.wcd-status-badge.sent {
+  background-color: #e6fffb;
+  border: 1px solid #87e8de;
+  color: #13c2c2;
+}
+
+.wcd-status-badge.failed {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+}
+
+.wcd-status-badge.pending {
+  background-color: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #faad14;
+}
+
+/* Table Column Cells */
+.wcd-recipient-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.wcd-mobile-number {
+  font-family: monospace;
+  color: #111827;
+  font-weight: 600;
+}
+
+.wcd-message-id-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wcd-copy-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px;
+  color: #6b7280;
+}
+
+.wcd-copy-btn.copied {
+  color: #10b981;
+}
+
+.wcd-text-muted-italic {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.wcd-delivery-info {
+  font-size: 11.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wcd-delivered-at {
+  color: #059669;
+  font-weight: 500;
+}
+
+.wcd-read-at {
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.wcd-empty-dash {
+  color: #9ca3af;
+}
+
+.wcd-error-text {
+  color: #dc2626;
+  font-size: 12px;
+  display: inline-block;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.wcd-error-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* WhatsApp Campaigns List Table Badges */
+.wc-count-success {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 11px;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #52c41a;
+  cursor: pointer;
+}
+
+.wc-count-failed {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 12px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+}
+
+.wc-count-zero {
+  color: #9ca3af;
+}
+
+.wc-status-badge {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.wc-status-badge.completed {
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #52c41a;
+}
+
+.wc-status-badge.failed {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+}
+
+.wc-status-badge.processing {
+  background-color: #fffbe6;
+  border: 1px solid #ffe58f;
+  color: #faad14;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

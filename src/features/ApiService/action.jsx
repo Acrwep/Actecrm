@@ -2267,3 +2267,40 @@ export const deleteWhatsAppTemplate = async (id, payload = {}) => {
     throw error;
   }
 };
+
+
+export const getWhatsAppCampaignStatistics = async (params = {}) => {
+  try {
+    const response = await api.get('/api/whatsapp/campaigns/statistics', { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getWhatsAppCampaigns = async (params = {}) => {
+  try {
+    const response = await api.get('/api/whatsapp/campaigns', { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getWhatsAppCampaignById = async (id) => {
+  try {
+    const response = await api.get(`/api/whatsapp/campaigns/${id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getWhatsAppCampaignMessages = async (id, params = {}) => {
+  try {
+    const response = await api.get(`/api/whatsapp/campaigns/${id}/messages`, { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
