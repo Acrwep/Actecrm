@@ -12,7 +12,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { formatToBackendIST, selectValidator } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 
-export default function CreateTemplateModal({
+export default function WhatsappTemplate({
   isOpen,
   onClose,
   editData = null,

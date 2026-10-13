@@ -5,7 +5,7 @@ import { FiFilter } from "react-icons/fi";
 import { FaWhatsapp, FaPlus } from "react-icons/fa";
 import { RedoOutlined } from "@ant-design/icons";
 import SendWhatsAppMessage from "./SendWhatsAppMessage";
-import CreateTemplateModal from "./CreateTemplateModal";
+import WhatsappTemplate from "./WhatsappTemplate";
 import CommonTable from "../Common/CommonTable";
 import {
   getAllDownlineUsers,
@@ -831,7 +831,7 @@ export default function Marketing() {
         }}
       />
 
-      <CreateTemplateModal
+      <WhatsappTemplate
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
       />

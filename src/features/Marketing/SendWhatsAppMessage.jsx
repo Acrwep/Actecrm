@@ -22,7 +22,7 @@ import {
 } from "../ApiService/action";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
-import CreateTemplateModal from "./CreateTemplateModal";
+import WhatsappTemplate from "./WhatsappTemplate";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import "./styles.css";
 import {
@@ -757,7 +757,7 @@ export default function SendWhatsAppMessage({
         </div>
       </div>
 
-      <CreateTemplateModal
+      <WhatsappTemplate
         isOpen={isEditTemplateModalOpen}
         onClose={() => {
           setIsEditTemplateModalOpen(false);
