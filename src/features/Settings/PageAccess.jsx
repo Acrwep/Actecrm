@@ -59,6 +59,7 @@ import {
   storeTrainersModulePermissionList,
   storeUserPermissions,
   storePlacementModulePermissionList,
+  storeMarketingModulePermissionList,
 } from "../Redux/Slice";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -120,6 +121,9 @@ export default function PageAccess({
   );
   const settingsModulePermissionData = useSelector(
     (state) => state.settingsmodulepermissionlist,
+  );
+  const marketingModulePermissionData = useSelector(
+    (state) => state.marketingmodulepermissionlist,
   );
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
@@ -493,7 +497,7 @@ export default function PageAccess({
       );
       dispatch(storeServerModulePermissionList(updatedServerPermissions));
 
-      //server module
+      //placement module
       const updatedPlacementPermissions = (
         placementModulePermissionData || []
       ).map((lp) => ({
@@ -575,9 +579,21 @@ export default function PageAccess({
         ),
       }));
       dispatch(storeSettingsModulePermissionList(updatedSettingsPermissions));
+
+      //marketing module
+      const updatedMarketingPermissions = (
+        marketingModulePermissionData || []
+      ).map((lp) => ({
+        ...lp,
+        checked: role_permissions.some(
+          (rp) => rp.permission_id === lp.permission_id,
+        ),
+      }));
+      dispatch(storeMarketingModulePermissionList(updatedMarketingPermissions));
+
       setTimeout(() => {
         setIsOpenPermissionDrawer(true);
-      }, 300);
+      }, 150);
     } catch (error) {
       setRolePermissions([]);
       CommonMessage(
@@ -605,6 +621,7 @@ export default function PageAccess({
       ...reportsModulePermissionData,
       ...ticketsModulePermissionData,
       ...settingsModulePermissionData,
+      ...marketingModulePermissionData,
     ];
     console.log("merged", merged);
 
@@ -1895,6 +1912,41 @@ export default function PageAccess({
                         );
                         console.log("updateItem", updateItem);
                         dispatch(storeSettingsModulePermissionList(updateItem));
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+
+          <Divider className="settings_addgroupdrawer_divider" />
+          <p className="settings_permission_subheading">Marketing Page</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {marketingModulePermissionData.map((item) => {
+                return (
+                  <Col span={8} style={{ marginTop: "16px" }}>
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = marketingModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          },
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(
+                          storeMarketingModulePermissionList(updateItem),
+                        );
                       }}
                     >
                       {item.permission_name}

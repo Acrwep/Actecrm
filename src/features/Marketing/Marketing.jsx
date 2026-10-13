@@ -66,7 +66,7 @@ export default function Marketing() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedLead, setSelectedLead] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -456,7 +456,7 @@ export default function Marketing() {
   };
 
   const handleOpenWhatsApp = (lead) => {
-    setSelectedCustomer(lead);
+    setSelectedLead(lead);
     setIsBulkMode(false);
     setIsModalOpen(true);
   };
@@ -470,7 +470,7 @@ export default function Marketing() {
       return;
     }
     setIsBulkMode(true);
-    setSelectedCustomer(null);
+    setSelectedLead(null);
     setIsModalOpen(true);
   };
 
@@ -700,16 +700,6 @@ export default function Marketing() {
             gap: "16px",
           }}
         >
-          <FiFilter
-            size={20}
-            color="#5b69ca"
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              setIsOpenFilterDrawer(true);
-              getTableColumnsData(loginUserId);
-            }}
-          />
-
           <Tooltip placement="top" title="Refresh">
             <Button
               className="leadmanager_refresh_button"
@@ -831,8 +821,8 @@ export default function Marketing() {
           setIsModalOpen(false);
           setIsBulkMode(false);
         }}
-        customer={selectedCustomer}
-        leadId={selectedCustomer?.id}
+        customer={selectedLead}
+        leadId={selectedLead?.id}
         isBulk={isBulkMode}
         leads={selectedRows}
         onSuccess={() => {

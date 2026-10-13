@@ -242,6 +242,10 @@ export default function SideMenu() {
       delete updatedMenu[14];
     }
 
+    if (!permissions.includes("Marketing Page")) {
+      delete updatedMenu[15];
+    }
+
     setSideMenuOptions(updatedMenu);
   }, [permissions]);
 
@@ -336,6 +340,10 @@ export default function SideMenu() {
 
       if (!updateData.includes("Settings Page")) {
         delete updatedMenu[14];
+      }
+
+      if (!permissions.includes("Marketing Page")) {
+        delete updatedMenu[15];
       }
 
       setSideMenuOptions(updatedMenu);

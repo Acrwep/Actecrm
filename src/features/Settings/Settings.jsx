@@ -22,6 +22,7 @@ import {
   storeGroupList,
   storeLeadFollowupModulePermissionList,
   storeLeadsModulePermissionList,
+  storeMarketingModulePermissionList,
   storePermissionsList,
   storePlacementModulePermissionList,
   storeReportsModulePermissionList,
@@ -398,6 +399,23 @@ export default function Settings() {
         return { ...u, checked: false };
       });
       dispatch(storePlacementModulePermissionList(updatePlacementModule));
+
+      //filter marketing module
+      const marketingModule = allPermissions.filter(
+        (f) => f.section === "Marketing Module",
+      );
+      const marketingCustomOrder = ["Marketing Page"];
+
+      const marketingSortedArray = marketingModule.sort(
+        (a, b) =>
+          marketingCustomOrder.indexOf(a.permission_name) -
+          marketingCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updateMarketingModule = marketingSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+      dispatch(storeMarketingModulePermissionList(updateMarketingModule));
 
       //filter trainers module
       const trainersModule = allPermissions.filter(
