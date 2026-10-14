@@ -21,7 +21,7 @@ const recipientStatusOptions = [
   { id: "Failed", name: "Failed" },
 ];
 
-export default function WhatsAppCampaignDetailsModal({
+export default function WhatsAppCampaignDetails({
   isOpen,
   onClose,
   campaign,
@@ -249,7 +249,7 @@ export default function WhatsAppCampaignDetailsModal({
             {inline && (
               <Tooltip placement="top" title="Back to Campaigns">
                 <Button
-                  icon={<FiArrowLeft size={16} />}
+                  icon={<FiArrowLeft size={15} />}
                   onClick={onClose}
                   className="wcd-back-btn"
                 />

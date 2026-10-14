@@ -28,7 +28,7 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 
-export default function MarketingLeads({ onSwitchToCampaigns }) {
+export default function MarketingLeads({ courseOptions }) {
   const mounted = useRef(false);
   //search userefs start
   const searchTimeoutRef = useRef(null);
@@ -784,6 +784,7 @@ export default function MarketingLeads({ onSwitchToCampaigns }) {
           setIsModalOpen(false);
           setIsBulkMode(false);
         }}
+        courseOptions={courseOptions}
         customer={selectedLead}
         leadId={selectedLead?.id}
         isBulk={isBulkMode}

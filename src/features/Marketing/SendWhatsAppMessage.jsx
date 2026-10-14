@@ -19,6 +19,7 @@ import {
   sendWhatsAppTemplate,
   sendBulkWhatsAppTemplate,
   deleteWhatsAppTemplate,
+  getBranches,
 } from "../ApiService/action";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -31,6 +32,7 @@ import {
   mobileValidator,
   urlValidator,
   formatToBackendIST,
+  regionOptions,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -39,6 +41,7 @@ export default function SendWhatsAppMessage({
   isOpen,
   onClose,
   customer,
+  courseOptions,
   leadId,
   leads = [],
   isBulk = false,
@@ -54,6 +57,14 @@ export default function SendWhatsAppMessage({
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   // Form states
+  const [regionId, setRegionId] = useState(null);
+  const [regionIdError, setRegionIdError] = useState("");
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [branchId, setBranchId] = useState(null);
+  const [branchIdError, setBranchIdError] = useState("");
+  const [courseId, setCourseId] = useState(null);
+  const [courseIdError, setCourseIdError] = useState("");
+
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [selectedTemplateIdError, setSelectedTemplateIdError] = useState("");
 
@@ -85,7 +96,7 @@ export default function SendWhatsAppMessage({
       if (!isBulk) {
         setCustomerName(customer?.name || customer?.customer_name || "");
         setMobile(
-          customer?.whatsapp || customer?.phone || customer?.mobile || ""
+          customer?.whatsapp || customer?.phone || customer?.mobile || "",
         );
       } else {
         setCustomerName("");
@@ -97,6 +108,13 @@ export default function SendWhatsAppMessage({
   }, [isOpen, customer, isBulk]);
 
   const resetForm = () => {
+    setRegionId(null);
+    setRegionIdError("");
+    setBranchOptions([]);
+    setBranchId(null);
+    setBranchIdError("");
+    setCourseId(null);
+    setCourseIdError("");
     setSelectedTemplate(null);
     setSelectedTemplateId("");
     setSelectedTemplateIdError("");
@@ -138,6 +156,34 @@ export default function SendWhatsAppMessage({
       });
     } finally {
       setTemplateLoading(false);
+    }
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
+    } catch (error) {
+      setBranchOptions([]);
+      console.log("response status error", error);
     }
   };
 
@@ -187,9 +233,22 @@ export default function SendWhatsAppMessage({
     setValidationTrigger(true);
     let isValid = true;
 
+    const regionIdValidate = selectValidator(regionId);
+    const branchIdValidate = selectValidator(branchId);
+    const courseIdValidate = selectValidator(courseId);
     const templateValidate = selectValidator(selectedTemplateId);
+
+    setRegionIdError(regionIdValidate);
+    setBranchIdError(branchIdValidate);
+    setCourseIdError(courseIdValidate);
     setSelectedTemplateIdError(templateValidate);
-    if (templateValidate) {
+
+    if (
+      regionIdValidate ||
+      branchIdValidate ||
+      courseIdValidate ||
+      templateValidate
+    ) {
       isValid = false;
     }
 
@@ -257,7 +316,7 @@ export default function SendWhatsAppMessage({
           .filter((lead) => lead.whatsapp || lead.phone || lead.mobile)
           .map((lead) => {
             const destMobile = String(
-              lead.whatsapp || lead.phone || lead.mobile || ""
+              lead.whatsapp || lead.phone || lead.mobile || "",
             ).trim();
             const custName = lead.name || lead.customer_name || "Customer";
             const leadValues = {};
@@ -302,7 +361,6 @@ export default function SendWhatsAppMessage({
               mobile: destMobile,
               customer_name: custName,
               lead_id: lead.id || lead.lead_id || null,
-              customer_id: lead.customer_id || null,
               values: leadValues,
               sent_by: convertAsJson?.user_id,
               created_at: formatToBackendIST(new Date()),
@@ -326,6 +384,9 @@ export default function SendWhatsAppMessage({
         }
 
         const bulkPayload = {
+          region_id: regionId,
+          branch_id: branchId,
+          course_id: courseId,
           template_id: selectedTemplate.id,
           leads: formattedLeads,
         };
@@ -340,6 +401,9 @@ export default function SendWhatsAppMessage({
         onClose();
       } else {
         const payload = {
+          region_id: regionId,
+          branch_id: branchId,
+          course_id: courseId,
           template_id: selectedTemplate.id,
           mobile: mobile,
           customer_name: customerName,
@@ -573,24 +637,86 @@ export default function SendWhatsAppMessage({
       style={{ position: "relative", paddingBottom: 65 }}
     >
       <div style={{ padding: "24px" }}>
-        <div className="whatsapp-modal-field-group">
-          <CommonSelectField
-            label="Select Template"
-            placeholder="Choose a Template"
-            options={templateOptions}
-            showLabelStatus="Name"
-            value={selectedTemplateId}
-            required={true}
-            onChange={handleTemplateChange}
-            error={selectedTemplateIdError}
-            height="34px"
-            labelFontSize="11px"
-            errorFontSize="9px"
-            labelMarginTop={"0px"}
-            loading={templateLoading}
-            renderOption={renderTemplateOption}
-          />
-        </div>
+        <Row gutter={[12, 24]} style={{ marginBottom: "26px" }}>
+          <Col xs={24} sm={24} md={24} lg={12}>
+            <CommonSelectField
+              label="Region"
+              required={true}
+              options={regionOptions}
+              onChange={(e) => {
+                setRegionId(e.target.value);
+                setBranchId("");
+                getBranchesData(parseInt(e.target.value), false);
+                if (validationTrigger) {
+                  setRegionIdError(selectValidator(e.target.value));
+                }
+              }}
+              value={regionId}
+              error={regionIdError}
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={12}>
+            <CommonSelectField
+              label="Branch"
+              required={true}
+              options={branchOptions}
+              onChange={(e) => {
+                setBranchId(e.target.value);
+                if (validationTrigger) {
+                  setBranchIdError(selectValidator(e.target.value));
+                }
+              }}
+              value={branchId}
+              error={branchIdError}
+              disabled={regionId == 3}
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={12}>
+            <CommonSelectField
+              label="Course"
+              required={true}
+              options={courseOptions}
+              onChange={(e) => {
+                setCourseId(e.target.value);
+                if (validationTrigger) {
+                  setCourseIdError(selectValidator(e.target.value));
+                }
+              }}
+              value={courseId}
+              error={courseIdError}
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={12}>
+            <CommonSelectField
+              label="Select Template"
+              placeholder="Choose a Template"
+              options={templateOptions}
+              showLabelStatus="Name"
+              value={selectedTemplateId}
+              required={true}
+              onChange={handleTemplateChange}
+              error={selectedTemplateIdError}
+              loading={templateLoading}
+              renderOption={renderTemplateOption}
+              height={"33px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
+            />
+          </Col>
+        </Row>
 
         {isBulk ? (
           <div className="bulk-whatsapp-recipients-card">
@@ -632,7 +758,7 @@ export default function SendWhatsAppMessage({
                   }
                 }}
                 error={customerNameError}
-                height="34px"
+                height="33px"
                 labelFontSize="11px"
                 errorFontSize="9px"
                 labelMarginTop={"0px"}
@@ -651,7 +777,7 @@ export default function SendWhatsAppMessage({
                   }
                 }}
                 error={mobileError}
-                height="35px"
+                height="33px"
                 labelFontSize="11px"
                 errorFontSize="9px"
                 labelMarginTop={"0px"}

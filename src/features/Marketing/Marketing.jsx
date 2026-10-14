@@ -5,11 +5,13 @@ import { useSelector } from "react-redux";
 import MarketingLeads from "./MarketingLeads";
 import WhatsAppCampaigns from "./WhatsAppCampaigns";
 import "./styles.css";
+import { getTechnologies } from "../ApiService/action";
 
 export default function Marketing() {
   const navigate = useNavigate();
   const location = useLocation();
   const permissions = useSelector((state) => state.userpermissions);
+  const [courseOptions, setCourseOptions] = useState([]);
 
   // Permission Guard (similar to Reports.jsx)
   useEffect(() => {
@@ -18,8 +20,19 @@ export default function Marketing() {
         navigate("/dashboard");
         return;
       }
+      getTechnologiesData();
     }
   }, [permissions]);
+
+  const getTechnologiesData = async () => {
+    try {
+      const response = await getTechnologies();
+      setCourseOptions(response?.data?.data || []);
+    } catch (error) {
+      setCourseOptions([]);
+      console.log("response status error", error);
+    }
+  };
 
   // Determine active tab based on route / location state
   const isCampaignRoute =
@@ -52,7 +65,10 @@ export default function Marketing() {
       label: "Leads",
       key: "1",
       children: (
-        <MarketingLeads onSwitchToCampaigns={() => setActiveTab("2")} />
+        <MarketingLeads
+          onSwitchToCampaigns={() => setActiveTab("2")}
+          courseOptions={courseOptions}
+        />
       ),
     },
     {

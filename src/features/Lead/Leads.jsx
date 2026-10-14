@@ -1129,6 +1129,91 @@ export default function Leads({
                   return <EllipsisTooltip text={text} />;
                 },
               };
+            case "phone":
+              return {
+                ...col,
+                width: 140,
+                render: (text, record) => {
+                  return (
+                    <div className="customers_candidatename_container">
+                      <EllipsisTooltip
+                        text={
+                          text
+                            ? `${
+                                text
+                                  ? record.phone_code.startsWith("+")
+                                    ? record.phone_code
+                                    : `+${record.phone_code}`
+                                  : ""
+                              } ${text}`
+                            : "-"
+                        }
+                      />
+                      {record.whatsapp && (
+                        <Tooltip
+                          title={
+                            <div className="whatsapp-tooltip-container">
+                              <div className="whatsapp-tooltip-icon-bg">
+                                <FaWhatsapp color="#fff" size={15} />
+                              </div>
+                              <div className="whatsapp-tooltip-text-wrapper">
+                                <span className="whatsapp-tooltip-label">
+                                  Chat on WhatsApp
+                                </span>
+                                <span className="whatsapp-tooltip-number">
+                                  {`${
+                                    record.whatsapp_phone_code
+                                      ? record.whatsapp_phone_code.startsWith(
+                                          "+",
+                                        )
+                                        ? record.whatsapp_phone_code
+                                        : `+${record.whatsapp_phone_code}`
+                                      : ""
+                                  } ${record.whatsapp}`}
+                                </span>
+                              </div>
+                            </div>
+                          }
+                          color="#ffffff"
+                          styles={{
+                            body: {
+                              padding: "8px 14px",
+                              borderRadius: "10px",
+                              boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+                              border: "1px solid #f3f4f6",
+                            },
+                          }}
+                        >
+                          <FaWhatsapp
+                            color="#3c9111"
+                            size={15}
+                            style={{ cursor: "pointer", marginTop: "-3px" }}
+                            onClick={() => {
+                              const phoneCode = record.whatsapp_phone_code
+                                ? record.whatsapp_phone_code.startsWith("+")
+                                  ? record.whatsapp_phone_code
+                                  : `+${record.whatsapp_phone_code}`
+                                : "";
+
+                              const phoneNumber =
+                                `${phoneCode}${record.whatsapp}`.replace(
+                                  /\D/g,
+                                  "",
+                                );
+
+                              window.open(
+                                `https://wa.me/${phoneNumber}`,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </div>
+                  );
+                },
+              };
             case "email":
               return {
                 ...col,
@@ -2315,31 +2400,37 @@ export default function Leads({
   };
 
   const handleDownload = async () => {
-    const isWithIn30days = isWithin30Days(selectedDates[0], selectedDates[1]);
-    console.log("isWithIn30days", isWithIn30days);
-    if (isWithIn30days == false) {
-      CommonMessage("error", "Please choose a date range within 30 days.");
-      return;
-    }
+    // const isWithIn30days = isWithin30Days(selectedDates[0], selectedDates[1]);
+    // console.log("isWithIn30days", isWithIn30days);
+    // if (isWithIn30days == false) {
+    //   CommonMessage("error", "Please choose a date range within 30 days.");
+    //   return;
+    // }
     setDownloadButtonLoader(true);
     const payload = {
       user_ids: allDownliners,
       start_date: selectedDates[0],
       end_date: selectedDates[1],
-      ...(searchValue && filterType == 1
-        ? { phone: searchValue }
-        : searchValue && filterType == 2
-          ? { name: searchValue }
-          : searchValue && filterType == 3
-            ? { email: searchValue }
-            : searchValue && filterType == 4
-              ? { course: searchValue }
-              : {}),
+      search_filter: searchValue,
+      ...(selectedRegion && { region: selectedRegion }),
+      ...(selectedBranchId && { branch: selectedBranchId }),
+      ...(leadStatusId && { lead_status_id: leadStatusId }),
+      ...(modeOfTrainingFilterId && {
+        preferred_mode: modeOfTrainingFilterId,
+      }),
+      ...(leadSourceFilterId && { lead_type: leadSourceFilterId }),
+      ...(leadSubSourceFilterId && { sub_source_id: leadSubSourceFilterId }),
+      ...(selectedOrigin && { domain: selectedOrigin }),
     };
     try {
-      const response = await downloadLeads(payload);
+      const response = await getLeads(payload);
       console.log("leads download response", response);
-      const data = response?.data?.data || [];
+      const data = response?.data?.data?.data || [];
+      if (data.length <= 0) {
+        CommonMessage("error", "No data found");
+        setDownloadButtonLoader(false);
+        return;
+      }
       const alterColumns = columns.filter(
         (f) => f.title != "Action" && f.title != "Sl. No",
       );

@@ -98,10 +98,6 @@
   margin-top: 20px;
 }
 
-.whatsapp-modal-field-group {
-  margin-bottom: 26px;
-}
-
 .dynamic-parameters-container {
   background: #f9fafb;
   padding: 16px 16px 25px 16px;
@@ -467,13 +463,43 @@
 }
 
 .stat-card-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.campaign-stat-card:hover .stat-card-icon {
+  transform: scale(1.08);
+}
+
+.stat-card-icon.campaigns {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+  color: #4f46e5;
+}
+
+.stat-card-icon.messages {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+.stat-card-icon.delivered {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  border: 1px solid #a5f3fc;
+  color: #0891b2;
+}
+
+.stat-card-icon.failed {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+  color: #ef4444;
 }
 
 .stat-card-main-val {
@@ -561,7 +587,7 @@
 }
 
 .marketing-main-tabs-container .ant-tabs-tab {
-  font-size: 14px !important;
+  font-size: 13px !important;
   padding: 8px 18px !important;
 }
 
@@ -625,8 +651,9 @@
 }
 
 .wcd-back-btn:hover {
-  color: #5b69ca !important;
-  border-color: #5b69ca !important;
+  color: #fff !important;
+  background-color: #5b69ca !important;
+  opacity: 1 !important;
 }
 
 .wcd-title-group {

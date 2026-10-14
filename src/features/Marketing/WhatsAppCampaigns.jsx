@@ -4,15 +4,14 @@ import { RedoOutlined } from "@ant-design/icons";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
-import { FiRefreshCw, FiEye } from "react-icons/fi";
 import { FaWhatsapp, FaPlus } from "react-icons/fa";
+import { MdCampaign } from "react-icons/md";
+import { BsChatDots, BsCheck2All, BsExclamationTriangle } from "react-icons/bs";
 import CommonTable from "../Common/CommonTable";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import SendWhatsAppMessage from "./SendWhatsAppMessage";
-import WhatsappTemplate from "./WhatsappTemplate";
-import WhatsAppCampaignDetailsModal from "./WhatsAppCampaignDetailsModal";
+import WhatsAppCampaignDetails from "./WhatsAppCampaignDetails";
 import {
   getWhatsAppCampaigns,
   getWhatsAppCampaignStatistics,
@@ -22,6 +21,7 @@ import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import moment from "moment";
 import "./styles.css";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import OverflowTooltip from "../Common/OverflowTooltip";
 
 const campaignTypeOptions = [
   { id: "", name: "All Types" },
@@ -83,11 +83,20 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
 
   // Search debounce ref
   const searchTimeoutRef = useRef(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     fetchStatistics();
     fetchCampaigns(1);
-  }, [selectedDates, campaignTypeFilter, statusFilter]);
+  }, [selectedDates, campaignTypeFilter, statusFilter, refreshKey]);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const fetchStatistics = async (dates = selectedDates) => {
     setStatsLoading(true);
@@ -168,9 +177,7 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
     setSelectedDates(defaultDates);
     setSelectedCampaignForDetails(null);
     setPagination((prev) => ({ ...prev, page: 1 }));
-
-    fetchStatistics(defaultDates);
-    fetchCampaigns(1, "", "", "", defaultDates);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const handleViewDetails = (record) => {
@@ -220,6 +227,33 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
       },
     },
     {
+      title: "Region",
+      dataIndex: "region_name",
+      key: "region_name",
+      width: 90,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Branch",
+      dataIndex: "branch_name",
+      key: "branch_name",
+      width: 100,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Course",
+      dataIndex: "course_name",
+      key: "course_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
       title: "Type",
       dataIndex: "campaign_type",
       key: "campaign_type",
@@ -237,11 +271,20 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
     },
     {
       title: "Created By",
-      dataIndex: "created_by",
-      key: "created_by",
+      dataIndex: "created_by_name",
+      key: "created_by_name",
       width: 110,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
+      align: "center",
+      render: (text, record) => {
+        const created_by = `${record.created_by_view_user_id} - ${text}`;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={created_by}
+              children={record.created_by_view_user_id}
+            />
+          </div>
+        );
       },
     },
     {
@@ -334,7 +377,7 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
   if (selectedCampaignForDetails) {
     return (
       <div style={{ marginTop: "4px" }}>
-        <WhatsAppCampaignDetailsModal
+        <WhatsAppCampaignDetails
           inline={true}
           campaign={selectedCampaignForDetails}
           onClose={() => setSelectedCampaignForDetails(null)}
@@ -384,8 +427,11 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
             <Button
               className="leadmanager_refresh_button"
               onClick={handleRefresh}
+              disabled={loading || statsLoading}
             >
-              <RedoOutlined className="refresh_icon" />
+              <RedoOutlined
+                className={`refresh_icon ${loading || statsLoading ? "spin-icon" : ""}`}
+              />
             </Button>
           </Tooltip>
         </div>
@@ -405,7 +451,6 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
           <div style={{ width: "270px", flexShrink: 0 }}>
             <CommonMuiCustomDatePicker
               width="270px"
-              dateFontSize="12px"
               value={selectedDates}
               onDateChange={(dates) => {
                 setSelectedDates(dates);
@@ -490,11 +535,8 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
             <div className="campaign-stat-card today-campaigns">
               <div className="stat-card-header">
                 <span className="stat-card-title">TOTAL CAMPAIGNS TODAY</span>
-                <span
-                  className="stat-card-icon"
-                  style={{ background: "#eff6ff", color: "#3b82f6" }}
-                >
-                  📊
+                <span className="stat-card-icon campaigns">
+                  <MdCampaign size={20} />
                 </span>
               </div>
               <div className="stat-card-main-val">
@@ -516,11 +558,8 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
             <div className="campaign-stat-card total-messages">
               <div className="stat-card-header">
                 <span className="stat-card-title">MESSAGES IN RANGE</span>
-                <span
-                  className="stat-card-icon"
-                  style={{ background: "#f0fdf4", color: "#16a34a" }}
-                >
-                  💬
+                <span className="stat-card-icon messages">
+                  <BsChatDots size={17} />
                 </span>
               </div>
               <div className="stat-card-main-val">
@@ -543,11 +582,8 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
             <div className="campaign-stat-card delivery-stats">
               <div className="stat-card-header">
                 <span className="stat-card-title">DELIVERED & READ</span>
-                <span
-                  className="stat-card-icon"
-                  style={{ background: "#ecfeff", color: "#0891b2" }}
-                >
-                  ✓✓
+                <span className="stat-card-icon delivered">
+                  <BsCheck2All size={20} />
                 </span>
               </div>
               <div
@@ -593,17 +629,15 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
             <div className="campaign-stat-card failed-stats">
               <div className="stat-card-header">
                 <span className="stat-card-title">FAILED ATTEMPTS</span>
-                <span
-                  className="stat-card-icon"
-                  style={{ background: "#fef2f2", color: "#ef4444" }}
-                >
-                  ⚠️
+                <span className="stat-card-icon failed">
+                  <BsExclamationTriangle size={16} />
                 </span>
               </div>
               <div
                 className="stat-card-main-val"
                 style={{
-                  color: statistics.messages.failed > 0 ? "#ef4444" : "#10b981",
+                  // color: statistics.messages.failed > 0 ? "#ef4444" : "#10b981",
+                  color: "#ef4444",
                 }}
               >
                 {statistics.messages.failed}
@@ -611,8 +645,7 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
               <div className="stat-card-footer">
                 <span
                   style={{
-                    color:
-                      statistics.messages.failed > 0 ? "#dc2626" : "#059669",
+                    color: "#ef4444",
                   }}
                 >
                   {statistics.messages.failed === 0
