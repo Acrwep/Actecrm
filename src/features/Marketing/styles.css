@@ -642,12 +642,12 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 36px !important;
+  height: 36px !important;
   padding: 0 !important;
   cursor: pointer !important;
-  color: #374151 !important;
-  border-color: #d1d5db !important;
+  color: #565252 !important;
+  border-color: #bdbdbd !important;
 }
 
 .wcd-back-btn:hover {

@@ -248,11 +248,9 @@ export default function WhatsAppCampaignDetails({
           <div className="wcd-header-left">
             {inline && (
               <Tooltip placement="top" title="Back to Campaigns">
-                <Button
-                  icon={<FiArrowLeft size={15} />}
-                  onClick={onClose}
-                  className="wcd-back-btn"
-                />
+                <Button onClick={onClose} className="wcd-back-btn">
+                  <FiArrowLeft size={16} />
+                </Button>
               </Tooltip>
             )}
             <div>
@@ -287,11 +285,17 @@ export default function WhatsAppCampaignDetails({
                   <p className="wcd-id-badge">{campaign?.campaign_id}</p>
                 </div>
                 <span>
+                  <strong>Region:</strong> {campaign?.region_name || "N/A"}
+                </span>
+                <span>
+                  <strong>Branch:</strong> {campaign?.branch_name || "N/A"}
+                </span>
+                <span>
                   <strong>Template:</strong> {campaign?.template_name || "N/A"}
                 </span>
                 <span>
                   <strong>Created By:</strong>{" "}
-                  {campaign?.created_by || "CRM User"}
+                  {campaign?.created_by_view_user_id || "CRM User"}
                 </span>
               </div>
             </div>

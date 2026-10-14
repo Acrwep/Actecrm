@@ -83,12 +83,24 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
 
   // Search debounce ref
   const searchTimeoutRef = useRef(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const mounted = useRef(false);
 
   useEffect(() => {
-    fetchStatistics();
-    fetchCampaigns(1);
-  }, [selectedDates, campaignTypeFilter, statusFilter, refreshKey]);
+    if (!mounted.current) {
+      mounted.current = true;
+      const initialDates = getCurrentandPreviousweekDate();
+      setSelectedDates(initialDates);
+      fetchCampaignsData({
+        startDate: initialDates[0],
+        endDate: initialDates[1],
+        pageNumber: 1,
+      });
+      fetchStatisticsData({
+        startDate: initialDates[0],
+        endDate: initialDates[1],
+      });
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -98,13 +110,38 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
     };
   }, []);
 
-  const fetchStatistics = async (dates = selectedDates) => {
+  useEffect(() => {
+    const handleRefreshCampaigns = () => {
+      fetchStatisticsData({});
+      fetchCampaignsData({});
+    };
+
+    window.addEventListener("refreshCampaigns", handleRefreshCampaigns);
+
+    return () => {
+      window.removeEventListener("refreshCampaigns", handleRefreshCampaigns);
+    };
+  }, []);
+
+  const fetchStatisticsData = (overrides = {}) => {
+    getStatisticsData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+    );
+  };
+
+  const getStatisticsData = async (startDate, endDate) => {
     setStatsLoading(true);
     try {
-      const [from, to] = dates || [];
+      const from = startDate || moment().format("YYYY-MM-DD");
+      const to = endDate || moment().format("YYYY-MM-DD");
       const res = await getWhatsAppCampaignStatistics({
-        fromDate: from || moment().format("YYYY-MM-DD"),
-        toDate: to || moment().format("YYYY-MM-DD"),
+        fromDate: from,
+        toDate: to,
       });
       if (res?.data?.success) {
         setStatistics(res.data.data);
@@ -116,30 +153,58 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
     }
   };
 
-  const fetchCampaigns = async (
-    page = 1,
-    search = searchValue,
-    type = campaignTypeFilter,
-    status = statusFilter,
-    dates = selectedDates,
+  const fetchCampaignsData = (overrides = {}) => {
+    getCampaignsData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.campaignType !== undefined
+        ? overrides.campaignType
+        : campaignTypeFilter,
+      overrides.status !== undefined ? overrides.status : statusFilter,
+      overrides.pageNumber !== undefined
+        ? overrides.pageNumber
+        : pagination?.page || 1,
+      overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
+    );
+  };
+
+  const getCampaignsData = async (
+    startDate,
+    endDate,
+    searchvalue,
+    campaignType,
+    status,
+    pageNumber,
+    limit,
   ) => {
     setLoading(true);
     try {
-      const [from, to] = dates || [];
-      const res = await getWhatsAppCampaigns({
-        page,
-        limit: pagination.limit,
-        search,
-        campaignType: type,
-        status: status,
-        fromDate: from,
-        toDate: to,
-      });
+      const payload = {
+        page: pageNumber,
+        limit: limit,
+        ...(searchvalue && { search: searchvalue }),
+        ...(campaignType && { campaignType: campaignType }),
+        ...(status && { status: status }),
+        ...(startDate && { fromDate: startDate }),
+        ...(endDate && { toDate: endDate }),
+      };
+
+      const res = await getWhatsAppCampaigns(payload);
 
       if (res?.data?.success) {
         setCampaigns(res.data.data || []);
         if (res.data.pagination) {
-          setPagination(res.data.pagination);
+          setPagination({
+            page: res.data.pagination.page,
+            limit: res.data.pagination.limit,
+            total: res.data.pagination.total,
+            totalPages: res.data.pagination.totalPages,
+          });
         }
       } else {
         CommonMessage(
@@ -156,13 +221,28 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
   };
 
   const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchValue(val);
+    const input = e.target.value;
+    setSearchValue(input);
+    setLoading(true);
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
+
+    if (!input) {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchCampaignsData({
+        searchvalue: null,
+        pageNumber: 1,
+      });
+      return;
+    }
+
     searchTimeoutRef.current = setTimeout(() => {
-      fetchCampaigns(1, val);
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchCampaignsData({
+        searchvalue: input,
+        pageNumber: 1,
+      });
     }, 500);
   };
 
@@ -176,8 +256,25 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
     setStatusFilter("");
     setSelectedDates(defaultDates);
     setSelectedCampaignForDetails(null);
-    setPagination((prev) => ({ ...prev, page: 1 }));
-    setRefreshKey((prev) => prev + 1);
+    setPagination({
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 0,
+    });
+    fetchCampaignsData({
+      startDate: defaultDates[0],
+      endDate: defaultDates[1],
+      searchvalue: null,
+      campaignType: "",
+      status: "",
+      pageNumber: 1,
+      limit: 10,
+    });
+    fetchStatisticsData({
+      startDate: defaultDates[0],
+      endDate: defaultDates[1],
+    });
   };
 
   const handleViewDetails = (record) => {
@@ -185,7 +282,10 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
-    fetchCampaigns(page, searchValue);
+    fetchCampaignsData({
+      pageNumber: page,
+      limit: limit,
+    });
   };
 
   const columns = [
@@ -350,27 +450,27 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
         );
       },
     },
-    {
-      title: "Action",
-      key: "action",
-      width: 100,
-      align: "center",
-      render: (_, record) => (
-        <Tooltip
-          placement="top"
-          title="View Campaign Details"
-          trigger={["hover", "click"]}
-        >
-          <div onClick={() => handleViewDetails(record)}>
-            <FaRegEye
-              size={15}
-              className="trainers_action_icons"
-              style={{ flexShrink: 0 }}
-            />
-          </div>
-        </Tooltip>
-      ),
-    },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   width: 100,
+    //   align: "center",
+    //   render: (_, record) => (
+    //     <Tooltip
+    //       placement="top"
+    //       title="View Campaign Details"
+    //       trigger={["hover", "click"]}
+    //     >
+    //       <div onClick={() => handleViewDetails(record)}>
+    //         <FaRegEye
+    //           size={15}
+    //           className="trainers_action_icons"
+    //           style={{ flexShrink: 0 }}
+    //         />
+    //       </div>
+    //     </Tooltip>
+    //   ),
+    // },
   ];
 
   // If a campaign is selected, render the details view inline
@@ -455,6 +555,15 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
               onDateChange={(dates) => {
                 setSelectedDates(dates);
                 setPagination((prev) => ({ ...prev, page: 1 }));
+                fetchCampaignsData({
+                  startDate: dates?.[0],
+                  endDate: dates?.[1],
+                  pageNumber: 1,
+                });
+                fetchStatisticsData({
+                  startDate: dates?.[0],
+                  endDate: dates?.[1],
+                });
               }}
             />
           </div>
@@ -473,7 +582,10 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
                     onClick={() => {
                       setSearchValue("");
                       setPagination((prev) => ({ ...prev, page: 1 }));
-                      fetchCampaigns(1, "");
+                      fetchCampaignsData({
+                        searchvalue: null,
+                        pageNumber: 1,
+                      });
                     }}
                   >
                     <IoIosClose size={11} />
@@ -502,8 +614,13 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
               showLabelStatus="Name"
               value={campaignTypeFilter}
               onChange={(e) => {
-                setCampaignTypeFilter(e.target.value);
+                const val = e.target.value;
+                setCampaignTypeFilter(val);
                 setPagination((prev) => ({ ...prev, page: 1 }));
+                fetchCampaignsData({
+                  campaignType: val,
+                  pageNumber: 1,
+                });
               }}
             />
           </div>
@@ -519,8 +636,13 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
               showLabelStatus="Name"
               value={statusFilter}
               onChange={(e) => {
-                setStatusFilter(e.target.value);
+                const val = e.target.value;
+                setStatusFilter(val);
                 setPagination((prev) => ({ ...prev, page: 1 }));
+                fetchCampaignsData({
+                  status: val,
+                  pageNumber: 1,
+                });
               }}
             />
           </div>
@@ -659,7 +781,7 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
       </div>
 
       {/* Campaigns History Table */}
-      <div>
+      <div style={{ marginBottom: "20px" }}>
         <div style={{ marginBottom: "16px" }}>
           <h3
             style={{

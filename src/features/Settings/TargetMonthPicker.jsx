@@ -124,7 +124,7 @@ export default function TargetMonthPicker({
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
                 fontSize: "12px",
-                marginTop: "3px",
+                marginTop: "0px",
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",

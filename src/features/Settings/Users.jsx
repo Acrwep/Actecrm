@@ -1457,7 +1457,7 @@ export default function Users({
                 }}
                 value={targetMonth}
                 error=""
-                labelMarginTop="2px"
+                labelMarginTop="1px"
               />
             </Col>
             <Col

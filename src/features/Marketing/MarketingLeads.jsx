@@ -792,6 +792,7 @@ export default function MarketingLeads({ courseOptions }) {
         onSuccess={() => {
           setSelectedRows([]);
           setSelectedRowKeys([]);
+          window.dispatchEvent(new CustomEvent("refreshCampaigns"));
         }}
       />
 

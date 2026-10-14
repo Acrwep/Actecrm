@@ -1633,7 +1633,7 @@ Course Advisor
             <div className="pp_detail_content">
               <p className="pp_detail_label">User ID</p>
               <p className="pp_detail_value">
-                {loginUserDetails?.user_id || "-"}
+                {loginUserDetails?.view_user_id || "-"}
               </p>
             </div>
           </div>
