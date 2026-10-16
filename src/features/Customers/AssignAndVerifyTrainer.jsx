@@ -87,6 +87,8 @@ const AssignAndVerifyTrainer = forwardRef(
     const [isOpenTrainerDetailModal, setIsOpenTrainerDetailModal] =
       useState(false);
     const [clickedTrainerId, setClickedTrainerId] = useState(null);
+    const [isShowClassTakenCandidates, setIsShowClassTakenCandidates] =
+      useState(false);
     //trainer verify usestates
     const [activeTrainerItem, setActiveTrainerItem] = useState(null);
     const [assignTrainerData, setAssignTrainerData] = useState(null);
@@ -793,7 +795,7 @@ const AssignAndVerifyTrainer = forwardRef(
       </div>
     );
 
-    const renderField = (label, value) => (
+    const renderField = (label, value, full_item = null) => (
       <div style={{ marginBottom: "8px" }}>
         <span
           style={{
@@ -807,11 +809,32 @@ const AssignAndVerifyTrainer = forwardRef(
         >
           {label}
         </span>
-        {typeof value === "string" || typeof value === "number" ? (
-          <EllipsisTooltip text={value} isViewLeadDetailsText={true} />
-        ) : (
-          value
-        )}
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          {typeof value === "string" || typeof value === "number" ? (
+            <EllipsisTooltip text={value} isViewLeadDetailsText={true} />
+          ) : (
+            value
+          )}
+          {(label === "On-Going" || label === "Class Taken") && (
+            <Tooltip
+              placement="top"
+              title={`View ${label === "On-Going" ? full_item?.ongoing_student_count : label === "Class Taken" ? full_item.completed_student_count : ""} Candidate Details`}
+              trigger={["hover", "click"]}
+            >
+              <FaRegEye
+                size={13}
+                className="trainers_action_icons"
+                onClick={() => {
+                  setIsShowClassTakenCandidates(
+                    label === "Class Taken" ? true : false,
+                  );
+                  setClickedTrainerId(full_item?.trainer_id || null);
+                  setIsOpenTrainerDetailModal(true);
+                }}
+              />
+            </Tooltip>
+          )}
+        </div>
       </div>
     );
 
@@ -1034,6 +1057,26 @@ const AssignAndVerifyTrainer = forwardRef(
                               )}
                             </Col>
                           ) : null}
+
+                          <Col span={6}>
+                            {renderField(
+                              "On-Going",
+                              item.ongoing_student_count
+                                ? `${item.ongoing_student_count} Candidates`
+                                : "-",
+                              item,
+                            )}
+                          </Col>
+
+                          <Col span={6}>
+                            {renderField(
+                              "Class Taken",
+                              item.completed_student_count
+                                ? `${item.completed_student_count} Candidates`
+                                : "-",
+                              item,
+                            )}
+                          </Col>
 
                           {item.is_rejected == 1 ||
                           drawerContentStatus ===
@@ -1286,12 +1329,15 @@ const AssignAndVerifyTrainer = forwardRef(
         {/* trainer fulldetails modal */}
         <TrainerDetailsModal
           open={isOpenTrainerDetailModal}
-          onCancel={() => setIsOpenTrainerDetailModal(false)}
+          onCancel={() => {
+            setIsOpenTrainerDetailModal(false);
+            setIsShowClassTakenCandidates(false);
+          }}
           trainerId={clickedTrainerId}
+          isShowClassTakenCandidates={isShowClassTakenCandidates}
         />
 
         {/* trainer verify modal */}
-        {/* payment verify modal */}
         <Modal
           open={isOpenTrainerVerifyModal}
           onCancel={() => {

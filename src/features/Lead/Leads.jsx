@@ -30,7 +30,6 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { MdFormatListNumbered, MdOutlineDateRange } from "react-icons/md";
 import { RxUpdate } from "react-icons/rx";
 import CommonTable from "../Common/CommonTable";
-import { FaWhatsapp } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
@@ -72,6 +71,7 @@ import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 import MakeAsCustomer from "./MakeAsCustomer";
 import CommonInputField from "../Common/CommonInputField";
 import OverflowTooltip from "../Common/OverflowTooltip";
+import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 
 export default function Leads({
   refreshLeadFollowUp,
@@ -425,77 +425,12 @@ export default function Leads({
       width: 140,
       render: (text, record) => {
         return (
-          <div className="customers_candidatename_container">
-            <EllipsisTooltip
-              text={
-                text
-                  ? `${
-                      text
-                        ? record.phone_code.startsWith("+")
-                          ? record.phone_code
-                          : `+${record.phone_code}`
-                        : ""
-                    } ${text}`
-                  : "-"
-              }
-            />
-            {record.whatsapp && (
-              <Tooltip
-                title={
-                  <div className="whatsapp-tooltip-container">
-                    <div className="whatsapp-tooltip-icon-bg">
-                      <FaWhatsapp color="#fff" size={15} />
-                    </div>
-                    <div className="whatsapp-tooltip-text-wrapper">
-                      <span className="whatsapp-tooltip-label">
-                        Chat on WhatsApp
-                      </span>
-                      <span className="whatsapp-tooltip-number">
-                        {`${
-                          record.whatsapp_phone_code
-                            ? record.whatsapp_phone_code.startsWith("+")
-                              ? record.whatsapp_phone_code
-                              : `+${record.whatsapp_phone_code}`
-                            : ""
-                        } ${record.whatsapp}`}
-                      </span>
-                    </div>
-                  </div>
-                }
-                color="#ffffff"
-                styles={{
-                  body: {
-                    padding: "8px 14px",
-                    borderRadius: "10px",
-                    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
-                    border: "1px solid #f3f4f6",
-                  },
-                }}
-              >
-                <FaWhatsapp
-                  color="#3c9111"
-                  size={15}
-                  style={{ cursor: "pointer", marginTop: "-3px" }}
-                  onClick={() => {
-                    const phoneCode = record.whatsapp_phone_code
-                      ? record.whatsapp_phone_code.startsWith("+")
-                        ? record.whatsapp_phone_code
-                        : `+${record.whatsapp_phone_code}`
-                      : "";
-
-                    const phoneNumber =
-                      `${phoneCode}${record.whatsapp}`.replace(/\D/g, "");
-
-                    window.open(
-                      `https://wa.me/${phoneNumber}`,
-                      "_blank",
-                      "noopener,noreferrer",
-                    );
-                  }}
-                />
-              </Tooltip>
-            )}
-          </div>
+          <CandidateNumberWithWhatsApp
+            text={text}
+            phoneCode={record.phone_code}
+            whatsapp={record.whatsapp}
+            whatsappPhoneCode={record.whatsapp_phone_code}
+          />
         );
       },
     },
@@ -1135,82 +1070,12 @@ export default function Leads({
                 width: 140,
                 render: (text, record) => {
                   return (
-                    <div className="customers_candidatename_container">
-                      <EllipsisTooltip
-                        text={
-                          text
-                            ? `${
-                                text
-                                  ? record.phone_code.startsWith("+")
-                                    ? record.phone_code
-                                    : `+${record.phone_code}`
-                                  : ""
-                              } ${text}`
-                            : "-"
-                        }
-                      />
-                      {record.whatsapp && (
-                        <Tooltip
-                          title={
-                            <div className="whatsapp-tooltip-container">
-                              <div className="whatsapp-tooltip-icon-bg">
-                                <FaWhatsapp color="#fff" size={15} />
-                              </div>
-                              <div className="whatsapp-tooltip-text-wrapper">
-                                <span className="whatsapp-tooltip-label">
-                                  Chat on WhatsApp
-                                </span>
-                                <span className="whatsapp-tooltip-number">
-                                  {`${
-                                    record.whatsapp_phone_code
-                                      ? record.whatsapp_phone_code.startsWith(
-                                          "+",
-                                        )
-                                        ? record.whatsapp_phone_code
-                                        : `+${record.whatsapp_phone_code}`
-                                      : ""
-                                  } ${record.whatsapp}`}
-                                </span>
-                              </div>
-                            </div>
-                          }
-                          color="#ffffff"
-                          styles={{
-                            body: {
-                              padding: "8px 14px",
-                              borderRadius: "10px",
-                              boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
-                              border: "1px solid #f3f4f6",
-                            },
-                          }}
-                        >
-                          <FaWhatsapp
-                            color="#3c9111"
-                            size={15}
-                            style={{ cursor: "pointer", marginTop: "-3px" }}
-                            onClick={() => {
-                              const phoneCode = record.whatsapp_phone_code
-                                ? record.whatsapp_phone_code.startsWith("+")
-                                  ? record.whatsapp_phone_code
-                                  : `+${record.whatsapp_phone_code}`
-                                : "";
-
-                              const phoneNumber =
-                                `${phoneCode}${record.whatsapp}`.replace(
-                                  /\D/g,
-                                  "",
-                                );
-
-                              window.open(
-                                `https://wa.me/${phoneNumber}`,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </div>
+                    <CandidateNumberWithWhatsApp
+                      text={text}
+                      phoneCode={record.phone_code}
+                      whatsapp={record.whatsapp}
+                      whatsappPhoneCode={record.whatsapp_phone_code}
+                    />
                   );
                 },
               };

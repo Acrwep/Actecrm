@@ -5,8 +5,14 @@ import CommonTable from "../Common/CommonTable";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import { getCustomerByTrainerId, getTrainerById } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
+import "./styles.css";
 
-const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
+const TrainerDetailsModal = ({
+  open,
+  onCancel,
+  trainerId,
+  isShowClassTakenCandidates,
+}) => {
   const [trainerDetails, setTrainerDetails] = useState([]);
   const [trainerDetailsLoading, setTrainerDetailsLoading] = useState(false);
   const [classTakenCount, setClassTakenCount] = useState(0);
@@ -45,7 +51,7 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
     setCustomerByTrainerLoading(true);
     const payload = {
       trainer_id: trainer_id,
-      is_class_taken: 0,
+      is_class_taken: isShowClassTakenCandidates ? 1 : 0,
     };
     try {
       const response = await getCustomerByTrainerId(payload);
@@ -86,16 +92,16 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
 
   const customerByTrainerColumn = [
     {
-      title: "Customer Name",
+      title: "Name",
       key: "cus_name",
       dataIndex: "cus_name",
-      width: 140,
+      width: 120,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
     {
-      title: "Customer Email",
+      title: "Email",
       key: "cus_email",
       dataIndex: "cus_email",
       width: 140,
@@ -104,10 +110,10 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
       },
     },
     {
-      title: "Customer Mobile",
+      title: "Mobile",
       key: "cus_phone",
       dataIndex: "cus_phone",
-      width: 140,
+      width: 120,
     },
     {
       title: "Course Name",
@@ -122,19 +128,19 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
       title: "Region",
       key: "region_name",
       dataIndex: "region_name",
-      width: 120,
+      width: 90,
     },
     {
       title: "Branch Name",
       key: "branch_name",
       dataIndex: "branch_name",
-      width: 140,
+      width: 100,
     },
     {
       title: "Course Fees",
       key: "primary_fees",
       dataIndex: "primary_fees",
-      width: 120,
+      width: 100,
       render: (text) => {
         return <p>{"₹" + text}</p>;
       },
@@ -143,7 +149,7 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
       title: "Class Going %",
       key: "class_percentage",
       dataIndex: "class_percentage",
-      width: 115,
+      width: 100,
       fixed: "right",
       render: (text) => {
         return <p>{text ? `${parseInt(text)}%` : `0%`}</p>;
@@ -174,7 +180,11 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
           <Row gutter={[24, 24]}>
             {Array.from({ length: 12 }).map((_, idx) => (
               <Col span={6} key={idx}>
-                <Skeleton active title={{ width: "60%" }} paragraph={{ rows: 1, width: ["90%"] }} />
+                <Skeleton
+                  active
+                  title={{ width: "60%" }}
+                  paragraph={{ rows: 1, width: ["90%"] }}
+                />
               </Col>
             ))}
           </Row>
@@ -291,36 +301,31 @@ const TrainerDetailsModal = ({ open, onCancel, trainerId }) => {
           ))}
 
           {/* Class Counts */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "0px",
-            }}
-          >
-            <div className="customer_trainer_badge_mainconatiner">
-              <div className="customer_trainer_onboardcount_badgecount_container">
-                <p className="customer_trainer_onboardcount_badgecount">
-                  Class Taken{" "}
-                  <span style={{ fontWeight: 600 }}>{classTakenCount}</span>{" "}
-                  Customers
-                </p>
-              </div>
+          <div className="trainer_compact_metrics_container">
+            {/* Class Taken */}
+            <div className="trainer_compact_badge trainer_compact_badge_taken">
+              <span className="trainer_compact_label">Class Taken</span>
+              <span className="trainer_compact_count_chip trainer_compact_count_chip_taken">
+                {classTakenCount}
+              </span>
+              <span className="trainer_compact_unit">Candidates</span>
+            </div>
 
-              <div className="customer_trainer_ongoingcount_badgecount_container">
-                <p className="customer_trainer_onboardcount_badgecount">
-                  Class Going{" "}
-                  <span style={{ fontWeight: 600 }}>{classGoingCount}</span>{" "}
-                  Customers
-                </p>
-              </div>
+            {/* Class Going */}
+            <div className="trainer_compact_badge trainer_compact_badge_going">
+              <span className="trainer_compact_pulse_dot" />
+              <span className="trainer_compact_label">Class Going</span>
+              <span className="trainer_compact_count_chip trainer_compact_count_chip_going">
+                {classGoingCount}
+              </span>
+              <span className="trainer_compact_unit">Candidates</span>
             </div>
           </div>
 
           {/* Customer List */}
           <div style={{ marginTop: "16px" }}>
             <p className="customer_trainer_cusomer_heading">
-              Class Going Customers List
+              {`Class ${isShowClassTakenCandidates ? "Taken" : "Going"} Candidate List`}
             </p>
 
             <CommonTable

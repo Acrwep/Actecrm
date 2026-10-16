@@ -31,7 +31,6 @@ import {
   PhoneOutlined,
   MailOutlined,
 } from "@ant-design/icons";
-import { MdAdd } from "react-icons/md";
 import "./styles.css";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -80,6 +79,7 @@ import TrainerPaymentRequestForm from "./TrainerPaymentRequestForm";
 import ViewTrainerDetails from "./ViewTrainerDetails";
 import AddTrainer from "./AddTrainer";
 import OverflowTooltip from "../Common/OverflowTooltip";
+import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 
 const CustomerList = ({ trainerId, isClassTaken }) => {
   const [data, setData] = useState([]);
@@ -592,7 +592,23 @@ export default function Trainers() {
         return <EllipsisTooltip text={text} />;
       },
     },
-    { title: "Mobile", key: "mobile", dataIndex: "mobile", width: 120 },
+    {
+      title: "Mobile",
+      key: "mobile",
+      dataIndex: "mobile",
+      width: 140,
+
+      render: (text, record) => {
+        return (
+          <CandidateNumberWithWhatsApp
+            text={text}
+            phoneCode={record.mobile_phone_code}
+            whatsapp={record.whatsapp}
+            whatsappPhoneCode={record.whatsapp_phone_code}
+          />
+        );
+      },
+    },
     {
       title: "Technology",
       key: "technology",
@@ -1207,7 +1223,17 @@ export default function Trainers() {
             case "mobile": {
               return {
                 ...col,
-                width: 120,
+                width: 140,
+                render: (text, record) => {
+                  return (
+                    <CandidateNumberWithWhatsApp
+                      text={text}
+                      phoneCode={record.mobile_phone_code}
+                      whatsapp={record.whatsapp}
+                      whatsappPhoneCode={record.whatsapp_phone_code}
+                    />
+                  );
+                },
               };
             }
             case "technology": {

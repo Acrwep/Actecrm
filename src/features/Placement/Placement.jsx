@@ -43,6 +43,7 @@ import DraggableStudentModal from "../Common/DraggableStudentModal";
 import CommonSelectField from "../Common/CommonSelectField";
 import CustomerHistory from "../Customers/CustomerHistory";
 import OverflowTooltip from "../Common/OverflowTooltip";
+import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 
 export default function Placement() {
   const mounted = useRef(false);
@@ -435,21 +436,14 @@ export default function Placement() {
       title: "Mobile",
       key: "phone",
       dataIndex: "phone",
-      width: 120,
+      width: 140,
       render: (text, record) => {
         return (
-          <EllipsisTooltip
-            text={
-              text
-                ? `${
-                    text
-                      ? record.phonecode.startsWith("+")
-                        ? record.phonecode
-                        : `+${record.phonecode}`
-                      : ""
-                  } ${text}`
-                : "-"
-            }
+          <CandidateNumberWithWhatsApp
+            text={text}
+            phoneCode={record.phonecode}
+            whatsapp={record.whatsapp}
+            whatsappPhoneCode={record.whatsapp_phone_code}
           />
         );
       },
@@ -464,35 +458,41 @@ export default function Placement() {
       },
     },
     {
-      title: "Paid Amount",
-      key: "paid_amount",
-      dataIndex: "paid_amount",
-      width: 120,
-      render: (text) => {
-        return <p>{text ? `₹${Number(text).toLocaleString("en-IN")}` : "-"}</p>;
+      title: "RA",
+      key: "ra_name",
+      dataIndex: "ra_name",
+      width: 80,
+      align: "center",
+      render: (text, record) => {
+        if (text) {
+          const ra = `${record.ra_view_user_id} - ${text}`;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={ra} children={record.ra_view_user_id} />
+            </div>
+          );
+        } else {
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
+        }
       },
     },
     {
-      title: "Balance",
-      key: "balance_amount",
-      dataIndex: "balance_amount",
-      width: 95,
-      render: (text) => {
-        const amount = Number(text);
-
-        return (
-          <p
-            style={{
-              color: amount === 0 ? "green" : "#D32F2F",
-              margin: 0,
-              fontWeight: 700,
-            }}
-          >
-            {text !== null && text !== undefined
-              ? amount.toLocaleString("en-IN")
-              : "-"}
-          </p>
-        );
+      title: "HR",
+      key: "hr_name",
+      dataIndex: "hr_name",
+      width: 80,
+      align: "center",
+      render: (text, record) => {
+        if (text) {
+          const hr = `${record.hr_view_user_id} - ${text}`;
+          return (
+            <div style={{ textAlign: "center", width: "100%" }}>
+              <OverflowTooltip title={hr} children={record.hr_view_user_id} />
+            </div>
+          );
+        } else {
+          return <p style={{ margin: 0, textAlign: "center" }}>-</p>;
+        }
       },
     },
     {
@@ -1331,70 +1331,70 @@ export default function Placement() {
      
       </div> */}
 
-      {permissions.includes("Show Region Summary") && (
-        <Row style={{ marginTop: "18px" }}>
-          <Col span={8} style={{ display: "flex", alignItems: "center" }}>
+      <Row style={{ marginTop: "18px" }}>
+        <Col span={8} style={{ display: "flex", alignItems: "center" }}>
+          <div
+            className="customers_status_mainContainer"
+            style={{
+              marginTop: "0px",
+              marginBottom: "0px",
+              display: "flex",
+              gap: "12px",
+            }}
+          >
             <div
-              className="customers_status_mainContainer"
-              style={{
-                marginTop: "0px",
-                marginBottom: "0px",
-                display: "flex",
-                gap: "12px",
+              className={
+                modeStatus === "Online"
+                  ? "customers_active_completed_container"
+                  : "customers_completed_container"
+              }
+              onClick={() => {
+                if (modeStatus == "Online") {
+                  return;
+                }
+                setModeStatus("Online");
+                setPagination({
+                  page: 1,
+                });
+                fetchPlacementSupportData({
+                  bucket: "Online",
+                  pageNumber: 1,
+                });
               }}
             >
-              <div
-                className={
-                  modeStatus === "Online"
-                    ? "customers_active_completed_container"
-                    : "customers_completed_container"
-                }
-                onClick={() => {
-                  if (modeStatus == "Online") {
-                    return;
-                  }
-                  setModeStatus("Online");
-                  setPagination({
-                    page: 1,
-                  });
-                  fetchPlacementSupportData({
-                    bucket: "Online",
-                    pageNumber: 1,
-                  });
-                }}
-              >
-                <p>
-                  Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}
-                </p>
-              </div>
-
-              <div
-                className={
-                  modeStatus === "Classroom"
-                    ? "customers_active_verifytrainers_container"
-                    : "customers_verifytrainers_container"
-                }
-                onClick={() => {
-                  if (modeStatus == "Classroom") {
-                    return;
-                  }
-                  setModeStatus("Classroom");
-                  setPagination({
-                    page: 1,
-                  });
-                  fetchPlacementSupportData({
-                    bucket: "Classroom",
-                    pageNumber: 1,
-                  });
-                }}
-              >
-                <p>
-                  Classroom{" "}
-                  {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
-                </p>
-              </div>
+              <p>
+                Online {`( ${allAdmissionsRegionCounts?.online_mode ?? 0} )`}
+              </p>
             </div>
-          </Col>
+
+            <div
+              className={
+                modeStatus === "Classroom"
+                  ? "customers_active_verifytrainers_container"
+                  : "customers_verifytrainers_container"
+              }
+              onClick={() => {
+                if (modeStatus == "Classroom") {
+                  return;
+                }
+                setModeStatus("Classroom");
+                setPagination({
+                  page: 1,
+                });
+                fetchPlacementSupportData({
+                  bucket: "Classroom",
+                  pageNumber: 1,
+                });
+              }}
+            >
+              <p>
+                Classroom{" "}
+                {`( ${allAdmissionsRegionCounts?.classroom_mode ?? 0} )`}
+              </p>
+            </div>
+          </div>
+        </Col>
+        {permissions.includes("Show Region Summary") && (
           <Col
             span={16}
             style={{
@@ -1464,8 +1464,8 @@ export default function Placement() {
               </div>
             </div>
           </Col>
-        </Row>
-      )}
+        )}
+      </Row>
 
       {/* Status Buckets */}
       <div

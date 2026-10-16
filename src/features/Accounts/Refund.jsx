@@ -56,6 +56,7 @@ import CustomerOverviewSkeleton from "../Customers/CustomerOverviewSkeleton";
 import CustomerOverview from "../Customers/CustomerOverview";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonInputField from "../Common/CommonInputField";
+import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 
 export default function Refund({
   filterData,
@@ -190,18 +191,11 @@ export default function Refund({
       width: 120,
       render: (text, record) => {
         return (
-          <EllipsisTooltip
-            text={
-              text
-                ? `${
-                    text
-                      ? record.phonecode.startsWith("+")
-                        ? record.phonecode
-                        : `+${record.phonecode}`
-                      : ""
-                  } ${text}`
-                : "-"
-            }
+          <CandidateNumberWithWhatsApp
+            text={text}
+            phoneCode={record.phonecode}
+            whatsapp={record.whatsapp}
+            whatsappPhoneCode={record.whatsapp_phone_code}
           />
         );
       },

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Modal, Button, Row, Col, Avatar, Typography } from "antd";
+import { Modal, Tooltip, Row, Col, Avatar, Typography } from "antd";
 import Draggable from "react-draggable";
 import EllipsisTooltip from "./EllipsisTooltip";
 import {
@@ -13,6 +13,7 @@ import {
 } from "react-icons/md";
 import { IoLogoWhatsapp } from "react-icons/io5";
 import { BiRupee } from "react-icons/bi";
+import { FaWhatsapp } from "react-icons/fa";
 import moment from "moment";
 
 const DraggableStudentModal = ({
@@ -325,19 +326,76 @@ const DraggableStudentModal = ({
                       color: "#0f172a",
                       fontSize: "13px",
                       textAlign: "right",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      const whatsappCode = customerDetails.whatsapp_phone_code
+                        ? customerDetails.whatsapp_phone_code.startsWith("+")
+                          ? customerDetails.whatsapp_phone_code
+                          : `+${customerDetails.whatsapp_phone_code}`
+                        : "";
+
+                      const whatsappNumber =
+                        `${whatsappCode}${customerDetails.whatsapp}`.replace(
+                          /\D/g,
+                          "",
+                        );
+
+                      window.open(
+                        `https://wa.me/${whatsappNumber}`,
+                        "_blank",
+                        "noopener,noreferrer",
+                      );
                     }}
                   >
-                    {customerDetails?.whatsapp
-                      ? `${
-                          customerDetails?.whatsapp_phone_code
-                            ? customerDetails.whatsapp_phone_code.startsWith(
-                                "+",
-                              )
-                              ? customerDetails.whatsapp_phone_code
-                              : `+${customerDetails.whatsapp_phone_code}`
-                            : ""
-                        } ${customerDetails.whatsapp}`
-                      : "-"}
+                    {customerDetails.whatsapp && (
+                      <Tooltip
+                        title={
+                          <div className="whatsapp-tooltip-container">
+                            <div className="whatsapp-tooltip-icon-bg">
+                              <FaWhatsapp color="#fff" size={15} />
+                            </div>
+                            <div className="whatsapp-tooltip-text-wrapper">
+                              <span className="whatsapp-tooltip-label">
+                                Chat on WhatsApp
+                              </span>
+                              <span className="whatsapp-tooltip-number">
+                                {`${
+                                  customerDetails.whatsapp_phone_code
+                                    ? customerDetails.whatsapp_phone_code.startsWith(
+                                        "+",
+                                      )
+                                      ? customerDetails.whatsapp_phone_code
+                                      : `+${customerDetails.whatsapp_phone_code}`
+                                    : ""
+                                } ${customerDetails.whatsapp}`}
+                              </span>
+                            </div>
+                          </div>
+                        }
+                        color="#ffffff"
+                        styles={{
+                          body: {
+                            padding: "8px 14px",
+                            borderRadius: "10px",
+                            boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+                            border: "1px solid #f3f4f6",
+                          },
+                        }}
+                      >
+                        {customerDetails?.whatsapp
+                          ? `${
+                              customerDetails?.whatsapp_phone_code
+                                ? customerDetails.whatsapp_phone_code.startsWith(
+                                    "+",
+                                  )
+                                  ? customerDetails.whatsapp_phone_code
+                                  : `+${customerDetails.whatsapp_phone_code}`
+                                : ""
+                            } ${customerDetails.whatsapp}`
+                          : "-"}
+                      </Tooltip>
+                    )}
                   </span>
                 </div>
 

@@ -173,7 +173,17 @@ const TrainerFullDetailsModal = ({
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">{item.mobile}</p>
+                    <p className="customerdetails_text">
+                      {item.mobile
+                        ? `${
+                            item.mobile_phone_code
+                              ? item.mobile_phone_code.startsWith("+")
+                                ? item.mobile_phone_code
+                                : `+${item.mobile_phone_code}`
+                              : ""
+                          } ${item.mobile}`
+                        : "-"}
+                    </p>
                   </Col>
                 </Row>
 
@@ -185,7 +195,17 @@ const TrainerFullDetailsModal = ({
                     </div>
                   </Col>
                   <Col span={12}>
-                    <p className="customerdetails_text">{item.whatsapp}</p>
+                    <p className="customerdetails_text">
+                      {item.whatsapp
+                        ? `${
+                            item.whatsapp_phone_code
+                              ? item.whatsapp_phone_code.startsWith("+")
+                                ? item.whatsapp_phone_code
+                                : `+${item.whatsapp_phone_code}`
+                              : ""
+                          } ${item.whatsapp}`
+                        : "-"}
+                    </p>
                   </Col>
                 </Row>
 
