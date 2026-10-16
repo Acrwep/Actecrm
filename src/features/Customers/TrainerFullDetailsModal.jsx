@@ -4,6 +4,7 @@ import moment from "moment";
 import CommonTable from "../Common/CommonTable";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import { getCustomerByTrainerId, getTrainerById } from "../ApiService/action";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import CommonSpinner from "../Common/CommonSpinner";
 import "./styles.css";
 
@@ -11,7 +12,8 @@ const TrainerDetailsModal = ({
   open,
   onCancel,
   trainerId,
-  isShowClassTakenCandidates,
+  isShowClassTakenCandidates = false,
+  setIsShowClassTakenCandidates,
 }) => {
   const [trainerDetails, setTrainerDetails] = useState([]);
   const [trainerDetailsLoading, setTrainerDetailsLoading] = useState(false);
@@ -20,11 +22,17 @@ const TrainerDetailsModal = ({
   const [customerByTrainerData, setCustomerByTrainerData] = useState([]);
   const [customerByTrainerLoading, setCustomerByTrainerLoading] =
     useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   useEffect(() => {
     if (open && trainerId) {
       getTrainerDataById(trainerId);
-      getCustomerByTrainerIdData(trainerId);
+      getCustomerByTrainerIdData(trainerId, isShowClassTakenCandidates ? 1 : 0);
     } else {
       // Clear data when modal is closed
       setTrainerDetails([]);
@@ -47,11 +55,12 @@ const TrainerDetailsModal = ({
     }
   };
 
-  const getCustomerByTrainerIdData = async (trainer_id) => {
+  const getCustomerByTrainerIdData = async (trainer_id, class_status) => {
     setCustomerByTrainerLoading(true);
+    setIsShowClassTakenCandidates(class_status ? true : false);
     const payload = {
       trainer_id: trainer_id,
-      is_class_taken: isShowClassTakenCandidates ? 1 : 0,
+      is_class_taken: class_status,
     };
     try {
       const response = await getCustomerByTrainerId(payload);
@@ -114,6 +123,23 @@ const TrainerDetailsModal = ({
       key: "cus_phone",
       dataIndex: "cus_phone",
       width: 120,
+      render: (text, record) => {
+        return (
+          <EllipsisTooltip
+            text={
+              text
+                ? `${
+                    record?.cus_phonecode
+                      ? record.cus_phonecode.startsWith("+")
+                        ? record.cus_phonecode
+                        : `+${record.cus_phonecode}`
+                      : ""
+                  } ${text}`
+                : "-"
+            }
+          />
+        );
+      },
     },
     {
       title: "Course Name",
@@ -166,6 +192,13 @@ const TrainerDetailsModal = ({
       },
     },
   ];
+
+  const handlePaginationChange = ({ page, limit }) => {
+    setPagination({
+      page: page,
+      limit: limit,
+    });
+  };
 
   return (
     <Modal
@@ -302,15 +335,6 @@ const TrainerDetailsModal = ({
 
           {/* Class Counts */}
           <div className="trainer_compact_metrics_container">
-            {/* Class Taken */}
-            <div className="trainer_compact_badge trainer_compact_badge_taken">
-              <span className="trainer_compact_label">Class Taken</span>
-              <span className="trainer_compact_count_chip trainer_compact_count_chip_taken">
-                {classTakenCount}
-              </span>
-              <span className="trainer_compact_unit">Candidates</span>
-            </div>
-
             {/* Class Going */}
             <div className="trainer_compact_badge trainer_compact_badge_going">
               <span className="trainer_compact_pulse_dot" />
@@ -320,13 +344,51 @@ const TrainerDetailsModal = ({
               </span>
               <span className="trainer_compact_unit">Candidates</span>
             </div>
+
+            {/* Class Taken */}
+            <div className="trainer_compact_badge trainer_compact_badge_taken">
+              <span className="trainer_compact_label">Class Taken</span>
+              <span className="trainer_compact_count_chip trainer_compact_count_chip_taken">
+                {classTakenCount}
+              </span>
+              <span className="trainer_compact_unit">Candidates</span>
+            </div>
           </div>
 
           {/* Customer List */}
           <div style={{ marginTop: "16px" }}>
-            <p className="customer_trainer_cusomer_heading">
-              {`Class ${isShowClassTakenCandidates ? "Taken" : "Going"} Candidate List`}
-            </p>
+            <div className="customers_trainerverify_classgoing_cus_heading_container">
+              <div style={{ display: "flex", gap: "9px" }}>
+                <button
+                  className="customers_trainerverify_classgoing_cus_heading_backward_button"
+                  onClick={() => {
+                    getCustomerByTrainerIdData(
+                      trainerDetails.length >= 1 ? trainerDetails[0].id : null,
+                      0,
+                    );
+                  }}
+                  disabled={isShowClassTakenCandidates === false}
+                >
+                  <IoIosArrowBack size={14} />
+                </button>
+                <p className="customers_trainerverify_classgoing_cus_heading">
+                  {`Class ${isShowClassTakenCandidates ? "Taken" : "Going"} Candidate List`}
+                </p>
+              </div>
+
+              <button
+                className="customers_trainerverify_classgoing_cus_heading_backward_button"
+                onClick={() => {
+                  getCustomerByTrainerIdData(
+                    trainerDetails.length >= 1 ? trainerDetails[0].id : null,
+                    1,
+                  );
+                }}
+                disabled={isShowClassTakenCandidates === true}
+              >
+                <IoIosArrowForward size={14} />
+              </button>
+            </div>
 
             <CommonTable
               scroll={{ x: 1200 }}
@@ -337,6 +399,10 @@ const TrainerDetailsModal = ({
               checkBox="false"
               size="small"
               className="questionupload_table"
+              onPaginationChange={handlePaginationChange} // callback to fetch new data
+              limit={pagination.limit} // page size
+              page_number={pagination.page} // current page
+              totalPageNumber={pagination.total} // total rows
             />
           </div>
         </>

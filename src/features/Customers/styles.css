@@ -2417,3 +2417,53 @@
   margin-left: 12px;
   font-size: 10px;
 }
+.customer_verifytrainer_approve_button_container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.customers_trainerverify_classgoing_cus_heading_container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+  justify-content: space-between;
+}
+.customers_trainerverify_classgoing_cus_heading {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-top: 1px !important;
+}
+.customers_trainerverify_classgoing_cus_heading_backward_button {
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  color: #565252 !important;
+  border-color: #bdbdbd !important;
+  background-color: #fff;
+}
+.customers_trainerverify_classgoing_cus_heading_backward_button:hover {
+  border-color: #5b69ca !important;
+  opacity: 0.9 !important;
+  background-color: #5b69ca;
+  color: #fff !important;
+}
+.customers_trainerverify_classgoing_cus_heading_backward_button:disabled {
+  cursor: not-allowed !important;
+  background-color: #f0f0f0 !important;
+  opacity: 0.5 !important;
+}
+
+.customers_trainerverify_classgoing_cus_heading_backward_button:disabled:hover {
+  background-color: #f0f0f0 !important;
+  color: #999 !important;
+  border-color: #d9d9d9 !important;
+}

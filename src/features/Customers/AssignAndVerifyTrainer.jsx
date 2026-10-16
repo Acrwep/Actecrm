@@ -795,48 +795,56 @@ const AssignAndVerifyTrainer = forwardRef(
       </div>
     );
 
-    const renderField = (label, value, full_item = null) => (
-      <div style={{ marginBottom: "8px" }}>
-        <span
-          style={{
-            fontFamily: "'Poppins', sans-serif",
-            fontSize: "12px",
-            display: "block",
-            marginBottom: "2px",
-            color: "#64748b",
-            fontWeight: 500,
-          }}
-        >
-          {label}
-        </span>
-        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-          {typeof value === "string" || typeof value === "number" ? (
-            <EllipsisTooltip text={value} isViewLeadDetailsText={true} />
-          ) : (
-            value
-          )}
-          {(label === "On-Going" || label === "Class Taken") && (
-            <Tooltip
-              placement="top"
-              title={`View ${label === "On-Going" ? full_item?.ongoing_student_count : label === "Class Taken" ? full_item.completed_student_count : ""} Candidate Details`}
-              trigger={["hover", "click"]}
-            >
-              <FaRegEye
-                size={13}
-                className="trainers_action_icons"
-                onClick={() => {
-                  setIsShowClassTakenCandidates(
-                    label === "Class Taken" ? true : false,
-                  );
-                  setClickedTrainerId(full_item?.trainer_id || null);
-                  setIsOpenTrainerDetailModal(true);
-                }}
-              />
-            </Tooltip>
-          )}
+    const renderField = (label, value, full_item = null) => {
+      return (
+        <div style={{ marginBottom: "8px" }}>
+          <span
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: "12px",
+              display: "block",
+              marginBottom: "2px",
+              color: "#64748b",
+              fontWeight: 500,
+            }}
+          >
+            {label}
+          </span>
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            {typeof value === "string" || typeof value === "number" ? (
+              <EllipsisTooltip text={value} isViewLeadDetailsText={true} />
+            ) : (
+              value
+            )}
+
+            {((label === "On-Going" &&
+              Number(full_item?.ongoing_student_count) > 0) ||
+              (label === "Class Taken" &&
+                Number(full_item?.completed_student_count) > 0)) && (
+              <Tooltip
+                placement="top"
+                title={`View ${
+                  label === "On-Going"
+                    ? full_item?.ongoing_student_count
+                    : full_item?.completed_student_count
+                } Candidate Details`}
+                trigger={["hover", "click"]}
+              >
+                <FaRegEye
+                  size={13}
+                  className="trainers_action_icons"
+                  onClick={() => {
+                    setIsShowClassTakenCandidates(label === "Class Taken");
+                    setClickedTrainerId(full_item?.trainer_id || null);
+                    setIsOpenTrainerDetailModal(true);
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
         </div>
-      </div>
-    );
+      );
+    };
 
     if (historyLoading) {
       return (
@@ -1063,7 +1071,7 @@ const AssignAndVerifyTrainer = forwardRef(
                               "On-Going",
                               item.ongoing_student_count
                                 ? `${item.ongoing_student_count} Candidates`
-                                : "-",
+                                : `${0} Candidates`,
                               item,
                             )}
                           </Col>
@@ -1073,7 +1081,7 @@ const AssignAndVerifyTrainer = forwardRef(
                               "Class Taken",
                               item.completed_student_count
                                 ? `${item.completed_student_count} Candidates`
-                                : "-",
+                                : `${0} Candidates`,
                               item,
                             )}
                           </Col>
@@ -1104,14 +1112,7 @@ const AssignAndVerifyTrainer = forwardRef(
                                   />
                                 </div>
                               )}
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: "12px",
-                                  justifyContent: "center",
-                                  marginTop: "12px",
-                                }}
-                              >
+                              <div className="customer_verifytrainer_approve_button_container">
                                 {activeRejectIndex === index && (
                                   <Button
                                     className="customer_verify_trainer_back_button"
@@ -1335,6 +1336,7 @@ const AssignAndVerifyTrainer = forwardRef(
           }}
           trainerId={clickedTrainerId}
           isShowClassTakenCandidates={isShowClassTakenCandidates}
+          setIsShowClassTakenCandidates={setIsShowClassTakenCandidates}
         />
 
         {/* trainer verify modal */}
