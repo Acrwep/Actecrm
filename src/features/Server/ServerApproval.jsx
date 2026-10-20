@@ -178,7 +178,7 @@ const ServerApproval = forwardRef(
                               </span> */}
                         </span>
 
-                        {item.approval_status === "Pending" ? (
+                        {item.server_trans_status === "Pending" ? (
                           <div className="customer_trans_statustext_container">
                             <PiClockCounterClockwiseBold
                               size={14}
@@ -194,7 +194,7 @@ const ServerApproval = forwardRef(
                               Waiting for Approval
                             </p>
                           </div>
-                        ) : item.approval_status === "Rejected" ? (
+                        ) : item.server_trans_status === "Rejected" ? (
                           <div className="customer_trans_statustext_container">
                             <FaRegCircleXmark color="#d32f2f" size={12} />
                             <p
@@ -264,7 +264,8 @@ const ServerApproval = forwardRef(
                         </table>
                       </div>
 
-                      {item.approval_status === "Pending" && item.comments ? (
+                      {item.server_trans_status === "Pending" &&
+                      item.comments ? (
                         <>
                           <Divider className="customer_statusupdate_divider" />
                           <div style={{ padding: "0px 52px" }}>
@@ -295,7 +296,7 @@ const ServerApproval = forwardRef(
                         ""
                       )}
 
-                      {item.approval_status === "Pending" && (
+                      {item.server_trans_status === "Pending" && (
                         <div className="customer_finance_verify_buttons_container">
                           <Button
                             className="customer_finance_rejectbutton"

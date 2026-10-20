@@ -167,7 +167,7 @@ export default function ViewServerDetails({ serverDetails }) {
                               </span> */}
                     </span>
 
-                    {item.approval_status === "Pending" ? (
+                    {item.server_trans_status === "Pending" ? (
                       <div className="customer_trans_statustext_container">
                         <PiClockCounterClockwiseBold size={14} color="gray" />
                         <p
@@ -180,7 +180,7 @@ export default function ViewServerDetails({ serverDetails }) {
                           Waiting for Approval
                         </p>
                       </div>
-                    ) : item.approval_status === "Rejected" ? (
+                    ) : item.server_trans_status === "Rejected" ? (
                       <div className="customer_trans_statustext_container">
                         <FaRegCircleXmark color="#d32f2f" size={12} />
                         <p
