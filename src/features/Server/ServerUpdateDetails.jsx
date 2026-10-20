@@ -4,30 +4,19 @@ import React, {
   useImperativeHandle,
   useEffect,
 } from "react";
-import { Row, Col, Collapse, Button, Divider } from "antd";
+import { Row, Col } from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
-import { FaRegCircleXmark } from "react-icons/fa6";
-import { BsPatchCheckFill } from "react-icons/bs";
-import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { LuIndianRupee } from "react-icons/lu";
-import { VscLayersActive } from "react-icons/vsc";
-import { RiPassExpiredLine } from "react-icons/ri";
 import {
   inserCustomerTrack,
-  insertServerTrack,
   serverRePurchase,
   updateServerDetails,
   updateServerStatus,
 } from "../ApiService/action";
-import {
-  addressValidator,
-  formatToBackendIST,
-  selectValidator,
-} from "../Common/Validation";
+import { formatToBackendIST, selectValidator } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
-import moment from "moment";
 import ServerTransCollapse from "./ServerTransCollapse";
 
 const ServerUpdateDetails = forwardRef(
@@ -35,7 +24,6 @@ const ServerUpdateDetails = forwardRef(
     { serverDetails, drawerStatus, setButtonLoading, callgetServerApi },
     ref,
   ) => {
-    const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [vendorName, setVendorName] = useState("");
     const [vendorNameError, setVendorNameError] = useState("");
     const [serverCost, setServerCost] = useState();

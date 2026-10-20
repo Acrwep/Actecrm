@@ -8,19 +8,11 @@ import {
   Row,
   Col,
   Input,
-  Collapse,
   Checkbox,
-  Modal,
-  Button,
   Tooltip,
   notification,
   Divider,
 } from "antd";
-import { FaRegCircleXmark } from "react-icons/fa6";
-import { BsPatchCheckFill } from "react-icons/bs";
-import { VscLayersActive } from "react-icons/vsc";
-import { RiPassExpiredLine } from "react-icons/ri";
-import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { FaWhatsapp } from "react-icons/fa";
 import { AiOutlineEdit } from "react-icons/ai";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -55,7 +47,6 @@ const ServerIssue = forwardRef(
     { serverDetails, customerDetails, setButtonLoading, callgetServerApi },
     ref,
   ) => {
-    const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [isEmailEnabled, setIsEmailEnabled] = useState(true);
     const [subject, setSubject] = useState("");
     const [emailContent, setEmailContent] = useState("");
@@ -86,14 +77,7 @@ const ServerIssue = forwardRef(
     const [deleteLoading, setDeleteLoading] = useState(false);
 
     const getCandidateMobile = () => {
-      return (
-        serverDetails?.whatsapp ||
-        customerDetails?.whatsapp ||
-        serverDetails?.phone ||
-        customerDetails?.phone ||
-        customerDetails?.mobile ||
-        ""
-      );
+      return serverDetails?.whatsapp || "";
     };
 
     const isNameParam = (key) =>
