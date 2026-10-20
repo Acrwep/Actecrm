@@ -80,15 +80,8 @@ const ServerUpdateDetails = forwardRef(
           import.meta.env.VITE_EMAIL_URL
         }/acknowledge-server-request`,
         status_date: formatToBackendIST(new Date()),
-        ...(drawerStatus === "Re-Purchase"
-          ? {
-              created_by:
-                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-            }
-          : {
-              updated_by:
-                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-            }),
+        created_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
       };
 
       try {

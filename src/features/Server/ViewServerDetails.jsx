@@ -71,75 +71,7 @@ export default function ViewServerDetails({ serverDetails }) {
   );
 
   return (
-    <div style={{ padding: "2px 24px 20px 24px" }}>
-      {/* <div style={cardStyle}>
-        <HeaderTitle title="Server Details" />
-        <Row gutter={24}>
-          <Col span={6}>
-            {renderField(
-              "Created At",
-              formatDateTime(
-                serverDetails && serverDetails.created_date
-                  ? serverDetails.created_date
-                  : null,
-              ),
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Server Name",
-              serverDetails && serverDetails.server_name
-                ? serverDetails.server_name
-                : "-",
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Server Cost",
-              serverDetails && serverDetails.server_cost
-                ? `₹${serverDetails.server_cost}`
-                : "-",
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Server Duration",
-              serverDetails && serverDetails.duration
-                ? serverDetails.duration + " " + "Days"
-                : "-",
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Vendor",
-              serverDetails && serverDetails.vendor_id
-                ? serverDetails.vendor_id
-                : "-",
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Start Date",
-              formatDateTime(
-                serverDetails && serverDetails.start_date
-                  ? serverDetails.start_date
-                  : null,
-              ),
-            )}
-          </Col>
-          <Col span={6}>
-            {renderField(
-              "Expiry Date",
-              formatDateTime(
-                serverDetails && serverDetails.end_date
-                  ? serverDetails.end_date
-                  : null,
-              ),
-            )}
-          </Col>
-        </Row>
-      </div> */}
-
+    <div style={{ padding: "1px 24px 20px 24px" }}>
       {serverDetails && serverDetails.trans_details.length >= 1 ? (
         <div style={{ marginTop: "12px", marginBottom: "20px" }}>
           <Collapse
@@ -161,10 +93,9 @@ export default function ViewServerDetails({ serverDetails }) {
                     }}
                   >
                     <span>
-                      Server Details
-                      {/* <span style={{ fontWeight: "500" }}>
-                                {moment(item.invoice_date).format("DD/MM/YYYY")}
-                              </span> */}
+                      {serverDetails.trans_details.length > 1
+                        ? `${serverDetails.trans_details.length - index}. Server Details`
+                        : "Server Details"}
                     </span>
 
                     {item.server_trans_status === "Pending" ? (
@@ -245,6 +176,24 @@ export default function ViewServerDetails({ serverDetails }) {
                         <tr>
                           <td>Vendor</td>
                           <td className="text-right">{item.vendor_id}</td>
+                        </tr>
+
+                        <tr>
+                          <td>Start Date</td>
+                          <td className="text-right">
+                            {item.start_date
+                              ? moment(item.start_date).format("DD/MM/YYYY")
+                              : "-"}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>End Date</td>
+                          <td className="text-right">
+                            {item.end_date
+                              ? moment(item.end_date).format("DD/MM/YYYY")
+                              : "-"}
+                          </td>
                         </tr>
                       </tbody>
                     </table>

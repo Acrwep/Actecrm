@@ -6,11 +6,9 @@ import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import CommonSelectField from "../Common/CommonSelectField";
 import { FaRegCopy } from "react-icons/fa6";
-import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
 import CommonTable from "../Common/CommonTable";
 import { FiFilter } from "react-icons/fi";
-import { RedoOutlined } from "@ant-design/icons";
 import { LuFileClock } from "react-icons/lu";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
@@ -24,13 +22,9 @@ import {
   getAllDownlineUsers,
   getBranches,
   getCustomerById,
-  getServerHistory,
   getServerRequest,
   getTableColumns,
   getUsers,
-  inserCustomerTrack,
-  sendNotification,
-  updateServerStatus,
   updateTableColumns,
 } from "../ApiService/action";
 import moment from "moment";
