@@ -1,5 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Row, Col, Tooltip, Drawer, Button, Checkbox, Progress } from "antd";
+import {
+  Row,
+  Col,
+  Tooltip,
+  Drawer,
+  Button,
+  Checkbox,
+  Progress,
+  Badge,
+  Popover,
+  Grid,
+} from "antd";
 import { CiSearch } from "react-icons/ci";
 import {
   IoIosClose,
@@ -20,6 +31,7 @@ import {
   getBranches,
   getUsers,
   getPlacementSupport,
+  getTechnologies,
 } from "../ApiService/action";
 import {
   customersStatusDisplay,
@@ -46,6 +58,10 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 
 export default function Placement() {
+  //screen sizes
+  const screens = Grid.useBreakpoint();
+  const isLargeScreen = screens.lg;
+  //mount
   const mounted = useRef(false);
   //search userefs start
   const searchTimeoutRef = useRef(null);
@@ -76,6 +92,9 @@ export default function Placement() {
   //filter usestates
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
+  const [technologiesData, setTechnologiesData] = useState([]);
+  const [selectedTechnology, setSelectedTechnology] = useState(null);
+  const prevSelectedTechnologyRef = useRef("[]");
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const prevSelectedUserIdRef = useRef("[]");
@@ -726,11 +745,21 @@ export default function Placement() {
     const userId = convertAsJson?.user_id;
 
     setLoginUserId(userId);
-
+    getTechnologiesData();
     if (userId) {
       getTableColumnsData(userId);
     }
   }, [permissions]);
+
+  const getTechnologiesData = async () => {
+    try {
+      const response = await getTechnologies();
+      setTechnologiesData(response?.data?.data || []);
+    } catch (error) {
+      setTechnologiesData([]);
+      console.log("response status error", error);
+    }
+  };
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -761,6 +790,7 @@ export default function Placement() {
         startDate: PreviousAndCurrentDate[0],
         endDate: PreviousAndCurrentDate[1],
         searchvalue: null,
+        technology: null,
         bucket: null,
         regionId: null,
         branchId: null,
@@ -782,6 +812,9 @@ export default function Placement() {
         ? overrides.endDate
         : selectedDates?.[1] || null,
       overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.technology !== undefined
+        ? overrides.technology
+        : selectedTechnology,
       overrides.bucket !== undefined ? overrides.bucket : modeStatus,
       overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
       overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
@@ -805,6 +838,7 @@ export default function Placement() {
     startDate,
     endDate,
     searchvalue,
+    technology,
     bucket,
     regionId,
     branchId,
@@ -817,6 +851,9 @@ export default function Placement() {
     setLoading(true);
     const payload = {
       ...(searchvalue && { search_filter: searchvalue }),
+      ...(technology && technology.length >= 1
+        ? { course_ids: technology }
+        : {}),
       from_date: startDate,
       to_date: endDate,
       ...(bucket && { bucket: bucket }),
@@ -1049,6 +1086,27 @@ export default function Placement() {
     }
   };
 
+  const handleSelectTechnology = async (e) => {
+    const value = e.target.value;
+    setSelectedTechnology(value);
+  };
+
+  const handleSelectTechnologyBlur = async () => {
+    const value = selectedTechnology;
+
+    const stringifiedValue = JSON.stringify(value || []);
+
+    if (prevSelectedTechnologyRef.current === stringifiedValue) {
+      return;
+    }
+    prevSelectedTechnologyRef.current = stringifiedValue;
+
+    fetchPlacementSupportData({
+      technology: value,
+      pageNumber: 1,
+    });
+  };
+
   const getBranchesData = async (regionid) => {
     const payload = {
       region_id: regionid,
@@ -1104,6 +1162,8 @@ export default function Placement() {
     setSearchValue("");
     setSelectedUserId([]);
     prevSelectedUserIdRef.current = "[]";
+    prevSelectedTechnologyRef.current = "[]";
+    setSelectedTechnology(null);
     setModeStatus("");
     setStatus("");
     setIsSwap(false);
@@ -1135,7 +1195,7 @@ export default function Placement() {
         </div>
       </div>
 
-      <Row align="middle">
+      <Row align="middle" gutter={[12, 12]}>
         <Col
           xs={24}
           sm={24}
@@ -1143,15 +1203,15 @@ export default function Placement() {
           lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
           xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
         >
-          <Row gutter={12} align="middle" wrap={false}>
-            <Col flex="1 1 0%">
+          <Row gutter={[12, 12]} align="middle" wrap={false}>
+            {/* Search */}
+            <Col flex="1 1 180px">
               <div
                 className="overallduecustomers_filterContainer"
-                style={{ marginBottom: "0px" }}
+                style={{ marginBottom: 0 }}
               >
-                {/* Search Input */}
                 <CommonOutlinedInput
-                  label={"Search..."}
+                  label="Search..."
                   width="100%"
                   height="32px"
                   labelFontSize="11px"
@@ -1161,9 +1221,7 @@ export default function Placement() {
                         className="users_filter_closeIconContainer"
                         onClick={() => {
                           setSearchValue("");
-                          setPagination({
-                            page: 1,
-                          });
+                          setPagination({ page: 1 });
                           fetchPlacementSupportData({
                             searchvalue: null,
                             pageNumber: 1,
@@ -1187,121 +1245,288 @@ export default function Placement() {
                 />
               </div>
             </Col>
-            {permissions.includes("Lead Executive Filter") && (
+
+            {/* Large screen: Technology, Region, Branch and User */}
+            {isLargeScreen && (
               <>
-                <Col flex="0.8 1 0%">
-                  <CommonSelectField
-                    height="33px"
-                    label="Select Region"
-                    labelMarginTop="0px"
+                <Col flex="1 1 150px">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Technology"
+                    labelMarginTop="1px"
                     labelFontSize="11px"
-                    options={regionOptions}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setSelectedRegionId(value);
-                      setSelectedBranchId(null);
-                      setSelectedUserId([]);
-                      setPagination({
-                        page: 1,
-                      });
-                      fetchPlacementSupportData({
-                        regionId: value,
-                        branchId: null,
-                        downliners: defaultAllDownliners,
-                        pageNumber: 1,
-                      });
-                      if (value) {
-                        getUsersData(value, null);
-                        getBranchesData(value);
-                      } else {
-                        setBranchOptions([]);
-                        setSubUsers(downlineUsers);
-                      }
-                    }}
-                    value={selectedRegionId}
-                    disableClearable={false}
+                    options={technologiesData}
+                    value={selectedTechnology}
+                    onChange={handleSelectTechnology}
+                    onBlur={handleSelectTechnologyBlur}
                   />
                 </Col>
 
-                <Col flex="0.8 1 0%">
-                  <CommonSelectField
-                    height="33px"
-                    label="Select Branch"
-                    labelMarginTop="0px"
-                    labelFontSize="11px"
-                    options={branchOptions}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setSelectedBranchId(value);
-                      setSelectedUserId([]);
-                      getUsersData(selectedRegionId, value);
-                      setPagination({
-                        page: 1,
-                      });
-                      fetchPlacementSupportData({
-                        branchId: value,
-                        downliners: defaultAllDownliners,
-                        pageNumber: 1,
-                      });
-                    }}
-                    value={selectedBranchId}
-                    disableClearable={false}
-                    disabled={selectedRegionId == 3 ? true : false}
-                  />
-                </Col>
-                <Col flex="1 1 0%">
-                  <CommonMultiSelectField
-                    height="34px"
-                    label="Select User"
-                    labelMarginTop="1px"
-                    labelFontSize="11px"
-                    options={subUsers}
-                    onChange={handleSelectUser}
-                    onBlur={handleSelectUserBlur}
-                    value={selectedUserId}
-                  />
-                </Col>
+                {permissions.includes("Lead Executive Filter") && (
+                  <>
+                    <Col flex="1 1 140px">
+                      {/* Keep your existing Select Region component here */}
+                      <CommonSelectField
+                        height="33px"
+                        label="Select Region"
+                        labelMarginTop="0px"
+                        labelFontSize="11px"
+                        options={regionOptions}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSelectedRegionId(value);
+                          setSelectedBranchId(null);
+                          setSelectedUserId([]);
+                          setPagination({ page: 1 });
+
+                          fetchPlacementSupportData({
+                            regionId: value,
+                            branchId: null,
+                            downliners: defaultAllDownliners,
+                            pageNumber: 1,
+                          });
+
+                          if (value) {
+                            getUsersData(value, null);
+                            getBranchesData(value);
+                          } else {
+                            setBranchOptions([]);
+                            setSubUsers(downlineUsers);
+                          }
+                        }}
+                        value={selectedRegionId}
+                        disableClearable={false}
+                      />
+                    </Col>
+
+                    <Col flex="1 1 140px">
+                      {/* Keep your existing Select Branch component here */}
+                      <CommonSelectField
+                        height="33px"
+                        label="Select Branch"
+                        labelMarginTop="0px"
+                        labelFontSize="11px"
+                        options={branchOptions}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSelectedBranchId(value);
+                          setSelectedUserId([]);
+                          getUsersData(selectedRegionId, value);
+                          setPagination({ page: 1 });
+
+                          fetchPlacementSupportData({
+                            branchId: value,
+                            downliners: defaultAllDownliners,
+                            pageNumber: 1,
+                          });
+                        }}
+                        value={selectedBranchId}
+                        disableClearable={false}
+                        disabled={selectedRegionId == 3}
+                      />
+                    </Col>
+
+                    <Col flex="1 1 150px">
+                      <CommonMultiSelectField
+                        height="34px"
+                        label="Select User"
+                        labelMarginTop="1px"
+                        labelFontSize="11px"
+                        options={subUsers}
+                        onChange={handleSelectUser}
+                        onBlur={handleSelectUserBlur}
+                        value={selectedUserId}
+                      />
+                    </Col>
+                  </>
+                )}
               </>
             )}
-            <Col flex="1.5 1 0%">
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "6px",
+
+            {/* Date Picker */}
+            <Col flex="1 1 240px">
+              <CommonMuiCustomDatePicker
+                width="100%"
+                dateFontSize="12.5px"
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  setPagination({ page: 1 });
+                  fetchPlacementSupportData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                    pageNumber: 1,
+                  });
                 }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    flexWrap: "nowrap",
+              />
+            </Col>
+
+            {/* Advanced Filters */}
+            <Col flex="none">
+              {!isLargeScreen && (
+                <Popover
+                  placement="bottomLeft"
+                  trigger="click"
+                  overlayInnerStyle={{
+                    padding: 0,
+                    borderRadius: "12px",
+                    boxShadow:
+                      "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+                    border: "1px solid #e2e8f0",
                   }}
-                >
-                  <div style={{ flex: "0 0 120px" }}>
-                    <CommonMuiCustomDatePicker
-                      width="280px"
-                      dateFontSize="12.5px"
-                      value={selectedDates}
-                      onDateChange={(dates) => {
-                        setSelectedDates(dates);
-                        setPagination({
-                          page: 1,
-                        });
-                        fetchPlacementSupportData({
-                          startDate: dates[0],
-                          endDate: dates[1],
-                          pageNumber: 1,
-                        });
+                  content={
+                    <div
+                      style={{
+                        width: "320px",
+                        maxWidth: "calc(100vw - 32px)",
+                        display: "flex",
+                        flexDirection: "column",
                       }}
-                    />
-                  </div>
-                </div>
-              </div>
+                    >
+                      <div
+                        style={{
+                          padding: "10px 20px",
+                          borderBottom: "1px solid #f1f5f9",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          backgroundColor: "#f8fafc",
+                          borderTopLeftRadius: "12px",
+                          borderTopRightRadius: "12px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "13px",
+                            color: "#0f172a",
+                          }}
+                        >
+                          Advanced Filters
+                        </span>
+
+                        <Badge
+                          count={3}
+                          style={{
+                            backgroundColor: "#3b82f6",
+                            boxShadow: "0 0 0 2px #f8fafc",
+                          }}
+                        />
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "16px",
+                          maxHeight: "420px",
+                          overflowY: "auto",
+                          padding: "20px",
+                        }}
+                      >
+                        {/* Technology: small screens only */}
+                        {!isLargeScreen && (
+                          <CommonMultiSelectField
+                            height="34px"
+                            label="Technology"
+                            labelMarginTop="1px"
+                            labelFontSize="11px"
+                            options={technologiesData}
+                            value={selectedTechnology}
+                            onChange={handleSelectTechnology}
+                            onBlur={handleSelectTechnologyBlur}
+                          />
+                        )}
+
+                        {/* Region and Branch: small screens only */}
+                        {!isLargeScreen &&
+                          permissions.includes("Lead Executive Filter") && (
+                            <>
+                              <CommonSelectField
+                                height="33px"
+                                label="Select Region"
+                                labelMarginTop="0px"
+                                labelFontSize="11px"
+                                options={regionOptions}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setSelectedRegionId(value);
+                                  setSelectedBranchId(null);
+                                  setSelectedUserId([]);
+                                  setPagination({ page: 1 });
+
+                                  fetchPlacementSupportData({
+                                    regionId: value,
+                                    branchId: null,
+                                    downliners: defaultAllDownliners,
+                                    pageNumber: 1,
+                                  });
+
+                                  if (value) {
+                                    getUsersData(value, null);
+                                    getBranchesData(value);
+                                  } else {
+                                    setBranchOptions([]);
+                                    setSubUsers(downlineUsers);
+                                  }
+                                }}
+                                value={selectedRegionId}
+                                disableClearable={false}
+                              />
+
+                              <CommonSelectField
+                                height="33px"
+                                label="Select Branch"
+                                labelMarginTop="0px"
+                                labelFontSize="11px"
+                                options={branchOptions}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setSelectedBranchId(value);
+                                  setSelectedUserId([]);
+                                  getUsersData(selectedRegionId, value);
+                                  setPagination({ page: 1 });
+
+                                  fetchPlacementSupportData({
+                                    branchId: value,
+                                    downliners: defaultAllDownliners,
+                                    pageNumber: 1,
+                                  });
+                                }}
+                                value={selectedBranchId}
+                                disableClearable={false}
+                                disabled={selectedRegionId == 3}
+                              />
+                            </>
+                          )}
+                      </div>
+                    </div>
+                  }
+                >
+                  <Button
+                    icon={<IoFilter size={14} />}
+                    className="leads_advancefilter_button"
+                    style={{
+                      background: "#fff",
+                      borderRadius: "6px",
+                      height: "35px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontWeight: 500,
+                      fontSize: "12px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    Filters
+                  </Button>
+                </Popover>
+              )}
             </Col>
           </Row>
         </Col>
+
+        {/* Existing actions */}
         <Col
           xs={24}
           sm={24}

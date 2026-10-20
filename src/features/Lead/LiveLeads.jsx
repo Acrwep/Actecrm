@@ -127,6 +127,7 @@ export default function LiveLead({
   //table dnd
   const [checkAll, setCheckAll] = useState(false);
   const [updateTableId, setUpdateTableId] = useState(null);
+
   const formatDuration = (dateString) => {
     if (import.meta.env.PROD) {
       const created = new Date(dateString);

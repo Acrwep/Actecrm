@@ -214,6 +214,73 @@ export default function Server() {
     totalPages: 0,
   });
 
+  const formatDuration = (dateString) => {
+    const createdUTC = new Date(dateString);
+    const createdIST = new Date(createdUTC.getTime() - 5.5 * 60 * 60 * 1000);
+
+    const now = new Date();
+    const diffMs = now - createdIST;
+
+    if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const totalHours = totalSeconds / 3600;
+
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    let text = "";
+
+    if (days === 0) {
+      const hh = pad(Math.floor(totalSeconds / 3600));
+      text = `${hh}h:${pad(minutes)}m`;
+    } else {
+      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+    }
+
+    return { text, hours: totalHours };
+  };
+
+  const formatExpiryDuration = (expiryDate) => {
+    if (!expiryDate) {
+      return { text: "-", expired: false };
+    }
+
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+
+    const diffMs = expiry.getTime() - now.getTime();
+
+    if (Number.isNaN(expiry.getTime())) {
+      return { text: "-", expired: false };
+    }
+
+    if (diffMs <= 0) {
+      return { text: "Expired", expired: true };
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    let text;
+
+    if (days === 0) {
+      text = `${pad(hours)}h:${pad(minutes)}m`;
+    } else {
+      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+    }
+
+    return { text, expired: false };
+  };
+
   const nonChangeColumns = [
     {
       title: "Joined On",
@@ -234,6 +301,81 @@ export default function Server() {
           <EllipsisTooltip
             text={text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"}
           />
+        );
+      },
+    },
+    {
+      title: "Raised Before",
+      key: "raised_before",
+      dataIndex: "server_raise_date",
+      width: 130,
+      render: (text) => {
+        const { text: durationText, hours } = formatDuration(text);
+
+        let bg = "#5b69ca1a";
+        let color = "#5b69ca";
+
+        return (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span
+              style={{
+                background: bg,
+                color: color,
+                padding: "3px 8px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                fontWeight: 600,
+                display: "inline-block",
+                minWidth: "75px",
+                textAlign: "center",
+              }}
+            >
+              {durationText}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Expires In",
+      key: "expires_in",
+      dataIndex: "trans_details",
+      width: 110,
+      render: (text, record) => {
+        const end_date = record.trans_details?.[0]?.end_date;
+
+        const { text: durationText, expired } = formatExpiryDuration(end_date);
+
+        return (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span
+              style={{
+                background: expired ? "#d32f2f1a" : "#5b69ca1a",
+                color: expired ? "#d32f2f" : "#5b69ca",
+                padding: "3px 8px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                fontWeight: 600,
+                display: "inline-block",
+                minWidth: "75px",
+                textAlign: "center",
+              }}
+            >
+              {durationText}
+            </span>
+          </div>
         );
       },
     },
@@ -1381,9 +1523,11 @@ export default function Server() {
     if (status === "Requested" || status === "") {
       const hiddenKeys = [
         "server_raise_date",
+        "raised_before",
+        "expires_in",
         "server_name",
         "server_cost",
-        "duration",
+        "requested_duration",
         "vendor_id",
       ];
 
@@ -1394,7 +1538,12 @@ export default function Server() {
     }
 
     if (status === "Server Raised") {
-      const hiddenKeys = ["server_name", "server_cost", "vendor_id"];
+      const hiddenKeys = [
+        "server_name",
+        "server_cost",
+        "vendor_id",
+        "expires_in",
+      ];
 
       return tableColumns.filter(
         (col) =>
@@ -1402,7 +1551,27 @@ export default function Server() {
       );
     }
 
-    return tableColumns;
+    if (status === "Issued") {
+      const hiddenKeys = ["raised_before"];
+
+      return tableColumns.filter(
+        (col) =>
+          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
+      );
+    }
+
+    if (status === "Expired") {
+      const hiddenKeys = ["raised_before", "expires_in"];
+
+      return tableColumns.filter(
+        (col) =>
+          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
+      );
+    }
+    // Hide expires_in for all other statuses too
+    return tableColumns.filter(
+      (col) => col.key !== "expires_in" && col.dataIndex !== "expires_in",
+    );
   }, [tableColumns, status]);
 
   return (

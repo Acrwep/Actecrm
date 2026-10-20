@@ -129,6 +129,36 @@ export default function Server({ setServerCount }) {
     totalPages: 0,
   });
 
+  const formatDuration = (dateString) => {
+    const createdUTC = new Date(dateString);
+    const createdIST = new Date(createdUTC.getTime() - 5.5 * 60 * 60 * 1000);
+
+    const now = new Date();
+    const diffMs = now - createdIST;
+
+    if (diffMs < 0) return { text: "00:00", hours: 0 };
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const totalHours = totalSeconds / 3600;
+
+    const days = Math.floor(totalSeconds / (24 * 3600));
+    const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    let text = "";
+
+    if (days === 0) {
+      const hh = pad(Math.floor(totalSeconds / 3600));
+      text = `${hh}h:${pad(minutes)}m`;
+    } else {
+      text = `${pad(days)}d:${pad(hours)}h:${pad(minutes)}m`;
+    }
+
+    return { text, hours: totalHours };
+  };
+
   const nonChangeColumns = [
     {
       title: "Joined On",
@@ -149,6 +179,44 @@ export default function Server({ setServerCount }) {
           <EllipsisTooltip
             text={text ? moment(text).format("DD/MM/YYYY hh:mm A") : "-"}
           />
+        );
+      },
+    },
+    {
+      title: "Raised Before",
+      key: "raised_before",
+      dataIndex: "server_raise_date",
+      width: 130,
+      render: (text) => {
+        const { text: durationText, hours } = formatDuration(text);
+
+        let bg = "#5b69ca1a";
+        let color = "#5b69ca";
+
+        return (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span
+              style={{
+                background: bg,
+                color: color,
+                padding: "3px 8px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                fontWeight: 600,
+                display: "inline-block",
+                minWidth: "75px",
+                textAlign: "center",
+              }}
+            >
+              {durationText}
+            </span>
+          </div>
         );
       },
     },
