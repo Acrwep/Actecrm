@@ -958,37 +958,27 @@ const AssignAndVerifyTrainer = forwardRef(
                     >
                       <div style={{ padding: "0 0px" }}>
                         <Row gutter={24}>
-                          <Col span={6}>
+                          <Col span={12}>
                             {renderField(
                               "HR Name",
                               item.trainer_hr_name ? item.trainer_hr_name : "-",
                             )}
-                          </Col>
-                          <Col span={6}>
                             {renderField(
                               "Trainer Name",
                               item.trainer_name ? item.trainer_name : "-",
                             )}
-                          </Col>
-                          <Col span={6}>
                             {renderField(
                               "Trainer Type",
                               item.trainer_type || "-",
                             )}
-                          </Col>
-                          <Col span={6}>
                             {renderField(
                               "Mode Of Class",
                               item.mode_of_class || "-",
                             )}
-                          </Col>
-                          <Col span={6}>
                             {renderField(
                               "Commercial",
                               item.commercial ? "₹" + item.commercial : "-",
                             )}
-                          </Col>
-                          <Col span={6}>
                             {renderField(
                               "Commercial%",
                               <span
@@ -1013,7 +1003,7 @@ const AssignAndVerifyTrainer = forwardRef(
                               </span>,
                             )}
                           </Col>
-                          <Col span={6}>
+                          <Col span={12}>
                             {renderField(
                               "Proof Screenshot",
                               <button
@@ -1031,42 +1021,35 @@ const AssignAndVerifyTrainer = forwardRef(
                                 <FaRegEye size={14} /> View screenshot
                               </button>,
                             )}
-                          </Col>
-                          <Col span={6}>
                             {renderField(
                               "Comments",
                               item.comments ? item.comments : "-",
                             )}
-                          </Col>
-
-                          {/* rejected/verified comment section */}
-                          {item.is_rejected == 1 ? (
-                            <>
-                              <Col span={6}>
+                            {/* rejected/verified comment section */}
+                            {item.is_rejected == 1 ? (
+                              <>
                                 {renderField(
                                   "Rejected Date",
                                   moment(item.rejected_date).format(
                                     "DD/MM/YYYY",
                                   ),
                                 )}
-                              </Col>
-                              <Col span={6}>
                                 {renderField(
                                   "Reason for Rejection",
                                   item.comments ? item.comments : "-",
                                 )}
-                              </Col>
-                            </>
-                          ) : item.verified_date && item.is_rejected == 0 ? (
-                            <Col span={6}>
-                              {renderField(
-                                "Verified Date",
-                                moment(item.verified_date).format("DD/MM/YYYY"),
-                              )}
-                            </Col>
-                          ) : null}
+                              </>
+                            ) : item.verified_date && item.is_rejected == 0 ? (
+                              <>
+                                {renderField(
+                                  "Verified Date",
+                                  moment(item.verified_date).format(
+                                    "DD/MM/YYYY",
+                                  ),
+                                )}
+                              </>
+                            ) : null}
 
-                          <Col span={6}>
                             {renderField(
                               "On-Going",
                               item.ongoing_student_count
@@ -1074,9 +1057,6 @@ const AssignAndVerifyTrainer = forwardRef(
                                 : `${0} Candidates`,
                               item,
                             )}
-                          </Col>
-
-                          <Col span={6}>
                             {renderField(
                               "Class Taken",
                               item.completed_student_count
@@ -1085,83 +1065,84 @@ const AssignAndVerifyTrainer = forwardRef(
                               item,
                             )}
                           </Col>
-
-                          {item.is_rejected == 1 ||
-                          drawerContentStatus ===
-                            "Update Assigned Trainer" ? null : (
-                            <Col span={24} style={{ marginTop: "0px" }}>
-                              {activeRejectIndex === index && (
-                                <div
-                                  style={{
-                                    marginBottom: "16px",
-                                    position: "relative",
-                                  }}
-                                  id="customer_trainerreject_commentContainer"
-                                >
-                                  <CommonTextArea
-                                    label="Comment"
-                                    required={true}
-                                    onChange={(e) => {
-                                      setRejectTrainerComments(e.target.value);
-                                      setRejectTrainerCommentsError(
-                                        addressValidator(e.target.value),
-                                      );
-                                    }}
-                                    value={rejectTrainerComments}
-                                    error={rejectTrainerCommentsError}
-                                  />
-                                </div>
-                              )}
-                              <div className="customer_verifytrainer_approve_button_container">
-                                {activeRejectIndex === index && (
-                                  <Button
-                                    className="customer_verify_trainer_back_button"
-                                    onClick={() => {
-                                      setActiveRejectIndex(null);
-                                      setRejectTrainerComments("");
-                                      setRejectTrainerCommentsError("");
-                                    }}
-                                  >
-                                    Back
-                                  </Button>
-                                )}
-                                <Button
-                                  loading={
-                                    buttonLoading && activeRejectIndex === index
-                                  }
-                                  onClick={() => {
-                                    if (buttonLoading) return;
-                                    if (activeRejectIndex === index) {
-                                      handleRejectTrainer(item);
-                                    } else {
-                                      setActiveRejectIndex(index);
-                                      setRejectTrainerComments("");
-                                      setRejectTrainerCommentsError("");
-                                    }
-                                  }}
-                                  className="customer_finance_rejectbutton"
-                                >
-                                  {activeRejectIndex === index
-                                    ? "Confirm Reject"
-                                    : "Reject"}
-                                </Button>
-                                {activeRejectIndex !== index && (
-                                  <Button
-                                    className="customer_finance_verifybutton"
-                                    onClick={() => {
-                                      setActiveTrainerItem(item);
-                                      setIsOpenTrainerVerifyModal(true);
-                                    }}
-                                  >
-                                    {drawerContentStatus === "Trainer Approval"
-                                      ? "Approve"
-                                      : "Verify"}
-                                  </Button>
-                                )}
-                              </div>
-                            </Col>
-                          )}
                         </Row>
+
+                        {/* reject comment box */}
+                        {item.is_rejected == 1 ||
+                        drawerContentStatus ===
+                          "Update Assigned Trainer" ? null : (
+                          <Col span={24} style={{ marginTop: "0px" }}>
+                            {activeRejectIndex === index && (
+                              <div
+                                style={{
+                                  marginBottom: "16px",
+                                  position: "relative",
+                                }}
+                                id="customer_trainerreject_commentContainer"
+                              >
+                                <CommonTextArea
+                                  label="Comment"
+                                  required={true}
+                                  onChange={(e) => {
+                                    setRejectTrainerComments(e.target.value);
+                                    setRejectTrainerCommentsError(
+                                      addressValidator(e.target.value),
+                                    );
+                                  }}
+                                  value={rejectTrainerComments}
+                                  error={rejectTrainerCommentsError}
+                                />
+                              </div>
+                            )}
+                            <div className="customer_verifytrainer_approve_button_container">
+                              {activeRejectIndex === index && (
+                                <Button
+                                  className="customer_verify_trainer_back_button"
+                                  onClick={() => {
+                                    setActiveRejectIndex(null);
+                                    setRejectTrainerComments("");
+                                    setRejectTrainerCommentsError("");
+                                  }}
+                                >
+                                  Back
+                                </Button>
+                              )}
+                              <Button
+                                loading={
+                                  buttonLoading && activeRejectIndex === index
+                                }
+                                onClick={() => {
+                                  if (buttonLoading) return;
+                                  if (activeRejectIndex === index) {
+                                    handleRejectTrainer(item);
+                                  } else {
+                                    setActiveRejectIndex(index);
+                                    setRejectTrainerComments("");
+                                    setRejectTrainerCommentsError("");
+                                  }
+                                }}
+                                className="customer_finance_rejectbutton"
+                              >
+                                {activeRejectIndex === index
+                                  ? "Confirm Reject"
+                                  : "Reject"}
+                              </Button>
+                              {activeRejectIndex !== index && (
+                                <Button
+                                  className="customer_finance_verifybutton"
+                                  onClick={() => {
+                                    setActiveTrainerItem(item);
+                                    setIsOpenTrainerVerifyModal(true);
+                                  }}
+                                >
+                                  {drawerContentStatus === "Trainer Approval"
+                                    ? "Approve"
+                                    : "Verify"}
+                                </Button>
+                              )}
+                            </div>
+                          </Col>
+                        )}
                       </div>
                     </Collapse.Panel>
                   );

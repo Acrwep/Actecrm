@@ -56,6 +56,7 @@ import BatchManagement from "../Batches/BatchManagement";
 import Placement from "../Placement/Placement";
 import Marketing from "../Marketing/Marketing";
 import WhatsAppCampaigns from "../Marketing/WhatsAppCampaigns";
+import ServerAcknowledge from "../Server/ServerAcknowledge";
 
 const { Sider, Content, Header } = Layout;
 
@@ -82,6 +83,7 @@ export default function Pages() {
       lowerPath === "/success" ||
       lowerPath === "/claim-success" ||
       lowerPath.startsWith("/acknowledge-class-completion") ||
+      lowerPath.startsWith("/acknowledge-server-request") ||
       lowerPath === "/helpdesk"
     );
   };
@@ -189,6 +191,14 @@ export default function Pages() {
         <Route
           path="/acknowledge-class-completion/:customer_id"
           element={<AcknowledgeClassCompletion />}
+        />
+        <Route
+          path="/acknowledge-server-request/:server_trans_id/:customer_id/:status"
+          element={<ServerAcknowledge />}
+        />
+        <Route
+          path="/acknowledge-server-request/:server_trans_id/:customer_id"
+          element={<ServerAcknowledge />}
         />
         <Route path="/helpdesk" element={<Helpdesk />} />
       </Routes>

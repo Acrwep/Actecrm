@@ -1123,7 +1123,19 @@ export default function Placement() {
 
   return (
     <div>
-      <Row align="middle" style={{ marginTop: "12px" }}>
+      <div className="admissions_overall_header">
+        <div className="admissions_overall_indicator"></div>
+
+        <div className="admissions_overall_content">
+          <span className="admissions_overall_label">OverAll</span>
+
+          <span className="admissions_overall_count">
+            {allAdmissionsRegionCounts?.total_count ?? 0}
+          </span>
+        </div>
+      </div>
+
+      <Row align="middle">
         <Col
           xs={24}
           sm={24}

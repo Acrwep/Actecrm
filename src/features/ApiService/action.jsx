@@ -1712,6 +1712,15 @@ export const updateServerStatus = async (payload) => {
   }
 };
 
+export const acknowledgeServerByCandidate = async (payload) => {
+  try {
+    const response = await api.put(`/api/addAcknowledgeServer`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateServerDetails = async (payload) => {
   try {
     const response = await api.post(`/api/awatingVerify`, payload);
@@ -1733,6 +1742,15 @@ export const serverApprove = async (payload) => {
 export const serverIssue = async (payload) => {
   try {
     const response = await api.put(`/api/serverIssued`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const serverRePurchase = async (payload) => {
+  try {
+    const response = await api.post(`/api/reServerPurchased`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -2268,10 +2286,11 @@ export const deleteWhatsAppTemplate = async (id, payload = {}) => {
   }
 };
 
-
 export const getWhatsAppCampaignStatistics = async (params = {}) => {
   try {
-    const response = await api.get('/api/whatsapp/campaigns/statistics', { params });
+    const response = await api.get("/api/whatsapp/campaigns/statistics", {
+      params,
+    });
     return response;
   } catch (error) {
     throw error;
@@ -2280,7 +2299,7 @@ export const getWhatsAppCampaignStatistics = async (params = {}) => {
 
 export const getWhatsAppCampaigns = async (params = {}) => {
   try {
-    const response = await api.get('/api/whatsapp/campaigns', { params });
+    const response = await api.get("/api/whatsapp/campaigns", { params });
     return response;
   } catch (error) {
     throw error;
@@ -2298,7 +2317,9 @@ export const getWhatsAppCampaignById = async (id) => {
 
 export const getWhatsAppCampaignMessages = async (id, params = {}) => {
   try {
-    const response = await api.get(`/api/whatsapp/campaigns/${id}/messages`, { params });
+    const response = await api.get(`/api/whatsapp/campaigns/${id}/messages`, {
+      params,
+    });
     return response;
   } catch (error) {
     throw error;

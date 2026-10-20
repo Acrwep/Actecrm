@@ -1,28 +1,19 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
-import { Row, Col, Collapse, Modal, Button } from "antd";
-import CommonInputField from "../Common/CommonInputField";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import CommonSelectField from "../Common/CommonSelectField";
+import { Row, Col, Collapse, Modal, Button, Divider } from "antd";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
+import { BsPatchCheckFill } from "react-icons/bs";
 import CommonTextArea from "../Common/CommonTextArea";
-import { LuIndianRupee } from "react-icons/lu";
-import { FaRegEye } from "react-icons/fa";
+import { FaRegCircleXmark } from "react-icons/fa6";
 import CommonSpinner from "../Common/CommonSpinner";
-import {
-  insertServerTrack,
-  updateServerDetails,
-  updateServerStatus,
-} from "../ApiService/action";
-import {
-  addressValidator,
-  formatToBackendIST,
-  selectValidator,
-} from "../Common/Validation";
+import { inserCustomerTrack, updateServerStatus } from "../ApiService/action";
+import { addressValidator, formatToBackendIST } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import "./styles.css";
 import PrismaZoom from "react-prismazoom";
 
 const ServerApproval = forwardRef(
-  ({ serverDetails, setRejectButtonLoading, callgetServerApi }, ref) => {
+  ({ serverDetails, callgetServerApi }, ref) => {
+    const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [isOpenVerifyScreenshotModal, setIsOpenVerifyScreenshotModal] =
       useState(false);
     const [verificationScreenshot, setVerificationScreenshot] = useState("");
@@ -32,15 +23,7 @@ const ServerApproval = forwardRef(
     const [isOpenRejectBox, setIsOpenRejectBox] = useState(false);
     const [rejectComment, setRejectComment] = useState("");
     const [rejectCommentError, setRejectCommentError] = useState("");
-
-    useImperativeHandle(ref, () => ({
-      handleServerApprove,
-      handleApprovalReject,
-    }));
-
-    const handleServerApprove = async () => {
-      setIsOpenApproveModal(true);
-    };
+    const [serverTransId, setServerTransId] = useState(null);
 
     const handleApprovalReject = async () => {
       if (isOpenRejectBox == false) {
@@ -61,7 +44,7 @@ const ServerApproval = forwardRef(
 
       if (commentValidate) return;
 
-      setRejectButtonLoading(true);
+      setVerifyButtonLoading(true);
 
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
@@ -76,44 +59,16 @@ const ServerApproval = forwardRef(
         comments: rejectComment,
         rejected_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : "",
+        rejected_date: formatToBackendIST(new Date()),
+        server_trans_id: serverTransId,
       };
       try {
         await updateServerStatus(payload);
         setTimeout(() => {
-          setRejectButtonLoading(false);
-          handleServerTrack("Approval Rejected");
-          callgetServerApi();
-        }, 300);
-      } catch (error) {
-        setRejectButtonLoading(false);
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
-      }
-    };
-
-    const handleServerStatus = async () => {
-      setVerifyButtonLoading(true);
-      const payload = {
-        server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
-        server_raise_date:
-          serverDetails && serverDetails.server_raise_date
-            ? serverDetails.server_raise_date
-            : null,
-        server_trans_id:
-          serverDetails && serverDetails.server_trans_id
-            ? serverDetails.server_trans_id
-            : null,
-        status: "Approved",
-      };
-      try {
-        await updateServerStatus(payload);
-        setTimeout(() => {
+          CommonMessage("success", "Approval Rejected");
           setVerifyButtonLoading(false);
-          setIsOpenApproveModal(false);
-          handleServerTrack("Approved");
+          setServerTransId(null);
+          handleCustomerTrack("Server Approval Rejected");
           callgetServerApi();
         }, 300);
       } catch (error) {
@@ -126,170 +81,288 @@ const ServerApproval = forwardRef(
       }
     };
 
-    const handleServerTrack = async (trackStatus) => {
-      const today = new Date();
+    const handleServerStatus = async () => {
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
 
-      const approveDetails = {
-        server_name:
-          serverDetails && serverDetails.server_name
-            ? serverDetails.server_name
-            : null,
-        vendor_name:
-          serverDetails && serverDetails.vendor_id
-            ? serverDetails.vendor_id
-            : null,
-        server_cost:
-          serverDetails && serverDetails.server_cost
-            ? serverDetails.server_cost
-            : null,
-        server_duration:
-          serverDetails && serverDetails.duration
-            ? serverDetails.duration
-            : null,
-      };
-
-      const rejectDetails = {
-        reject_comment: rejectComment,
-      };
-
+      setVerifyButtonLoading(true);
       const payload = {
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
-        status: trackStatus,
-        status_date: formatToBackendIST(today),
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        ...(trackStatus && trackStatus == "Approved"
-          ? { details: approveDetails }
-          : trackStatus == "Approval Rejected"
-            ? { details: rejectDetails }
-            : {}),
+        server_trans_id: serverTransId,
+        server_raise_date:
+          serverDetails && serverDetails.server_raise_date
+            ? serverDetails.server_raise_date
+            : null,
+        status: "Approved",
+        verified_date: formatToBackendIST(new Date()),
+        verified_by:
+          converAsJson && converAsJson.user_id ? converAsJson.user_id : "",
       };
       try {
-        await insertServerTrack(payload);
+        await updateServerStatus(payload);
+        setTimeout(() => {
+          CommonMessage("success", "Server Approved Successfully");
+          setVerifyButtonLoading(false);
+          handleCustomerTrack("Server Approved");
+          setIsOpenApproveModal(false);
+          setServerTransId(null);
+          callgetServerApi();
+        }, 300);
       } catch (error) {
-        console.log("server track error", error);
+        setVerifyButtonLoading(false);
+        CommonMessage(
+          "error",
+          error?.response?.data?.details ||
+            "Something went wrong. Try again later",
+        );
+      }
+    };
+
+    const handleCustomerTrack = async (updatestatus) => {
+      const today = new Date();
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+      console.log("getloginUserDetails", converAsJson);
+
+      const payload = {
+        customers: [
+          {
+            customer_id: serverDetails.customer_id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+            details:
+              updatestatus === "Server Approval Rejected"
+                ? {
+                    comments: rejectComment,
+                  }
+                : {},
+          },
+        ],
+      };
+      try {
+        await inserCustomerTrack(payload);
+      } catch (error) {
+        console.log("customer track error", error);
       }
     };
 
     return (
       <div>
         <>
-          <p className="customer_statusupdate_adddetails_heading">
-            Add Details
-          </p>
-          <Row
-            gutter={16}
-            style={{
-              marginTop: "14px",
-            }}
-          >
-            <Col span={8}>
-              <CommonInputField
-                label="Server Name"
-                required={true}
-                disabled={true}
-                value={
-                  serverDetails && serverDetails.server_name
-                    ? serverDetails.server_name
-                    : "-"
-                }
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Vendor Name"
-                required={true}
-                value={
-                  serverDetails && serverDetails.vendor_id
-                    ? serverDetails.vendor_id
-                    : ""
-                }
-                disabled={true}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonOutlinedInput
-                label="Server Cost"
-                type="number"
-                required={true}
-                value={
-                  serverDetails && serverDetails.server_cost
-                    ? serverDetails.server_cost
-                    : ""
-                }
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
-                icon={<LuIndianRupee size={16} />}
-                disabled={true}
-              />{" "}
-            </Col>
-          </Row>
-
-          <Row
-            gutter={16}
-            style={{
-              marginTop: "22px",
-              marginBottom: isOpenRejectBox ? "0px" : "40px",
-            }}
-          >
-            <Col span={8}>
-              <CommonSelectField
-                required={true}
-                label="Duration"
-                options={[
-                  { id: 30, name: "30 Days" },
-                  { id: 60, name: "60 Days" },
-                  { id: 90, name: "90 Days" },
-                ]}
-                value={
-                  serverDetails && serverDetails.duration
-                    ? serverDetails.duration
-                    : null
-                }
-                disabled={true}
-              />
-            </Col>
-            <Col>
-              <button
-                className="pendingcustomer_paymentscreenshot_viewbutton"
-                onClick={() => {
-                  setIsOpenVerifyScreenshotModal(true);
-                  setVerificationScreenshot(
-                    serverDetails && serverDetails.screenshot
-                      ? serverDetails.screenshot
-                      : "-",
-                  );
-                }}
+          {serverDetails.trans_details.length >= 1 ? (
+            <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+              <Collapse
+                activeKey={collapseDefaultKey}
+                onChange={(keys) => setCollapseDefaultKey(keys)}
+                className="assesmntresult_collapse"
               >
-                <FaRegEye size={16} /> View Verification Screenshot
-              </button>
-            </Col>
-          </Row>
+                {serverDetails.trans_details.map((item, index) => (
+                  <Collapse.Panel
+                    key={index + 1} // unique key
+                    header={
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          fontSize: "13px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>
+                          Server Details
+                          {/* <span style={{ fontWeight: "500" }}>
+                                {moment(item.invoice_date).format("DD/MM/YYYY")}
+                              </span> */}
+                        </span>
+
+                        {item.approval_status === "Pending" ? (
+                          <div className="customer_trans_statustext_container">
+                            <PiClockCounterClockwiseBold
+                              size={14}
+                              color="gray"
+                            />
+                            <p
+                              style={{
+                                color: "gray",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Waiting for Approval
+                            </p>
+                          </div>
+                        ) : item.approval_status === "Rejected" ? (
+                          <div className="customer_trans_statustext_container">
+                            <FaRegCircleXmark color="#d32f2f" size={12} />
+                            <p
+                              style={{
+                                color: "#d32f2f",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Rejected
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="customer_trans_statustext_container">
+                            <BsPatchCheckFill color="#3c9111" size={12} />
+                            <p
+                              style={{
+                                color: "#3c9111",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Approved
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    }
+                  >
+                    <div>
+                      <div style={{ padding: "0px 12px" }}>
+                        <table className="transaction-details-table">
+                          <tbody>
+                            <tr>
+                              <td>Course Fees</td>
+                              <td className="text-right">
+                                {serverDetails.primary_fees}
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td>Course Fees + GST(18%)</td>
+                              <td className="text-right">
+                                {serverDetails.total_course_amount}
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td>Server Cost</td>
+                              <td className="text-right">{item.server_cost}</td>
+                            </tr>
+
+                            <tr>
+                              <td>Duration</td>
+                              <td className="text-right">
+                                {item?.server_trans_duration
+                                  ? `${item.server_trans_duration} Days`
+                                  : "-"}
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td>Vendor</td>
+                              <td className="text-right">{item.vendor_id}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {item.approval_status === "Pending" && item.comments ? (
+                        <>
+                          <Divider className="customer_statusupdate_divider" />
+                          <div style={{ padding: "0px 52px" }}>
+                            <Row>
+                              <Col span={24}>
+                                <Row>
+                                  <Col span={9}>
+                                    <div className="customerdetails_rowheadingContainer">
+                                      <p
+                                        className="customerdetails_rowheading"
+                                        style={{ color: "#d32f2f" }}
+                                      >
+                                        Previous Rejection Reason:
+                                      </p>
+                                    </div>
+                                  </Col>
+                                  <Col span={15}>
+                                    <p className="customerdetails_text">
+                                      {item.comments}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+                          </div>
+                        </>
+                      ) : (
+                        ""
+                      )}
+
+                      {item.approval_status === "Pending" && (
+                        <div className="customer_finance_verify_buttons_container">
+                          <Button
+                            className="customer_finance_rejectbutton"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setServerTransId(item.server_trans_id);
+                              handleApprovalReject();
+                            }}
+                          >
+                            Reject
+                          </Button>
+
+                          <Button
+                            className="customer_finance_verifybutton"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setServerTransId(item.server_trans_id);
+                              setIsOpenApproveModal(true);
+                            }}
+                          >
+                            Approve
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </Collapse.Panel>
+                ))}
+              </Collapse>
+            </div>
+          ) : (
+            <p className="customer_trainerhistory_nodatatext">No Data found</p>
+          )}
 
           {isOpenRejectBox && (
-            <div id="server_commentreject_container">
-              <Row
-                gutter={16}
-                style={{ marginTop: "20px", marginBottom: "30px" }}
-              >
-                <Col span={16}>
-                  <CommonTextArea
-                    label="Comments"
-                    required={true}
-                    onChange={(e) => {
-                      setRejectComment(e.target.value);
-                      setRejectCommentError(addressValidator(e.target.value));
-                    }}
-                    value={rejectComment}
-                    error={rejectCommentError}
-                  />
-                </Col>
-              </Row>
+            <div
+              className="customer_financereject_comment_container"
+              id="server_commentreject_container"
+            >
+              <CommonTextArea
+                label="Comments"
+                required={true}
+                onChange={(e) => {
+                  setRejectComment(e.target.value);
+                  setRejectCommentError(addressValidator(e.target.value));
+                }}
+                value={rejectComment}
+                error={rejectCommentError}
+              />
+
+              <div className="customer_financereject_submitbutton_container">
+                {verifyButtonLoading ? (
+                  <Button
+                    type="primary"
+                    className="customer_financereject_loadingsubmitbutton"
+                  >
+                    <CommonSpinner />
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    className="customer_financereject_submitbutton"
+                    onClick={handleApprovalReject}
+                  >
+                    Submit
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </>
@@ -298,6 +371,7 @@ const ServerApproval = forwardRef(
           open={isOpenApproveModal}
           onCancel={() => {
             setIsOpenApproveModal(false);
+            setServerTransId(null);
           }}
           footer={false}
           width="30%"
@@ -318,8 +392,8 @@ const ServerApproval = forwardRef(
             </span>{" "}
             at a cost of{" "}
             <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
-              {serverDetails && serverDetails.server_cost
-                ? "₹" + serverDetails.server_cost
+              {serverDetails?.trans_details?.[0]?.server_cost != null
+                ? `₹${serverDetails.trans_details[0].server_cost}`
                 : ""}
             </span>
           </p>
@@ -328,6 +402,7 @@ const ServerApproval = forwardRef(
               className="customer_classcompletemodal_cancelbutton"
               onClick={() => {
                 setIsOpenApproveModal(false);
+                setServerTransId(null);
               }}
             >
               No

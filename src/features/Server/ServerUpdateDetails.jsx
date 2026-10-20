@@ -1,13 +1,21 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
-import { Row, Col, Collapse } from "antd";
+import React, {
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+} from "react";
+import { Row, Col, Collapse, Button, Divider } from "antd";
 import CommonInputField from "../Common/CommonInputField";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { LuIndianRupee } from "react-icons/lu";
 import {
+  inserCustomerTrack,
   insertServerTrack,
+  serverRePurchase,
   updateServerDetails,
   updateServerStatus,
 } from "../ApiService/action";
@@ -21,7 +29,7 @@ import moment from "moment";
 
 const ServerUpdateDetails = forwardRef(
   (
-    { serverDetails, setButtonLoading, verifyHistory, callgetServerApi },
+    { serverDetails, drawerStatus, setButtonLoading, callgetServerApi },
     ref,
   ) => {
     const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
@@ -32,6 +40,10 @@ const ServerUpdateDetails = forwardRef(
     const [serverDuration, setServerDuration] = useState(null);
     const [serverDurationError, setServerDurationError] = useState("");
     const [validationTrigger, setValidationTrigger] = useState(false);
+
+    // useEffect(() => {
+    //   setServerDuration(serverDetails?.requested_duration || null);
+    // }, []);
 
     useImperativeHandle(ref, () => ({
       handleUpdateDetails,
@@ -51,18 +63,54 @@ const ServerUpdateDetails = forwardRef(
 
       setButtonLoading(true);
 
+      const getloginUserDetails = localStorage.getItem("loginUserDetails");
+      const converAsJson = JSON.parse(getloginUserDetails);
+
       const payload = {
         vendor_id: vendorName,
         server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
+        ...(serverDetails.status === "Approval Rejected" && {
+          server_trans_id:
+            serverDetails?.trans_details?.[0]?.server_trans_id || null,
+        }),
         server_cost: serverCost,
         duration: serverDuration,
+        email: serverDetails.email,
+        email_link: `${
+          import.meta.env.VITE_EMAIL_URL
+        }/acknowledge-server-request`,
+        status_date: formatToBackendIST(new Date()),
+        ...(drawerStatus === "Re-Purchase"
+          ? {
+              created_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            }
+          : {
+              updated_by:
+                converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            }),
       };
 
       try {
-        await updateServerDetails(payload);
+        if (drawerStatus === "Re-Purchase") {
+          await serverRePurchase(payload);
+        } else {
+          await updateServerDetails(payload);
+        }
         setTimeout(() => {
-          CommonMessage("success", "Updated");
-          handleServerStatus();
+          CommonMessage("success", "Server Details Updated");
+          if (drawerStatus === "Re-Purchase") {
+            handleCustomerTrack("Server Re-Purchased");
+            callgetServerApi();
+            return;
+          }
+
+          if (serverDetails.status === "Approval Rejected") {
+            handleCustomerTrack("Server Details Updated");
+            callgetServerApi();
+          } else {
+            handleServerStatus();
+          }
         }, 300);
       } catch (error) {
         setButtonLoading(false);
@@ -86,7 +134,6 @@ const ServerUpdateDetails = forwardRef(
       try {
         await updateServerStatus(payload);
         setTimeout(() => {
-          handleServerTrack();
           callgetServerApi();
         }, 300);
       } catch (error) {
@@ -98,54 +145,45 @@ const ServerUpdateDetails = forwardRef(
       }
     };
 
-    const handleServerTrack = async () => {
-      const today = new Date();
+    const handleCustomerTrack = async (updatestatus) => {
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
 
-      const updateDetailsPayload = {
-        vendor_name: vendorName,
-        server_name:
-          serverDetails && serverDetails.server_name
-            ? serverDetails.server_name
-            : null,
-        server_cost: serverCost,
-        server_duration: serverDuration,
+      const changedFields = {};
+
+      changedFields["vendor"] = {
+        previous_value: serverDetails.trans_details?.[0]?.vendor_id ?? null,
+        new_value: vendorName,
+      };
+
+      changedFields["server_cost"] = {
+        previous_value: serverDetails.trans_details?.[0]?.server_cost ?? null,
+        new_value: serverCost,
+      };
+
+      changedFields["server_duration"] = {
+        previous_value:
+          serverDetails.trans_details?.[0]?.server_trans_duration ?? null,
+        new_value: serverDuration,
       };
 
       const payload = {
-        server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
-        status: "Details Updated",
-        status_date: formatToBackendIST(today),
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        details: updateDetailsPayload,
+        customers: [
+          {
+            customer_id: serverDetails.customer_id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(new Date()),
+            details: changedFields,
+          },
+        ],
       };
       try {
-        await insertServerTrack(payload);
-        handleSecondServerTrack("Awaiting Verify");
+        await inserCustomerTrack(payload);
       } catch (error) {
         console.log("server track error", error);
-      }
-    };
-
-    const handleSecondServerTrack = async (updatestatus) => {
-      const today = new Date();
-      const getloginUserDetails = localStorage.getItem("loginUserDetails");
-      const converAsJson = JSON.parse(getloginUserDetails);
-      console.log("getloginUserDetails", converAsJson);
-
-      const payload = {
-        server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
-        status: updatestatus,
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-        status_date: formatToBackendIST(today),
-      };
-      try {
-        await insertServerTrack(payload);
-      } catch (error) {
-        console.log("server track error", error);
+      } finally {
       }
     };
 
@@ -157,18 +195,16 @@ const ServerUpdateDetails = forwardRef(
           </p>
 
           <>
-            {verifyHistory.length >= 1 ? (
+            {serverDetails.trans_details.length >= 1 ? (
               <div style={{ marginTop: "12px", marginBottom: "20px" }}>
                 <Collapse
-                  className="assesmntresult_collapse"
                   activeKey={collapseDefaultKey}
-                  onChange={(keys) => {
-                    setCollapseDefaultKey(keys);
-                  }}
+                  onChange={(keys) => setCollapseDefaultKey(keys)}
+                  className="assesmntresult_collapse"
                 >
-                  {verifyHistory.map((item, index) => (
+                  {serverDetails.trans_details.map((item, index) => (
                     <Collapse.Panel
-                      key={index + 1}
+                      key={index + 1} // unique key
                       header={
                         <div
                           style={{
@@ -180,37 +216,52 @@ const ServerUpdateDetails = forwardRef(
                           }}
                         >
                           <span>
-                            Date -{" "}
-                            <span style={{ fontWeight: "500" }}>
-                              {item.rejected_date
-                                ? moment(item.rejected_date).format(
-                                    "DD/MM/YYYY",
-                                  )
-                                : "-"}
-                            </span>
+                            Server Details
+                            {/* <span style={{ fontWeight: "500" }}>
+                                {moment(item.invoice_date).format("DD/MM/YYYY")}
+                              </span> */}
                           </span>
-                          {item.status.includes("Rejected") ? (
+
+                          {item.approval_status === "Pending" ? (
                             <div className="customer_trans_statustext_container">
-                              <FaRegCircleXmark color="#d32f2f" />
+                              <PiClockCounterClockwiseBold
+                                size={14}
+                                color="gray"
+                              />
+                              <p
+                                style={{
+                                  color: "gray",
+                                  fontWeight: 500,
+                                  fontSize: "12px",
+                                }}
+                              >
+                                Waiting for Approval
+                              </p>
+                            </div>
+                          ) : item.approval_status === "Rejected" ? (
+                            <div className="customer_trans_statustext_container">
+                              <FaRegCircleXmark color="#d32f2f" size={12} />
                               <p
                                 style={{
                                   color: "#d32f2f",
                                   fontWeight: 500,
+                                  fontSize: "12px",
                                 }}
                               >
-                                {item.status}
+                                Rejected
                               </p>
                             </div>
                           ) : (
                             <div className="customer_trans_statustext_container">
-                              <BsPatchCheckFill color="#3c9111" />
+                              <BsPatchCheckFill color="#3c9111" size={12} />
                               <p
                                 style={{
                                   color: "#3c9111",
                                   fontWeight: 500,
+                                  fontSize: "12px",
                                 }}
                               >
-                                {item.status}
+                                Approved
                               </p>
                             </div>
                           )}
@@ -218,46 +269,102 @@ const ServerUpdateDetails = forwardRef(
                       }
                     >
                       <div>
-                        <Row
-                          gutter={16}
-                          style={{
-                            marginTop: "6px",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          <Col span={12}>
-                            <Row>
-                              <Col span={12}>
-                                <div className="customerdetails_rowheadingContainer">
-                                  <p className="customerdetails_rowheading">
-                                    Rejected By
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col span={12}>
-                                <p className="customerdetails_text">
-                                  {item.rejected_by ? item.rejected_by : "-"}
-                                </p>
-                              </Col>
-                            </Row>
-                          </Col>
-                          <Col span={12}>
-                            <Row>
-                              <Col span={12}>
-                                <div className="customerdetails_rowheadingContainer">
-                                  <p className="customerdetails_rowheading">
-                                    Reason for Rejection
-                                  </p>
-                                </div>
-                              </Col>
-                              <Col span={12}>
-                                <p className="customerdetails_text">
-                                  {item.comments}
-                                </p>
-                              </Col>
-                            </Row>
-                          </Col>
-                        </Row>
+                        <div style={{ padding: "0px 12px" }}>
+                          <table className="transaction-details-table">
+                            <tbody>
+                              <tr>
+                                <td>Course Fees</td>
+                                <td className="text-right">
+                                  {serverDetails.primary_fees}
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td>Course Fees + GST(18%)</td>
+                                <td className="text-right">
+                                  {serverDetails.total_course_amount}
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td>Server Cost</td>
+                                <td className="text-right">
+                                  {item.server_cost}
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td>Duration</td>
+                                <td className="text-right">
+                                  {item?.server_trans_duration
+                                    ? `${item.server_trans_duration} Days`
+                                    : "-"}
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td>Vendor</td>
+                                <td className="text-right">{item.vendor_id}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {item.approval_status === "Rejected" &&
+                        item.comments ? (
+                          <>
+                            <Divider className="customer_statusupdate_divider" />
+                            <div style={{ padding: "0px 52px" }}>
+                              <Row>
+                                <Col span={24}>
+                                  <Row>
+                                    <Col span={9}>
+                                      <div className="customerdetails_rowheadingContainer">
+                                        <p
+                                          className="customerdetails_rowheading"
+                                          style={{ color: "#d32f2f" }}
+                                        >
+                                          Rejection Reason:
+                                        </p>
+                                      </div>
+                                    </Col>
+                                    <Col span={15}>
+                                      <p className="customerdetails_text">
+                                        {item.comments}
+                                      </p>
+                                    </Col>
+                                  </Row>
+                                </Col>
+                              </Row>
+                            </div>
+                          </>
+                        ) : (
+                          ""
+                        )}
+
+                        {item.approval_status === "Pending" && (
+                          <div className="customer_finance_verify_buttons_container">
+                            <Button
+                              className="customer_finance_rejectbutton"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApprovalReject();
+                              }}
+                            >
+                              Reject
+                            </Button>
+
+                            <Button
+                              className="customer_finance_verifybutton"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsOpenApproveModal(true);
+                              }}
+                            >
+                              Approve
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </Collapse.Panel>
                   ))}
@@ -365,6 +472,7 @@ const ServerUpdateDetails = forwardRef(
                 }}
                 value={serverDuration}
                 error={serverDurationError}
+                // disabled={true}
               />
             </Col>
           </Row>

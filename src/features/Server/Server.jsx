@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Row,
@@ -25,7 +25,7 @@ import { IoCallOutline } from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
 import CommonSelectField from "../Common/CommonSelectField";
 import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
-import { LuIndianRupee } from "react-icons/lu";
+import { FaRegCopy } from "react-icons/fa6";
 import { IoLocationOutline } from "react-icons/io5";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
@@ -39,6 +39,7 @@ import { RiDeleteBinLine } from "react-icons/ri";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   addressValidator,
+  customersStatusDisplay,
   formatToBackendIST,
   getCurrentandLast90Date,
   getCurrentandPreviousweekDate,
@@ -53,6 +54,7 @@ import {
   getServerRequest,
   getTableColumns,
   getUsers,
+  inserCustomerTrack,
   insertServerTrack,
   sendNotification,
   serverIssue,
@@ -78,6 +80,8 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 import CustomerOverviewSkeleton from "../Customers/CustomerOverviewSkeleton";
 import CustomerOverview from "../Customers/CustomerOverview";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
+import CustomerHistory from "../Customers/CustomerHistory";
+import ViewServerDetails from "./ViewServerDetails";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -129,18 +133,11 @@ export default function Server() {
       inactiveClass: "customers_studentvefity_container",
     },
     {
-      label: "Awaiting Approval",
-      value: "Awaiting Approval",
-      countKey: "awaiting_approval",
-      activeClass: "customers_active_classschedule_container",
-      inactiveClass: "customers_classschedule_container",
-    },
-    {
-      label: "Approved",
-      value: "Approved",
-      countKey: "server_approved",
-      activeClass: "customers_active_classgoing_container",
-      inactiveClass: "customers_classgoing_container",
+      label: "Approval Rejected",
+      value: "Approval Rejected",
+      countKey: "approval_rejected",
+      activeClass: "customers_active_escalated_container",
+      inactiveClass: "customers_escalated_container",
     },
     {
       label: "Server Issued",
@@ -150,25 +147,11 @@ export default function Server() {
       inactiveClass: "customers_completed_container",
     },
     {
-      label: "Support",
-      value: "Support",
-      countKey: "support",
-      activeClass: "customers_active_verifytrainers_container",
-      inactiveClass: "customers_verifytrainers_container",
-    },
-    {
       label: "Expired Servers",
       value: "Expired",
       countKey: "expired",
       activeClass: "customers_active_awaitingclass_container",
       inactiveClass: "customers_awaitingclass_container",
-    },
-    {
-      label: "Hold",
-      value: "Hold",
-      countKey: "hold",
-      activeClass: "customers_active_escalated_container",
-      inactiveClass: "customers_escalated_container",
     },
   ];
   const [status, setStatus] = useState("");
@@ -197,8 +180,6 @@ export default function Server() {
   const [supportComment, setSupportComment] = useState("");
   const [supportCommentError, setSupportCommentError] = useState("");
   const [isOpenMoveToIssueModal, setIsOpenMoveToIssueModal] = useState(false);
-  //hold usestates
-  const [isOpenHoldModal, setIsOpenHoldModal] = useState(false);
   //drawer usestates
   const [isOpenDetailsDrawer, setIsOpenDetailsDrawer] = useState(false);
   const [drawerStatus, setDrawerStatus] = useState("");
@@ -207,12 +188,6 @@ export default function Server() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [verifyButtonLoading, setVerifyButtonLoading] = useState(false);
   const [rejectButtonLoading, setRejectButtonLoading] = useState(false);
-  //drawer history usestates
-  const [verifyHistory, setVerifyHistory] = useState([]);
-  //full history drawer useStates
-  const [isOpenHistoryDrawer, setIsOpenHistoryDrawer] = useState(false);
-  const [serverHistory, setServerHistory] = useState([]);
-  const [serverHistoryLoading, setServerHistoryLoading] = useState(false);
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
@@ -226,6 +201,11 @@ export default function Server() {
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [updateTableId, setUpdateTableId] = useState(null);
   const [checkAll, setCheckAll] = useState(false);
+  //customer history usestates
+  const [isOpenCustomerHistoryDrawer, setIsOpenCustomerHistoryDrawer] =
+    useState(false);
+  const [selectedHistoryCustomerId, setSelectedHistoryCustomerId] =
+    useState(null);
   //pagination
   const [pagination, setPagination] = useState({
     page: 1,
@@ -236,10 +216,10 @@ export default function Server() {
 
   const nonChangeColumns = [
     {
-      title: "Created At",
-      key: "created_date",
-      dataIndex: "created_date",
-      width: 110,
+      title: "Joined On",
+      key: "date_of_joining",
+      dataIndex: "date_of_joining",
+      width: 100,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
@@ -248,7 +228,7 @@ export default function Server() {
       title: "Raise Date",
       key: "server_raise_date",
       dataIndex: "server_raise_date",
-      width: 140,
+      width: 120,
       render: (text) => {
         return (
           <EllipsisTooltip
@@ -258,31 +238,68 @@ export default function Server() {
       },
     },
     {
-      title: "Created By",
-      key: "created_by_id",
-      dataIndex: "created_by_id",
-      width: 90,
+      title: "Server Name",
+      key: "server_name",
+      dataIndex: "server_name",
+      width: 150,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Server Cost",
+      key: "server_cost",
+      dataIndex: "trans_details",
+      width: 100,
       render: (text, record) => {
-        const lead_executive = `${
-          text
-            ? `${record.created_by_view_user_id} - ${record.created_by}`
-            : "-"
-        }`;
+        const serverCost = record.trans_details?.[0]?.server_cost;
+
+        return <EllipsisTooltip text={serverCost ? `₹${serverCost}` : "-"} />;
+      },
+    },
+    {
+      title: "Duration",
+      key: "requested_duration",
+      dataIndex: "requested_duration",
+      width: 90,
+      render: (text) => {
+        return <p>{text ? `${text} Days` : "-"}</p>;
+      },
+    },
+    {
+      title: "Vendor",
+      key: "vendor_id",
+      dataIndex: "trans_details",
+      width: 80,
+      render: (text, record) => {
+        const vendor = record.trans_details?.[0]?.vendor_id;
+
+        return <EllipsisTooltip text={vendor ? `${vendor}` : "-"} />;
+      },
+    },
+    {
+      title: "Candidate Name / ID",
+      key: "name",
+      dataIndex: "name",
+      width: 160,
+      render: (text, record) => {
         return (
-          <div style={{ textAlign: "center", width: "100%" }}>
-            <OverflowTooltip
-              title={lead_executive}
-              children={record.created_by_view_user_id}
-            />
+          <div className="customers_candidatename_container">
+            <EllipsisTooltip text={text} />
+            {record.student_id && (
+              <span className="customers_studentid_badge">
+                {record.student_id}
+              </span>
+            )}
           </div>
         );
       },
     },
     {
-      title: "Name",
-      key: "name",
-      dataIndex: "name",
-      width: 150,
+      title: "Email",
+      key: "email",
+      dataIndex: "email",
+      width: 160,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -304,328 +321,409 @@ export default function Server() {
       },
     },
     {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 200,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Server Name",
-      key: "server_name",
-      dataIndex: "server_name",
+      title: "Course ",
+      key: "course_name",
+      dataIndex: "course_name",
       width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
     },
     {
-      title: "Server Cost",
-      key: "server_cost",
-      dataIndex: "server_cost",
-      width: 130,
+      title: "Balance",
+      key: "balance_amount",
+      dataIndex: "balance_amount",
+      width: 95,
       render: (text) => {
-        return <p>{text ? `₹${text}` : "-"}</p>;
+        const amount = Number(text);
+
+        return (
+          <p
+            style={{
+              color: amount === 0 ? "green" : "#D32F2F",
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {text !== null && text !== undefined
+              ? amount.toLocaleString("en-IN")
+              : "-"}
+          </p>
+        );
       },
     },
     {
-      title: "Duration",
-      key: "duration",
-      dataIndex: "duration",
+      title: "Sale Executive",
+      key: "created_by",
+      dataIndex: "created_by",
+      width: 110,
+      render: (text, record) => {
+        const salse_executive = `${record.created_by_view_user_id} - ${text}`;
+        return (
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <OverflowTooltip
+              title={salse_executive}
+              children={record.created_by_view_user_id}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      title: "Last Updated At",
+      key: "last_updated_at",
+      dataIndex: "last_updated_at",
       width: 120,
       render: (text) => {
-        return <p>{text ? `${text} Days` : "-"}</p>;
+        return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
       },
     },
     {
-      title: "Vendor",
-      key: "vendor_id",
-      dataIndex: "vendor_id",
-      width: 130,
-      render: (text) => {
-        return <p>{text ? `${text}` : "-"}</p>;
+      title: "Candidate Status",
+      key: "customer_status",
+      dataIndex: "customer_status",
+      fixed: "right",
+      width: 160,
+      render: (text, record) => {
+        let classPercent = 0;
+
+        if (
+          record.class_percentage !== null &&
+          record.class_percentage !== undefined
+        ) {
+          const parsed = parseFloat(record.class_percentage);
+          classPercent = isNaN(parsed) ? 0 : parsed;
+        }
+        return (
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            {text === "Form Pending" || text === "Refunded" ? (
+              <div>
+                <Button className="customers_status_formpending_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Finance" ? (
+              <div>
+                <Button className="customers_status_awaitfinance_button">
+                  Payment Verify
+                </Button>
+              </div>
+            ) : text === "Awaiting Verify" ||
+              text === "Hold" ||
+              text === "Refund Ready to Pay" ? (
+              <div>
+                <Button className="customers_status_awaitverify_button">
+                  {text === "Refund Ready to Pay" ? "Ready for Refund" : text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Trainer" ? (
+              <div>
+                <Button className="customers_status_awaittrainer_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Trainer Verify" ? (
+              <div>
+                <Button className="customers_status_awaittrainerverify_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Trainer Approval" ? (
+              <div>
+                <Button className="customers_status_trainerapproval_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Awaiting Class" || text === "Refund Request" ? (
+              <div>
+                <Button className="customers_status_awaitingclass_button">
+                  {text === "Refund Request" ? "Refund Requested" : text}
+                </Button>
+              </div>
+            ) : text === "Class Scheduled" ? (
+              <div>
+                <Button className="customers_status_classscheduled_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Passedout process" ? (
+              <div>
+                <Button className="customers_status_awaitfeedback_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Completed" ? (
+              <div>
+                <Button className="customers_status_completed_button">
+                  {text}
+                </Button>
+              </div>
+            ) : text === "Rejected" ||
+              text === "REJECTED" ||
+              text === "Trainer Rejected" ||
+              text === "Payment Rejected" ||
+              text === "Escalated" ||
+              text === "Partially Closed" ||
+              text === "Discontinued" ||
+              text === "Videos Given" ||
+              text === "Refund" ? (
+              <Button className="trainers_rejected_button">{text}</Button>
+            ) : text === "Demo Completed" ? (
+              <Button className="customers_status_classgoing_button">
+                Only Demo
+              </Button>
+            ) : text === "Videos Given" ? (
+              <Button className="customers_status_videos_given_button">
+                Self-Paced
+              </Button>
+            ) : text === "Class Going" ? (
+              <div style={{ display: "flex", gap: "12px" }}>
+                <Button className="customers_status_classgoing_button">
+                  {text}
+                </Button>
+
+                <p className="customer_classgoing_percentage">{`${parseFloat(
+                  classPercent,
+                )}%`}</p>
+              </div>
+            ) : (
+              <p style={{ marginLeft: "6px" }}>-</p>
+            )}
+            {record.status === "Form Pending" && (
+              <Tooltip
+                placement="top"
+                title="Copy form link"
+                trigger={["hover", "click"]}
+              >
+                <FaRegCopy
+                  size={14}
+                  className="customers_formlink_copybutton"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${
+                        import.meta.env.VITE_EMAIL_URL
+                      }/customer-registration/${record.id}`,
+                    );
+                    CommonMessage("success", "Link Copied");
+                    console.log("Copied: eeee");
+                  }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
       },
     },
     {
-      title: "Status",
+      title: "Server Status",
       key: "status",
       dataIndex: "status",
-      width: 160,
+      width: 150,
       fixed: "right",
       render: (text, record) => {
         return (
-          <Tooltip
-            placement="bottomLeft"
-            className="customers_statustooltip"
-            color="#fff"
-            styles={{
-              body: {
-                width: "260px",
-                maxWidth: "none",
-                whiteSpace: "normal",
-              },
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              alignItems: "center",
             }}
-            title={
-              <>
-                <Row>
-                  <Col span={12} style={{ marginBottom: "8px" }}>
-                    {record.status == "Requested" ? (
-                      <Checkbox
-                        className="server_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (record.status == "Requested") {
-                            setIsOpenRaiseModal(true);
-                            setServerDetails(record);
-                            getCustomerData(record.customer_id);
-                          }
-                        }}
-                      >
-                        Raise
-                      </Checkbox>
-                    ) : (
-                      <div className="customers_classcompleted_container">
-                        <BsPatchCheckFill color="#3c9111" />
-                        <p className="customers_classgoing_completedtext">
-                          Raised
-                        </p>
-                      </div>
-                    )}
-                  </Col>
+          >
+            <Tooltip
+              placement="bottomLeft"
+              className="customers_statustooltip"
+              color="#fff"
+              styles={{
+                body: {
+                  width: "260px",
+                  maxWidth: "none",
+                  whiteSpace: "normal",
+                },
+              }}
+              title={
+                <>
+                  <Row>
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      {record.status == "Requested" ? (
+                        <Checkbox
+                          className="customers_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status == "Requested") {
+                              setIsOpenRaiseModal(true);
+                              setServerDetails(record);
+                              getCustomerData(record.customer_id);
+                            }
+                          }}
+                        >
+                          Raise Server
+                        </Checkbox>
+                      ) : (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Server Raised
+                          </p>
+                        </div>
+                      )}
+                    </Col>
 
-                  <Col span={12} style={{ marginBottom: "8px" }}>
-                    {record.status == "Requested" ||
-                    record.status == "Server Raised" ||
-                    record.status == "Verification Rejected" ||
-                    record.status == "Approval Rejected" ||
-                    record.status == "Server Rejected" ? (
-                      <Checkbox
-                        className="server_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (record.status == "Requested") {
-                            CommonMessage("warning", "Server not raised yet");
-                          } else {
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      {record.status == "Requested" ||
+                      record.status == "Server Raised" ||
+                      record.status == "Verification Rejected" ||
+                      record.status == "Approval Rejected" ||
+                      record.status == "Server Rejected" ? (
+                        <Checkbox
+                          className="customers_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status == "Requested") {
+                              CommonMessage("warning", "Server not raised yet");
+                            } else {
+                              if (
+                                !permissions.includes("Server Details Update")
+                              ) {
+                                CommonMessage("error", "Access Denied");
+                                return;
+                              }
+                              setIsOpenDetailsDrawer(true);
+                              setDrawerStatus("Update Details");
+                              setServerDetails(record);
+                              getCustomerData(record.customer_id);
+                            }
+                          }}
+                        >
+                          Update Details
+                        </Checkbox>
+                      ) : (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Details Updated
+                          </p>
+                        </div>
+                      )}
+                    </Col>
+
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      {record.status == "Issued" ? (
+                        <div className="customers_classcompleted_container">
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Server Issued
+                          </p>
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                    </Col>
+
+                    <Col span={12} style={{ marginBottom: "8px" }}>
+                      {record.status == "Issued" ? (
+                        <Checkbox
+                          className="customers_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
                             if (
                               !permissions.includes("Server Details Update")
                             ) {
                               CommonMessage("error", "Access Denied");
                               return;
                             }
-                            setIsOpenDetailsDrawer(true);
-                            setVerifyHistory(record.server_history);
-                            setDrawerStatus("Update Details");
                             setServerDetails(record);
                             getCustomerData(record.customer_id);
-                          }
-                        }}
-                      >
-                        Update Details
-                      </Checkbox>
-                    ) : (
-                      <div className="customers_classcompleted_container">
-                        <BsPatchCheckFill color="#3c9111" />
-                        <p className="customers_classgoing_completedtext">
-                          Details Updated
-                        </p>
-                      </div>
-                    )}
-                  </Col>
-
-                  <Col span={12} style={{ marginBottom: "8px" }}>
-                    {record.status == "Requested" ||
-                    record.status == "Server Raised" ||
-                    record.status == "Awaiting Verify" ||
-                    record.status == "Verification Rejected" ||
-                    record.status == "Approval Rejected" ||
-                    record.status == "Hold" ? (
-                      <Checkbox
-                        className="server_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (
-                            record.status == "Awaiting Verify" ||
-                            record.status == "Hold"
-                          ) {
-                            if (!permissions.includes("Server Verify")) {
-                              CommonMessage("error", "Access Denied");
-                              return;
-                            }
+                            setDrawerStatus("Re-Purchase");
                             setIsOpenDetailsDrawer(true);
-                            setDrawerStatus("Verify");
-                            setServerDetails(record);
-                            getCustomerData(record.customer_id);
-                          } else {
-                            CommonMessage("warning", "Details not updated yet");
-                          }
-                        }}
-                      >
-                        Verify
-                      </Checkbox>
-                    ) : (
-                      <div className="customers_classcompleted_container">
-                        <BsPatchCheckFill color="#3c9111" />
-                        <p className="customers_classgoing_completedtext">
-                          Verified
-                        </p>
-                      </div>
-                    )}
-                  </Col>
-
-                  {record.status == "Awaiting Verify" ? (
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      <Checkbox
-                        className="server_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (!permissions.includes("Server Verify")) {
-                            CommonMessage("error", "Access Denied");
-                            return;
-                          }
-
-                          setIsOpenHoldModal(true);
-                          setServerDetails(record);
-                        }}
-                      >
-                        Hold
-                      </Checkbox>
+                          }}
+                        >
+                          Re-Purchase
+                        </Checkbox>
+                      ) : (
+                        ""
+                      )}
                     </Col>
-                  ) : (
-                    ""
-                  )}
-
-                  <Col span={12} style={{ marginBottom: "8px" }}>
-                    {record.status == "Approved" ||
-                    record.status == "Issued" ? (
-                      <div className="customers_classcompleted_container">
-                        <BsPatchCheckFill color="#3c9111" />
-                        <p className="customers_classgoing_completedtext">
-                          Approved
-                        </p>
-                      </div>
-                    ) : (
-                      <Checkbox
-                        className="server_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (record.status == "Awaiting Approval") {
-                            if (!permissions.includes("Server Approve")) {
-                              CommonMessage("error", "Access Denied");
-                              return;
-                            }
-                            setIsOpenDetailsDrawer(true);
-                            setDrawerStatus("Approve");
-                            setServerDetails(record);
-                            getCustomerData(record.customer_id);
-                          } else {
-                            CommonMessage("warning", "Not verified yet");
-                          }
-                        }}
-                      >
-                        Approve
-                      </Checkbox>
-                    )}
-                  </Col>
-
-                  <Col span={12} style={{ marginBottom: "8px" }}>
-                    {record.status == "Requested" ||
-                    record.status == "Server Raised" ||
-                    record.status == "Awaiting Verify" ||
-                    record.status == "Verification Rejected" ||
-                    record.status == "Awaiting Approval" ||
-                    record.status == "Approval Rejected" ||
-                    record.status == "Approved" ||
-                    record.status == "Hold" ? (
-                      <Checkbox
-                        className="server_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (record.status == "Approved") {
-                            if (!permissions.includes("Server Issue")) {
-                              CommonMessage("error", "Access Denied");
-                              return;
-                            }
-                            setIsOpenDetailsDrawer(true);
-                            setDrawerStatus("Issue");
-                            setServerDetails(record);
-                            getCustomerData(record.customer_id);
-                            return;
-                          } else {
-                            CommonMessage("warning", "Not approved yet");
-                          }
-                        }}
-                      >
-                        Issue
-                      </Checkbox>
-                    ) : (
-                      <div className="customers_classcompleted_container">
-                        <BsPatchCheckFill color="#3c9111" />
-                        <p className="customers_classgoing_completedtext">
-                          Issued
-                        </p>
-                      </div>
-                    )}
-                  </Col>
-                </Row>
-              </>
-            }
-          >
-            {text == "Requested" ? (
-              <div>
-                <Button className="customers_status_awaitfeedback_button">
-                  Required
-                </Button>
-              </div>
-            ) : text == "Server Raised" ? (
-              <div>
-                <Button className="customers_status_awaittrainer_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text == "Awaiting Verify" ? (
-              <div>
-                <Button className="customers_status_awaitverify_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text == "Awaiting Approval" ? (
-              <div>
-                <Button className="customers_status_classscheduled_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text == "Approved" ? (
-              <div>
-                <Button className="customers_status_classgoing_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text == "Issued" ? (
-              <div>
-                <Button className="customers_status_completed_button">
-                  Server Issued
-                </Button>
-              </div>
-            ) : text == "Support" ? (
-              <div>
-                <Button className="customers_status_awaittrainerverify_button">
-                  Support
-                </Button>
-              </div>
-            ) : text == "Rejected" ||
-              text == "Server Rejected" ||
-              text == "Approval Rejected" ||
-              text == "Verification Rejected" ||
-              text == "Hold" ? (
-              <div>
-                <Button className="trainers_rejected_button">{text}</Button>
-              </div>
-            ) : (
-              <p>{text}</p>
+                  </Row>
+                </>
+              }
+            >
+              {text == "Requested" ? (
+                <div>
+                  <Button className="customers_status_awaitfeedback_button">
+                    Required
+                  </Button>
+                </div>
+              ) : text == "Server Raised" ? (
+                <div>
+                  <Button className="customers_status_awaittrainer_button">
+                    {text}
+                  </Button>
+                </div>
+              ) : text == "Awaiting Verify" ? (
+                <div>
+                  <Button className="customers_status_awaitverify_button">
+                    {text}
+                  </Button>
+                </div>
+              ) : text == "Awaiting Approval" ? (
+                <div>
+                  <Button className="customers_status_classscheduled_button">
+                    {text}
+                  </Button>
+                </div>
+              ) : text == "Approved" ? (
+                <div>
+                  <Button className="customers_status_classgoing_button">
+                    {text}
+                  </Button>
+                </div>
+              ) : text == "Issued" ? (
+                <div>
+                  <Button className="customers_status_completed_button">
+                    Server Issued
+                  </Button>
+                </div>
+              ) : text == "Support" ? (
+                <div>
+                  <Button className="customers_status_awaittrainerverify_button">
+                    Support
+                  </Button>
+                </div>
+              ) : text == "Rejected" ||
+                text == "Server Rejected" ||
+                text == "Approval Rejected" ||
+                text == "Verification Rejected" ||
+                text == "Hold" ? (
+                <div>
+                  <Button className="trainers_rejected_button">{text}</Button>
+                </div>
+              ) : (
+                <p>{text}</p>
+              )}
+            </Tooltip>
+            {record.status === "Awaiting Verify" && (
+              <Tooltip
+                placement="top"
+                title="Copy server acknowledge link"
+                trigger={["hover", "click"]}
+              >
+                <FaRegCopy
+                  size={14}
+                  className="customers_formlink_copybutton"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${
+                        import.meta.env.VITE_EMAIL_URL
+                      }/acknowledge-server-request/${record.trans_details[0].server_trans_id}/${record.customer_id}`,
+                    );
+                    CommonMessage("success", "Link Copied");
+                  }}
+                />
+              </Tooltip>
             )}
-          </Tooltip>
+          </div>
         );
       },
     },
@@ -650,24 +748,15 @@ export default function Server() {
 
             <Tooltip
               placement="top"
-              title="View Server History"
+              title="View Candidate History"
               trigger={["hover", "click"]}
             >
               <LuFileClock
                 size={15}
                 className="trainers_action_icons"
                 onClick={() => {
-                  setServerDetails(record);
-                  getServerHistoryData(record.id, record.customer_id);
-                  // setTimeout(() => {
-                  //   const container = document.getElementById(
-                  //     "customer_history_profilecontainer"
-                  //   );
-                  //   container.scrollIntoView({
-                  //     behavior: "smooth",
-                  //     block: "start",
-                  //   });
-                  // }, 300);
+                  setSelectedHistoryCustomerId(record?.customer_id);
+                  setIsOpenCustomerHistoryDrawer(true);
                 }}
               />
             </Tooltip>
@@ -852,11 +941,7 @@ export default function Server() {
       ...(converAsJson?.user_id == "BNG9001" ? {} : { user_ids: downliners }),
       ...(serverStatus && serverStatus == "Server Raised"
         ? {
-            status: [
-              "Server Raised",
-              "Verification Rejected",
-              "Approval Rejected",
-            ],
+            status: ["Server Raised", "Verification Rejected"],
           }
         : { status: serverStatus }),
       ...(searchvalue && { search_filter: searchvalue }),
@@ -1142,9 +1227,13 @@ export default function Server() {
     };
     try {
       await updateServerStatus(payload);
+
+      // if(updateStatus == "Server Raised"){
+      //   handleUpdateServerDetails();
+      // }
       setTimeout(() => {
         setVerifyButtonLoading(false);
-        handleServerTrack(updateStatus);
+        handleCustomerTrack(updateStatus);
         drawerReset();
         fetchServerRequestsData({});
       }, 300);
@@ -1158,8 +1247,9 @@ export default function Server() {
     }
   };
 
-  const handleServerTrack = async (updateStatus) => {
-    const today = new Date();
+  const handleServerRePurchase = () => {};
+
+  const handleCustomerTrack = async (updateStatus) => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
 
@@ -1167,21 +1257,32 @@ export default function Server() {
       comments: supportComment,
     };
 
+    const changedFields = {};
+
+    changedFields["request_server_duration"] = {
+      previous_value: serverDetails.requested_duration,
+      new_value: requestServerDuration,
+    };
+
     const payload = {
-      server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
-      status: updateStatus,
-      status_date: formatToBackendIST(today),
-      updated_by:
-        converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
-      ...(updateStatus == "Support" ? { details: supportDetails } : {}),
+      customers: [
+        {
+          customer_id: serverDetails.customer_id,
+          status: updateStatus,
+          updated_by:
+            converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+          status_date: formatToBackendIST(new Date()),
+          details: changedFields,
+        },
+      ],
     };
     try {
-      await insertServerTrack(payload);
+      await inserCustomerTrack(payload);
     } catch (error) {
       console.log("server track error", error);
     } finally {
       if (updateStatus == "Server Raised") {
-        handleSendNotification();
+        // handleSendNotification();
       }
     }
   };
@@ -1223,48 +1324,6 @@ export default function Server() {
     }
   };
 
-  const getServerHistoryData = async (serverId, customer_id) => {
-    setServerHistoryLoading(true);
-    try {
-      const response = await getServerHistory(serverId);
-      console.log("server history response", response);
-      const history = response?.data?.data || [];
-      if (history.length >= 1) {
-        const reverseData = history.reverse();
-        setServerHistory(reverseData);
-      } else {
-        setServerHistory([]);
-      }
-      setIsOpenHistoryDrawer(true);
-      //call customer api
-      getCustomerData(customer_id);
-      setTimeout(() => {
-        setServerHistoryLoading(false);
-      }, 300);
-    } catch (error) {
-      setServerHistory([]);
-      setServerHistoryLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
-  const getHistoryStatusColor = (status) => {
-    if (
-      ["Details Updated", "Issued", "Approved"].some((s) => status.includes(s))
-    ) {
-      return "green";
-    }
-    if (status.includes("Awaiting")) return "gray";
-    if (["Rejected"].some((s) => status.includes(s))) {
-      return "#d32f2f";
-    }
-    return "#000"; // default black
-  };
-
   const handleStatusMismatch = () => {
     CommonMessage("error", "Status Mismatch. Contact Support Team");
   };
@@ -1272,7 +1331,6 @@ export default function Server() {
   const drawerReset = () => {
     setDrawerStatus("");
     setIsOpenDetailsDrawer(false);
-    setIsOpenHoldModal(false);
     setIsOpenRaiseModal(false);
     setRequestServerDuration("");
     setRequestServerDurationError("");
@@ -1311,6 +1369,34 @@ export default function Server() {
     });
     getAllDownlineUsersData(loginUserId, true);
   };
+
+  const filteredTableColumns = useMemo(() => {
+    if (status === "Requested" || status === "") {
+      const hiddenKeys = [
+        "server_raise_date",
+        "server_name",
+        "server_cost",
+        "duration",
+        "vendor_id",
+      ];
+
+      return tableColumns.filter(
+        (col) =>
+          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
+      );
+    }
+
+    if (status === "Server Raised") {
+      const hiddenKeys = ["server_name", "server_cost", "vendor_id"];
+
+      return tableColumns.filter(
+        (col) =>
+          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
+      );
+    }
+
+    return tableColumns;
+  }, [tableColumns, status]);
 
   return (
     <div>
@@ -1581,12 +1667,12 @@ export default function Server() {
       </Row>
 
       <div className="customers_scroll_wrapper">
-        <button
+        {/* <button
           onClick={() => scroll(-600)}
           className="customer_statusscroll_button"
         >
           <IoMdArrowDropleft size={25} />
-        </button>
+        </button> */}
         <div className="customers_status_mainContainer" ref={scrollRef}>
           {" "}
           {statusBuckets.map((config, index) => {
@@ -1604,12 +1690,12 @@ export default function Server() {
             );
           })}
         </div>
-        <button
+        {/* <button
           onClick={() => scroll(600)}
           className="customer_statusscroll_button"
         >
           <IoMdArrowDropright size={25} />
-        </button>
+        </button> */}
       </div>
 
       {permissions.includes("Show Region Summary") ? (
@@ -1740,15 +1826,15 @@ export default function Server() {
         <CommonTable
           // scroll={{ x: 1200 }}
           scroll={{
-            x: tableColumns.reduce(
+            x: filteredTableColumns.reduce(
               (total, col) => total + (col.width || 150),
               0,
             ),
           }}
-          columns={tableColumns}
+          columns={filteredTableColumns}
           dataSource={serverData}
           loading={loading}
-          checkBox={"true"}
+          checkBox={"false"}
           size="small"
           className="questionupload_table"
           onPaginationChange={handlePaginationChange} // callback to fetch new data
@@ -1781,12 +1867,13 @@ export default function Server() {
             <Divider className="customer_statusupdate_divider" />
 
             <div className="customer_statusupdate_adddetailsContainer">
-              {drawerStatus == "Update Details" ? (
+              {drawerStatus == "Update Details" ||
+              drawerStatus === "Re-Purchase" ? (
                 <ServerUpdateDetails
                   ref={serverUpdateDetailsRef}
                   serverDetails={serverDetails}
+                  drawerStatus={drawerStatus}
                   setButtonLoading={setButtonLoading}
-                  verifyHistory={verifyHistory}
                   callgetServerApi={() => {
                     drawerReset();
                     fetchServerRequestsData({});
@@ -1807,16 +1894,6 @@ export default function Server() {
                   ref={serverApproveRef}
                   serverDetails={serverDetails}
                   setRejectButtonLoading={setRejectButtonLoading}
-                  callgetServerApi={() => {
-                    drawerReset();
-                    fetchServerRequestsData({});
-                  }}
-                />
-              ) : drawerStatus == "Issue" ? (
-                <ServerIssue
-                  ref={serverIssueRef}
-                  serverDetails={serverDetails}
-                  setButtonLoading={setButtonLoading}
                   callgetServerApi={() => {
                     drawerReset();
                     fetchServerRequestsData({});
@@ -1856,14 +1933,23 @@ export default function Server() {
                 )}
 
                 {buttonLoading ? (
-                  <button className="users_adddrawer_loadingcreatebutton">
+                  <button
+                    className="users_adddrawer_loadingcreatebutton"
+                    style={{
+                      ...(drawerStatus === "Re-Purchase" && { width: "120px" }),
+                    }}
+                  >
                     <CommonSpinner />
                   </button>
                 ) : (
                   <button
                     className="users_adddrawer_createbutton"
+                    style={{
+                      ...(drawerStatus === "Re-Purchase" && { width: "120px" }),
+                    }}
                     onClick={
-                      drawerStatus == "Update Details"
+                      drawerStatus == "Update Details" ||
+                      drawerStatus === "Re-Purchase"
                         ? () =>
                             serverUpdateDetailsRef.current?.handleUpdateDetails()
                         : drawerStatus == "Verify"
@@ -1879,13 +1965,15 @@ export default function Server() {
                   >
                     {drawerStatus == "Update Details"
                       ? "Update"
-                      : drawerStatus == "Verify"
-                        ? "Verify"
-                        : drawerStatus == "Approve"
-                          ? "Approve"
-                          : drawerStatus == "Issue"
-                            ? "Issue"
-                            : ""}
+                      : drawerStatus === "Re-Purchase"
+                        ? "Re-Purchase"
+                        : drawerStatus == "Verify"
+                          ? "Verify"
+                          : drawerStatus == "Approve"
+                            ? "Approve"
+                            : drawerStatus == "Issue"
+                              ? "Issue"
+                              : ""}
                   </button>
                 )}
               </div>
@@ -1896,7 +1984,7 @@ export default function Server() {
 
       {/* view drawer */}
       <Drawer
-        title="Full Details"
+        title="Server Details"
         open={isOpenViewDrawer}
         onClose={drawerReset}
         width="50%"
@@ -1914,164 +2002,7 @@ export default function Server() {
 
             <Divider className="customer_statusupdate_divider" />
 
-            <div
-              className="customer_statusupdate_adddetailsContainer"
-              style={{ marginBottom: "20px" }}
-            >
-              <div className="customerdetails_coursecard">
-                <div className="customerdetails_coursecard_headercontainer">
-                  <p>Server Details</p>
-                </div>
-
-                <div className="customerdetails_coursecard_contentcontainer">
-                  <Row gutter={12}>
-                    <Col span={12}>
-                      <Row>
-                        <Col span={12}>
-                          <div className="customerdetails_rowheadingContainer">
-                            <p className="customerdetails_rowheading">
-                              Created At
-                            </p>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <p className="customerdetails_text">
-                            {serverDetails && serverDetails.created_date
-                              ? moment(serverDetails.created_date).format(
-                                  "DD/MM/YYYY",
-                                )
-                              : "-"}
-                          </p>
-                        </Col>
-                      </Row>
-
-                      <Row style={{ marginTop: "12px" }}>
-                        <Col span={12}>
-                          <div className="customerdetails_rowheadingContainer">
-                            <p className="customerdetails_rowheading">
-                              Server Name
-                            </p>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <EllipsisTooltip
-                            text={
-                              serverDetails && serverDetails.server_name
-                                ? serverDetails.server_name
-                                : "-"
-                            }
-                            smallText={true}
-                          />
-                        </Col>
-                      </Row>
-
-                      {permissions.includes("Show Server Cost & Vendor") && (
-                        <Row style={{ marginTop: "12px" }}>
-                          <Col span={12}>
-                            <div className="customerdetails_rowheadingContainer">
-                              <p className="customerdetails_rowheading">
-                                Server Cost
-                              </p>
-                            </div>
-                          </Col>
-                          <Col span={12}>
-                            <p className="customerdetails_text">
-                              {serverDetails && serverDetails.server_cost
-                                ? `₹${serverDetails.server_cost}`
-                                : "-"}
-                            </p>
-                          </Col>
-                        </Row>
-                      )}
-
-                      <Row style={{ marginTop: "12px" }}>
-                        <Col span={12}>
-                          <div className="customerdetails_rowheadingContainer">
-                            <p className="customerdetails_rowheading">
-                              Server Duration
-                            </p>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <p className="customerdetails_text">
-                            {serverDetails && serverDetails.duration
-                              ? serverDetails.duration + " " + "Days"
-                              : "-"}
-                          </p>
-                        </Col>
-                      </Row>
-                    </Col>
-
-                    <Col span={12}>
-                      {permissions.includes("Show Server Cost & Vendor") && (
-                        <Row>
-                          <Col span={12}>
-                            <div className="customerdetails_rowheadingContainer">
-                              <p className="customerdetails_rowheading">
-                                Vendor
-                              </p>
-                            </div>
-                          </Col>
-                          <Col span={12}>
-                            <p className="customerdetails_text">
-                              {serverDetails && serverDetails.vendor_id
-                                ? serverDetails.vendor_id
-                                : "-"}
-                            </p>
-                          </Col>
-                        </Row>
-                      )}
-
-                      <Row
-                        style={{
-                          marginTop: permissions.includes(
-                            "Show Server Cost & Vendor",
-                          )
-                            ? "12px"
-                            : "0px",
-                        }}
-                      >
-                        <Col span={12}>
-                          <div className="customerdetails_rowheadingContainer">
-                            <p className="customerdetails_rowheading">
-                              Start Date
-                            </p>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <p className="customerdetails_text">
-                            {serverDetails && serverDetails.start_date
-                              ? moment(serverDetails.start_date).format(
-                                  "DD/MM/YYYY",
-                                )
-                              : "-"}
-                          </p>
-                        </Col>
-                      </Row>
-
-                      <Row style={{ marginTop: "12px" }}>
-                        <Col span={12}>
-                          <div className="customerdetails_rowheadingContainer">
-                            <p className="customerdetails_rowheading">
-                              Expire Date
-                            </p>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <p className="customerdetails_text">
-                            {serverDetails && serverDetails.end_date
-                              ? moment(serverDetails.end_date).format(
-                                  "DD/MM/YYYY",
-                                )
-                              : "-"}
-                          </p>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </div>
-              </div>
-            </div>
+            <ViewServerDetails serverDetails={serverDetails} />
           </>
         )}
       </Drawer>
@@ -2257,389 +2188,15 @@ export default function Server() {
         </div>
       </Modal>
 
-      {/* hold modal */}
-      <Modal
-        open={isOpenHoldModal}
-        onCancel={() => {
-          setIsOpenHoldModal(false);
-        }}
-        footer={false}
-        width="30%"
-        zIndex={1100}
-      >
-        <p className="customer_classcompletemodal_heading">Are you sure?</p>
-
-        <p className="customer_classcompletemodal_text">
-          You Want To Hold the Server for{" "}
-          <span style={{ color: "#333", fontWeight: 700, fontSize: "14px" }}>
-            {serverDetails && serverDetails.name ? serverDetails.name : ""}
-          </span>{" "}
-        </p>
-        <div className="customer_classcompletemodal_button_container">
-          <Button
-            className="customer_classcompletemodal_cancelbutton"
-            onClick={() => {
-              setIsOpenHoldModal(false);
-            }}
-          >
-            No
-          </Button>
-          {verifyButtonLoading ? (
-            <Button
-              type="primary"
-              className="customer_classcompletemodal_loading_okbutton"
-            >
-              <CommonSpinner />
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              className="customer_classcompletemodal_okbutton"
-              onClick={() => {
-                handleServerStatus("Hold");
-              }}
-            >
-              Yes
-            </Button>
-          )}
-        </div>
-      </Modal>
-
-      {/* server history drawer */}
-      <Drawer
-        title={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>Server History</span>
-            <div className="customer_history_drawer_totalcount_container">
-              <span style={{ fontWeight: 600 }}>
-                Total Activity: {serverHistory?.length || 0}
-              </span>
-              <span style={{ fontWeight: 600 }}>
-                Current Status:{" "}
-                <span
-                  style={{
-                    color: getHistoryStatusColor(
-                      serverHistory?.[0]?.status || "N/A",
-                    ),
-                  }}
-                >
-                  {" "}
-                  {serverHistory && serverHistory.length > 0
-                    ? serverHistory[0].status
-                    : "N/A"}
-                </span>
-              </span>
-            </div>
-          </div>
-        }
-        open={isOpenHistoryDrawer}
+      {/* customer history drawer */}
+      <CustomerHistory
+        customerId={selectedHistoryCustomerId}
+        isOpen={isOpenCustomerHistoryDrawer}
         onClose={() => {
-          setIsOpenHistoryDrawer(false);
-          setCustomerDetails(null);
+          setIsOpenCustomerHistoryDrawer(false);
+          setSelectedHistoryCustomerId(null);
         }}
-        width="50%"
-        style={{ position: "relative" }}
-        className="customer_history_drawer"
-      >
-        <div className="customer_statusupdate_drawer_profileContainer">
-          {customerDetails && customerDetails.profile_image ? (
-            <img
-              src={customerDetails.profile_image}
-              className="cutomer_profileimage"
-            />
-          ) : (
-            <FaRegUser size={50} color="#333" />
-          )}
-
-          <div>
-            <p className="customer_nametext">
-              {" "}
-              {customerDetails && customerDetails.name
-                ? customerDetails.name
-                : "-"}
-            </p>
-            <p className="customer_coursenametext">
-              {" "}
-              {customerDetails && customerDetails.course_name
-                ? customerDetails.course_name
-                : "-"}
-            </p>
-          </div>
-        </div>
-
-        <Row
-          gutter={16}
-          style={{ marginTop: "20px", padding: "0px 0px 0px 24px" }}
-        >
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegCircleUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Name</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.name
-                      ? customerDetails.name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <MdOutlineEmail size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Email</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.email
-                      ? customerDetails.email
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoCallOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Mobile</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.phone
-                    ? customerDetails.phone
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaWhatsapp size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Whatsapp</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.whatsapp
-                    ? customerDetails.whatsapp
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  {customerDetails && customerDetails.gender === "Male" ? (
-                    <BsGenderMale size={15} color="gray" />
-                  ) : (
-                    <BsGenderFemale size={15} color="gray" />
-                  )}
-                  <p className="customerdetails_rowheading">Gender</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.gender
-                    ? customerDetails.gender
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <IoLocationOutline size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Location</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.current_location
-                      ? customerDetails.current_location
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <FaRegUser size={15} color="gray" />
-                  <p className="customerdetails_rowheading">Lead Executive</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={`${
-                    customerDetails && customerDetails.lead_assigned_to_id
-                      ? customerDetails.lead_assigned_to_id
-                      : "-"
-                  } (${
-                    customerDetails && customerDetails.lead_assigned_to_name
-                      ? customerDetails.lead_assigned_to_name
-                      : "-"
-                  })`}
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-          </Col>
-
-          <Col span={12}>
-            <Row>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <EllipsisTooltip
-                  text={
-                    customerDetails && customerDetails.course_name
-                      ? customerDetails.course_name
-                      : "-"
-                  }
-                  smallText={true}
-                />
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Course Fees</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.primary_fees
-                    ? "₹" + customerDetails.primary_fees
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">
-                    Course Fees
-                    <span className="customerdetails_coursegst">{` (+Gst)`}</span>
-                  </p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text" style={{ fontWeight: 700 }}>
-                  {customerDetails && customerDetails.total_course_amount
-                    ? "₹" + customerDetails.total_course_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Balance Amount</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p
-                  className="customerdetails_text"
-                  style={{ color: "#d32f2f", fontWeight: 700 }}
-                >
-                  {customerDetails &&
-                  customerDetails.balance_amount !== undefined &&
-                  customerDetails.balance_amount !== null
-                    ? "₹" + customerDetails.balance_amount
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Branch</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.branch_name
-                    ? customerDetails.branch_name
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Track</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_tracking
-                    ? customerDetails.batch_tracking
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "12px" }}>
-              <Col span={12}>
-                <div className="customerdetails_rowheadingContainer">
-                  <p className="customerdetails_rowheading">Batch Type</p>
-                </div>
-              </Col>
-              <Col span={12}>
-                <p className="customerdetails_text">
-                  {customerDetails && customerDetails.batch_timing
-                    ? customerDetails.batch_timing
-                    : "-"}
-                </p>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-
-        <Divider className="customer_statusupdate_divider" />
-
-        <div style={{ marginTop: "30px" }}>
-          {serverHistoryLoading ? (
-            <CommonSpinner />
-          ) : (
-            <ServerHistory data={serverHistory} />
-          )}
-        </div>
-      </Drawer>
+      />
 
       {/* table filter drawer */}
       <Drawer

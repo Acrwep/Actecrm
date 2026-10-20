@@ -9,6 +9,7 @@ import { getTableColumns } from "../ApiService/action";
 import { useSelector } from "react-redux";
 import Refund from "./Refund";
 import "./styles.css";
+import Server from "./Server";
 
 export default function Accounts() {
   const location = useLocation();
@@ -18,6 +19,7 @@ export default function Accounts() {
   const [receivableCount, setReceivableCount] = useState(0);
   const [feeHistoryCount, setFeeHistoryCount] = useState(0);
   const [refundCount, setRefundCount] = useState(0);
+  const [serverCount, setServerCount] = useState(0);
   const [allTableColumns, setAllTableColumns] = useState(null);
 
   const permissions = useSelector((state) => state.userpermissions);
@@ -78,6 +80,8 @@ export default function Accounts() {
       window.dispatchEvent(new CustomEvent("refreshFeeHistoryTab"));
     } else if (activeBucket === "Refund") {
       window.dispatchEvent(new CustomEvent("refreshRefundTab"));
+    } else if (activeBucket === "Server") {
+      window.dispatchEvent(new CustomEvent("refreshServerTab"));
     }
   };
 
@@ -145,6 +149,17 @@ export default function Accounts() {
                 <p>{`Refund (${refundCount})`}</p>
               </div>
             )}
+
+            <div
+              className={
+                activeBucket === "Server"
+                  ? "trainers_active_stage4_container"
+                  : "trainers_stage4_container"
+              }
+              onClick={() => setActiveBucket("Server")}
+            >
+              <p>{`Server (${serverCount})`}</p>
+            </div>
           </div>
 
           <Tooltip placement="top" title="Refresh">
@@ -169,6 +184,7 @@ export default function Accounts() {
               setReceivableCount={setReceivableCount}
               setFeeHistoryCount={setFeeHistoryCount}
               setRefundCount={setRefundCount}
+              setServerCount={setServerCount}
               allTableColumns={allTableColumns}
               refreshTableColumns={fetchTableColumns}
             />
@@ -218,6 +234,21 @@ export default function Accounts() {
               />
             </div>
           )}
+
+        {visitedBuckets["Server"] && (
+          <div
+            style={{
+              display: activeBucket === "Server" ? "block" : "none",
+            }}
+          >
+            <Server
+              filterData={filterData}
+              setServerCount={setServerCount}
+              allTableColumns={allTableColumns}
+              refreshTableColumns={fetchTableColumns}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

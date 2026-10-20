@@ -1,11 +1,10 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
-import { Row, Col, Input } from "antd";
-import CommonInputField from "../Common/CommonInputField";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
-import CommonSelectField from "../Common/CommonSelectField";
+import { Row, Col, Input, Collapse } from "antd";
+import { FaRegCircleXmark } from "react-icons/fa6";
+import { BsPatchCheckFill } from "react-icons/bs";
+import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import ReactQuill from "react-quill";
 import "quill/dist/quill.snow.css";
-import { LuIndianRupee } from "react-icons/lu";
 import { insertServerTrack, serverIssue } from "../ApiService/action";
 import {
   addressValidator,
@@ -17,6 +16,7 @@ import "./styles.css";
 
 const ServerIssue = forwardRef(
   ({ serverDetails, setButtonLoading, callgetServerApi }, ref) => {
+    const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
     const [subject, setSubject] = useState("");
     const [emailContent, setEmailContent] = useState("");
 
@@ -129,7 +129,7 @@ const ServerIssue = forwardRef(
         CommonMessage(
           "error",
           error?.response?.data?.details ||
-            "Something went wrong. Try again later"
+            "Something went wrong. Try again later",
         );
       }
     };
@@ -156,85 +156,126 @@ const ServerIssue = forwardRef(
     return (
       <div>
         <>
-          <p className="customer_statusupdate_adddetails_heading">
-            Add Details
-          </p>
-          <Row
-            gutter={16}
-            style={{
-              marginTop: "14px",
-            }}
-          >
-            <Col span={8}>
-              <CommonInputField
-                label="Server Name"
-                required={true}
-                disabled={true}
-                value={
-                  serverDetails && serverDetails.server_name
-                    ? serverDetails.server_name
-                    : "-"
-                }
-              />
-            </Col>
-            <Col span={8}>
-              <CommonInputField
-                label="Vendor Name"
-                required={true}
-                value={
-                  serverDetails && serverDetails.vendor_id
-                    ? serverDetails.vendor_id
-                    : ""
-                }
-                disabled={true}
-              />
-            </Col>
-            <Col span={8}>
-              <CommonOutlinedInput
-                label="Server Cost"
-                type="number"
-                required={true}
-                value={
-                  serverDetails && serverDetails.server_cost
-                    ? serverDetails.server_cost
-                    : ""
-                }
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
-                icon={<LuIndianRupee size={16} />}
-                disabled={true}
-              />{" "}
-            </Col>
-          </Row>
+          {serverDetails && serverDetails.trans_details.length >= 1 ? (
+            <div style={{ marginTop: "12px", marginBottom: "20px" }}>
+              <Collapse
+                activeKey={collapseDefaultKey}
+                onChange={(keys) => setCollapseDefaultKey(keys)}
+                className="assesmntresult_collapse"
+              >
+                {serverDetails.trans_details.map((item, index) => (
+                  <Collapse.Panel
+                    key={index + 1} // unique key
+                    header={
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          fontSize: "13px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>
+                          Server Details
+                          {/* <span style={{ fontWeight: "500" }}>
+                                {moment(item.invoice_date).format("DD/MM/YYYY")}
+                              </span> */}
+                        </span>
 
-          <Row
-            gutter={16}
-            style={{
-              marginTop: "22px",
-              marginBottom: "20px",
-            }}
-          >
-            <Col span={8}>
-              <CommonSelectField
-                required={true}
-                label="Duration"
-                options={[
-                  { id: 30, name: "30 Days" },
-                  { id: 60, name: "60 Days" },
-                  { id: 90, name: "90 Days" },
-                ]}
-                value={
-                  serverDetails && serverDetails.duration
-                    ? serverDetails.duration
-                    : null
-                }
-                disabled={true}
-              />
-            </Col>
-          </Row>
+                        {item.approval_status === "Pending" ? (
+                          <div className="customer_trans_statustext_container">
+                            <PiClockCounterClockwiseBold
+                              size={14}
+                              color="gray"
+                            />
+                            <p
+                              style={{
+                                color: "gray",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Waiting for Approval
+                            </p>
+                          </div>
+                        ) : item.approval_status === "Rejected" ? (
+                          <div className="customer_trans_statustext_container">
+                            <FaRegCircleXmark color="#d32f2f" size={12} />
+                            <p
+                              style={{
+                                color: "#d32f2f",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Rejected
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="customer_trans_statustext_container">
+                            <BsPatchCheckFill color="#3c9111" size={12} />
+                            <p
+                              style={{
+                                color: "#3c9111",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Approved
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    }
+                  >
+                    <div>
+                      <div style={{ padding: "0px 12px" }}>
+                        <table className="transaction-details-table">
+                          <tbody>
+                            <tr>
+                              <td>Course Fees</td>
+                              <td className="text-right">
+                                {serverDetails.primary_fees}
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td>Course Fees + GST(18%)</td>
+                              <td className="text-right">
+                                {serverDetails.total_course_amount}
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td>Server Cost</td>
+                              <td className="text-right">{item.server_cost}</td>
+                            </tr>
+
+                            <tr>
+                              <td>Duration</td>
+                              <td className="text-right">
+                                {item?.server_trans_duration
+                                  ? `${item.server_trans_duration} Days`
+                                  : "-"}
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <td>Vendor</td>
+                              <td className="text-right">{item.vendor_id}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </Collapse.Panel>
+                ))}
+              </Collapse>
+            </div>
+          ) : (
+            <p className="customer_trainerhistory_nodatatext">No Data found</p>
+          )}
 
           <div className="server_email_conatiner">
             <p className="server_email_heading">Email Template</p>
@@ -261,7 +302,7 @@ const ServerIssue = forwardRef(
         </>
       </div>
     );
-  }
+  },
 );
 
 export default ServerIssue;

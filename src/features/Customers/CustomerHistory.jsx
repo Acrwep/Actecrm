@@ -323,7 +323,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           item.status.includes("Generated") ||
           item.status.includes("Marked") ||
           item.status.includes("Resent") ||
-          item.status.includes("Scheduled") ? (
+          item.status.includes("Scheduled") ||
+          item.status.includes("Server Raised") ||
+          item.status.includes("Server Request Acknowledged") ? (
           <LuCircleCheck size={16} style={{ color: "green" }} />
         ) : item.status.includes("Going") || item.status.includes("Updated") ? (
           <GrUpdate size={14} style={{ color: "gray" }} />
@@ -892,6 +894,9 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
               item.status === "Trainer Assigned" ||
               item.status === "Trainer Updated" ||
               item.status === "Trainer Re-Assigned" ||
+              item.status === "Server Raised" ||
+              item.status === "Server Details Updated" ||
+              item.status === "Server Approval Rejected" ||
               item.status ===
                 "Marked as Trainer Confirmation Mail Already Sent Outside CRM") &&
             item.details ? (
@@ -1122,7 +1127,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
                               <span
                                 style={{
                                   color:
-                                    item.status === "Trainer Rejected"
+                                    item.status === "Trainer Rejected" ||
+                                    item.status === "Server Approval Rejected"
                                       ? "#d32f2f"
                                       : "#52c41a",
                                   fontWeight: 500,

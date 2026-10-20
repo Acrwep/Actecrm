@@ -56,6 +56,7 @@ export default function Received({
   setReceivableCount,
   setFeeHistoryCount,
   setRefundCount,
+  setServerCount,
   allTableColumns,
   refreshTableColumns,
 }) {
@@ -613,6 +614,7 @@ export default function Received({
       console.log("get accounts overall counts response", response);
       setReceivableCount(response?.data?.pending_fees_total || 0);
       setFeeHistoryCount(response?.data?.fee_history_total || 0);
+      setServerCount(response?.data?.server_approved_counts || 0);
       setRefundCount(response?.data?.refund_total || 0);
     } catch (error) {
       console.log("get accounts overall counts error", error);
