@@ -12,6 +12,8 @@ import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { LuIndianRupee } from "react-icons/lu";
+import { VscLayersActive } from "react-icons/vsc";
+import { RiPassExpiredLine } from "react-icons/ri";
 import {
   inserCustomerTrack,
   insertServerTrack,
@@ -26,6 +28,7 @@ import {
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import moment from "moment";
+import ServerTransCollapse from "./ServerTransCollapse";
 
 const ServerUpdateDetails = forwardRef(
   (
@@ -187,188 +190,7 @@ const ServerUpdateDetails = forwardRef(
             Previous History
           </p>
 
-          <>
-            {serverDetails.trans_details.length >= 1 ? (
-              <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-                <Collapse
-                  activeKey={collapseDefaultKey}
-                  onChange={(keys) => setCollapseDefaultKey(keys)}
-                  className="assesmntresult_collapse"
-                >
-                  {serverDetails.trans_details.map((item, index) => (
-                    <Collapse.Panel
-                      key={index + 1} // unique key
-                      header={
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            width: "100%",
-                            fontSize: "13px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span>
-                            Server Details
-                            {/* <span style={{ fontWeight: "500" }}>
-                                {moment(item.invoice_date).format("DD/MM/YYYY")}
-                              </span> */}
-                          </span>
-
-                          {item.server_trans_status === "Pending" ? (
-                            <div className="customer_trans_statustext_container">
-                              <PiClockCounterClockwiseBold
-                                size={14}
-                                color="gray"
-                              />
-                              <p
-                                style={{
-                                  color: "gray",
-                                  fontWeight: 500,
-                                  fontSize: "12px",
-                                }}
-                              >
-                                Waiting for Approval
-                              </p>
-                            </div>
-                          ) : item.server_trans_status === "Rejected" ? (
-                            <div className="customer_trans_statustext_container">
-                              <FaRegCircleXmark color="#d32f2f" size={12} />
-                              <p
-                                style={{
-                                  color: "#d32f2f",
-                                  fontWeight: 500,
-                                  fontSize: "12px",
-                                }}
-                              >
-                                Rejected
-                              </p>
-                            </div>
-                          ) : (
-                            <div className="customer_trans_statustext_container">
-                              <BsPatchCheckFill color="#3c9111" size={12} />
-                              <p
-                                style={{
-                                  color: "#3c9111",
-                                  fontWeight: 500,
-                                  fontSize: "12px",
-                                }}
-                              >
-                                Approved
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      }
-                    >
-                      <div>
-                        <div style={{ padding: "0px 12px" }}>
-                          <table className="transaction-details-table">
-                            <tbody>
-                              <tr>
-                                <td>Course Fees</td>
-                                <td className="text-right">
-                                  {serverDetails.primary_fees}
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <td>Course Fees + GST(18%)</td>
-                                <td className="text-right">
-                                  {serverDetails.total_course_amount}
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <td>Server Cost</td>
-                                <td className="text-right">
-                                  {item.server_cost}
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <td>Duration</td>
-                                <td className="text-right">
-                                  {item?.server_trans_duration
-                                    ? `${item.server_trans_duration} Days`
-                                    : "-"}
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <td>Vendor</td>
-                                <td className="text-right">{item.vendor_id}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {item.server_trans_status === "Rejected" &&
-                        item.comments ? (
-                          <>
-                            <Divider className="customer_statusupdate_divider" />
-                            <div style={{ padding: "0px 52px" }}>
-                              <Row>
-                                <Col span={24}>
-                                  <Row>
-                                    <Col span={9}>
-                                      <div className="customerdetails_rowheadingContainer">
-                                        <p
-                                          className="customerdetails_rowheading"
-                                          style={{ color: "#d32f2f" }}
-                                        >
-                                          Rejection Reason:
-                                        </p>
-                                      </div>
-                                    </Col>
-                                    <Col span={15}>
-                                      <p className="customerdetails_text">
-                                        {item.comments}
-                                      </p>
-                                    </Col>
-                                  </Row>
-                                </Col>
-                              </Row>
-                            </div>
-                          </>
-                        ) : (
-                          ""
-                        )}
-
-                        {item.server_trans_status === "Pending" && (
-                          <div className="customer_finance_verify_buttons_container">
-                            <Button
-                              className="customer_finance_rejectbutton"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleApprovalReject();
-                              }}
-                            >
-                              Reject
-                            </Button>
-
-                            <Button
-                              className="customer_finance_verifybutton"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setIsOpenApproveModal(true);
-                              }}
-                            >
-                              Approve
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </Collapse.Panel>
-                  ))}
-                </Collapse>
-              </div>
-            ) : (
-              <p className="customer_trainerhistory_nodatatext">
-                No Data found
-              </p>
-            )}
-          </>
+          <ServerTransCollapse serverDetails={serverDetails} />
 
           <p className="customer_statusupdate_adddetails_heading">
             Add Details

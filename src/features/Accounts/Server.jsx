@@ -44,7 +44,7 @@ import CustomerOverview from "../Customers/CustomerOverview";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 import ViewServerDetails from "../Server/ViewServerDetails";
 import CustomerHistory from "../Customers/CustomerHistory";
-import ServerIssue from "../Server/ServerIssue";
+import ServerIssue from "./ServerIssue";
 
 export default function Server({ setServerCount }) {
   const scrollRef = useRef();
@@ -1347,7 +1347,10 @@ export default function Server({ setServerCount }) {
 
             <Divider className="customer_statusupdate_divider" />
 
-            <div className="customer_statusupdate_adddetailsContainer">
+            <div
+              className="customer_statusupdate_adddetailsContainer"
+              style={{ ...(drawerStatus == "Issue" && { padding: "0px" }) }}
+            >
               {drawerStatus == "Update Details" ? (
                 <ServerUpdateDetails
                   ref={serverUpdateDetailsRef}
@@ -1371,6 +1374,7 @@ export default function Server({ setServerCount }) {
                 <ServerIssue
                   ref={serverIssueRef}
                   serverDetails={serverDetails}
+                  customerDetails={customerDetails}
                   setButtonLoading={setButtonLoading}
                   callgetServerApi={() => {
                     drawerReset();

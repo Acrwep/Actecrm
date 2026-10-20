@@ -4,7 +4,10 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
+import { VscLayersActive } from "react-icons/vsc";
+import { RiPassExpiredLine } from "react-icons/ri";
 import moment from "moment";
+import ServerTransCollapse from "./ServerTransCollapse";
 
 const { Text } = Typography;
 
@@ -72,140 +75,10 @@ export default function ViewServerDetails({ serverDetails }) {
 
   return (
     <div style={{ padding: "1px 24px 20px 24px" }}>
-      {serverDetails && serverDetails.trans_details.length >= 1 ? (
-        <div style={{ marginTop: "12px", marginBottom: "20px" }}>
-          <Collapse
-            activeKey={collapseDefaultKey}
-            onChange={(keys) => setCollapseDefaultKey(keys)}
-            className="assesmntresult_collapse"
-          >
-            {serverDetails.trans_details.map((item, index) => (
-              <Collapse.Panel
-                key={index + 1} // unique key
-                header={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      fontSize: "13px",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span>
-                      {serverDetails.trans_details.length > 1
-                        ? `${serverDetails.trans_details.length - index}. Server Details`
-                        : "Server Details"}
-                    </span>
-
-                    {item.server_trans_status === "Pending" ? (
-                      <div className="customer_trans_statustext_container">
-                        <PiClockCounterClockwiseBold size={14} color="gray" />
-                        <p
-                          style={{
-                            color: "gray",
-                            fontWeight: 500,
-                            fontSize: "12px",
-                          }}
-                        >
-                          Waiting for Approval
-                        </p>
-                      </div>
-                    ) : item.server_trans_status === "Rejected" ? (
-                      <div className="customer_trans_statustext_container">
-                        <FaRegCircleXmark color="#d32f2f" size={12} />
-                        <p
-                          style={{
-                            color: "#d32f2f",
-                            fontWeight: 500,
-                            fontSize: "12px",
-                          }}
-                        >
-                          Rejected
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="customer_trans_statustext_container">
-                        <BsPatchCheckFill color="#3c9111" size={12} />
-                        <p
-                          style={{
-                            color: "#3c9111",
-                            fontWeight: 500,
-                            fontSize: "12px",
-                          }}
-                        >
-                          Approved
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                }
-              >
-                <div>
-                  <div style={{ padding: "0px 12px" }}>
-                    <table className="transaction-details-table">
-                      <tbody>
-                        <tr>
-                          <td>Course Fees</td>
-                          <td className="text-right">
-                            {serverDetails.primary_fees}
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>Course Fees + GST(18%)</td>
-                          <td className="text-right">
-                            {serverDetails.total_course_amount}
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>Server Cost</td>
-                          <td className="text-right">{item.server_cost}</td>
-                        </tr>
-
-                        <tr>
-                          <td>Duration</td>
-                          <td className="text-right">
-                            {item?.server_trans_duration
-                              ? `${item.server_trans_duration} Days`
-                              : "-"}
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>Vendor</td>
-                          <td className="text-right">{item.vendor_id}</td>
-                        </tr>
-
-                        <tr>
-                          <td>Start Date</td>
-                          <td className="text-right">
-                            {item.start_date
-                              ? moment(item.start_date).format("DD/MM/YYYY")
-                              : "-"}
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>End Date</td>
-                          <td className="text-right">
-                            {item.end_date
-                              ? moment(item.end_date).format("DD/MM/YYYY")
-                              : "-"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </Collapse.Panel>
-            ))}
-          </Collapse>
-        </div>
-      ) : (
-        <p className="customer_trainerhistory_nodatatext">No Data found</p>
-      )}
+      <ServerTransCollapse
+        serverDetails={serverDetails}
+        isShowStartAndEndDate={true}
+      />
     </div>
   );
 }

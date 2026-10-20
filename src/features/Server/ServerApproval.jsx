@@ -4,12 +4,15 @@ import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import { BsPatchCheckFill } from "react-icons/bs";
 import CommonTextArea from "../Common/CommonTextArea";
 import { FaRegCircleXmark } from "react-icons/fa6";
+import { VscLayersActive } from "react-icons/vsc";
+import { RiPassExpiredLine } from "react-icons/ri";
 import CommonSpinner from "../Common/CommonSpinner";
 import { inserCustomerTrack, updateServerStatus } from "../ApiService/action";
 import { addressValidator, formatToBackendIST } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import "./styles.css";
 import PrismaZoom from "react-prismazoom";
+import ServerTransCollapse from "./ServerTransCollapse";
 
 const ServerApproval = forwardRef(
   ({ serverDetails, callgetServerApi }, ref) => {
@@ -151,7 +154,7 @@ const ServerApproval = forwardRef(
     return (
       <div>
         <>
-          {serverDetails.trans_details.length >= 1 ? (
+          {/* {serverDetails.trans_details.length >= 1 ? (
             <div style={{ marginTop: "12px", marginBottom: "20px" }}>
               <Collapse
                 activeKey={collapseDefaultKey}
@@ -172,10 +175,9 @@ const ServerApproval = forwardRef(
                         }}
                       >
                         <span>
-                          Server Details
-                          {/* <span style={{ fontWeight: "500" }}>
-                                {moment(item.invoice_date).format("DD/MM/YYYY")}
-                              </span> */}
+                          {serverDetails.trans_details.length > 1
+                            ? `${serverDetails.trans_details.length - index}. Server Details`
+                            : "Server Details"}
                         </span>
 
                         {item.server_trans_status === "Pending" ? (
@@ -207,7 +209,7 @@ const ServerApproval = forwardRef(
                               Rejected
                             </p>
                           </div>
-                        ) : (
+                        ) : item.server_trans_status === "Approved" ? (
                           <div className="customer_trans_statustext_container">
                             <BsPatchCheckFill color="#3c9111" size={12} />
                             <p
@@ -220,6 +222,34 @@ const ServerApproval = forwardRef(
                               Approved
                             </p>
                           </div>
+                        ) : item.server_trans_status === "Active" ? (
+                          <div className="customer_trans_statustext_container">
+                            <VscLayersActive color="#3c9111" size={16} />
+                            <p
+                              style={{
+                                color: "#3c9111",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Active
+                            </p>
+                          </div>
+                        ) : item.server_trans_status === "Expired" ? (
+                          <div className="customer_trans_statustext_container">
+                            <RiPassExpiredLine color="#607d8b" size={12} />
+                            <p
+                              style={{
+                                color: "#607d8b",
+                                fontWeight: 500,
+                                fontSize: "12px",
+                              }}
+                            >
+                              Expired
+                            </p>
+                          </div>
+                        ) : (
+                          ""
                         )}
                       </div>
                     }
@@ -328,7 +358,15 @@ const ServerApproval = forwardRef(
             </div>
           ) : (
             <p className="customer_trainerhistory_nodatatext">No Data found</p>
-          )}
+          )} */}
+
+          <ServerTransCollapse
+            serverDetails={serverDetails}
+            handleApprovalReject={handleApprovalReject}
+            setIsOpenApproveModal={setIsOpenApproveModal}
+            setServerTransId={setServerTransId}
+            isApprove={true}
+          />
 
           {isOpenRejectBox && (
             <div

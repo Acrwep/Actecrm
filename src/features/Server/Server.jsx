@@ -621,7 +621,8 @@ export default function Server() {
                     </Col>
 
                     <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Issued" ? (
+                      {record.status == "Issued" ||
+                      record.status == "Expired" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -682,6 +683,12 @@ export default function Server() {
                 <div>
                   <Button className="customers_status_completed_button">
                     Server Issued
+                  </Button>
+                </div>
+              ) : text == "Expired" ? (
+                <div>
+                  <Button className="customers_status_awaitingclass_button">
+                    {text}
                   </Button>
                 </div>
               ) : text == "Support" ? (
