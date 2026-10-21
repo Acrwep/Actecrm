@@ -325,6 +325,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           item.status.includes("Resent") ||
           item.status.includes("Scheduled") ||
           item.status.includes("Server Raised") ||
+          item.status.includes("Server Purchased") ||
+          item.status.includes("Server Issued") ||
           item.status.includes("Server Request Acknowledged") ? (
           <LuCircleCheck size={16} style={{ color: "green" }} />
         ) : item.status.includes("Going") || item.status.includes("Updated") ? (
@@ -345,7 +347,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
         ) : item.status.includes("Class Completion Acknowledgement Sent") ||
           item.status.includes("Class Completion Acknowledgeme") ||
-          item.status.includes("Trainer Payment Claim Form Sent") ? (
+          item.status.includes("Trainer Payment Claim Form Sent") ||
+          item.status.includes("Server Request Acknowledgement Sent") ? (
           <LuSend size={16} style={{ color: "gray" }} />
         ) : undefined,
       label: (

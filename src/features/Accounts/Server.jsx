@@ -44,16 +44,11 @@ import CustomerOverview from "../Customers/CustomerOverview";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 import ViewServerDetails from "../Server/ViewServerDetails";
 import CustomerHistory from "../Customers/CustomerHistory";
-import ServerIssue from "./ServerIssue";
+import ServerPurchase from "../Server/ServerPurchase";
 
 export default function Server({ setServerCount }) {
   const scrollRef = useRef();
   const mounted = useRef(false);
-  const location = useLocation();
-  const serverUpdateDetailsRef = useRef();
-  const serverVerifyRef = useRef();
-  const serverApproveRef = useRef();
-  const serverIssueRef = useRef();
 
   const scroll = (scrollOffset) => {
     scrollRef.current.scrollBy({
@@ -75,11 +70,11 @@ export default function Server({ setServerCount }) {
       inactiveClass: "customers_classschedule_container",
     },
     {
-      label: "Approved",
+      label: "Ready to Pay",
       value: "Approved",
       countKey: "server_approved",
-      activeClass: "customers_active_classgoing_container",
-      inactiveClass: "customers_classgoing_container",
+      activeClass: "server_active_readytopay_container",
+      inactiveClass: "server_readytopay_container",
     },
   ];
   const [status, setStatus] = useState("Awaiting Approval");
@@ -102,7 +97,6 @@ export default function Server({ setServerCount }) {
   const [drawerStatus, setDrawerStatus] = useState("");
   const [serverDetails, setServerDetails] = useState(null);
   const [customerDetails, setCustomerDetails] = useState(null);
-  const [buttonLoading, setButtonLoading] = useState(false);
   //lead executive filter
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
@@ -534,23 +528,23 @@ export default function Server({ setServerCount }) {
             ) : (
               <Tooltip
                 placement="top"
-                title="Click to Issue"
+                title="Click to Purchase"
                 trigger={["hover", "click"]}
               >
                 <Button
-                  className="customers_status_completed_button"
+                  className="customers_status_classgoing_button"
                   onClick={() => {
                     if (!permissions.includes("Server Issue")) {
                       CommonMessage("error", "Access Denied");
                       return;
                     }
                     setIsOpenDetailsDrawer(true);
-                    setDrawerStatus("Issue");
+                    setDrawerStatus("Purchase");
                     setServerDetails(record);
                     getCustomerData(record.customer_id);
                   }}
                 >
-                  Issue
+                  Purchase
                 </Button>
               </Tooltip>
             )}
@@ -983,7 +977,6 @@ export default function Server({ setServerCount }) {
     setIsOpenDetailsDrawer(false);
     setIsOpenViewDrawer(false);
     setServerDetails(null);
-    setButtonLoading(false);
     setCustomerDetails(null);
   };
 
@@ -1417,33 +1410,20 @@ export default function Server({ setServerCount }) {
 
             <div
               className="customer_statusupdate_adddetailsContainer"
-              style={{ ...(drawerStatus == "Issue" && { padding: "0px" }) }}
+              style={{ ...(drawerStatus == "Purchase" && { padding: "0px" }) }}
             >
-              {drawerStatus == "Update Details" ? (
-                <ServerUpdateDetails
-                  ref={serverUpdateDetailsRef}
-                  serverDetails={serverDetails}
-                  setButtonLoading={setButtonLoading}
-                  callgetServerApi={() => {
-                    drawerReset();
-                    fetchServerRequestsData({});
-                  }}
-                />
-              ) : drawerStatus == "Approve" ? (
+              {drawerStatus == "Approve" ? (
                 <ServerApproval
-                  ref={serverApproveRef}
                   serverDetails={serverDetails}
                   callgetServerApi={() => {
                     drawerReset();
                     fetchServerRequestsData({});
                   }}
                 />
-              ) : drawerStatus == "Issue" ? (
-                <ServerIssue
-                  ref={serverIssueRef}
+              ) : drawerStatus == "Purchase" ? (
+                <ServerPurchase
                   serverDetails={serverDetails}
                   customerDetails={customerDetails}
-                  setButtonLoading={setButtonLoading}
                   callgetServerApi={() => {
                     drawerReset();
                     fetchServerRequestsData({});
@@ -1453,48 +1433,6 @@ export default function Server({ setServerCount }) {
                 ""
               )}
             </div>
-
-            {/* footer */}
-            {drawerStatus == "Approve" ? null : (
-              <div className="leadmanager_tablefiler_footer">
-                <div className="leadmanager_submitlead_buttoncontainer">
-                  {buttonLoading ? (
-                    <button className="users_adddrawer_loadingcreatebutton">
-                      <CommonSpinner />
-                    </button>
-                  ) : (
-                    <button
-                      className="users_adddrawer_createbutton"
-                      onClick={
-                        drawerStatus == "Update Details"
-                          ? () =>
-                              serverUpdateDetailsRef.current?.handleUpdateDetails()
-                          : drawerStatus == "Verify"
-                            ? () =>
-                                serverVerifyRef.current?.handleServerVerify()
-                            : drawerStatus == "Approve"
-                              ? () =>
-                                  serverApproveRef.current?.handleServerApprove()
-                              : drawerStatus == "Issue"
-                                ? () =>
-                                    serverIssueRef.current?.handleServerIssue()
-                                : handleStatusMismatch
-                      }
-                    >
-                      {drawerStatus == "Update Details"
-                        ? "Update"
-                        : drawerStatus == "Verify"
-                          ? "Verify"
-                          : drawerStatus == "Approve"
-                            ? "Approve"
-                            : drawerStatus == "Issue"
-                              ? "Issue"
-                              : ""}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
           </>
         )}
       </Drawer>

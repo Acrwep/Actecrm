@@ -84,6 +84,8 @@ export default function AssignTrainerToCustomer({
   const [buttonLoading, setButtonLoading] = useState(false);
   const [isProofScreenshotModal, setIsProofScreenshotModal] = useState(false);
   const [proofScreenshot, setProofScreenshot] = useState("");
+  const [isShowClassTakenCandidates, setIsShowClassTakenCandidates] =
+    useState(false);
   /* ---------------- Trainer STATES ---------------- */
   const [trainersData, setTrainersData] = useState([]);
   const [trainerSearchText, setTrainerSearchText] = useState("");
@@ -102,7 +104,13 @@ export default function AssignTrainerToCustomer({
         const trainers = customer_details.trainer_data.map((trainer) => ({
           training_map_id: trainer.training_map_id || null,
           trainer_id: trainer.trainer_id || null,
-          trainer_object: null,
+          trainer_object: {
+            id: trainer.trainer_id,
+            trainer_code: trainer.trainer_code,
+            name: trainer.trainer_name,
+            mobile: trainer.trainer_mobile,
+            email: trainer.trainer_email,
+          },
           commercial: trainer.commercial || null,
           mode_of_class: trainer.trainer_mode_of_class || null,
           trainer_type: trainer.trainer_type || "",
@@ -223,6 +231,7 @@ export default function AssignTrainerToCustomer({
   const handleTrainerSelect = (event, index) => {
     const selectedId = event.target.value;
     const selectedObj = event.target.object; // ✅ DIRECT OBJECT
+    console.log("selectedObj", selectedObj);
 
     const newList = [...trainersList];
     newList[index].trainer_id = selectedId;
@@ -815,7 +824,7 @@ export default function AssignTrainerToCustomer({
                           {renderField(
                             "HR Name",
                             item.updated_by_user_name
-                              ? `${item.updated_by_view_user_id} - ${item.item.updated_by_user_name}`
+                              ? `${item.updated_by_view_user_id} - ${item.updated_by_user_name}`
                               : "-",
                           )}
                         </Col>
@@ -1263,6 +1272,8 @@ export default function AssignTrainerToCustomer({
         open={isOpenTrainerDetailModal}
         onCancel={() => setIsOpenTrainerDetailModal(false)}
         trainerId={clickedTrainerId}
+        isShowClassTakenCandidates={isShowClassTakenCandidates}
+        setIsShowClassTakenCandidates={setIsShowClassTakenCandidates}
       />
 
       {/* proof screenshot modal */}

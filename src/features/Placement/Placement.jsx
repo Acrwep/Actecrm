@@ -1200,8 +1200,8 @@ export default function Placement() {
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
-          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 16}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 16}
         >
           <Row gutter={[12, 12]} align="middle" wrap={false}>
             {/* Search */}
@@ -1531,8 +1531,8 @@ export default function Placement() {
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
-          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 8}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 8}
           style={{
             display: "flex",
             justifyContent: "flex-end",

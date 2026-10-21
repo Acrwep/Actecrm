@@ -126,6 +126,10 @@ const TrainerPayslip = forwardRef(
               }}
               value={paymentDate}
               error={paymentDateError}
+              height={"34px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
             />
           </Col>
           <Col span={8}>
@@ -144,6 +148,10 @@ const TrainerPayslip = forwardRef(
               }}
               value={paymentMode}
               error={paymentModeError}
+              height={"34px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
             />
           </Col>
           <Col span={8}>
@@ -158,8 +166,11 @@ const TrainerPayslip = forwardRef(
               }}
               value={transactionId}
               error={transactionIdError}
-              errorFontSize={"10px"}
               disableAutoCapitalize={true}
+              height={"34px"}
+              labelFontSize={"11px"}
+              labelMarginTop={"0px"}
+              errorFontSize={"9px"}
             />
           </Col>
         </Row>

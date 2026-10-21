@@ -1739,6 +1739,15 @@ export const serverApprove = async (payload) => {
   }
 };
 
+export const serverPurchased = async (payload) => {
+  try {
+    const response = await api.put(`/api/serverPurchased`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const serverIssue = async (payload) => {
   try {
     const response = await api.put(`/api/serverIssued`, payload);

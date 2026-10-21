@@ -539,8 +539,8 @@ export default function MarketingLeads({ courseOptions }) {
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
-          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
+          lg={permissions.includes("Lead Executive Filter") ? 22 : 16}
+          xxl={permissions.includes("Lead Executive Filter") ? 18 : 16}
         >
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1 1 180px">
@@ -680,10 +680,23 @@ export default function MarketingLeads({ courseOptions }) {
                 )}
               </>
             )}
-            <Col flex="0 1 250px">
-              <div style={{ width: "250px", maxWidth: "100%" }}>
+            <Col
+              flex={`0 1 ${permissions.includes("Lead Executive Filter") ? "250px" : "280px"}`}
+            >
+              <div
+                style={{
+                  width: permissions.includes("Lead Executive Filter")
+                    ? "250px"
+                    : "280px",
+                  maxWidth: "100%",
+                }}
+              >
                 <CommonMuiCustomDatePicker
-                  width="250px"
+                  width={
+                    permissions.includes("Lead Executive Filter")
+                      ? "250px"
+                      : "280px"
+                  }
                   dateFontSize="12px"
                   value={selectedDates}
                   onDateChange={(dates) => {
@@ -871,8 +884,8 @@ export default function MarketingLeads({ courseOptions }) {
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
-          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
+          lg={permissions.includes("Lead Executive Filter") ? 2 : 8}
+          xxl={permissions.includes("Lead Executive Filter") ? 6 : 8}
           style={{
             display: "flex",
             justifyContent: "flex-end",

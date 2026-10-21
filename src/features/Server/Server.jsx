@@ -11,35 +11,22 @@ import {
   Drawer,
   Divider,
   Modal,
-  Collapse,
-  Input,
 } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
 import { IoFilter } from "react-icons/io5";
 import { IoIosClose } from "react-icons/io";
-import { FaRegUser } from "react-icons/fa";
-import { FaRegCircleUser } from "react-icons/fa6";
-import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
 import CommonSelectField from "../Common/CommonSelectField";
-import { BsGenderMale, BsGenderFemale } from "react-icons/bs";
 import { FaRegCopy } from "react-icons/fa6";
-import { IoLocationOutline } from "react-icons/io5";
 import { IoMdArrowDropleft, IoMdArrowDropright } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
 import CommonTable from "../Common/CommonTable";
-import { FaRegCircleXmark } from "react-icons/fa6";
 import { FiFilter } from "react-icons/fi";
 import { RedoOutlined } from "@ant-design/icons";
 import { LuFileClock } from "react-icons/lu";
-import { AiOutlineEdit } from "react-icons/ai";
-import { RiDeleteBinLine } from "react-icons/ri";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   addressValidator,
-  customersStatusDisplay,
   formatToBackendIST,
   getCurrentandLast90Date,
   getCurrentandPreviousweekDate,
@@ -50,14 +37,11 @@ import {
   getAllDownlineUsers,
   getBranches,
   getCustomerById,
-  getServerHistory,
   getServerRequest,
   getTableColumns,
   getUsers,
   inserCustomerTrack,
-  insertServerTrack,
   sendNotification,
-  serverIssue,
   updateServerStatus,
   updateTableColumns,
 } from "../ApiService/action";
@@ -67,11 +51,9 @@ import CommonSpinner from "../Common/CommonSpinner";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { useSelector } from "react-redux";
 import "./styles.css";
-import ServerHistory from "./ServerHistory";
 import ServerUpdateDetails from "./ServerUpdateDetails";
 import ServerVerify from "./ServerVerify";
 import ServerApproval from "./ServerApproval";
-import ServerIssue from "./ServerIssue";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonDnd from "../Common/CommonDnd";
 import CommonTextArea from "../Common/CommonTextArea";
@@ -82,6 +64,8 @@ import CustomerOverview from "../Customers/CustomerOverview";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 import CustomerHistory from "../Customers/CustomerHistory";
 import ViewServerDetails from "./ViewServerDetails";
+import ScrollableTabContainer from "../Common/ScrollableTabContainer";
+import ServerIssue from "./ServerIssue";
 
 export default function Server() {
   const scrollRef = useRef();
@@ -140,6 +124,13 @@ export default function Server() {
       inactiveClass: "customers_escalated_container",
     },
     {
+      label: "Purchased",
+      value: "Purchased",
+      countKey: "Purchased",
+      activeClass: "customers_active_classgoing_container",
+      inactiveClass: "customers_classgoing_container",
+    },
+    {
       label: "Server Issued",
       value: "Issued",
       countKey: "issued",
@@ -155,8 +146,9 @@ export default function Server() {
     },
   ];
   const [status, setStatus] = useState("");
-  const [dateFilterType, setDateFilterType] = useState("Raise Date");
   const [selectedDates, setSelectedDates] = useState([]);
+  const [dateFilterType, setDateFilterType] = useState("");
+  const [raisedDates, setRaisedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -749,22 +741,50 @@ export default function Server() {
                       )}
                     </Col>
 
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Issued" ? (
+                    {record.status == "Requested" ||
+                    record.status == "Server Raised" ||
+                    record.status == "Verification Rejected" ||
+                    record.status == "Approval Rejected" ||
+                    record.status == "Server Rejected" ||
+                    record.status == "Purchased" ? (
+                      <Checkbox
+                        className="customers_statuscheckbox"
+                        checked={false}
+                        onChange={(e) => {
+                          if (record.status == "Purchased") {
+                            if (!permissions.includes("Server Issue")) {
+                              CommonMessage("error", "Access Denied");
+                              return;
+                            }
+                            setIsOpenDetailsDrawer(true);
+                            setDrawerStatus("Issue");
+                            setServerDetails(record);
+                            getCustomerData(record.customer_id);
+                          } else {
+                            CommonMessage(
+                              "warning",
+                              "Server not purchased yet",
+                            );
+                          }
+                        }}
+                      >
+                        Issue
+                      </Checkbox>
+                    ) : record.status == "Issued" ? (
+                      <Col span={12} style={{ marginBottom: "8px" }}>
                         <div className="customers_classcompleted_container">
                           <BsPatchCheckFill color="#3c9111" />
                           <p className="customers_classgoing_completedtext">
                             Server Issued
                           </p>
                         </div>
-                      ) : (
-                        ""
-                      )}
-                    </Col>
+                      </Col>
+                    ) : (
+                      ""
+                    )}
 
-                    <Col span={12} style={{ marginBottom: "8px" }}>
-                      {record.status == "Issued" ||
-                      record.status == "Expired" ? (
+                    {record.status == "Issued" || record.status == "Expired" ? (
+                      <Col span={12} style={{ marginBottom: "8px" }}>
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -783,10 +803,10 @@ export default function Server() {
                         >
                           Re-Purchase
                         </Checkbox>
-                      ) : (
-                        ""
-                      )}
-                    </Col>
+                      </Col>
+                    ) : (
+                      ""
+                    )}
                   </Row>
                 </>
               }
@@ -815,7 +835,7 @@ export default function Server() {
                     {text}
                   </Button>
                 </div>
-              ) : text == "Approved" ? (
+              ) : text == "Approved" || text === "Purchased" ? (
                 <div>
                   <Button className="customers_status_classgoing_button">
                     {text}
@@ -926,6 +946,8 @@ export default function Server() {
       setSubUsers(downlineUsers);
       const PreviousAndCurrentDate = getCurrentandLast90Date();
       setSelectedDates(PreviousAndCurrentDate);
+      const RaisedPreviousAndCurrentDate = getCurrentandPreviousweekDate();
+      setRaisedDates(RaisedPreviousAndCurrentDate);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
       setLoginUserId(convertAsJson?.user_id);
@@ -1022,7 +1044,7 @@ export default function Server() {
     );
 
     if (receivedStartDateFromNotification) {
-      setDateFilterType("Raise Date");
+      setDateFilterType("");
       setSelectedDates([
         receivedStartDateFromNotification,
         receivedEndDateFromNotification,
@@ -1033,7 +1055,9 @@ export default function Server() {
     fetchServerRequestsData({
       startDate: receivedStartDateFromNotification,
       endDate: receivedEndDateFromNotification,
-      dateType: "Raise Date",
+      dateType: "",
+      raised_at: null,
+      raised_end: null,
       regionId: null,
       branchId: null,
       downliners: downliners,
@@ -1053,6 +1077,12 @@ export default function Server() {
         ? overrides.endDate
         : selectedDates?.[1] || null,
       overrides.dateType !== undefined ? overrides.dateType : dateFilterType,
+      overrides.raised_at !== undefined
+        ? overrides.raised_at
+        : raisedDates?.[0] || null,
+      overrides.raised_end !== undefined
+        ? overrides.raised_end
+        : raisedDates?.[1] || null,
       overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
       overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
       overrides.downliners !== undefined ? overrides.downliners : allDownliners,
@@ -1069,6 +1099,8 @@ export default function Server() {
     startDate,
     endDate,
     dateType,
+    raised_at,
+    raised_end,
     regionId,
     branchId,
     downliners,
@@ -1084,7 +1116,9 @@ export default function Server() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      type: dateType,
+      // ...(dateType && { type: dateType }),
+      // ...(dateType && { raised_at: raised_at }),
+      // ...(dateType && { raised_end: raised_end }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
       ...(converAsJson?.user_id == "BNG9001" ? {} : { user_ids: downliners }),
@@ -1261,15 +1295,34 @@ export default function Server() {
       return;
     }
 
+    const isPreviousDefaultStatus = status === "" || status === "Requested";
+
+    const isTargetDefaultStatus =
+      config.value === "" || config.value === "Requested";
+
+    let date_type = dateFilterType;
+
+    if (isTargetDefaultStatus) {
+      // All / Server Required
+      date_type = null;
+    } else if (isPreviousDefaultStatus) {
+      // All / Server Required -> other buckets
+      date_type = "Raise Date";
+    }
+
+    setDateFilterType(date_type);
+
     const extraOverrides = config.onClick?.() || {};
 
     const overrides = {
       serverStatus: config.value,
+      dateType: date_type,
       pageNumber: 1,
       ...extraOverrides,
     };
 
     setStatus(config.value);
+
     setPagination((prev) => ({
       ...prev,
       page: 1,
@@ -1510,7 +1563,7 @@ export default function Server() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
-    setDateFilterType("Raise Date");
+    setDateFilterType("");
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
     setPagination({
@@ -1751,7 +1804,7 @@ export default function Server() {
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <Flex
                     justify="center"
                     align="center"
@@ -1803,7 +1856,7 @@ export default function Server() {
                       </Button>
                     </Tooltip>
                   </Flex>
-                </div>
+                </div> */}
               </div>
             </Col>
           </Row>
@@ -1842,40 +1895,40 @@ export default function Server() {
         </Col>
       </Row>
 
-      <div className="customers_scroll_wrapper">
-        {/* <button
+      {/* <div className="customers_scroll_wrapper"> */}
+      {/* <button
           onClick={() => scroll(-600)}
           className="customer_statusscroll_button"
         >
           <IoMdArrowDropleft size={25} />
         </button> */}
-        <div className="customers_status_mainContainer" ref={scrollRef}>
-          {" "}
-          {statusBuckets.map((config, index) => {
-            const isActive = status === config.value;
+      <ScrollableTabContainer>
+        {" "}
+        {statusBuckets.map((config, index) => {
+          const isActive = status === config.value;
 
-            const count = statusCount?.[config.countKey] ?? "-";
-            return (
-              <div
-                key={config.value || index}
-                className={isActive ? config.activeClass : config.inactiveClass}
-                onClick={() => handleBucketClick(config)}
-              >
-                <p>{`${config.label} (${count})`}</p>
-              </div>
-            );
-          })}
-        </div>
-        {/* <button
+          const count = statusCount?.[config.countKey] ?? "-";
+          return (
+            <div
+              key={config.value || index}
+              className={isActive ? config.activeClass : config.inactiveClass}
+              onClick={() => handleBucketClick(config)}
+            >
+              <p>{`${config.label} (${count})`}</p>
+            </div>
+          );
+        })}
+      </ScrollableTabContainer>
+      {/* <button
           onClick={() => scroll(600)}
           className="customer_statusscroll_button"
         >
           <IoMdArrowDropright size={25} />
         </button> */}
-      </div>
+      {/* </div> */}
 
-      {permissions.includes("Show Region Summary") ? (
-        <Row style={{ position: "relative" }}>
+      <Row style={{ position: "relative" }}>
+        {permissions.includes("Show Region Summary") && (
           <Col span={12}>
             <div
               className="livelead_today_summary_container"
@@ -1923,80 +1976,104 @@ export default function Server() {
               </div>
             </div>
           </Col>
-          <Col
-            span={12}
-            style={{
-              marginTop: "12px",
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          >
-            <div
-              className={
-                selectedRowKeys.length >= 1
-                  ? "show_server_total_container"
-                  : "server_total_container"
-              }
-            >
-              <div className="server_total_card">
-                <p className="server_total_label">
-                  Selected Total
-                  {selectedRows.length > 0 && (
-                    <span className="server_total_selected_badge">
-                      {selectedRows.length}
-                    </span>
-                  )}
-                  :
-                </p>
-                <p className="server_total_value">
-                  {"₹" +
-                    selectedRows
-                      .reduce(
-                        (acc, row) => acc + (Number(row.server_cost) || 0),
-                        0,
-                      )
-                      .toLocaleString("en-IN")}
-                </p>
-              </div>
-            </div>
-          </Col>
-        </Row>
-      ) : (
-        <div
-          className={
-            selectedRowKeys.length >= 1
-              ? "show_server_total_container"
-              : "server_total_container"
-          }
+        )}
+
+        {/* <Col
+          span={12}
           style={{
-            ...(selectedRowKeys.length <= 0 && { height: "20px" }),
+            display: "flex",
+            justifyContent: permissions.includes("Show Region Summary")
+              ? "flex-end"
+              : "flex-start",
           }}
         >
-          <div className="server_total_card">
-            <p className="server_total_label">
-              Selected Total
-              {selectedRows.length > 0 && (
-                <span className="server_total_selected_badge">
-                  {selectedRows.length}
-                </span>
-              )}
-              :
-            </p>
-            <p className="server_total_value">
-              {"₹" +
-                selectedRows
-                  .reduce((acc, row) => acc + (Number(row.server_cost) || 0), 0)
-                  .toLocaleString("en-IN")}
-            </p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              flexWrap: "nowrap",
+              width: "300px",
+            }}
+          >
+            <div style={{ flex: 1, position: "relative" }}>
+              <CommonMuiCustomDatePicker
+                width="100%"
+                value={raisedDates}
+                onDateChange={(dates) => {
+                  setRaisedDates(dates);
+                  setPagination({
+                    page: 1,
+                  });
+                  fetchServerRequestsData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                    pageNumber: 1,
+                  });
+                }}
+              />
+            </div>
+
+            <div>
+              <Flex
+                justify="center"
+                align="center"
+                style={{ whiteSpace: "nowrap" }}
+              >
+                <Tooltip
+                  placement="bottomLeft"
+                  color="#fff"
+                  title={
+                    <Radio.Group
+                      value={dateFilterType}
+                      onChange={(e) => {
+                        console.log(e.target.value);
+                        setDateFilterType(e.target.value);
+                        fetchServerRequestsData({
+                          dateType: e.target.value,
+                          pageNumber: 1,
+                        });
+                      }}
+                    >
+                      <Radio
+                        value="Raise Date"
+                        className="customers_datetypefilter_radio"
+                        style={{
+                          marginTop: "6px",
+                          marginBottom: "12px",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Search by Raise Date
+                      </Radio>
+                      <Radio
+                        value="Created Date"
+                        style={{ marginBottom: "12px", fontSize: "12px" }}
+                      >
+                        Search by Expiry Date
+                      </Radio>
+                    </Radio.Group>
+                  }
+                >
+                  <Button
+                    className="customer_trainermappingfilter_container"
+                    style={{
+                      // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                      height: "35px",
+                    }}
+                  >
+                    <IoFilter size={16} />
+                  </Button>
+                </Tooltip>
+              </Flex>
+            </div>
           </div>
-        </div>
-      )}
+        </Col> */}
+      </Row>
 
       <div
         style={{
-          marginTop: permissions.includes("Show Region Summary")
-            ? "12px"
-            : "0px",
+          marginTop: "20px",
         }}
       >
         <CommonTable
@@ -2075,39 +2152,23 @@ export default function Server() {
                     fetchServerRequestsData({});
                   }}
                 />
+              ) : drawerStatus == "Issue" ? (
+                <ServerIssue
+                  ref={serverIssueRef}
+                  serverDetails={serverDetails}
+                  customerDetails={customerDetails}
+                  setButtonLoading={setButtonLoading}
+                  callgetServerApi={() => {
+                    drawerReset();
+                    fetchServerRequestsData({});
+                  }}
+                />
               ) : (
                 ""
               )}
             </div>
             <div className="leadmanager_tablefiler_footer">
               <div className="leadmanager_submitlead_buttoncontainer">
-                {drawerStatus == "Verify" || drawerStatus == "Approve" ? (
-                  <>
-                    {rejectButtonLoading ? (
-                      <button className="customer_trainerreject_loadingbutton">
-                        <CommonSpinner />
-                      </button>
-                    ) : (
-                      <button
-                        className="customer_trainerreject_button"
-                        onClick={
-                          drawerStatus == "Verify"
-                            ? () =>
-                                serverVerifyRef.current?.handleVerificationReject()
-                            : drawerStatus == "Approve"
-                              ? () =>
-                                  serverApproveRef.current?.handleApprovalReject()
-                              : ""
-                        }
-                      >
-                        Reject
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  ""
-                )}
-
                 {buttonLoading ? (
                   <button
                     className="users_adddrawer_loadingcreatebutton"
@@ -2128,28 +2189,18 @@ export default function Server() {
                       drawerStatus === "Re-Purchase"
                         ? () =>
                             serverUpdateDetailsRef.current?.handleUpdateDetails()
-                        : drawerStatus == "Verify"
-                          ? () => serverVerifyRef.current?.handleServerVerify()
-                          : drawerStatus == "Approve"
-                            ? () =>
-                                serverApproveRef.current?.handleServerApprove()
-                            : drawerStatus == "Issue"
-                              ? () =>
-                                  serverIssueRef.current?.handleServerIssue()
-                              : handleStatusMismatch
+                        : drawerStatus == "Issue"
+                          ? () => serverIssueRef.current?.handleServerIssue()
+                          : handleStatusMismatch
                     }
                   >
                     {drawerStatus == "Update Details"
                       ? "Update"
                       : drawerStatus === "Re-Purchase"
                         ? "Re-Purchase"
-                        : drawerStatus == "Verify"
-                          ? "Verify"
-                          : drawerStatus == "Approve"
-                            ? "Approve"
-                            : drawerStatus == "Issue"
-                              ? "Issue"
-                              : ""}
+                        : drawerStatus == "Issue"
+                          ? "Issue"
+                          : ""}
                   </button>
                 )}
               </div>

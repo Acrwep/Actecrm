@@ -20,11 +20,11 @@ import { MdOutlineDescription, MdOutlineMail } from "react-icons/md";
 import ReactQuill from "react-quill";
 import "quill/dist/quill.snow.css";
 import {
-  insertServerTrack,
   serverIssue,
   getWhatsAppTemplates,
   sendWhatsAppTemplate,
   deleteWhatsAppTemplate,
+  inserCustomerTrack,
 } from "../ApiService/action";
 import {
   addressValidator,
@@ -605,7 +605,7 @@ const ServerIssue = forwardRef(
 
         setTimeout(() => {
           callgetServerApi();
-          handleServerTrack();
+          handleCustomerTrack("Server Issued");
         }, 300);
       } catch (error) {
         setButtonLoading(false);
@@ -617,22 +617,27 @@ const ServerIssue = forwardRef(
       }
     };
 
-    const handleServerTrack = async () => {
+    const handleCustomerTrack = async (updatestatus) => {
       const today = new Date();
       const getloginUserDetails = localStorage.getItem("loginUserDetails");
       const converAsJson = JSON.parse(getloginUserDetails);
+      console.log("getloginUserDetails", converAsJson);
 
       const payload = {
-        server_id: serverDetails && serverDetails.id ? serverDetails.id : null,
-        status: "Server Issued",
-        status_date: formatToBackendIST(today),
-        updated_by:
-          converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+        customers: [
+          {
+            customer_id: serverDetails.customer_id,
+            status: updatestatus,
+            updated_by:
+              converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+            status_date: formatToBackendIST(today),
+          },
+        ],
       };
       try {
-        await insertServerTrack(payload);
+        await inserCustomerTrack(payload);
       } catch (error) {
-        console.log("server track error", error);
+        console.log("customer track error", error);
       }
     };
 
