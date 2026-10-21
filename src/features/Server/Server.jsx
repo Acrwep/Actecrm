@@ -126,7 +126,7 @@ export default function Server() {
       inactiveClass: "customers_assigntrainers_container",
     },
     {
-      label: "Awaiting Verify",
+      label: "Link Sent",
       value: "Awaiting Verify",
       countKey: "awaiting_verify",
       activeClass: "trainers_active_verifypending_container",
@@ -806,7 +806,7 @@ export default function Server() {
               ) : text == "Awaiting Verify" ? (
                 <div>
                   <Button className="customers_status_awaitverify_button">
-                    {text}
+                    Link Sent
                   </Button>
                 </div>
               ) : text == "Awaiting Approval" ? (

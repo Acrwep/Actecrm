@@ -961,7 +961,9 @@ const AssignAndVerifyTrainer = forwardRef(
                           <Col span={12}>
                             {renderField(
                               "HR Name",
-                              item.trainer_hr_name ? item.trainer_hr_name : "-",
+                              item.updated_by_user_name
+                                ? `${item.updated_by_view_user_id} - ${item.item.updated_by_user_name}`
+                                : "-",
                             )}
                             {renderField(
                               "Trainer Name",

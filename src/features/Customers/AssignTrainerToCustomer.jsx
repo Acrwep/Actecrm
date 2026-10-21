@@ -380,6 +380,8 @@ export default function AssignTrainerToCustomer({
 
   const handleAssignTrainer = async () => {
     console.log("customer_details", customer_details);
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = JSON.parse(getLoginUserDetails);
 
     let hasError = false;
     const newList = trainersList.map((t) => {
@@ -579,6 +581,7 @@ export default function AssignTrainerToCustomer({
         trainer_type: t.trainer_type,
         proof_communication: t.proof_communication,
         comments: t.comments,
+        updated_by: convertAsJson?.user_id || "",
         created_date: formatToBackendIST(today),
       })),
     };
@@ -811,7 +814,9 @@ export default function AssignTrainerToCustomer({
                         <Col span={6}>
                           {renderField(
                             "HR Name",
-                            item.trainer_hr_name ? item.trainer_hr_name : "-",
+                            item.updated_by_user_name
+                              ? `${item.updated_by_view_user_id} - ${item.item.updated_by_user_name}`
+                              : "-",
                           )}
                         </Col>
                         <Col span={6}>
