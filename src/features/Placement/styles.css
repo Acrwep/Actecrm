@@ -1,0 +1,25 @@
+.placement_technology_responsive_col {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+/* Large screens */
+@media (min-width: 1600px) and (max-width: 1800px) {
+  .placement_technology_responsive_col {
+    flex: 1 1 220px;
+  }
+}
+
+/* Laptop screens */
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .placement_technology_responsive_col {
+    flex: 1 1 180px;
+  }
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 1199px) {
+  .placement_technology_responsive_col {
+    flex: 1 1 150px;
+  }
+}
