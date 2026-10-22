@@ -66,6 +66,8 @@ export default function Placement() {
   //search userefs start
   const searchTimeoutRef = useRef(null);
   const abortControllerRef = useRef(null);
+  //windows width
+  const [windowsWidth, setWindowsWidth] = useState(window.innerWidth);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
@@ -728,6 +730,22 @@ export default function Placement() {
   const [placementCustomersData, setPlacementCustomersData] = useState([]);
 
   useEffect(() => {
+    const handleResize = () => {
+      console.log("windowssssss", window.innerWidth);
+
+      setWindowsWidth(window.innerWidth);
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     customerDetailsLoadingRef.current = customerDetailsLoading;
   }, [customerDetailsLoading]);
 
@@ -1247,22 +1265,24 @@ export default function Placement() {
             </Col>
 
             {/* Large screen: Technology, Region, Branch and User */}
-            {isLargeScreen && (
-              <>
-                <Col flex="1 1 150px">
-                  <CommonMultiSelectField
-                    height="34px"
-                    label="Technology"
-                    labelMarginTop="1px"
-                    labelFontSize="11px"
-                    options={technologiesData}
-                    value={selectedTechnology}
-                    onChange={handleSelectTechnology}
-                    onBlur={handleSelectTechnologyBlur}
-                  />
-                </Col>
+            {windowsWidth > 1440 && (
+              <Col flex="1 1 150px">
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Technology"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  options={technologiesData}
+                  value={selectedTechnology}
+                  onChange={handleSelectTechnology}
+                  onBlur={handleSelectTechnologyBlur}
+                />
+              </Col>
+            )}
 
-                {permissions.includes("Lead Executive Filter") && (
+            {permissions.includes("Lead Executive Filter") && (
+              <>
+                {windowsWidth > 1255 && (
                   <>
                     <Col flex="1 1 140px">
                       {/* Keep your existing Select Region component here */}
@@ -1325,21 +1345,21 @@ export default function Placement() {
                         disabled={selectedRegionId == 3}
                       />
                     </Col>
-
-                    <Col flex="1 1 150px">
-                      <CommonMultiSelectField
-                        height="34px"
-                        label="Select User"
-                        labelMarginTop="1px"
-                        labelFontSize="11px"
-                        options={subUsers}
-                        onChange={handleSelectUser}
-                        onBlur={handleSelectUserBlur}
-                        value={selectedUserId}
-                      />
-                    </Col>
                   </>
                 )}
+
+                <Col flex="1 1 150px">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
               </>
             )}
 
@@ -1363,7 +1383,7 @@ export default function Placement() {
 
             {/* Advanced Filters */}
             <Col flex="none">
-              {!isLargeScreen && (
+              {windowsWidth <= 1440 && (
                 <Popover
                   placement="bottomLeft"
                   trigger="click"
@@ -1425,21 +1445,20 @@ export default function Placement() {
                         }}
                       >
                         {/* Technology: small screens only */}
-                        {!isLargeScreen && (
-                          <CommonMultiSelectField
-                            height="34px"
-                            label="Technology"
-                            labelMarginTop="1px"
-                            labelFontSize="11px"
-                            options={technologiesData}
-                            value={selectedTechnology}
-                            onChange={handleSelectTechnology}
-                            onBlur={handleSelectTechnologyBlur}
-                          />
-                        )}
+                        <CommonMultiSelectField
+                          height="34px"
+                          label="Technology"
+                          labelMarginTop="1px"
+                          labelFontSize="11px"
+                          options={technologiesData}
+                          value={selectedTechnology}
+                          onChange={handleSelectTechnology}
+                          onBlur={handleSelectTechnologyBlur}
+                        />
 
                         {/* Region and Branch: small screens only */}
-                        {!isLargeScreen &&
+                        {windowsWidth > 1024 &&
+                          windowsWidth < 1255 &&
                           permissions.includes("Lead Executive Filter") && (
                             <>
                               <CommonSelectField
@@ -1543,7 +1562,7 @@ export default function Placement() {
           <FiFilter
             size={20}
             color="#5b69ca"
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer", flexShrink: 0 }}
             onClick={() => {
               setIsOpenFilterDrawer(true);
               getTableColumnsData(loginUserId);
