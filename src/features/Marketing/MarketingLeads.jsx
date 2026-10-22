@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Tooltip, Row, Col, Grid, Popover, Badge } from "antd";
+import { Button, Tooltip, Row, Col, Popover, Badge } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
@@ -31,11 +31,10 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 
 export default function MarketingLeads({ courseOptions }) {
-  //screen sizes
-  const screens = Grid.useBreakpoint();
-  const isLargeScreen = screens.lg;
   //mount
   const mounted = useRef(false);
+  //windows width
+  const [windowsWidth, setWindowsWidth] = useState(window.innerWidth);
   //search userefs start
   const searchTimeoutRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -120,7 +119,7 @@ export default function MarketingLeads({ courseOptions }) {
       title: "Created At",
       key: "created_date",
       dataIndex: "created_date",
-      width: 170,
+      width: 150,
       render: (text) => {
         return (
           <>
@@ -135,7 +134,7 @@ export default function MarketingLeads({ courseOptions }) {
       title: "Candidate Name",
       key: "name",
       dataIndex: "name",
-      width: 160,
+      width: 140,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -144,7 +143,7 @@ export default function MarketingLeads({ courseOptions }) {
       title: "Email",
       key: "email",
       dataIndex: "email",
-      width: 180,
+      width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
       },
@@ -153,7 +152,7 @@ export default function MarketingLeads({ courseOptions }) {
       title: "Whatsapp",
       key: "whatsapp",
       dataIndex: "whatsapp",
-      width: 140,
+      width: 120,
       render: (text, record) => {
         return (
           <div className="customers_candidatename_container">
@@ -172,6 +171,15 @@ export default function MarketingLeads({ courseOptions }) {
             />
           </div>
         );
+      },
+    },
+    {
+      title: "Course Name",
+      key: "course_name",
+      dataIndex: "course_name",
+      width: 140,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -223,6 +231,7 @@ export default function MarketingLeads({ courseOptions }) {
       title: "Actions",
       key: "actions",
       width: 120,
+      fixed: "right",
       render: (_, record) => (
         <Button
           className="whatsapp-table-action-btn"
@@ -234,6 +243,22 @@ export default function MarketingLeads({ courseOptions }) {
       ),
     },
   ];
+
+  useEffect(() => {
+    const handleResize = () => {
+      console.log("windowssssss", window.innerWidth);
+
+      setWindowsWidth(window.innerWidth);
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -336,6 +361,7 @@ export default function MarketingLeads({ courseOptions }) {
 
     try {
       const response = await getLeadsOnly(payload);
+      console.log("marketing leads response", response);
       const apiData = response?.data?.data?.leads || [];
       const paginationData = response?.data?.data?.pagination;
 
@@ -540,7 +566,7 @@ export default function MarketingLeads({ courseOptions }) {
           sm={24}
           md={24}
           lg={permissions.includes("Lead Executive Filter") ? 22 : 16}
-          xxl={permissions.includes("Lead Executive Filter") ? 18 : 16}
+          xxl={permissions.includes("Lead Executive Filter") ? 20 : 16}
         >
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1 1 180px">
@@ -587,22 +613,24 @@ export default function MarketingLeads({ courseOptions }) {
               </div>
             </Col>
 
-            {isLargeScreen && (
-              <>
-                <Col flex="1 1 150px">
-                  <CommonMultiSelectField
-                    height="34px"
-                    label="Technology"
-                    labelMarginTop="1px"
-                    labelFontSize="11px"
-                    options={technologiesData}
-                    value={selectedTechnology}
-                    onChange={handleSelectTechnology}
-                    onBlur={handleSelectTechnologyBlur}
-                  />
-                </Col>
+            {windowsWidth > 1440 && (
+              <Col flex="1 1 150px">
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Technology"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  options={technologiesData}
+                  value={selectedTechnology}
+                  onChange={handleSelectTechnology}
+                  onBlur={handleSelectTechnologyBlur}
+                />
+              </Col>
+            )}
 
-                {permissions.includes("Lead Executive Filter") && (
+            {permissions.includes("Lead Executive Filter") && (
+              <>
+                {windowsWidth > 1255 && (
                   <>
                     <Col flex="1 1 140px">
                       <CommonSelectField
@@ -664,59 +692,45 @@ export default function MarketingLeads({ courseOptions }) {
                         disabled={selectedRegionId == 3 ? true : false}
                       />
                     </Col>
-                    <Col flex="1 1 160px">
-                      <CommonMultiSelectField
-                        height="34px"
-                        label="Select User"
-                        labelMarginTop="1px"
-                        labelFontSize="11px"
-                        options={subUsers}
-                        onChange={handleSelectUser}
-                        onBlur={handleSelectUserBlur}
-                        value={selectedUserId}
-                      />
-                    </Col>
                   </>
                 )}
+                <Col flex="1 1 150px">
+                  <CommonMultiSelectField
+                    height="34px"
+                    label="Select User"
+                    labelMarginTop="1px"
+                    labelFontSize="11px"
+                    options={subUsers}
+                    onChange={handleSelectUser}
+                    onBlur={handleSelectUserBlur}
+                    value={selectedUserId}
+                  />
+                </Col>
               </>
             )}
-            <Col
-              flex={`0 1 ${permissions.includes("Lead Executive Filter") ? "250px" : "280px"}`}
-            >
-              <div
-                style={{
-                  width: permissions.includes("Lead Executive Filter")
-                    ? "250px"
-                    : "280px",
-                  maxWidth: "100%",
+
+            <Col flex="1 1 240px">
+              <CommonMuiCustomDatePicker
+                width="100%"
+                dateFontSize="12px"
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  setPagination({
+                    page: 1,
+                  });
+                  fetchLeadsData({
+                    startDate: dates[0],
+                    endDate: dates[1],
+                    pageNumber: 1,
+                  });
                 }}
-              >
-                <CommonMuiCustomDatePicker
-                  width={
-                    permissions.includes("Lead Executive Filter")
-                      ? "250px"
-                      : "280px"
-                  }
-                  dateFontSize="12px"
-                  value={selectedDates}
-                  onDateChange={(dates) => {
-                    setSelectedDates(dates);
-                    setPagination({
-                      page: 1,
-                    });
-                    fetchLeadsData({
-                      startDate: dates[0],
-                      endDate: dates[1],
-                      pageNumber: 1,
-                    });
-                  }}
-                />
-              </div>
+              />
             </Col>
 
             {/* Advanced Filters */}
             <Col flex="none">
-              {!isLargeScreen && (
+              {windowsWidth <= 1440 && (
                 <Popover
                   placement="bottomLeft"
                   trigger="click"
@@ -778,21 +792,19 @@ export default function MarketingLeads({ courseOptions }) {
                         }}
                       >
                         {/* Technology: small screens only */}
-                        {!isLargeScreen && (
-                          <CommonMultiSelectField
-                            height="34px"
-                            label="Technology"
-                            labelMarginTop="1px"
-                            labelFontSize="11px"
-                            options={technologiesData}
-                            value={selectedTechnology}
-                            onChange={handleSelectTechnology}
-                            onBlur={handleSelectTechnologyBlur}
-                          />
-                        )}
+                        <CommonMultiSelectField
+                          height="34px"
+                          label="Technology"
+                          labelMarginTop="1px"
+                          labelFontSize="11px"
+                          options={technologiesData}
+                          value={selectedTechnology}
+                          onChange={handleSelectTechnology}
+                          onBlur={handleSelectTechnologyBlur}
+                        />
 
                         {/* Region and Branch: small screens only */}
-                        {!isLargeScreen &&
+                        {windowsWidth < 1255 &&
                           permissions.includes("Lead Executive Filter") && (
                             <>
                               <CommonSelectField
@@ -885,7 +897,7 @@ export default function MarketingLeads({ courseOptions }) {
           sm={24}
           md={24}
           lg={permissions.includes("Lead Executive Filter") ? 2 : 8}
-          xxl={permissions.includes("Lead Executive Filter") ? 6 : 8}
+          xxl={permissions.includes("Lead Executive Filter") ? 4 : 8}
           style={{
             display: "flex",
             justifyContent: "flex-end",

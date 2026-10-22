@@ -6,10 +6,8 @@ import {
   Drawer,
   Button,
   Checkbox,
-  Progress,
   Badge,
   Popover,
-  Grid,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
 import {
@@ -56,16 +54,13 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CustomerHistory from "../Customers/CustomerHistory";
 import OverflowTooltip from "../Common/OverflowTooltip";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
+import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 
 export default function Placement() {
-  //screen sizes
-  const screens = Grid.useBreakpoint();
-  const isLargeScreen = screens.lg;
   //mount
   const mounted = useRef(false);
   //search userefs start
   const searchTimeoutRef = useRef(null);
-  const abortControllerRef = useRef(null);
   //windows width
   const [windowsWidth, setWindowsWidth] = useState(window.innerWidth);
   //permissions
@@ -100,13 +95,23 @@ export default function Placement() {
   const [subUsers, setSubUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const prevSelectedUserIdRef = useRef("[]");
+  const statusOptions = [
+    { id: "", name: "All Status" },
+    { id: "Class Going", name: "Class Going" },
+    { id: "Escalated", name: "Escalated" },
+    { id: "Passedout process", name: "Passedout Process" },
+    { id: "Completed", name: "Completed" },
+    { id: "Hold", name: "Hold" },
+    { id: "Others", name: "Others" },
+  ];
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [allDownliners, setAllDownliners] = useState([]);
   const [defaultAllDownliners, setDefaultAllDownliners] = useState([]);
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [branchOptions, setBranchOptions] = useState([]);
   //status bucket
-  const [status, setStatus] = useState("");
+  const [placementStatus, setPlacementStatus] = useState("");
   const [isSwap, setIsSwap] = useState(false);
   const [customerStatusCount, setCustomerStatusCount] = useState(null);
   const [classGoingCounts, setClassGoingCounts] = useState(null);
@@ -122,286 +127,7 @@ export default function Placement() {
       activeClass: "addlead_tab_activebutton",
       inactiveClass: "addlead_tab_inactivebutton",
     },
-    {
-      label: "Form Pending",
-      value: "Form Pending",
-      countKey: "form_pending",
-      activeClass: "customers_active_formpending_container",
-      inactiveClass: "customers_formpending_container",
-    },
-    {
-      type: "payment",
-    },
-
-    {
-      label: "Student Verify",
-      value: "Awaiting Verify",
-      countKey: "awaiting_verify",
-      activeClass: "customers_active_studentvefity_container",
-      inactiveClass: "customers_studentvefity_container",
-    },
-    {
-      label: "Assign Trainer",
-      value: "assign_trainer",
-      countKey: "assign_trainer",
-      activeClass: "customers_active_assigntrainers_container",
-      inactiveClass: "customers_assigntrainers_container",
-
-      onClick: () => {
-        setTrainerSubbucketsStatus("");
-      },
-    },
-    {
-      label: "Awaiting Class",
-      value: "Awaiting Class",
-      countKey: "awaiting_class",
-      activeClass: "customers_active_awaitingclass_container",
-      inactiveClass: "customers_awaitingclass_container",
-    },
-    {
-      label: "Class Scheduled",
-      value: "Class Scheduled",
-      countKey: "class_scheduled",
-      activeClass: "customers_active_classschedule_container",
-      inactiveClass: "customers_classschedule_container",
-    },
-    {
-      label: "Class Going",
-      value: "Class Going",
-      countKey: "class_going",
-      activeClass: "customers_active_classgoing_container",
-      inactiveClass: "customers_classgoing_container",
-
-      onClick: () => {
-        setClassGoingSubBucketStatus("");
-
-        return {
-          classGoingSubBucketStatus: null,
-        };
-      },
-    },
-    {
-      label: "Escalated",
-      value: "Escalated",
-      countKey: "escalated",
-      activeClass: "customers_active_escalated_container",
-      inactiveClass: "customers_escalated_container",
-    },
-    {
-      label: "Passedout Process",
-      value: "Passedout process",
-      countKey: "passedout_process",
-      activeClass: "customers_active_feedback_container",
-      inactiveClass: "customers_feedback_container",
-    },
-    {
-      label: "Course Completed",
-      value: "Completed",
-      countKey: "completed",
-      activeClass: "customers_active_completed_container",
-      inactiveClass: "customers_completed_container",
-    },
-    {
-      label: "Hold",
-      value: "Hold",
-      countKey: "hold",
-      activeClass: "customers_active_studentvefity_container",
-      inactiveClass: "customers_studentvefity_container",
-    },
-    {
-      label: "Others",
-      value: "Others",
-      countKey: "Others",
-      activeClass: "customers_active_others_container",
-      inactiveClass: "customers_others_container",
-    },
   ];
-
-  const trainerSubbucketConfigs = [
-    {
-      label: "Awaiting Trainer",
-      value: "Awaiting Trainer",
-      countKey: "awaiting_trainer",
-      activeClass: "customers_active_awaitingclass_container",
-      inactiveClass: "customers_awaitingclass_container",
-    },
-    {
-      label: "Trainer Rejected",
-      value: "Trainer Rejected",
-      countKey: "trainer_rejected",
-      activeClass: "customers_active_paymentreject_container",
-      inactiveClass: "customers_paymentreject_container",
-    },
-    {
-      label: "Verify Trainer",
-      value: "Awaiting Trainer Verify",
-      countKey: "awaiting_trainer_verify",
-      activeClass: "customers_active_verifytrainers_container",
-      inactiveClass: "customers_verifytrainers_container",
-      role: "RM",
-    },
-    {
-      label: "Trainer Approval",
-      value: "Trainer Approval",
-      countKey: "trainer_approval",
-      activeClass: "customers_active_trainerapproval_container",
-      inactiveClass: "customers_trainerapproval_container",
-      role: "CFO",
-    },
-    {
-      label: "Approval Rejected",
-      value: "Approval Rejected",
-      countKey: "approval_rejected",
-      activeClass: "customers_active_paymentreject_container",
-      inactiveClass: "customers_paymentreject_container",
-      role: "CFO",
-    },
-  ];
-  const classGoingSubbucketConfigs = [
-    {
-      label: "25 & Below",
-      value: "under_25",
-      countKey: "under_25",
-      activeClass: "trainers_active_stage1_container",
-      inactiveClass: "trainers_stage1_container",
-    },
-    {
-      label: "50 & Below",
-      value: "under_50",
-      countKey: "under_50",
-      activeClass: "trainers_active_stage2_container",
-      inactiveClass: "trainers_stage2_container",
-    },
-    {
-      label: "75 & Below",
-      value: "under_75",
-      countKey: "under_75",
-      activeClass: "trainers_active_stage4_container",
-      inactiveClass: "trainers_stage4_container",
-    },
-    {
-      label: "99 & Below",
-      value: "under_99",
-      countKey: "under_99",
-      activeClass: "customers_active_trainer_coordination_container",
-      inactiveClass: "customers_trainer_coordination_container",
-    },
-  ];
-
-  const scroll = (scrollOffset) => {
-    if (!scrollRef.current) return;
-
-    scrollRef.current.scrollLeft += scrollOffset;
-  };
-
-  const handleBucketClick = (config) => {
-    if (
-      status === config.value &&
-      !trainerSubbucketStatus &&
-      !classGoingSubBucketStatus
-    ) {
-      return;
-    }
-
-    const extraOverrides = config.onClick?.() || {};
-
-    const overrides = {
-      status: config.value,
-      pageNumber: 1,
-      ...extraOverrides,
-    };
-
-    setStatus(config.value);
-    setTrainerSubbucketsStatus("");
-    setClassGoingSubBucketStatus("");
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-
-    fetchPlacementSupportData(overrides);
-  };
-
-  const handlePaymentStatusClick = () => {
-    if (status === "Awaiting Finance" || status === "Payment Rejected") {
-      return;
-    }
-
-    const newStatus = isSwap ? "Payment Rejected" : "Awaiting Finance";
-
-    setStatus(newStatus);
-    setTrainerSubbucketsStatus("");
-    setClassGoingSubBucketStatus("");
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-
-    fetchPlacementSupportData({
-      status: newStatus,
-      pageNumber: 1,
-    });
-  };
-
-  const handlePaymentSwap = (e) => {
-    e.stopPropagation();
-
-    const newSwap = !isSwap;
-    const newStatus = newSwap ? "Payment Rejected" : "Awaiting Finance";
-
-    setIsSwap(newSwap);
-    setStatus(newStatus);
-    setTrainerSubbucketsStatus("");
-    setClassGoingSubBucketStatus("");
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-
-    fetchPlacementSupportData({
-      status: newStatus,
-      pageNumber: 1,
-    });
-  };
-
-  const handleTrainerSubbucketClick = (config) => {
-    if (trainerSubbucketStatus === config.value) {
-      return;
-    }
-
-    setTrainerSubbucketsStatus(config.value);
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-
-    fetchPlacementSupportData({
-      status: config.value,
-      pageNumber: 1,
-    });
-  };
-
-  const handleClassGoingSubbucketClick = (config) => {
-    if (classGoingSubBucketStatus === config.value) {
-      return;
-    }
-
-    setClassGoingSubBucketStatus(config.value);
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-
-    fetchPlacementSupportData({
-      classGoingSubBucketStatus: config.value,
-      pageNumber: 1,
-    });
-  };
 
   //pagination
   const [pagination, setPagination] = useState({
@@ -476,6 +202,28 @@ export default function Placement() {
       width: 150,
       render: (text) => {
         return <EllipsisTooltip text={text} />;
+      },
+    },
+    {
+      title: "Dues Cleared",
+      key: "balance_amount",
+      dataIndex: "balance_amount",
+      width: 110,
+      align: "center",
+      render: (text) => {
+        const amount = Number(text);
+
+        return (
+          <p
+            style={{
+              color: amount === 0 ? "green" : "#D32F2F",
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {amount === 0 ? "Yes" : "No"}
+          </p>
+        );
       },
     },
     {
@@ -731,8 +479,6 @@ export default function Placement() {
 
   useEffect(() => {
     const handleResize = () => {
-      console.log("windowssssss", window.innerWidth);
-
       setWindowsWidth(window.innerWidth);
     };
 
@@ -845,7 +591,7 @@ export default function Placement() {
         ? overrides.status
         : trainerSubbucketStatus
           ? trainerSubbucketStatus
-          : status,
+          : selectedStatus,
       overrides.classGoingSubBucketStatus !== undefined
         ? overrides.classGoingSubBucketStatus
         : classGoingSubBucketStatus,
@@ -962,6 +708,7 @@ export default function Placement() {
               width: original.width,
               fixed: original.fixed,
               hidden: original.hidden,
+              align: original.align,
               render: original.render,
               group: original.group,
             };
@@ -1038,6 +785,33 @@ export default function Placement() {
       pageNumber: page,
       limit: limit,
     });
+  };
+
+  const handleBucketClick = (config) => {
+    if (
+      placementStatus === config.value &&
+      !trainerSubbucketStatus &&
+      !classGoingSubBucketStatus
+    ) {
+      return;
+    }
+
+    const extraOverrides = config.onClick?.() || {};
+
+    const overrides = {
+      placementStatus: config.value,
+      pageNumber: 1,
+      ...extraOverrides,
+    };
+
+    setPlacementStatus(config.value);
+
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+    }));
+
+    // fetchPlacementSupportData(overrides);
   };
 
   const handleSearch = (e) => {
@@ -1183,8 +957,8 @@ export default function Placement() {
     prevSelectedTechnologyRef.current = "[]";
     setSelectedTechnology(null);
     setModeStatus("");
-    setStatus("");
-    setIsSwap(false);
+    setPlacementStatus("");
+    setSelectedStatus("");
     setTrainerSubbucketsStatus("");
     setClassGoingSubBucketStatus("");
     setSelectedRegionId(null);
@@ -1363,6 +1137,27 @@ export default function Placement() {
               </>
             )}
 
+            {windowsWidth > 1440 && (
+              <Col flex="1 1 150px">
+                <CommonSelectField
+                  height="34px"
+                  label="Status"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={(e) => {
+                    setSelectedStatus(e.target.value);
+                    setPagination({ page: 1 });
+                    fetchPlacementSupportData({
+                      status: e.target.value,
+                      pageNumber: 1,
+                    });
+                  }}
+                />
+              </Col>
+            )}
+
             {/* Date Picker */}
             <Col flex="1 1 240px">
               <CommonMuiCustomDatePicker
@@ -1426,7 +1221,7 @@ export default function Placement() {
                         </span>
 
                         <Badge
-                          count={3}
+                          // count={3}
                           style={{
                             backgroundColor: "#3b82f6",
                             boxShadow: "0 0 0 2px #f8fafc",
@@ -1456,9 +1251,25 @@ export default function Placement() {
                           onBlur={handleSelectTechnologyBlur}
                         />
 
+                        <CommonSelectField
+                          height="34px"
+                          label="Status"
+                          labelMarginTop="1px"
+                          labelFontSize="11px"
+                          options={statusOptions}
+                          value={selectedStatus}
+                          onChange={(e) => {
+                            setSelectedStatus(e.target.value);
+                            setPagination({ page: 1 });
+                            fetchPlacementSupportData({
+                              status: e.target.value,
+                              pageNumber: 1,
+                            });
+                          }}
+                        />
+
                         {/* Region and Branch: small screens only */}
-                        {windowsWidth > 1024 &&
-                          windowsWidth < 1255 &&
+                        {windowsWidth < 1255 &&
                           permissions.includes("Lead Executive Filter") && (
                             <>
                               <CommonSelectField
@@ -1724,208 +1535,25 @@ export default function Placement() {
       </Row>
 
       {/* Status Buckets */}
-      <div
-        className="customers_scroll_wrapper"
-        style={{
-          flex: "0 1 auto",
-          width: "auto",
-          minWidth: 0,
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          marginTop: "12px",
-          marginBottom: "0px",
-        }}
-      >
-        <button
-          onClick={() => scroll(-600)}
-          className="customer_statusscroll_button"
-          style={{
-            flexShrink: 0,
-          }}
-        >
-          <IoMdArrowDropleft size={25} />
-        </button>
-        <div
-          className="customers_status_mainContainer"
-          ref={scrollRef}
-          style={{
-            flex: "0 1 auto",
-            minWidth: 0,
-          }}
-        >
-          {statusBuckets.map((config, index) => {
-            // PAYMENT VERIFY / PAYMENT REJECTED
-            if (config.type === "payment") {
-              const isPaymentRejected = isSwap;
-
-              const paymentLabel = isPaymentRejected
-                ? "Payment Rejected"
-                : "Payment Verify";
-
-              const paymentCount = isPaymentRejected
-                ? customerStatusCount?.payment_rejected
-                : customerStatusCount?.awaiting_finance;
-
-              const isPaymentActive =
-                status === "Awaiting Finance" || status === "Payment Rejected";
-
-              const activeClass = isPaymentRejected
-                ? "customers_active_paymentreject_container"
-                : "customers_active_awaitfinance_container";
-
-              const inactiveClass = isPaymentRejected
-                ? "customers_paymentreject_container"
-                : "customers_awaitfinance_container";
-
-              return (
-                <div
-                  key={index}
-                  className={isPaymentActive ? activeClass : inactiveClass}
-                  onClick={handlePaymentStatusClick}
-                >
-                  <p>
-                    {paymentLabel} ({paymentCount ?? "-"})
-                  </p>
-
-                  <MdOutlineSwapVert
-                    size={19}
-                    style={{
-                      cursor: "pointer",
-                      transition: "transform 0.3s ease",
-                      transform: isSwap ? "rotate(180deg)" : "rotate(0deg)",
-                    }}
-                    onClick={handlePaymentSwap}
-                  />
-                </div>
-              );
-            }
-
-            // NORMAL BUCKETS
-            const isActive = status === config.value;
-
-            const count = customerStatusCount?.[config.countKey] ?? "-";
-
-            return (
-              <div
-                key={config.value || index}
-                className={isActive ? config.activeClass : config.inactiveClass}
-                onClick={() => handleBucketClick(config)}
-              >
-                <p>{`${config.label} (${count})`}</p>
-              </div>
-            );
-          })}
-        </div>
-        <button
-          onClick={() => scroll(600)}
-          className="customer_statusscroll_button"
-          style={{
-            flexShrink: 0,
-          }}
-        >
-          <IoMdArrowDropright size={25} />
-        </button>
-      </div>
-
-      {status === "assign_trainer" && (
-        <Row
-          style={{
-            marginTop: "12px",
-            marginBottom: "24px",
-            gap: "12px",
-            paddingLeft: "12px",
-          }}
-        >
-          {trainerSubbucketConfigs.map((config) => {
-            const isActive = trainerSubbucketStatus === config.value;
-
-            const count = customerStatusCount?.[config.countKey] ?? "-";
-
-            return (
-              <div
-                key={config.value}
-                className={isActive ? config.activeClass : config.inactiveClass}
-                onClick={() => handleTrainerSubbucketClick(config)}
-              >
-                <p className="customers_verify_trainer_label">
-                  <span className="customers_verify_trainer_text">
-                    {`${config.label} `}
-
-                    {config.role && (
-                      <span
-                        className={
-                          config.role === "RM"
-                            ? "customers_rm_label"
-                            : "customers_cfo_label"
-                        }
-                      >
-                        ({config.role})
-                      </span>
-                    )}
-                  </span>
-
-                  <span
-                    className={
-                      config.role ? "customers_verify_trainer_count" : ""
-                    }
-                    style={
-                      config.label === "Trainer Approval" ||
-                      config.label === "Approval Rejected"
-                        ? { marginLeft: "36px" }
-                        : config.label === "Awaiting Trainer" ||
-                            config.label === "Trainer Rejected"
-                          ? { marginLeft: "3px" }
-                          : {}
-                    }
-                  >
-                    {`( ${count} )`}
-                  </span>
-                </p>
-              </div>
-            );
-          })}
-        </Row>
-      )}
-
-      {status === "Class Going" && (
-        <Row
-          style={{
-            marginTop: "12px",
-            marginBottom: "24px",
-            gap: "12px",
-            paddingLeft: "12px",
-          }}
-        >
-          {classGoingSubbucketConfigs.map((config) => {
-            const isActive = classGoingSubBucketStatus === config.value;
-
-            const count = classGoingCounts?.[config.countKey] ?? 0;
-
-            return (
-              <div
-                key={config.value}
-                className={isActive ? config.activeClass : config.inactiveClass}
-                onClick={() => handleClassGoingSubbucketClick(config)}
-                style={{
-                  cursor: "pointer",
-                }}
-              >
-                <p>
-                  {config.label} ({count})
-                </p>
-              </div>
-            );
-          })}
-        </Row>
-      )}
+      <ScrollableTabContainer>
+        {statusBuckets.map((config, index) => {
+          const isActive = placementStatus === config.value;
+          const count = customerStatusCount?.[config.countKey] ?? "-";
+          return (
+            <div
+              key={config.value || index}
+              className={isActive ? config.activeClass : config.inactiveClass}
+              onClick={() => handleBucketClick(config)}
+            >
+              <p>{`${config.label} (${count})`}</p>
+            </div>
+          );
+        })}
+      </ScrollableTabContainer>
 
       <div
         style={{
-          marginTop:
-            status === "assign_trainer" || status === "Class Going"
-              ? "12px"
-              : "16px",
+          marginTop: "16px",
         }}
       >
         <CommonTable

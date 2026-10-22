@@ -824,21 +824,6 @@ export default function Customers() {
           const parsed = parseFloat(record.class_percentage);
           classPercent = isNaN(parsed) ? 0 : parsed;
         }
-        const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-        const convertAsJson = JSON.parse(getLoginUserDetails);
-
-        const isSpecialUser = [
-          "CEO6055",
-          "COO1289",
-          "CFO2514",
-          "ACC0002",
-          "DEV2119",
-          "DEV1920",
-        ].includes(convertAsJson?.user_id);
-
-        const isJoiningDateEligible =
-          record?.date_of_joining &&
-          new Date(record.date_of_joining) <= new Date("2026-08-25");
         return (
           <div
             style={{
