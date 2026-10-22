@@ -966,21 +966,6 @@ export default function FeeHistory({
 
             <Col flex="1.5 1 0%">
               <div style={{ position: "relative" }}>
-                <p
-                  className="accounts_datepicket_label"
-                  style={{
-                    position: "absolute",
-                    top: "-20px",
-                    left: "2px",
-                    fontSize: "11px",
-                    color: "#8c8c8c",
-                    marginBottom: 0,
-                  }}
-                >
-                  {dateFilterType === "joining_date"
-                    ? "Joining Date"
-                    : "Last Payment Verified Date"}
-                </p>
                 <div
                   style={{
                     display: "flex",
@@ -992,6 +977,7 @@ export default function FeeHistory({
                 >
                   <div style={{ flex: 1 }}>
                     <CommonMuiCustomDatePicker
+                      label={`Filter by ${dateFilterType === "joining_date" ? "Joining Date" : "Last Payment Verified Date"}`}
                       width={"100%"}
                       value={selectedDates}
                       onDateChange={(dates) => {
@@ -1041,13 +1027,13 @@ export default function FeeHistory({
                                 fontSize: "12px",
                               }}
                             >
-                              Search by Joining Date
+                              Filter by Joining Date
                             </Radio>
                             <Radio
                               value="last_payment_verified_date"
                               style={{ marginBottom: "12px", fontSize: "12px" }}
                             >
-                              Search by Last Payment Verified Date
+                              Filter by Last Payment Verified Date
                             </Radio>
                           </Radio.Group>
                         }

@@ -1060,8 +1060,8 @@ export default function Receivables({
             )}
             <Col flex="1.5 1 0%">
               <div style={{ position: "relative" }}>
-                <p className="accounts_datepicket_label">Nxt Due Date</p>
                 <CommonMuiCustomDatePicker
+                  label={"Filter by Nxt Due Date"}
                   width="100%"
                   value={selectedDates}
                   onDateChange={(dates) => {

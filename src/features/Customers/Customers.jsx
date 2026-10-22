@@ -2966,7 +2966,7 @@ export default function Customers() {
 
       <Row
         style={{
-          paddingTop: "5px",
+          paddingTop: "8px",
           marginBottom: "4px",
           flexWrap: "nowrap",
           overflowX: "auto",
@@ -3092,7 +3092,7 @@ export default function Customers() {
                   <CommonMultiSelectField
                     height="34px"
                     label="Select User"
-                    labelMarginTop="1px"
+                    labelMarginTop="0px"
                     labelFontSize="11px"
                     options={subUsers}
                     onChange={handleSelectUser}
@@ -3114,6 +3114,7 @@ export default function Customers() {
               >
                 <div style={{ flex: 1 }}>
                   <CommonMuiCustomDatePicker
+                    label={`Filter by ${dateFilterType === "Created" ? "Joining Date" : "Last Updated By"}`}
                     width="100%"
                     value={selectedDates}
                     onDateChange={(dates) => {
@@ -3163,13 +3164,13 @@ export default function Customers() {
                               fontSize: "12px",
                             }}
                           >
-                            Search by Updated By
+                            Filter by Updated By
                           </Radio>
                           <Radio
                             value="Created"
                             style={{ marginBottom: "12px", fontSize: "12px" }}
                           >
-                            Search by Created By
+                            Filter by Created By
                           </Radio>
                         </Radio.Group>
                       }

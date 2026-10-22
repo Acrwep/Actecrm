@@ -44,7 +44,13 @@ import ServerTransCollapse from "./ServerTransCollapse";
 
 const ServerIssue = forwardRef(
   (
-    { serverDetails, customerDetails, setButtonLoading, callgetServerApi },
+    {
+      serverDetails,
+      customerDetails,
+      setButtonLoading,
+      drawerStatus,
+      callgetServerApi,
+    },
     ref,
   ) => {
     const [isEmailEnabled, setIsEmailEnabled] = useState(true);

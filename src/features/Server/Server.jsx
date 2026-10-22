@@ -147,7 +147,7 @@ export default function Server() {
   ];
   const [status, setStatus] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
-  const [dateFilterType, setDateFilterType] = useState("");
+  const [dateFilterType, setDateFilterType] = useState("Raise Date");
   const [raisedDates, setRaisedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -678,7 +678,7 @@ export default function Server() {
               title={
                 <>
                   <Row>
-                    <Col span={12} style={{ marginBottom: "8px" }}>
+                    <Col span={12}>
                       {record.status == "Requested" ? (
                         <Checkbox
                           className="customers_statuscheckbox"
@@ -694,7 +694,10 @@ export default function Server() {
                           Raise Server
                         </Checkbox>
                       ) : (
-                        <div className="customers_classcompleted_container">
+                        <div
+                          className="customers_classcompleted_container"
+                          style={{ marginBottom: "8px" }}
+                        >
                           <BsPatchCheckFill color="#3c9111" />
                           <p className="customers_classgoing_completedtext">
                             Server Raised
@@ -703,7 +706,7 @@ export default function Server() {
                       )}
                     </Col>
 
-                    <Col span={12} style={{ marginBottom: "8px" }}>
+                    <Col span={12}>
                       {record.status == "Requested" ||
                       record.status == "Server Raised" ||
                       record.status == "Verification Rejected" ||
@@ -732,7 +735,10 @@ export default function Server() {
                           Update Details
                         </Checkbox>
                       ) : (
-                        <div className="customers_classcompleted_container">
+                        <div
+                          className="customers_classcompleted_container"
+                          style={{ marginBottom: "8px" }}
+                        >
                           <BsPatchCheckFill color="#3c9111" />
                           <p className="customers_classgoing_completedtext">
                             Details Updated
@@ -771,7 +777,7 @@ export default function Server() {
                         Issue
                       </Checkbox>
                     ) : record.status == "Issued" ? (
-                      <Col span={12} style={{ marginBottom: "8px" }}>
+                      <Col span={12}>
                         <div className="customers_classcompleted_container">
                           <BsPatchCheckFill color="#3c9111" />
                           <p className="customers_classgoing_completedtext">
@@ -784,7 +790,7 @@ export default function Server() {
                     )}
 
                     {record.status == "Issued" || record.status == "Expired" ? (
-                      <Col span={12} style={{ marginBottom: "8px" }}>
+                      <Col span={12}>
                         <Checkbox
                           className="customers_statuscheckbox"
                           checked={false}
@@ -802,6 +808,31 @@ export default function Server() {
                           }}
                         >
                           Re-Purchase
+                        </Checkbox>
+                      </Col>
+                    ) : (
+                      ""
+                    )}
+
+                    {record.status == "Issued" ? (
+                      <Col span={12}>
+                        <Checkbox
+                          className="customers_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (
+                              !permissions.includes("Server Details Update")
+                            ) {
+                              CommonMessage("error", "Access Denied");
+                              return;
+                            }
+                            setServerDetails(record);
+                            getCustomerData(record.customer_id);
+                            setDrawerStatus("Re-Send");
+                            setIsOpenDetailsDrawer(true);
+                          }}
+                        >
+                          Re-Send
                         </Checkbox>
                       </Col>
                     ) : (
@@ -1044,7 +1075,6 @@ export default function Server() {
     );
 
     if (receivedStartDateFromNotification) {
-      setDateFilterType("");
       setSelectedDates([
         receivedStartDateFromNotification,
         receivedEndDateFromNotification,
@@ -1116,9 +1146,15 @@ export default function Server() {
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      // ...(dateType && { type: dateType }),
-      // ...(dateType && { raised_at: raised_at }),
-      // ...(dateType && { raised_end: raised_end }),
+      ...(serverStatus === "" || serverStatus === "Requested"
+        ? {}
+        : { type: dateType }),
+      ...(serverStatus === "" || serverStatus === "Requested"
+        ? {}
+        : { raised_at: raised_at }),
+      ...(serverStatus === "" || serverStatus === "Requested"
+        ? {}
+        : { raised_end: raised_end }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
       ...(converAsJson?.user_id == "BNG9001" ? {} : { user_ids: downliners }),
@@ -1304,10 +1340,10 @@ export default function Server() {
 
     if (isTargetDefaultStatus) {
       // All / Server Required
-      date_type = null;
+      date_type = dateFilterType;
     } else if (isPreviousDefaultStatus) {
       // All / Server Required -> other buckets
-      date_type = "Raise Date";
+      date_type = dateFilterType;
     }
 
     setDateFilterType(date_type);
@@ -1563,7 +1599,7 @@ export default function Server() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
-    setDateFilterType("");
+    setDateFilterType("Raise Date");
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
     setPagination({
@@ -1629,6 +1665,18 @@ export default function Server() {
 
   return (
     <div>
+      <div className="admissions_overall_header">
+        <div className="admissions_overall_indicator"></div>
+
+        <div className="admissions_overall_content">
+          <span className="admissions_overall_label">OverAll</span>
+
+          <span className="admissions_overall_count">
+            {statusCount?.total ?? 0}
+          </span>
+        </div>
+      </div>
+
       <Row style={{ marginBottom: "12px" }} align="middle">
         <Col
           xs={24}
@@ -1788,6 +1836,7 @@ export default function Server() {
               >
                 <div style={{ flex: 1 }}>
                   <CommonMuiCustomDatePicker
+                    label={"Filter by Created At"}
                     width="100%"
                     value={selectedDates}
                     onDateChange={(dates) => {
@@ -1803,60 +1852,6 @@ export default function Server() {
                     }}
                   />
                 </div>
-
-                {/* <div>
-                  <Flex
-                    justify="center"
-                    align="center"
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    <Tooltip
-                      placement="bottomLeft"
-                      color="#fff"
-                      title={
-                        <Radio.Group
-                          value={dateFilterType}
-                          onChange={(e) => {
-                            console.log(e.target.value);
-                            setDateFilterType(e.target.value);
-                            fetchServerRequestsData({
-                              dateType: e.target.value,
-                              pageNumber: 1,
-                            });
-                          }}
-                        >
-                          <Radio
-                            value="Raise Date"
-                            className="customers_datetypefilter_radio"
-                            style={{
-                              marginTop: "6px",
-                              marginBottom: "12px",
-                              fontSize: "12px",
-                            }}
-                          >
-                            Search by Raise Date
-                          </Radio>
-                          <Radio
-                            value="Created Date"
-                            style={{ marginBottom: "12px", fontSize: "12px" }}
-                          >
-                            Search by Created Date
-                          </Radio>
-                        </Radio.Group>
-                      }
-                    >
-                      <Button
-                        className="customer_trainermappingfilter_container"
-                        style={{
-                          // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                          height: "35px",
-                        }}
-                      >
-                        <IoFilter size={16} />
-                      </Button>
-                    </Tooltip>
-                  </Flex>
-                </div> */}
               </div>
             </Col>
           </Row>
@@ -1978,7 +1973,7 @@ export default function Server() {
           </Col>
         )}
 
-        {/* <Col
+        <Col
           span={12}
           style={{
             display: "flex",
@@ -1987,88 +1982,91 @@ export default function Server() {
               : "flex-start",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              flexWrap: "nowrap",
-              width: "300px",
-            }}
-          >
-            <div style={{ flex: 1, position: "relative" }}>
-              <CommonMuiCustomDatePicker
-                width="100%"
-                value={raisedDates}
-                onDateChange={(dates) => {
-                  setRaisedDates(dates);
-                  setPagination({
-                    page: 1,
-                  });
-                  fetchServerRequestsData({
-                    startDate: dates[0],
-                    endDate: dates[1],
-                    pageNumber: 1,
-                  });
-                }}
-              />
-            </div>
+          {status === "" || status === "Requested" ? null : (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flexWrap: "nowrap",
+                width: "300px",
+              }}
+            >
+              <div style={{ flex: 1, position: "relative" }}>
+                <CommonMuiCustomDatePicker
+                  label={`Filter by ${dateFilterType === "Raise Date" ? "Raise Date" : "Expiry Date"}`}
+                  width="100%"
+                  value={raisedDates}
+                  onDateChange={(dates) => {
+                    setRaisedDates(dates);
+                    setPagination({
+                      page: 1,
+                    });
+                    fetchServerRequestsData({
+                      raised_at: dates[0],
+                      raised_end: dates[1],
+                      pageNumber: 1,
+                    });
+                  }}
+                />
+              </div>
 
-            <div>
-              <Flex
-                justify="center"
-                align="center"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Tooltip
-                  placement="bottomLeft"
-                  color="#fff"
-                  title={
-                    <Radio.Group
-                      value={dateFilterType}
-                      onChange={(e) => {
-                        console.log(e.target.value);
-                        setDateFilterType(e.target.value);
-                        fetchServerRequestsData({
-                          dateType: e.target.value,
-                          pageNumber: 1,
-                        });
-                      }}
-                    >
-                      <Radio
-                        value="Raise Date"
-                        className="customers_datetypefilter_radio"
-                        style={{
-                          marginTop: "6px",
-                          marginBottom: "12px",
-                          fontSize: "12px",
+              <div>
+                <Flex
+                  justify="center"
+                  align="center"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <Tooltip
+                    placement="bottomLeft"
+                    color="#fff"
+                    title={
+                      <Radio.Group
+                        value={dateFilterType}
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          setDateFilterType(e.target.value);
+                          fetchServerRequestsData({
+                            dateType: e.target.value,
+                            pageNumber: 1,
+                          });
                         }}
                       >
-                        Search by Raise Date
-                      </Radio>
-                      <Radio
-                        value="Created Date"
-                        style={{ marginBottom: "12px", fontSize: "12px" }}
-                      >
-                        Search by Expiry Date
-                      </Radio>
-                    </Radio.Group>
-                  }
-                >
-                  <Button
-                    className="customer_trainermappingfilter_container"
-                    style={{
-                      // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
-                      height: "35px",
-                    }}
+                        <Radio
+                          value="Raise Date"
+                          className="customers_datetypefilter_radio"
+                          style={{
+                            marginTop: "6px",
+                            marginBottom: "12px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Filter by Raise Date
+                        </Radio>
+                        <Radio
+                          value="Expiry Date"
+                          style={{ marginBottom: "12px", fontSize: "12px" }}
+                        >
+                          Filter by Expiry Date
+                        </Radio>
+                      </Radio.Group>
+                    }
                   >
-                    <IoFilter size={16} />
-                  </Button>
-                </Tooltip>
-              </Flex>
+                    <Button
+                      className="customer_trainermappingfilter_container"
+                      style={{
+                        // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
+                        height: "35px",
+                      }}
+                    >
+                      <IoFilter size={16} />
+                    </Button>
+                  </Tooltip>
+                </Flex>
+              </div>
             </div>
-          </div>
-        </Col> */}
+          )}
+        </Col>
       </Row>
 
       <div
@@ -2152,11 +2150,12 @@ export default function Server() {
                     fetchServerRequestsData({});
                   }}
                 />
-              ) : drawerStatus == "Issue" ? (
+              ) : drawerStatus == "Issue" || drawerStatus === "Re-Send" ? (
                 <ServerIssue
                   ref={serverIssueRef}
                   serverDetails={serverDetails}
                   customerDetails={customerDetails}
+                  drawerStatus={drawerStatus}
                   setButtonLoading={setButtonLoading}
                   callgetServerApi={() => {
                     drawerReset();
@@ -2189,7 +2188,7 @@ export default function Server() {
                       drawerStatus === "Re-Purchase"
                         ? () =>
                             serverUpdateDetailsRef.current?.handleUpdateDetails()
-                        : drawerStatus == "Issue"
+                        : drawerStatus == "Issue" || drawerStatus === "Re-Send"
                           ? () => serverIssueRef.current?.handleServerIssue()
                           : handleStatusMismatch
                     }
@@ -2198,7 +2197,7 @@ export default function Server() {
                       ? "Update"
                       : drawerStatus === "Re-Purchase"
                         ? "Re-Purchase"
-                        : drawerStatus == "Issue"
+                        : drawerStatus == "Issue" || drawerStatus === "Re-Send"
                           ? "Issue"
                           : ""}
                   </button>

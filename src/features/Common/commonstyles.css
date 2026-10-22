@@ -424,7 +424,26 @@
   opacity: 1 !important;
   border-color: rgba(128, 128, 128, 0.712) !important;
 }
+.common_muicustomdatepicker_floating_label {
+  position: absolute;
+  top: -12px;
+  left: 10px;
+  z-index: 2;
+  padding: 0 9px 0px 4px;
+  background-color: #fff;
+  /* color: #000000a2; */
+  color: #707074;
+  font-size: 8.5px;
+  font-weight: 400 !important;
+  font-family: "Poppins", sans-serif;
+  line-height: 16px;
+  text-transform: none;
 
+  /* Prevent text breaking */
+  white-space: nowrap;
+  width: max-content;
+  max-width: none;
+}
 /* view invoice styles */
 .invoice-container table {
   border: none; /* or your invoice-specific border */

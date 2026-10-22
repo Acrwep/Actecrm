@@ -16,6 +16,7 @@ import CommonMuiDatePicker from "./CommonMuiDatePicker";
 import { CommonMessage } from "./CommonMessage";
 
 export default function CommonMuiCustomDatePicker({
+  label,
   onDateChange,
   value,
   isDashboard,
@@ -187,7 +188,7 @@ export default function CommonMuiCustomDatePicker({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box sx={{ height: "100%" }}>
+      <Box sx={{ position: "relative", height: "100%" }}>
         {/* Button to open popover */}
         {isDashboard === true ? (
           <div
@@ -203,6 +204,12 @@ export default function CommonMuiCustomDatePicker({
             onClick={handleOpen}
             style={{ width: width ? width : "320px" }}
           >
+            {/* Floating Label */}
+            {label && (
+              <Box className="common_muicustomdatepicker_floating_label">
+                {label}
+              </Box>
+            )}
             <Box
               sx={{
                 display: "flex",

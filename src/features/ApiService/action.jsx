@@ -1766,6 +1766,15 @@ export const serverRePurchase = async (payload) => {
   }
 };
 
+export const getPreviousServerHistory = async (payload) => {
+  try {
+    const response = await api.post(`/api/serverSummary`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const insertServerTrack = async (payload) => {
   try {
     const response = await api.post(`/api/insertServerTrack`, payload);

@@ -1386,6 +1386,7 @@ export default function Admissions() {
                 >
                   <div style={{ flex: "0 0 120px" }}>
                     <CommonMuiCustomDatePicker
+                      label={"Filter by Joining Date"}
                       width="280px"
                       dateFontSize="12.5px"
                       value={selectedDates}

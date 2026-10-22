@@ -1176,6 +1176,7 @@ export default function Server({ setServerCount }) {
               >
                 <div style={{ flex: 1 }}>
                   <CommonMuiCustomDatePicker
+                    label={"Filter by Joining Date"}
                     width="100%"
                     value={selectedDates}
                     onDateChange={(dates) => {

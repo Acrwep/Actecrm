@@ -1193,8 +1193,8 @@ export default function Refund({
             )}
             <Col flex="1.5 1 0%">
               <div style={{ position: "relative" }}>
-                <p className="accounts_datepicket_label">Joining Date</p>
                 <CommonMuiCustomDatePicker
+                  label={"Filter by Joining Date"}
                   width="100%"
                   value={selectedDates}
                   onDateChange={(dates) => {

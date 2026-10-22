@@ -1093,8 +1093,9 @@ export default function Received({
             )}
             <Col flex="1.5 1 0%">
               <div style={{ position: "relative" }}>
-                <p className="accounts_datepicket_label">Entry Date</p>
+                {/* <p className="accounts_datepicket_label">Entry Date</p> */}
                 <CommonMuiCustomDatePicker
+                  label={"Filter by Payment Entry Date"}
                   width="100%"
                   value={selectedDates}
                   onDateChange={(dates) => {

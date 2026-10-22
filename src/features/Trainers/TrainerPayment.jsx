@@ -77,8 +77,8 @@ import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
 import TrainerPaymentDirectPaid from "./TrainerPaymentDirectPaid";
 import OverflowTooltip from "../Common/OverflowTooltip";
 
-export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
-  if (!updatedDate) return null;
+export const calculateDeadlineDate = (startDate, students, hasPermission) => {
+  if (!startDate) return null;
 
   let onlineCount = 0;
   let classroomCount = 0;
@@ -99,7 +99,7 @@ export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
     workingDaysToAdd = hasPermission ? 5 : 2;
   }
 
-  let current = moment(updatedDate);
+  let current = moment(startDate);
   let daysAdded = 0;
 
   while (daysAdded < workingDaysToAdd) {
@@ -112,17 +112,17 @@ export const calculateDeadlineDate = (updatedDate, students, hasPermission) => {
   return current;
 };
 
-export const TimerPill = ({ updatedDate, deadlineDate, status, paidDate }) => {
+export const TimerPill = ({ startDate, deadlineDate, status, paidDate }) => {
   const [elapsedString, setElapsedString] = useState("");
   const [pillColor, setPillColor] = useState("");
 
   useEffect(() => {
-    if (!updatedDate || !deadlineDate) {
+    if (!startDate || !deadlineDate) {
       setElapsedString("-");
       return;
     }
 
-    const start = moment(updatedDate);
+    const start = moment(startDate);
     const end = moment(deadlineDate);
     const totalMs = end.diff(start);
 
@@ -214,7 +214,7 @@ export const TimerPill = ({ updatedDate, deadlineDate, status, paidDate }) => {
         clearInterval(intervalId);
       }
     };
-  }, [updatedDate, deadlineDate, status, paidDate]);
+  }, [startDate, deadlineDate, status, paidDate]);
 
   let textColor = "#2e7d32";
 
@@ -536,7 +536,7 @@ export default function TrainerPayment() {
       render: (text, record) => {
         const hasPermission = permissions.includes("View Financial Details");
         const calcDate = calculateDeadlineDate(
-          record?.updated_date,
+          record?.bill_raisedate,
           record?.students,
           hasPermission,
         );
@@ -556,14 +556,14 @@ export default function TrainerPayment() {
       render: (text, record) => {
         const hasPermission = permissions.includes("View Financial Details");
         const deadlineDate = calculateDeadlineDate(
-          record?.updated_date,
+          record?.bill_raisedate,
           record?.students,
           hasPermission,
         );
         return {
           children: (
             <TimerPill
-              updatedDate={record?.updated_date}
+              startDate={record?.bill_raisedate}
               deadlineDate={deadlineDate}
               status={record?.status}
               paidDate={record?.paid_date}
@@ -1224,14 +1224,14 @@ export default function TrainerPayment() {
                     "View Financial Details",
                   );
                   const deadlineDate = calculateDeadlineDate(
-                    record?.updated_date,
+                    record?.bill_raisedate,
                     record?.students,
                     hasPermission,
                   );
                   return {
                     children: (
                       <TimerPill
-                        updatedDate={record?.updated_date}
+                        startDate={record?.bill_raisedate}
                         deadlineDate={deadlineDate}
                         status={record?.status}
                         paidDate={record?.paid_date}
