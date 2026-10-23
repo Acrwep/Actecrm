@@ -121,15 +121,23 @@ export const NotificationProvider = ({ children }) => {
       );
     });
 
-    socket.on("force_logout", () => {
-      console.warn("Forced logout: session taken by another device.");
-      // alert(
-      //   "You have been logged out because a new login was detected on another system.",
-      // );
-      CommonMessage(
-        "warning",
-        "You have been logged out because a new login was detected on another system.",
-      );
+    //websocket auto logout handling
+    socket.on("force_logout", (data) => {
+      console.warn("Forced logout:", data?.reason);
+
+      let message =
+        "You have been logged out because a new login was detected on another system.";
+
+      if (data?.reason === "ACCOUNT_INACTIVE") {
+        message =
+          "Your account has been deactivated. Please contact your administrator.";
+      } else if (data?.reason === "NEW_LOGIN") {
+        message =
+          "You have been logged out because a new login was detected on another system.";
+      }
+
+      CommonMessage("warning", message);
+
       setTimeout(() => {
         localStorage.removeItem("AccessToken");
         localStorage.removeItem("loginUserDetails");

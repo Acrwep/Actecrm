@@ -147,7 +147,7 @@ export default function Server() {
   ];
   const [status, setStatus] = useState("");
   const [selectedDates, setSelectedDates] = useState([]);
-  const [dateFilterType, setDateFilterType] = useState("Raise Date");
+  const [dateFilterType, setDateFilterType] = useState("");
   const [raisedDates, setRaisedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
@@ -795,9 +795,7 @@ export default function Server() {
                           className="customers_statuscheckbox"
                           checked={false}
                           onChange={(e) => {
-                            if (
-                              !permissions.includes("Server Details Update")
-                            ) {
+                            if (!permissions.includes("Server Re-Purchase")) {
                               CommonMessage("error", "Access Denied");
                               return;
                             }
@@ -820,9 +818,7 @@ export default function Server() {
                           className="customers_statuscheckbox"
                           checked={false}
                           onChange={(e) => {
-                            if (
-                              !permissions.includes("Server Details Update")
-                            ) {
+                            if (!permissions.includes("Server Issue")) {
                               CommonMessage("error", "Access Denied");
                               return;
                             }
@@ -1140,24 +1136,30 @@ export default function Server() {
     limit,
   ) => {
     setLoading(true);
-    const getloginUserDetails = localStorage.getItem("loginUserDetails");
-    const converAsJson = JSON.parse(getloginUserDetails);
 
     const payload = {
       start_date: startDate,
       end_date: endDate,
       ...(serverStatus === "" || serverStatus === "Requested"
         ? {}
-        : { type: dateType }),
+        : dateType
+          ? { type: dateType }
+          : {}),
       ...(serverStatus === "" || serverStatus === "Requested"
         ? {}
-        : { raised_at: raised_at }),
+        : dateType
+          ? { raised_at: raised_at }
+          : {}),
       ...(serverStatus === "" || serverStatus === "Requested"
         ? {}
-        : { raised_end: raised_end }),
+        : dateType
+          ? { raised_end: raised_end }
+          : {}),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
-      ...(converAsJson?.user_id == "BNG9001" ? {} : { user_ids: downliners }),
+      ...(permissions.includes("View All Candidate Server Details")
+        ? {}
+        : { user_ids: downliners }),
       ...(serverStatus && serverStatus == "Server Raised"
         ? {
             status: ["Server Raised", "Verification Rejected"],
@@ -1599,7 +1601,7 @@ export default function Server() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
-    setDateFilterType("Raise Date");
+    setDateFilterType("");
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
     setPagination({
@@ -1992,7 +1994,15 @@ export default function Server() {
                 width: "300px",
               }}
             >
-              <div style={{ flex: 1, position: "relative" }}>
+              <div
+                style={{
+                  flex: 1,
+                  position: "relative",
+                  opacity: dateFilterType === "" ? 0.5 : 1,
+                  pointerEvents: dateFilterType === "" ? "none" : "auto",
+                  transition: "opacity 0.2s ease",
+                }}
+              >
                 <CommonMuiCustomDatePicker
                   label={`Filter by ${dateFilterType === "Raise Date" ? "Raise Date" : "Expiry Date"}`}
                   width="100%"
@@ -2053,9 +2063,10 @@ export default function Server() {
                     }
                   >
                     <Button
-                      className="customer_trainermappingfilter_container"
+                      className={`customer_trainermappingfilter_container ${
+                        dateFilterType === "" ? "filter-pulse-animation" : ""
+                      }`}
                       style={{
-                        // borderLeftColor: isTrainerSelectFocused && "#5b69ca",
                         height: "35px",
                       }}
                     >

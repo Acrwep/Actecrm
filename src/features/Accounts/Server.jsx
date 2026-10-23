@@ -534,7 +534,7 @@ export default function Server({ setServerCount }) {
                 <Button
                   className="customers_status_classgoing_button"
                   onClick={() => {
-                    if (!permissions.includes("Server Issue")) {
+                    if (!permissions.includes("Server Purchase")) {
                       CommonMessage("error", "Access Denied");
                       return;
                     }

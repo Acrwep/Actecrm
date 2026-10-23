@@ -365,11 +365,13 @@ export default function Settings() {
       );
       const serverCustomOrder = [
         "Server Page",
+        "View All Candidate Server Details",
         "Server Details Update",
-        "Server Verify",
         "Server Approve",
+        "Server Purchase",
         "Show Server Cost & Vendor",
         "Server Issue",
+        "Server Re-Purchase",
       ];
 
       const serverSortedArray = serverModule.sort(

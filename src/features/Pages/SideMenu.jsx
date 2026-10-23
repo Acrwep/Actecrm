@@ -211,6 +211,10 @@ export default function SideMenu() {
       delete updatedMenu[2];
     }
 
+    if (!permissions.includes("Admissions Page")) {
+      delete updatedMenu[3];
+    }
+
     if (!permissions.includes("Accounts Page")) {
       delete updatedMenu[6];
     }
@@ -269,7 +273,7 @@ export default function SideMenu() {
       const convertAsJson = JSON.parse(getLoginUserDetails);
 
       const firstPayload = {
-        keyword: convertAsJson?.user_id,
+        keyword: convertAsJson?.view_user_id,
         include_profile_image: true,
       };
       const loginUserResponse = await getUsers(firstPayload);
@@ -309,6 +313,10 @@ export default function SideMenu() {
 
       if (!updateData.includes("Lead Manager Page")) {
         delete updatedMenu[2];
+      }
+
+      if (!permissions.includes("Admissions Page")) {
+        delete updatedMenu[3];
       }
 
       if (!permissions.includes("Accounts Page")) {
@@ -394,13 +402,7 @@ export default function SideMenu() {
   };
 
   const handleMenuClick = (e) => {
-    if (e.key == "admissions") {
-      if (permissions.includes("Admissions Page")) {
-        navigate(`/${e.key}`);
-      }
-    } else {
-      navigate(`/${e.key}`);
-    }
+    navigate(`/${e.key}`);
   };
 
   return (

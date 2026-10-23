@@ -11,6 +11,7 @@ import { getPreviousServerHistory } from "../ApiService/action";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonTable from "../Common/CommonTable";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import { useSelector } from "react-redux";
 
 const ServerTransCollapse = ({
   serverDetails,
@@ -20,6 +21,9 @@ const ServerTransCollapse = ({
   setServerTransId,
   isShowStartAndEndDate = false,
 }) => {
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+
   const transactions = serverDetails?.trans_details || [];
 
   const [collapseDefaultKey, setCollapseDefaultKey] = useState(["1"]);
@@ -57,7 +61,6 @@ const ServerTransCollapse = ({
       title: "Purchased At",
       key: "start_date",
       dataIndex: "start_date",
-      width: 100,
       width: 100,
       render: (text) => {
         return <p>{text ? moment(text).format("DD/MM/YYYY") : "-"}</p>;
@@ -233,55 +236,59 @@ const ServerTransCollapse = ({
                       </td>
                     </tr>
 
-                    <tr>
-                      <td>
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                        >
-                          Server Cost
-                          <Tooltip
-                            title="View Previous History"
-                            placement="top"
-                            trigger={["click", "hover"]}
+                    {permissions.includes("Show Server Cost & Vendor") && (
+                      <tr>
+                        <td>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
                           >
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                cursor:
-                                  loadingServerTransId === item.server_trans_id
-                                    ? "not-allowed"
-                                    : "pointer",
-                              }}
-                              onClick={async (e) => {
-                                e.stopPropagation();
-
-                                if (loadingServerTransId !== null) return;
-                                setLoadingServerTransId(item.server_trans_id);
-                                getPreviousServerHistoryData();
-                              }}
+                            Server Cost
+                            <Tooltip
+                              title="View Previous History"
+                              placement="top"
+                              trigger={["click", "hover"]}
                             >
-                              {loadingServerTransId === item.server_trans_id ? (
-                                <CommonSpinner color="#333" size={14} />
-                              ) : (
-                                <FaRegEye
-                                  style={{
-                                    color: "#5b69ca",
-                                    fontSize: "14px",
-                                  }}
-                                />
-                              )}
-                            </span>
-                          </Tooltip>
-                        </span>
-                      </td>
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  cursor:
+                                    loadingServerTransId ===
+                                    item.server_trans_id
+                                      ? "not-allowed"
+                                      : "pointer",
+                                }}
+                                onClick={async (e) => {
+                                  e.stopPropagation();
 
-                      <td className="text-right">{item.server_cost}</td>
-                    </tr>
+                                  if (loadingServerTransId !== null) return;
+                                  setLoadingServerTransId(item.server_trans_id);
+                                  getPreviousServerHistoryData();
+                                }}
+                              >
+                                {loadingServerTransId ===
+                                item.server_trans_id ? (
+                                  <CommonSpinner color="#333" size={14} />
+                                ) : (
+                                  <FaRegEye
+                                    style={{
+                                      color: "#5b69ca",
+                                      fontSize: "14px",
+                                    }}
+                                  />
+                                )}
+                              </span>
+                            </Tooltip>
+                          </span>
+                        </td>
+
+                        <td className="text-right">{item.server_cost}</td>
+                      </tr>
+                    )}
 
                     <tr>
                       <td>Duration</td>
@@ -292,10 +299,12 @@ const ServerTransCollapse = ({
                       </td>
                     </tr>
 
-                    <tr>
-                      <td>Vendor</td>
-                      <td className="text-right">{item.vendor_id || "-"}</td>
-                    </tr>
+                    {permissions.includes("Show Server Cost & Vendor") && (
+                      <tr>
+                        <td>Vendor</td>
+                        <td className="text-right">{item.vendor_id || "-"}</td>
+                      </tr>
+                    )}
 
                     {isShowStartAndEndDate && (
                       <>

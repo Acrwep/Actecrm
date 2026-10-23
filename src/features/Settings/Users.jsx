@@ -12,6 +12,7 @@ import {
   Upload,
   Avatar,
   Divider,
+  Tag,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
@@ -122,6 +123,7 @@ export default function Users({
   const [childUsers, setChildUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [userRolesError, setUserRolesError] = useState("");
+  const [isSaleIncluded, setIsSaleIncluded] = useState(false);
   const [targetMonth, setTargetMonth] = useState(null);
   const [targetMonthStartDate, setTargetMonthStartDate] = useState(null);
   const [targetMonthEndDate, setTargetMonthEndDate] = useState(null);
@@ -148,6 +150,7 @@ export default function Users({
   const [assignTargetValue, setAssignTargetValue] = useState("");
   const [assignTargetValueError, setAssignTargetValueError] = useState("");
   const [targetLoader, setTargetLoader] = useState(false);
+  const [activeStatus, setActiveStatus] = useState("Active");
 
   const columns = [
     {
@@ -381,12 +384,21 @@ export default function Users({
       title: "Status",
       key: "is_active",
       dataIndex: "is_active",
-      width: 100,
-      render: (text, record) => {
+      width: 110,
+      align: "center",
+      fixed: "right",
+      render: (text) => {
+        const isActive = text === 1;
+
         return (
-          <div>
-            <p>{text === 1 ? "Active" : "Inactive"}</p>
-          </div>
+          <Tag
+            className={`role-status-tag ${
+              isActive ? "role-status-active" : "role-status-inactive"
+            }`}
+          >
+            <span className="role-status-dot" />
+            {isActive ? "Active" : "In-Active"}
+          </Tag>
         );
       },
     },
@@ -622,7 +634,14 @@ export default function Users({
         return r.role_id;
       });
       setUserRoles(alterRoles);
+
+      const is_sale_included = rolesData.some(
+        (role) =>
+          role.role_name === "Sale" && alterRoles.includes(role.role_id),
+      );
+      setIsSaleIncluded(is_sale_included);
     } else {
+      setIsSaleIncluded(false);
       setUserRoles([]);
     }
     if (item.target_month) {
@@ -646,6 +665,7 @@ export default function Users({
       setTargetMonthEndDate(endDate);
     }
     setTarget(item.target_value);
+    setActiveStatus(item.is_active == 1 ? "Active" : "In-Active");
     setIsOpenAddDrawer(true);
   };
 
@@ -807,7 +827,8 @@ export default function Users({
       roles: matchedRoles,
       target_start: targetMonthStartDate,
       target_end: targetMonthEndDate,
-      target_value: target,
+      target_value: target ? target : 0,
+      is_active: activeStatus === "Active" ? 1 : 0,
     };
 
     if (editUserId) {
@@ -1293,6 +1314,11 @@ export default function Users({
                 options={rolesData}
                 onChange={(value) => {
                   setUserRoles(value);
+                  const is_sale_included = rolesData.some(
+                    (role) =>
+                      role.role_name === "Sale" && value.includes(role.role_id),
+                  );
+                  setIsSaleIncluded(is_sale_included);
                   if (validationTrigger) {
                     setUserRolesError(selectValidator(value));
                   }
@@ -1417,74 +1443,99 @@ export default function Users({
                 }}
               />
             </Col>
-            <Col
-              span={12}
-              style={{
-                marginTop:
-                  passwordError === "" || passwordError.includes("8 characters")
-                    ? "0px"
-                    : "12px",
-              }}
-            >
-              <TargetMonthPicker
-                label="Target Month"
-                required={false}
+
+            {isSaleIncluded && (
+              <>
+                <Col
+                  span={12}
+                  style={{
+                    marginTop:
+                      passwordError === "" ||
+                      passwordError.includes("8 characters")
+                        ? "0px"
+                        : "12px",
+                  }}
+                >
+                  <TargetMonthPicker
+                    label="Target Month"
+                    required={false}
+                    height={"34px"}
+                    labelFontSize={"11px"}
+                    onChange={(value) => {
+                      console.log(value, "monthhh");
+                      setTargetMonth(value);
+                      if (value) {
+                        const [monthName, year] = value.split(" - ");
+                        const selectedMonth = moment(
+                          `${monthName} ${year}`,
+                          "MMMM YYYY",
+                        );
+                        const startDate = selectedMonth
+                          .clone()
+                          .subtract(1, "month")
+                          .date(26)
+                          .format("YYYY-MM-DD");
+                        const endDate = selectedMonth
+                          .clone()
+                          .date(25)
+                          .format("YYYY-MM-DD");
+                        setTargetMonthStartDate(startDate);
+                        setTargetMonthEndDate(endDate);
+                        console.log("Start Date:", startDate);
+                        console.log("End Date:", endDate);
+                      }
+                    }}
+                    value={targetMonth}
+                    error=""
+                    labelMarginTop="1px"
+                  />
+                </Col>
+                <Col
+                  span={12}
+                  style={{
+                    marginTop:
+                      passwordError === "" ||
+                      passwordError.includes("8 characters")
+                        ? "0px"
+                        : "12px",
+                  }}
+                >
+                  <CommonOutlinedInput
+                    label="Target"
+                    type="number"
+                    required={false}
+                    height={"34px"}
+                    labelFontSize={"11px"}
+                    onChange={(e) => {
+                      setTarget(e.target.value);
+                    }}
+                    value={target}
+                    onInput={(e) => {
+                      if (e.target.value.length > 10) {
+                        e.target.value = e.target.value.slice(0, 10);
+                      }
+                    }}
+                    icon={<LuIndianRupee size={14} />}
+                  />
+                </Col>
+              </>
+            )}
+          </Row>
+
+          <Row gutter={[16, 24]} style={{ marginTop: "24px" }}>
+            <Col span={12}>
+              <CommonSelectField
+                label={"Status"}
                 height={"34px"}
                 labelFontSize={"11px"}
-                onChange={(value) => {
-                  console.log(value, "monthhh");
-                  setTargetMonth(value);
-                  if (value) {
-                    const [monthName, year] = value.split(" - ");
-                    const selectedMonth = moment(
-                      `${monthName} ${year}`,
-                      "MMMM YYYY",
-                    );
-                    const startDate = selectedMonth
-                      .clone()
-                      .subtract(1, "month")
-                      .date(26)
-                      .format("YYYY-MM-DD");
-                    const endDate = selectedMonth
-                      .clone()
-                      .date(25)
-                      .format("YYYY-MM-DD");
-                    setTargetMonthStartDate(startDate);
-                    setTargetMonthEndDate(endDate);
-                    console.log("Start Date:", startDate);
-                    console.log("End Date:", endDate);
-                  }
-                }}
-                value={targetMonth}
-                error=""
-                labelMarginTop="1px"
-              />
-            </Col>
-            <Col
-              span={12}
-              style={{
-                marginTop:
-                  passwordError === "" || passwordError.includes("8 characters")
-                    ? "0px"
-                    : "12px",
-              }}
-            >
-              <CommonOutlinedInput
-                label="Target"
-                type="number"
-                required={false}
-                height={"34px"}
-                labelFontSize={"11px"}
+                options={[
+                  { id: "Active", name: "Active" },
+                  { id: "In-Active", name: "In-Active" },
+                ]}
                 onChange={(e) => {
-                  setTarget(e.target.value);
+                  setActiveStatus(e.target.value);
                 }}
-                value={target}
-                onInput={(e) => {
-                  if (e.target.value.length > 10) {
-                    e.target.value = e.target.value.slice(0, 10);
-                  }
-                }}
-                icon={<LuIndianRupee size={14} />}
+                value={activeStatus}
               />
             </Col>
           </Row>

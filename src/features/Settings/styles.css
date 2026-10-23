@@ -366,7 +366,42 @@
 .settings_formfields_submitbutton {
   width: 90px;
 }
+.role-status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 78px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  border: 1px solid transparent;
+  margin-inline-end: 0;
+}
 
+.role-status-active {
+  color: #237b4b;
+  background: #e8f7ee;
+  border-color: #c5ecd3;
+  font-family: "Poppins", sans-serif;
+}
+
+.role-status-inactive {
+  color: #b54747;
+  background: #fff0f0;
+  border-color: #f5cccc;
+  font-family: "Poppins", sans-serif;
+}
+
+.role-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
 /* courses styles */
 .courses_bulkmodal_footer_updatecourses_button {
   background-color: #5b69ca;

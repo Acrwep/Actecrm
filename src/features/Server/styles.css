@@ -130,3 +130,19 @@
   margin-left: 4px;
   margin-right: 5px !important;
 }
+.filter-pulse-animation {
+  animation: filterZoomPulse 1.5s ease-in-out infinite;
+  transform-origin: center;
+  border-color: rgba(128, 128, 128, 0.459);
+}
+
+@keyframes filterZoomPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
