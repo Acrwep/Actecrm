@@ -716,6 +716,15 @@ export default function AssignLeads({
     }
   };
 
+  useEffect(() => {
+    if (permissions.length >= 1) {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = JSON.parse(getLoginUserDetails);
+
+      getAllDownlineUsersData(convertAsJson?.user_id);
+    }
+  }, [refreshToggle]);
+
   const getAllDownlineUsersData = async (user_id) => {
     try {
       const response = await getAllDownlineUsers(user_id);
@@ -725,6 +734,9 @@ export default function AssignLeads({
         return u.user_id;
       });
       setAllDownliners(downliners_ids);
+      fetchAllManualAssignLeadsData({
+        downliners: downliners_ids,
+      });
     } catch (error) {
       console.log("all downlines error", error);
     }
@@ -742,6 +754,7 @@ export default function AssignLeads({
       overrides.endDate !== undefined
         ? overrides.endDate
         : filterValuesFromRedux.end_date || PreviousAndCurrentDate[1],
+      overrides.downliners !== undefined ? overrides.downliners : allDownliners,
       overrides.pageNumber !== undefined
         ? overrides.pageNumber
         : filterValuesFromRedux.pageNumber || 1,
@@ -758,6 +771,7 @@ export default function AssignLeads({
     searchvalue,
     startDate,
     endDate,
+    downliners,
     pageNumber,
     limit,
     bucketName = selectedBucket,
@@ -771,7 +785,7 @@ export default function AssignLeads({
       start_date: startDate,
       end_date: endDate,
       ...(!permissions.includes("View All Assigned Leads")
-        ? { user_ids: [convertAsJson?.user_id] }
+        ? { user_ids: downliners }
         : {}),
       ...(bucketName ? { bucket: bucketName } : {}),
       page: pageNumber,
@@ -816,12 +830,6 @@ export default function AssignLeads({
       }, 300);
     }
   };
-
-  useEffect(() => {
-    if (permissions.length >= 1) {
-      fetchAllManualAssignLeadsData();
-    }
-  }, [refreshToggle]);
 
   const handlePick = async (item) => {
     console.log("itemmmm", item);

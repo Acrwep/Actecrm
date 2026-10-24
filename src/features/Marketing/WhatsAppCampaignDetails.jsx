@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Modal, Tooltip, Button, Row, Col, Progress, message } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import { FiCopy, FiCheck, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
@@ -9,6 +9,8 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import { getWhatsAppCampaignMessages } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
+import { FaWhatsapp } from "react-icons/fa";
+import SendFollowupTemplateModal from "./SendFollowupTemplateModal";
 import "./styles.css";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 
@@ -26,12 +28,16 @@ export default function WhatsAppCampaignDetails({
   onClose,
   campaign,
   inline = false,
+  onCampaignUpdated,
 }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState("");
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [isFollowupModalOpen, setIsFollowupModalOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -43,9 +49,13 @@ export default function WhatsAppCampaignDetails({
     if ((isOpen || inline) && campaign?.campaign_id) {
       setSearchText("");
       setStatusFilter("");
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
       fetchMessages(1, "", "");
     } else {
       setMessages([]);
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
     }
   }, [isOpen, inline, campaign?.campaign_id]);
 
@@ -102,7 +112,7 @@ export default function WhatsAppCampaignDetails({
     fetchMessages(1, searchText, val);
   };
 
-  const handlePaginationChange = ({ page, limit }) => {
+  const handlePaginationChange = ({ page }) => {
     fetchMessages(page, searchText, statusFilter);
   };
 
@@ -300,13 +310,22 @@ export default function WhatsAppCampaignDetails({
               </div>
             </div>
           </div>
-          <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Button
+              className="wcd-followup-header-btn"
+              onClick={() => setIsFollowupModalOpen(true)}
+            >
+              <FaWhatsapp size={15} />
+              Send Follow-up Template {selectedRows.length > 0 && `(${selectedRows.length})`}
+            </Button>
             <Tooltip placement="top" title="Refresh">
               <Button
                 className="leadmanager_refresh_button"
                 onClick={() => {
                   setSearchText("");
                   setStatusFilter("");
+                  setSelectedRowKeys([]);
+                  setSelectedRows([]);
                   fetchMessages(1, "", "");
                 }}
               >
@@ -438,7 +457,12 @@ export default function WhatsAppCampaignDetails({
         loading={loading}
         dataPerPage={10}
         size="small"
-        checkBox={"false"}
+        checkBox={"true"}
+        selectedRowKeys={selectedRowKeys}
+        selectedDatas={(rows) => {
+          setSelectedRows(rows);
+          setSelectedRowKeys(rows.map((r) => r.id));
+        }}
         className="questionupload_table"
         rowKey={(record) => record.id}
         onPaginationChange={handlePaginationChange}
@@ -449,22 +473,50 @@ export default function WhatsAppCampaignDetails({
     </div>
   );
 
+  const selectedMobiles = useMemo(
+    () => selectedRows.map((r) => r.mobile_number).filter(Boolean),
+    [selectedRows]
+  );
+
+  const followupModal = (
+    <SendFollowupTemplateModal
+      isOpen={isFollowupModalOpen}
+      onClose={() => setIsFollowupModalOpen(false)}
+      campaign={campaign}
+      selectedMobiles={selectedMobiles}
+      onSuccess={(result) => {
+        fetchMessages(1, searchText, statusFilter);
+        if (onCampaignUpdated) {
+          onCampaignUpdated(result);
+        }
+      }}
+    />
+  );
+
   if (inline) {
-    return <div>{content}</div>;
+    return (
+      <div>
+        {content}
+        {followupModal}
+      </div>
+    );
   }
 
   return (
-    <Modal
-      open={isOpen}
-      onCancel={onClose}
-      footer={null}
-      width={1050}
-      title={null}
-      centered
-      destroyOnClose
-      className="whatsapp-campaign-details-modal"
-    >
-      {content}
-    </Modal>
+    <>
+      <Modal
+        open={isOpen}
+        onCancel={onClose}
+        footer={null}
+        width={1050}
+        title={null}
+        centered
+        destroyOnClose
+        className="whatsapp-campaign-details-modal"
+      >
+        {content}
+      </Modal>
+      {followupModal}
+    </>
   );
 }

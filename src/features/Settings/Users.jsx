@@ -1276,7 +1276,11 @@ export default function Users({
                 onChange={(e) => {
                   const value = e.target.value;
                   setRegionId(value);
-                  setBranchId("");
+                  if (value == 3) {
+                    setBranchId(10);
+                  } else {
+                    setBranchId("");
+                  }
                   getBranchesData(parseInt(value));
                   if (validationTrigger) {
                     setRegionError(selectValidator(value));

@@ -1072,7 +1072,7 @@ export default function PageAccess({
 
         <div className="settings_roles_container">
           <p className="settings_roles_heading">Roles</p>
-          <Row gutter={[24, 24]}>
+          <Row gutter={[24, 24]} style={{ paddingBottom: "30px" }}>
             {rolesData.length >= 1 ? (
               <>
                 {rolesData.map((item, index) => {

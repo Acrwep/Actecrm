@@ -6,12 +6,14 @@ import { IoIosClose } from "react-icons/io";
 import { FaRegEye } from "react-icons/fa";
 import { FaWhatsapp, FaPlus } from "react-icons/fa";
 import { MdCampaign } from "react-icons/md";
+import { PiShareFatBold } from "react-icons/pi";
 import { BsChatDots, BsCheck2All, BsExclamationTriangle } from "react-icons/bs";
 import CommonTable from "../Common/CommonTable";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import WhatsAppCampaignDetails from "./WhatsAppCampaignDetails";
+import SendFollowupTemplateModal from "./SendFollowupTemplateModal";
 import {
   getWhatsAppCampaigns,
   getWhatsAppCampaignStatistics,
@@ -80,6 +82,7 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
 
   const [selectedCampaignForDetails, setSelectedCampaignForDetails] =
     useState(null);
+  const [followupCampaign, setFollowupCampaign] = useState(null);
 
   // Search debounce ref
   const searchTimeoutRef = useRef(null);
@@ -450,27 +453,39 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
         );
       },
     },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   width: 100,
-    //   align: "center",
-    //   render: (_, record) => (
-    //     <Tooltip
-    //       placement="top"
-    //       title="View Campaign Details"
-    //       trigger={["hover", "click"]}
-    //     >
-    //       <div onClick={() => handleViewDetails(record)}>
-    //         <FaRegEye
-    //           size={15}
-    //           className="trainers_action_icons"
-    //           style={{ flexShrink: 0 }}
-    //         />
-    //       </div>
-    //     </Tooltip>
-    //   ),
-    // },
+    {
+      title: "Action",
+      key: "action",
+      width: 100,
+      align: "center",
+      fixed: "right",
+      render: (_, record) => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+          }}
+        >
+          <Tooltip placement="top" title="Send Follow-up Template">
+            <div
+              onClick={() => setFollowupCampaign(record)}
+              style={{
+                cursor: "pointer",
+                color: "#16a34a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "2px",
+              }}
+            >
+              <PiShareFatBold size={16} />
+            </div>
+          </Tooltip>
+        </div>
+      ),
+    },
   ];
 
   // If a campaign is selected, render the details view inline
@@ -481,6 +496,10 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
           inline={true}
           campaign={selectedCampaignForDetails}
           onClose={() => setSelectedCampaignForDetails(null)}
+          onCampaignUpdated={() => {
+            fetchCampaignsData({ pageNumber: 1 });
+            fetchStatisticsData();
+          }}
         />
       </div>
     );
@@ -809,6 +828,17 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
           limit={pagination.limit}
           page_number={pagination.page}
           totalPageNumber={pagination.total}
+        />
+
+        {/* Follow-up Template Modal from Campaign Row */}
+        <SendFollowupTemplateModal
+          isOpen={Boolean(followupCampaign)}
+          onClose={() => setFollowupCampaign(null)}
+          campaign={followupCampaign}
+          onSuccess={() => {
+            fetchCampaignsData({ pageNumber: 1 });
+            fetchStatisticsData();
+          }}
         />
       </div>
     </div>

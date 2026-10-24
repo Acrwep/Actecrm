@@ -2343,3 +2343,55 @@ export const getWhatsAppCampaignMessages = async (id, params = {}) => {
     throw error;
   }
 };
+
+export const sendWhatsAppCampaignFollowup = async (campaignId, payload) => {
+  try {
+    const response = await api.post(
+      `/api/whatsapp/campaigns/${campaignId}/send-template`,
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendFollowupTemplate = async ({
+  campaignId,
+  templateId,
+  statusFilter = ["Sent", "Delivered", "Read"],
+  campaignName,
+  values = {},
+  mediaUrl = "",
+  mediaFilename = "",
+  selectedMobiles = null,
+  ...rest
+}) => {
+  try {
+    const targetCampaignId = campaignId || rest.campaign_id;
+    const payload = {
+      campaign_id: targetCampaignId,
+      template_id: templateId || rest.template_id,
+      status_filter: statusFilter || rest.status_filter || ["Sent", "Delivered", "Read"],
+      campaign_name: campaignName || rest.campaign_name,
+      values,
+      media_url: mediaUrl || rest.media_url || undefined,
+      media_filename: mediaFilename || rest.media_filename || undefined,
+      selected_mobile_numbers:
+        selectedMobiles?.length
+          ? selectedMobiles
+          : rest.selected_mobile_numbers?.length
+            ? rest.selected_mobile_numbers
+            : undefined,
+    };
+
+    const response = await api.post(
+      `/api/whatsapp/campaigns/${targetCampaignId}/send-template`,
+      payload
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
