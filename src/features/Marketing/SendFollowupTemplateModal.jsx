@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Drawer,
-  Button,
-  Row,
-  Col,
-  Tag,
-  Radio,
-  Alert,
-  Spin,
-  notification,
-} from "antd";
+import { Drawer, Button, Row, Col, Tag, Radio, Alert, Spin } from "antd";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdSend } from "react-icons/md";
 import { RiAttachment2 } from "react-icons/ri";
@@ -95,15 +85,6 @@ export default function SendFollowupTemplateModal({
 
   const [buttonLoading, setButtonLoading] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
-
-  const isNameParam = (key) =>
-    [
-      "name",
-      "customer_name",
-      "student_name",
-      "candidate_name",
-      "recipient_name",
-    ].includes(String(key || "").toLowerCase());
 
   const campaignId = campaign?.campaign_id;
   const campaignNameProp = campaign?.campaign_name;
@@ -205,7 +186,7 @@ export default function SendFollowupTemplateModal({
     let isValid = true;
 
     if (!campaignName?.trim()) {
-      setCampaignNameError("Campaign name is required");
+      setCampaignNameError(selectValidator(campaignName));
       isValid = false;
     } else {
       setCampaignNameError("");
@@ -220,11 +201,11 @@ export default function SendFollowupTemplateModal({
     if (selectedTemplate?.parameters) {
       const newParamErrors = {};
       selectedTemplate.parameters.forEach((param) => {
-        if (param.required && !isNameParam(param.key)) {
+        if (param.required) {
           const val = parameterValues[param.key];
-          if (!val || !String(val).trim()) {
-            newParamErrors[param.key] =
-              `${param.label || param.key} is required`;
+          const err = selectValidator(val);
+          if (err) {
+            newParamErrors[param.key] = err;
             isValid = false;
           }
         }
@@ -244,7 +225,10 @@ export default function SendFollowupTemplateModal({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      CommonMessage("error", "Please fill all mandatory fields.");
+      return;
+    }
 
     if (!campaign?.campaign_id) {
       CommonMessage("error", "Invalid campaign selected.");
@@ -285,33 +269,12 @@ export default function SendFollowupTemplateModal({
           response.data.data?.campaign_id ||
           response.data.new_campaign_id;
 
-        notification.success({
-          message: "Follow-up Campaign Sent",
-          description: (
-            <div>
-              <p style={{ margin: 0, fontWeight: 500 }}>
-                {response.data.message ||
-                  "Follow-up template campaign created successfully!"}
-              </p>
-              {newCampaignId && (
-                <p
-                  style={{
-                    margin: "4px 0 0 0",
-                    fontSize: "12px",
-                    color: "#1e40af",
-                  }}
-                >
-                  <strong>New Campaign ID:</strong> {newCampaignId}
-                </p>
-              )}
-            </div>
-          ),
-          duration: 5,
-        });
-
         CommonMessage(
           "success",
-          response.data.message || "Follow-up campaign scheduled successfully!",
+          newCampaignId
+            ? `${response.data.message || "Follow-up campaign scheduled successfully!"} (ID: ${newCampaignId})`
+            : response.data.message ||
+                "Follow-up campaign scheduled successfully!",
         );
 
         if (onSuccess) {
@@ -407,9 +370,7 @@ export default function SendFollowupTemplateModal({
                 onChange={(e) => {
                   setCampaignName(e.target.value);
                   if (validationTrigger) {
-                    setCampaignNameError(
-                      e.target.value?.trim() ? "" : "Campaign name is required",
-                    );
+                    setCampaignNameError(selectValidator(e.target.value));
                   }
                 }}
                 error={campaignNameError}
@@ -592,29 +553,23 @@ export default function SendFollowupTemplateModal({
             selectedTemplate.parameters.length > 0 ? (
               <Row gutter={[16, 16]}>
                 {selectedTemplate.parameters.map((param) => {
-                  const isName = isNameParam(param.key);
                   return (
                     <Col xs={24} md={12} key={param.key}>
                       <CommonInputField
                         label={param.label || param.key}
-                        placeholder={
-                          isName
-                            ? "Auto-populated from recipient records"
-                            : `Enter ${String(param.label || param.key).toLowerCase()}`
-                        }
-                        required={isName ? false : param.required}
+                        placeholder={`Enter ${String(param.label || param.key).toLowerCase()}`}
+                        required={param.required}
                         value={parameterValues[param.key] || ""}
                         onChange={(e) => {
+                          const val = e.target.value;
                           setParameterValues((prev) => ({
                             ...prev,
-                            [param.key]: e.target.value,
+                            [param.key]: val,
                           }));
-                          if (validationTrigger && param.required && !isName) {
+                          if (validationTrigger && param.required) {
                             setParameterErrors((prev) => ({
                               ...prev,
-                              [param.key]: e.target.value?.trim()
-                                ? ""
-                                : `${param.label || param.key} is required`,
+                              [param.key]: selectValidator(val),
                             }));
                           }
                         }}
