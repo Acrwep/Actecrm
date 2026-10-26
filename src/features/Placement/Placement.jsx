@@ -33,7 +33,7 @@ import {
 } from "../ApiService/action";
 import {
   customersStatusDisplay,
-  getCurrentandPreviousweekDate,
+  getPreviousYearDec26ToCurrentYearDec25,
   regionOptions,
 } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
@@ -536,7 +536,7 @@ export default function Placement() {
   const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
 
     try {
@@ -965,7 +965,7 @@ export default function Placement() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
       page: 1,

@@ -40,7 +40,7 @@ import {
 import {
   customersStatusDisplay,
   formatToBackendIST,
-  getCurrentandPreviousweekDate,
+  getPreviousYearDec26ToCurrentYearDec25,
   isWithin30Days,
   modeOfTrainingOptions,
   regionOptions,
@@ -2055,7 +2055,7 @@ export default function Customers() {
 
   const rerunCustomerFilters = (stateData, downliners) => {
     console.log("location state dataaa", stateData);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
 
     const receivedValueFromDashboard = stateData?.status || null;
     const receivedStartDateFromDashboard = stateData?.startDate || null;
@@ -2648,7 +2648,7 @@ export default function Customers() {
     setClassGoingSubBucketStatus("");
     setDateFilterType("Updated");
     setIsSwap(false);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
       page: 1,

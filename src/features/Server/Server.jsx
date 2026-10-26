@@ -28,8 +28,8 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   addressValidator,
   formatToBackendIST,
-  getCurrentandLast90Date,
   getCurrentandPreviousweekDate,
+  getPreviousYearDec26ToCurrentYearDec25,
   regionOptions,
   selectValidator,
 } from "../Common/Validation";
@@ -942,7 +942,7 @@ export default function Server() {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
-      const PreviousAndCurrentDate = getCurrentandLast90Date();
+      const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
       setSelectedDates(PreviousAndCurrentDate);
       const RaisedPreviousAndCurrentDate = getCurrentandPreviousweekDate();
       setRaisedDates(RaisedPreviousAndCurrentDate);
@@ -1004,17 +1004,6 @@ export default function Server() {
       });
       setAllDownliners(downliners_ids);
       setDefaultAllDownliners(downliners_ids);
-      const PreviousAndCurrentDate = getCurrentandLast90Date();
-      // getServerRequestData(
-      //   PreviousAndCurrentDate[0],
-      //   PreviousAndCurrentDate[1],
-      //   "Raise Date",
-      //   downliners_ids,
-      //   null,
-      //   null,
-      //   1,
-      //   10,
-      // );
       rerunServerFilters(isRefresh ? null : location.state, downliners_ids);
     } catch (error) {
       console.log("all downlines error", error);
@@ -1022,7 +1011,7 @@ export default function Server() {
   };
 
   const rerunServerFilters = (stateData, downliners) => {
-    const PreviousAndCurrentDate = getCurrentandLast90Date();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
 
     const receivedSearchValueFromNotification = stateData?.searchValue || null;
     const receivedStatusValueFromNotification = stateData?.status || "";
@@ -1564,7 +1553,7 @@ export default function Server() {
   };
 
   const handleRefresh = () => {
-    const PreviousAndCurrentDate = getCurrentandLast90Date();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSearchValue("");
     setSelectedUserId([]);
     prevSelectedUserIdRef.current = "[]";

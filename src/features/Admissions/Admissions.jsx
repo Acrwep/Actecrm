@@ -27,7 +27,7 @@ import {
   getUsers,
 } from "../ApiService/action";
 import {
-  getCurrentandPreviousweekDate,
+  getPreviousYearDec26ToCurrentYearDec25,
   regionOptions,
 } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
@@ -854,7 +854,7 @@ export default function Admissions() {
   const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
 
     try {
@@ -1218,7 +1218,7 @@ export default function Admissions() {
     setBranchOptions([]);
     setSelectedBranchId(null);
     setSubUsers(downlineUsers);
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
     setPagination({
       page: 1,

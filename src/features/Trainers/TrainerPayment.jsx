@@ -51,7 +51,7 @@ import { SlActionUndo } from "react-icons/sl";
 import {
   bank_sheet_columns,
   formatToBackendIST,
-  getCurrentandLast90Date,
+  getPreviousYearDec26ToCurrentYearDec25,
   regionOptions,
 } from "../Common/Validation";
 import moment from "moment";
@@ -2086,7 +2086,7 @@ export default function TrainerPayment() {
   }, []);
 
   const rerunTrainerPaymentFilters = (stateData) => {
-    const PreviousAndCurrentDate = getCurrentandLast90Date();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSearchValue("");
     setSelectedRegionId(null);
     setBranchOptions([]);
@@ -2633,7 +2633,7 @@ export default function TrainerPayment() {
   };
 
   const handleRefresh = () => {
-    const PreviousAndCurrentDate = getCurrentandLast90Date();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
     setStatus("");
     setSelectedTrainerId(null);

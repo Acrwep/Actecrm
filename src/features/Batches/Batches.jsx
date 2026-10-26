@@ -33,7 +33,7 @@ import {
 import AddBatch from "./AddBatch";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import { getPreviousYearDec26ToCurrentYearDec25 } from "../Common/Validation";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 import UpdateBatchCustomers from "./UpdateBatchCustomers";
@@ -143,7 +143,7 @@ export default function Batches({ mainType }) {
   };
 
   const getRegionData = async () => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
     try {
       const response = await getRegions();
@@ -408,7 +408,7 @@ export default function Batches({ mainType }) {
   };
 
   const handleRefresh = () => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
     setSelectedDates(PreviousAndCurrentDate);
     setSelectedTrainerId(null);
     setSelectedTrainerObject(null);

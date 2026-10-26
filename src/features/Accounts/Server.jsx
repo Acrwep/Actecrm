@@ -14,7 +14,6 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   addressValidator,
   formatToBackendIST,
-  getCurrentandLast90Date,
   getPreviousYearDec26ToCurrentYearDec25,
   regionOptions,
 } from "../Common/Validation";
@@ -559,7 +558,7 @@ export default function Server({ setServerCount }) {
     if (childUsers.length > 0 && !mounted.current) {
       mounted.current = true;
       setSubUsers(downlineUsers);
-      const PreviousAndCurrentDate = getCurrentandLast90Date();
+      const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
       setSelectedDates(PreviousAndCurrentDate);
       const getLoginUserDetails = localStorage.getItem("loginUserDetails");
       const convertAsJson = JSON.parse(getLoginUserDetails);
