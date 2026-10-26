@@ -335,6 +335,43 @@ export default function Server() {
       },
     },
     {
+      title: "Purchased At",
+      key: "start_date",
+      dataIndex: "trans_details",
+      width: 110,
+      render: (text, record) => {
+        const start_date = record.trans_details?.[0]?.start_date;
+        return (
+          <EllipsisTooltip
+            text={start_date ? moment(start_date).format("DD/MM/YYYY") : "-"}
+          />
+        );
+      },
+    },
+    {
+      title: "Issued On",
+      key: "issued_date",
+      dataIndex: "trans_details",
+      width: 90,
+      render: (text, record) => {
+        const issued_date = record.trans_details?.[0]?.issued_date;
+        return (
+          <EllipsisTooltip
+            text={issued_date ? moment(issued_date).format("DD/MM/YYYY") : "-"}
+          />
+        );
+      },
+    },
+    {
+      title: "Duration",
+      key: "requested_duration",
+      dataIndex: "requested_duration",
+      width: 90,
+      render: (text) => {
+        return <p>{text ? `${text} Days` : "-"}</p>;
+      },
+    },
+    {
       title: "Expires In",
       key: "expires_in",
       dataIndex: "trans_details",
@@ -372,15 +409,6 @@ export default function Server() {
       },
     },
     {
-      title: "Server Name",
-      key: "server_name",
-      dataIndex: "server_name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
       title: "Server Cost",
       key: "server_cost",
       dataIndex: "trans_details",
@@ -392,15 +420,6 @@ export default function Server() {
       },
     },
     {
-      title: "Duration",
-      key: "requested_duration",
-      dataIndex: "requested_duration",
-      width: 90,
-      render: (text) => {
-        return <p>{text ? `${text} Days` : "-"}</p>;
-      },
-    },
-    {
       title: "Vendor",
       key: "vendor_id",
       dataIndex: "trans_details",
@@ -409,6 +428,15 @@ export default function Server() {
         const vendor = record.trans_details?.[0]?.vendor_id;
 
         return <EllipsisTooltip text={vendor ? `${vendor}` : "-"} />;
+      },
+    },
+    {
+      title: "Server Name",
+      key: "server_name",
+      dataIndex: "server_name",
+      width: 150,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -426,63 +454,6 @@ export default function Server() {
               </span>
             )}
           </div>
-        );
-      },
-    },
-    {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 160,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Mobile",
-      key: "phone",
-      dataIndex: "phone",
-      width: 140,
-      render: (text, record) => {
-        return (
-          <CandidateNumberWithWhatsApp
-            text={text}
-            phoneCode={record.phonecode}
-            whatsapp={record.whatsapp}
-            whatsappPhoneCode={record.whatsapp_phone_code}
-          />
-        );
-      },
-    },
-    {
-      title: "Course ",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Balance",
-      key: "balance_amount",
-      dataIndex: "balance_amount",
-      width: 95,
-      render: (text) => {
-        const amount = Number(text);
-
-        return (
-          <p
-            style={{
-              color: amount === 0 ? "green" : "#D32F2F",
-              margin: 0,
-              fontWeight: 700,
-            }}
-          >
-            {text !== null && text !== undefined
-              ? amount.toLocaleString("en-IN")
-              : "-"}
-          </p>
         );
       },
     },
@@ -1620,6 +1591,8 @@ export default function Server() {
         "server_cost",
         "requested_duration",
         "vendor_id",
+        "start_date",
+        "issued_date",
       ];
 
       return tableColumns.filter(
@@ -1630,10 +1603,11 @@ export default function Server() {
 
     if (status === "Server Raised") {
       const hiddenKeys = [
-        "server_name",
         "server_cost",
         "vendor_id",
         "expires_in",
+        "start_date",
+        "issued_date",
       ];
 
       return tableColumns.filter(
@@ -1642,9 +1616,23 @@ export default function Server() {
       );
     }
 
-    if (status === "Issued") {
-      const hiddenKeys = ["raised_before"];
+    if (status === "Awaiting Verify" || status === "Approval Rejected") {
+      const hiddenKeys = ["start_date", "expires_in", "issued_date"];
 
+      return tableColumns.filter(
+        (col) =>
+          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
+      );
+    }
+
+    if (status === "Purchased" || status === "Issued") {
+      let hiddenKeys = [];
+
+      if (status === "Purchased") {
+        hiddenKeys = ["raised_before", "issued_date"];
+      } else {
+        hiddenKeys = ["raised_before"];
+      }
       return tableColumns.filter(
         (col) =>
           !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),

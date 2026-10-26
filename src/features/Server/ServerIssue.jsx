@@ -546,6 +546,11 @@ const ServerIssue = forwardRef(
         email_subject: isEmailEnabled ? subject : "",
         email_content: isEmailEnabled ? emailContent : "",
         send_email: isEmailEnabled ? 1 : 0,
+        server_trans_id:
+          serverDetails?.trans_details?.[0]?.server_trans_id != null
+            ? serverDetails?.trans_details[0].server_trans_id
+            : "",
+        issued_date: formatToBackendIST(new Date()),
       };
 
       try {

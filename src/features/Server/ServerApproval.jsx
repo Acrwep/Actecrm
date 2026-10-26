@@ -154,6 +154,7 @@ const ServerApproval = forwardRef(
             setIsOpenApproveModal={setIsOpenApproveModal}
             setServerTransId={setServerTransId}
             isApprove={true}
+            isAccounts={true}
           />
 
           {isOpenRejectBox && (

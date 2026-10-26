@@ -20,6 +20,7 @@ const ServerTransCollapse = ({
   setIsOpenApproveModal,
   setServerTransId,
   isShowStartAndEndDate = false,
+  isAccounts = false,
 }) => {
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
@@ -247,42 +248,46 @@ const ServerTransCollapse = ({
                             }}
                           >
                             Server Cost
-                            <Tooltip
-                              title="View Previous History"
-                              placement="top"
-                              trigger={["click", "hover"]}
-                            >
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  cursor:
-                                    loadingServerTransId ===
-                                    item.server_trans_id
-                                      ? "not-allowed"
-                                      : "pointer",
-                                }}
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-
-                                  if (loadingServerTransId !== null) return;
-                                  setLoadingServerTransId(item.server_trans_id);
-                                  getPreviousServerHistoryData();
-                                }}
+                            {isAccounts && (
+                              <Tooltip
+                                title="View Previous History"
+                                placement="top"
+                                trigger={["click", "hover"]}
                               >
-                                {loadingServerTransId ===
-                                item.server_trans_id ? (
-                                  <CommonSpinner color="#333" size={14} />
-                                ) : (
-                                  <FaRegEye
-                                    style={{
-                                      color: "#5b69ca",
-                                      fontSize: "14px",
-                                    }}
-                                  />
-                                )}
-                              </span>
-                            </Tooltip>
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    cursor:
+                                      loadingServerTransId ===
+                                      item.server_trans_id
+                                        ? "not-allowed"
+                                        : "pointer",
+                                  }}
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+
+                                    if (loadingServerTransId !== null) return;
+                                    setLoadingServerTransId(
+                                      item.server_trans_id,
+                                    );
+                                    getPreviousServerHistoryData();
+                                  }}
+                                >
+                                  {loadingServerTransId ===
+                                  item.server_trans_id ? (
+                                    <CommonSpinner color="#333" size={14} />
+                                  ) : (
+                                    <FaRegEye
+                                      style={{
+                                        color: "#5b69ca",
+                                        fontSize: "14px",
+                                      }}
+                                    />
+                                  )}
+                                </span>
+                              </Tooltip>
+                            )}
                           </span>
                         </td>
 

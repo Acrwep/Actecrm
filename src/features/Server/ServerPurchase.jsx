@@ -97,7 +97,7 @@ export default function ServerPurchase({
   return (
     <div>
       <div style={{ padding: "1px 24px 0px 24px" }}>
-        <ServerTransCollapse serverDetails={serverDetails} />
+        <ServerTransCollapse serverDetails={serverDetails} isAccounts={true} />
       </div>
       <Divider className="customer_statusupdate_divider" />
 

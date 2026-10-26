@@ -1,33 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Row,
-  Col,
-  Upload,
-  Button,
-  Modal,
-  Tabs,
-  Checkbox,
-  Skeleton,
-} from "antd";
+import { Row, Col, Upload, Button, Modal, Checkbox, Skeleton } from "antd";
 import Logo from "../../assets/acte-logo.png";
 import { PlusOutlined } from "@ant-design/icons";
 import { CommonMessage } from "../Common/CommonMessage";
-import { SiWhatsapp } from "react-icons/si";
 import CommonInputField from "../Common/CommonInputField";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import "./styles.css";
 import {
   addressValidator,
   emailValidator,
   formatToBackendIST,
   getCountryFromDialCode,
-  mobileValidator,
-  nameValidator,
   selectValidator,
 } from "../Common/Validation";
-import { UploadOutlined } from "@ant-design/icons";
-import { IoIosAdd } from "react-icons/io";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonSignaturePad from "../Common/CommonSignaturePad";
@@ -35,10 +20,8 @@ import {
   getAllAreas,
   getBatches,
   getBatchTrack,
-  getBranches,
   getCustomerById,
   getTechnologies,
-  getTrainingMode,
   inserCustomerTrack,
   updateCustomer,
   updateCustomerStatus,
@@ -49,10 +32,8 @@ import CommonSpinner from "../Common/CommonSpinner";
 import PhoneWithCountry from "../Common/PhoneWithCountry";
 
 export default function CustomerRegistration() {
-  const sigCanvasRef = useRef(null);
   const navigate = useNavigate();
   const { customer_id } = useParams();
-  const [activeKey, setActiveKey] = useState("1");
 
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [otpEmail, setOtpEmail] = useState("");
@@ -61,72 +42,15 @@ export default function CustomerRegistration() {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
 
-  const handleSendOtp = async () => {
-    // if (!otpEmail) {
-    //   setOtpEmailError(" is required");
-    //   return;
-    // }
-    const err = emailValidator(otpEmail);
-    if (err) {
-      setOtpEmailError(err);
-      return;
-    }
-
-    if (otpEmail?.trim().toLowerCase() !== email?.trim().toLowerCase()) {
-      setOtpEmailError(
-        " is not registered. Please use your registered email address",
-      );
-      return;
-    }
-    setOtpLoading(true);
-    try {
-      await sendOtpToCustomer({ email: otpEmail });
-      CommonMessage("success", "OTP sent successfully");
-      setOtpEmailError("");
-      setIsOtpSent(true);
-    } catch (error) {
-      console.log("send OTP error", error);
-      CommonMessage(
-        "error",
-        error?.response?.data?.message || "Failed to send OTP",
-      );
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpCode) {
-      CommonMessage("error", "Please enter OTP");
-      return;
-    }
-    setOtpLoading(true);
-    try {
-      await verifyCustomerOtp({ email: otpEmail, otp: otpCode });
-      CommonMessage("success", "OTP verified successfully");
-      setIsOtpVerified(true);
-      setIsOpenTermsModal(true);
-    } catch (error) {
-      console.log("verify OTP error", error);
-      CommonMessage("error", error?.response?.data?.message || "Invalid OTP");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
   const [customerFullDetails, setCustomerFullDetails] = useState(null);
   const [name, setName] = useState("");
-  const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [mobileCountryCode, setMobileCountryCode] = useState("");
   const [mobileCountry, setMobileCountry] = useState("in");
   const [mobile, setMobile] = useState("");
-  const [mobileError, setMobileError] = useState("");
   const [whatsAppCountry, setWhatsAppCountry] = useState("in");
   const [whatsAppCountryCode, setWhatsAppCountryCode] = useState("");
   const [whatsApp, setWhatsApp] = useState("");
-  const [whatsAppError, setWhatsAppError] = useState("");
 
   const [dateOfBirth, setDateOfBirth] = useState(null);
   const [dateOfBirthError, setDateOfBirthError] = useState(null);
@@ -141,19 +65,15 @@ export default function CustomerRegistration() {
   const [addressError, setAddressError] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [pinCodeError, setPinCodeError] = useState("");
-  const [location, setLocation] = useState("");
-  const [locationError, setLocationError] = useState("");
 
   //course details usestates
   const [courseOptions, setCourseOptions] = useState([]);
   const [course, setCourse] = useState(null);
-  const [courseError, setCourseError] = useState("");
   const [preferredBatchOptions, setPreferredBatchOptions] = useState([]);
   const [preferredBatch, setPreferredBatch] = useState(null);
   const [batchTimingOptions, setBatchTimingOptions] = useState([]);
   const [batchTiming, setBatchTiming] = useState(null);
   const [placementSupport, setPlacementSupport] = useState(null);
-  const [placementSupportError, setPlacementSupportError] = useState(null);
   const [server, setServer] = useState("");
 
   const [profilePictureArray, setProfilePictureArray] = useState([]);
@@ -161,7 +81,6 @@ export default function CustomerRegistration() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [isOpenSignatureModal, setIsOpenSignatureModal] = useState(false);
-  const [signatureArray, setSignatureArray] = useState([]);
   const [signatureBase64, setSignatureBase64] = useState("");
   const [signatureError, setSignatureError] = useState("");
   const [isOpenTermsModal, setIsOpenTermsModal] = useState(true);
@@ -294,6 +213,55 @@ export default function CustomerRegistration() {
     }
   };
 
+  const handleSendOtp = async () => {
+    const err = emailValidator(otpEmail);
+    if (err) {
+      setOtpEmailError(err);
+      return;
+    }
+
+    if (otpEmail?.trim().toLowerCase() !== email?.trim().toLowerCase()) {
+      setOtpEmailError(
+        " is not registered. Please use your registered email address",
+      );
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await sendOtpToCustomer({ email: otpEmail });
+      CommonMessage("success", "OTP sent successfully");
+      setOtpEmailError("");
+      setIsOtpSent(true);
+    } catch (error) {
+      console.log("send OTP error", error);
+      CommonMessage(
+        "error",
+        error?.response?.data?.message || "Failed to send OTP",
+      );
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode) {
+      CommonMessage("error", "Please enter OTP");
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      await verifyCustomerOtp({ email: otpEmail, otp: otpCode });
+      CommonMessage("success", "OTP verified successfully");
+      setIsOtpVerified(true);
+      setIsOpenTermsModal(true);
+    } catch (error) {
+      console.log("verify OTP error", error);
+      CommonMessage("error", error?.response?.data?.message || "Invalid OTP");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleProfileAttachment = ({ fileList: newFileList }) => {
     console.log("newww", newFileList);
 
@@ -359,91 +327,14 @@ export default function CustomerRegistration() {
       (file) => file.uid !== fileToRemove.uid,
     );
     setProfilePictureArray(newFileList);
-    // CommonToaster("Profile removed");
-  };
-
-  const handleSignature = ({ file }) => {
-    // allowed MIME types
-    const isValidType = file.type === "image/png";
-
-    if (file.status === "uploading" || file.status === "removed") {
-      setSignatureArray([]);
-      setSignatureBase64("");
-      setSignatureError("Signature is required");
-      return;
-    }
-    const isValidSize = file.size <= 1024 * 1024;
-
-    if (isValidType && isValidSize) {
-      console.log("fileeeee", file);
-      setSignatureArray([file]);
-      CommonMessage("success", "Signature uploaded");
-      setSignatureError("");
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 content
-        setSignatureBase64(base64String); // Store in state
-      };
-    } else {
-      if (!isValidType) {
-        CommonMessage("error", "Accept only .png");
-      } else if (!isValidSize) {
-        CommonMessage("error", "File size must be 1MB or less");
-      }
-      setSignatureArray([]);
-      setSignatureBase64("");
-    }
-  };
-
-  const handleTabClick = (key, e) => {
-    setActiveKey(key);
-  };
-
-  const handlePersonalDetails = () => {
-    setValidationTrigger(true);
-    const nameValidate = nameValidator(name);
-    const emailValidate = emailValidator(email);
-    const mobileValidate = mobileValidator(mobile);
-    const whatsAppValidate = mobileValidator(whatsApp);
-    const dateOfBirthValidate = selectValidator(dateOfBirth);
-    const genderValidate = selectValidator(gender);
-    const locationValidate = addressValidator(location);
-
-    setNameError(nameValidate);
-    setEmailError(emailValidate);
-    setMobileError(mobileValidate);
-    setWhatsAppError(whatsAppValidate);
-    setDateOfBirthError(dateOfBirthValidate);
-    setGenderError(genderValidate);
-    setLocationError(locationValidate);
-
-    if (
-      nameValidate ||
-      emailValidate ||
-      mobileValidate ||
-      whatsAppValidate ||
-      dateOfBirthValidate ||
-      genderValidate ||
-      locationValidate
-    )
-      return;
-
-    setActiveKey("2");
   };
 
   const handleSubmit = async () => {
     setValidationTrigger(true);
-    const nameValidate = nameValidator(name);
-    const emailValidate = emailValidator(email);
-    const mobileValidate = mobileValidator(mobile);
-    const whatsAppValidate = mobileValidator(whatsApp);
     const dateOfBirthValidate = selectValidator(dateOfBirth);
     const genderValidate = selectValidator(gender);
     const addressValidate = selectValidator(address);
     const pinCodeValidate = selectValidator(pinCode);
-    const courseValidate = selectValidator(course);
-    const placementSupportValidate = selectValidator(placementSupport);
 
     let profileValidate;
     let termsandconditionsValidate;
@@ -469,30 +360,18 @@ export default function CustomerRegistration() {
       termsandconditionsValidate = "";
     }
 
-    setNameError(nameValidate);
-    setEmailError(emailValidate);
-    setMobileError(mobileValidate);
-    setWhatsAppError(whatsAppValidate);
     setDateOfBirthError(dateOfBirthValidate);
     setGenderError(genderValidate);
     setAddressError(addressValidate);
     setPinCodeError(pinCodeValidate);
-    setCourseError(courseValidate);
-    setPlacementSupportError(placementSupportValidate);
     setSignatureError(signatureValidate);
     setIsCheckedTermsError(termsandconditionsValidate);
 
     if (
-      nameValidate ||
-      emailValidate ||
-      mobileValidate ||
-      whatsAppValidate ||
       dateOfBirthValidate ||
       genderValidate ||
       addressValidate ||
       pinCodeValidate ||
-      courseValidate ||
-      placementSupportValidate ||
       profileValidate ||
       signatureValidate ||
       termsandconditionsValidate
@@ -876,11 +755,8 @@ export default function CustomerRegistration() {
                           value={name}
                           onChange={(e) => {
                             setName(e.target.value);
-                            if (validationTrigger) {
-                              setNameError(nameValidator(e.target.value));
-                            }
                           }}
-                          error={nameError}
+                          error={""}
                           required={true}
                           disabled={true}
                         />
@@ -897,12 +773,9 @@ export default function CustomerRegistration() {
                           required={true}
                           onChange={(e) => {
                             setEmail(e.target.value);
-                            if (validationTrigger) {
-                              setEmailError(emailValidator(e.target.value));
-                            }
                           }}
                           value={email}
-                          error={emailError}
+                          error={""}
                           disabled={true}
                         />
                       </Col>
@@ -928,6 +801,7 @@ export default function CustomerRegistration() {
                           }}
                           value={mobile}
                           disabled={true}
+                          error={""}
                           disableCountrySelect={true}
                         />
                       </Col>
@@ -952,6 +826,7 @@ export default function CustomerRegistration() {
                             setWhatsAppCountry(iso2);
                           }}
                           disabled={true}
+                          error={""}
                           disableCountrySelect={true}
                         />
                       </Col>
@@ -1068,12 +943,9 @@ export default function CustomerRegistration() {
                           options={courseOptions}
                           onChange={(e) => {
                             setCourse(e.target.value);
-                            if (validationTrigger) {
-                              setCourseError(selectValidator(e.target.value));
-                            }
                           }}
                           value={course}
-                          error={courseError}
+                          error={""}
                           disabled={true}
                         />
                       </Col>
@@ -1160,39 +1032,6 @@ export default function CustomerRegistration() {
                         )}
                       </Col>
                     </Row>
-                    {/* <div
-                      className="customer_registration_terms_container"
-                      style={{
-                        marginBottom: signatureBase64 ? "20px" : "0px",
-                      }}
-                    >
-                      <Checkbox
-                        onChange={(e) => {
-                          setIsCheckedTerms(e.target.checked);
-                          if (validationTrigger) {
-                            if (e.target.checked === true) {
-                              setIsCheckedTermsError("");
-                            } else {
-                              setIsCheckedTermsError(" is required");
-                            }
-                          }
-                        }}
-                        checked={isCheckedTerms}
-                      >
-                        I have read and agree to the
-                      </Checkbox>
-                      <p
-                        className="customer_registration_terms_text"
-                        onClick={() => setIsOpenTermsModal(true)}
-                      >
-                        Terms and Conditions
-                      </p>
-                    </div> */}
-                    {/* {isCheckedTermsError && (
-                  <p className="customer_registration_terms_error">
-                    Please accept the terms and conditions
-                  </p>
-                )} */}
                   </div>
                 </div>
 

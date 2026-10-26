@@ -164,6 +164,22 @@ export default function Server({ setServerCount }) {
       },
     },
     {
+      title: "Approved On",
+      key: "approved_on",
+      dataIndex: "trans_details",
+      width: 110,
+      render: (text, record) => {
+        const approvedDate = record.trans_details?.[0]?.verified_date;
+        return (
+          <EllipsisTooltip
+            text={
+              approvedDate ? moment(approvedDate).format("DD/MM/YYYY") : "-"
+            }
+          />
+        );
+      },
+    },
+    {
       title: "Raise Date",
       key: "server_raise_date",
       dataIndex: "server_raise_date",
@@ -215,12 +231,12 @@ export default function Server({ setServerCount }) {
       },
     },
     {
-      title: "Server Name",
-      key: "server_name",
-      dataIndex: "server_name",
-      width: 150,
+      title: "Duration",
+      key: "requested_duration",
+      dataIndex: "requested_duration",
+      width: 90,
       render: (text) => {
-        return <EllipsisTooltip text={text} />;
+        return <p>{text ? `${text} Days` : "-"}</p>;
       },
     },
     {
@@ -235,15 +251,6 @@ export default function Server({ setServerCount }) {
       },
     },
     {
-      title: "Duration",
-      key: "requested_duration",
-      dataIndex: "requested_duration",
-      width: 90,
-      render: (text) => {
-        return <p>{text ? `${text} Days` : "-"}</p>;
-      },
-    },
-    {
       title: "Vendor",
       key: "vendor_id",
       dataIndex: "trans_details",
@@ -252,6 +259,15 @@ export default function Server({ setServerCount }) {
         const vendor = record.trans_details?.[0]?.vendor_id;
 
         return <EllipsisTooltip text={vendor ? `${vendor}` : "-"} />;
+      },
+    },
+    {
+      title: "Server Name",
+      key: "server_name",
+      dataIndex: "server_name",
+      width: 150,
+      render: (text) => {
+        return <EllipsisTooltip text={text} />;
       },
     },
     {
@@ -269,63 +285,6 @@ export default function Server({ setServerCount }) {
               </span>
             )}
           </div>
-        );
-      },
-    },
-    {
-      title: "Email",
-      key: "email",
-      dataIndex: "email",
-      width: 160,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Mobile",
-      key: "phone",
-      dataIndex: "phone",
-      width: 140,
-      render: (text, record) => {
-        return (
-          <CandidateNumberWithWhatsApp
-            text={text}
-            phoneCode={record.phonecode}
-            whatsapp={record.whatsapp}
-            whatsappPhoneCode={record.whatsapp_phone_code}
-          />
-        );
-      },
-    },
-    {
-      title: "Course ",
-      key: "course_name",
-      dataIndex: "course_name",
-      width: 150,
-      render: (text) => {
-        return <EllipsisTooltip text={text} />;
-      },
-    },
-    {
-      title: "Balance",
-      key: "balance_amount",
-      dataIndex: "balance_amount",
-      width: 95,
-      render: (text) => {
-        const amount = Number(text);
-
-        return (
-          <p
-            style={{
-              color: amount === 0 ? "green" : "#D32F2F",
-              margin: 0,
-              fontWeight: 700,
-            }}
-          >
-            {text !== null && text !== undefined
-              ? amount.toLocaleString("en-IN")
-              : "-"}
-          </p>
         );
       },
     },
@@ -1005,30 +964,14 @@ export default function Server({ setServerCount }) {
   };
 
   const filteredTableColumns = useMemo(() => {
-    if (status === "Requested" || status === "") {
-      const hiddenKeys = [
-        "server_raise_date",
-        "server_name",
-        "server_cost",
-        "duration",
-        "vendor_id",
-      ];
+    if (status === "Awaiting Approval") {
+      const hiddenKeys = ["approved_on"];
 
       return tableColumns.filter(
         (col) =>
           !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
       );
     }
-
-    if (status === "Server Raised") {
-      const hiddenKeys = ["server_name", "server_cost", "vendor_id"];
-
-      return tableColumns.filter(
-        (col) =>
-          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
-      );
-    }
-
     return tableColumns;
   }, [tableColumns, status]);
 
