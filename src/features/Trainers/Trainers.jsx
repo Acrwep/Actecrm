@@ -399,10 +399,15 @@ export default function Trainers() {
   const [bucketStatus, setBucketStatus] = useState("AddTrainer");
   const [status, setStatus] = useState("AddTrainer");
   const [previousStatus, setPreviousStatus] = useState(null);
+  const [previousBucketStatus, setPreviousBucketStatus] = useState(null);
   const statusRef = useRef(status);
+  const bucketStatusRef = useRef(bucketStatus);
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
+  useEffect(() => {
+    bucketStatusRef.current = bucketStatus;
+  }, [bucketStatus]);
   const [editTrainerData, setEditTrainerData] = useState(null);
   const [technologyOptions, setTechnologyOptions] = useState([]);
   const [experienceOptions, setExperienceOptions] = useState([]);
@@ -886,9 +891,18 @@ export default function Trainers() {
   };
 
   const fetchTrainersData = (overrides = {}) => {
+    const resolvedStatus =
+      overrides.status !== undefined
+        ? overrides.status
+        : status !== "AddTrainer"
+          ? status
+          : previousStatus !== null
+            ? previousStatus
+            : "";
+
     getTrainersData(
       overrides.searchValue !== undefined ? overrides.searchValue : searchValue,
-      overrides.status !== undefined ? overrides.status : status,
+      resolvedStatus,
       overrides.hrId !== undefined ? overrides.hrId : hrId,
       overrides.pageNumber !== undefined
         ? overrides.pageNumber
@@ -921,35 +935,42 @@ export default function Trainers() {
     let statusPayload = "";
     let is_form_sent = null;
 
-    if (!trainerStatus || trainerStatus === "") {
+    const effectiveStatus =
+      trainerStatus === "AddTrainer"
+        ? previousStatus !== null && previousStatus !== "AddTrainer"
+          ? previousStatus
+          : ""
+        : trainerStatus;
+
+    if (!effectiveStatus || effectiveStatus === "") {
       bucket = "";
-    } else if (trainerStatus === "Pending") {
+    } else if (effectiveStatus === "Pending") {
       bucket = "total_pending";
-    } else if (trainerStatus === "Form Pending") {
+    } else if (effectiveStatus === "Form Pending") {
       bucket = "total_pending";
       is_form_sent = 1;
-    } else if (trainerStatus === "Verify Pending") {
+    } else if (effectiveStatus === "Verify Pending") {
       bucket = "total_pending";
       statusPayload = "Verify Pending";
-    } else if (trainerStatus === "Verified") {
+    } else if (effectiveStatus === "Verified") {
       bucket = "Verified";
       statusPayload = "Verified";
-    } else if (trainerStatus === "Onboarded") {
+    } else if (effectiveStatus === "Onboarded") {
       bucket = "onboarding";
     } else if (
-      trainerStatus === "1" ||
-      trainerStatus === "5" ||
-      trainerStatus === "10" ||
-      trainerStatus === "10+"
+      effectiveStatus === "1" ||
+      effectiveStatus === "5" ||
+      effectiveStatus === "10" ||
+      effectiveStatus === "10+"
     ) {
       bucket = "onboarding";
-      statusPayload = trainerStatus;
-    } else if (trainerStatus === "OnGoing" || trainerStatus === "Ongoing") {
+      statusPayload = effectiveStatus;
+    } else if (effectiveStatus === "OnGoing" || effectiveStatus === "Ongoing") {
       bucket = "ongoing";
-    } else if (trainerStatus === "New" || trainerStatus === "Existing") {
+    } else if (effectiveStatus === "New" || effectiveStatus === "Existing") {
       bucket = "ongoing";
-      statusPayload = trainerStatus;
-    } else if (trainerStatus === "Rejected") {
+      statusPayload = effectiveStatus;
+    } else if (effectiveStatus === "Rejected") {
       bucket = "total_pending";
       statusPayload = "Rejected";
     }
@@ -1515,6 +1536,7 @@ export default function Trainers() {
     console.log("clicked item", item);
     console.log("prevvv storeee", statusRef.current);
     setPreviousStatus(statusRef.current);
+    setPreviousBucketStatus(bucketStatusRef.current);
     setStatus("AddTrainer");
     setEditTrainerId(item.id);
     setEditTrainerData(item);
@@ -1676,6 +1698,8 @@ export default function Trainers() {
                 }
                 onClick={() => {
                   if (status === "AddTrainer") return;
+                  setPreviousStatus(statusRef.current);
+                  setPreviousBucketStatus(bucketStatusRef.current);
                   setStatus("AddTrainer");
                   setBucketStatus("AddTrainer");
                   setEditTrainerId(null);
@@ -2032,13 +2056,44 @@ export default function Trainers() {
             skillsOptions={skillsOptions}
             setIsOpenAddCourseModal={setIsOpenAddCourseModal}
             setIsOpenAddSkillModal={setIsOpenAddSkillModal}
-            callgetTrainersApi={() => {
-              fetchTrainersData({});
+            callgetTrainersApi={(targetStatus, targetBucket) => {
+              const statusToFetch =
+                targetStatus !== undefined && targetStatus !== null
+                  ? targetStatus
+                  : previousStatus !== null
+                    ? previousStatus
+                    : status !== "AddTrainer"
+                      ? status
+                      : "";
+              const bucketToSet =
+                targetBucket !== undefined && targetBucket !== null
+                  ? targetBucket
+                  : previousBucketStatus !== null
+                    ? previousBucketStatus
+                    : bucketStatus !== "AddTrainer"
+                      ? bucketStatus
+                      : "";
+
+              if (statusToFetch !== undefined) setStatus(statusToFetch);
+              if (bucketToSet) setBucketStatus(bucketToSet);
+              setPreviousStatus(null);
+              setPreviousBucketStatus(null);
+              setEditTrainerId(null);
+              setEditTrainerData(null);
+
+              fetchTrainersData({
+                status: statusToFetch,
+                pageNumber: paginationRef.current?.page || pagination.page || 1,
+                limit: paginationRef.current?.limit || pagination.limit || 10,
+              });
             }}
             setButtonLoading={setButtonLoading}
             previousStatus={previousStatus}
+            previousBucketStatus={previousBucketStatus}
             setStatus={setStatus}
+            setBucketStatus={setBucketStatus}
             setPreviousStatus={setPreviousStatus}
+            setPreviousBucketStatus={setPreviousBucketStatus}
           />
           {/* <div
             className="leadmanager_tablefiler_footer"
@@ -2082,11 +2137,30 @@ export default function Trainers() {
               className="animated-cancel-btn"
               onClick={() => {
                 addTrainerRef.current.resetForm();
-                if (previousStatus !== null) {
-                  setStatus(previousStatus);
-                  fetchTrainersData({ status: previousStatus });
-                  setPreviousStatus(null);
-                }
+                const targetStatus =
+                  previousStatus !== null
+                    ? previousStatus
+                    : status !== "AddTrainer"
+                      ? status
+                      : "";
+                const targetBucket =
+                  previousBucketStatus !== null
+                    ? previousBucketStatus
+                    : bucketStatus !== "AddTrainer"
+                      ? bucketStatus
+                      : "";
+                if (targetStatus !== undefined) setStatus(targetStatus);
+                if (targetBucket) setBucketStatus(targetBucket);
+                setPreviousStatus(null);
+                setPreviousBucketStatus(null);
+                setEditTrainerId(null);
+                setEditTrainerData(null);
+                fetchTrainersData({
+                  status: targetStatus,
+                  pageNumber:
+                    paginationRef.current?.page || pagination.page || 1,
+                  limit: paginationRef.current?.limit || pagination.limit || 10,
+                });
               }}
               style={{
                 borderRadius: "6px",

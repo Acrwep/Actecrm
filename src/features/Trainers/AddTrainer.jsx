@@ -59,8 +59,11 @@ const AddTrainer = forwardRef(
       callgetTrainersApi,
       setButtonLoading,
       previousStatus,
+      previousBucketStatus,
       setStatus,
+      setBucketStatus,
       setPreviousStatus,
+      setPreviousBucketStatus,
     },
     ref,
   ) => {
@@ -223,7 +226,7 @@ const AddTrainer = forwardRef(
             setWhatsApp(item.whatsapp || "");
 
             setTrainerMainStatus(item?.status);
-            setTrainerCurrentStatus(item.trainer_status);
+            setTrainerCurrentStatus(item?.trainer_status || "Active");
             setTechnology(item.technology_id);
             setExperience(parseInt(item.overall_exp_year));
             setRelevantExperience(parseInt(item.relavant_exp_year));
@@ -399,11 +402,18 @@ const AddTrainer = forwardRef(
           setTimeout(() => {
             if (setButtonLoading) setButtonLoading(false);
             resetForm();
+            const targetStatus = previousStatus;
+            const targetBucket = previousBucketStatus;
             if (previousStatus !== null) {
               if (setStatus) setStatus(previousStatus);
               if (setPreviousStatus) setPreviousStatus(null);
             }
-            if (callgetTrainersApi) callgetTrainersApi();
+            if (previousBucketStatus !== null) {
+              if (setBucketStatus) setBucketStatus(previousBucketStatus);
+              if (setPreviousBucketStatus) setPreviousBucketStatus(null);
+            }
+            if (callgetTrainersApi)
+              callgetTrainersApi(targetStatus, targetBucket);
           }, 300);
         } catch (error) {
           if (setButtonLoading) setButtonLoading(false);
@@ -428,11 +438,18 @@ const AddTrainer = forwardRef(
           setTimeout(() => {
             if (setButtonLoading) setButtonLoading(false);
             resetForm();
+            const targetStatus = previousStatus;
+            const targetBucket = previousBucketStatus;
             if (previousStatus !== null) {
               if (setStatus) setStatus(previousStatus);
               if (setPreviousStatus) setPreviousStatus(null);
             }
-            if (callgetTrainersApi) callgetTrainersApi();
+            if (previousBucketStatus !== null) {
+              if (setBucketStatus) setBucketStatus(previousBucketStatus);
+              if (setPreviousBucketStatus) setPreviousBucketStatus(null);
+            }
+            if (callgetTrainersApi)
+              callgetTrainersApi(targetStatus, targetBucket);
           }, 300);
         } catch (error) {
           if (setButtonLoading) setButtonLoading(false);
