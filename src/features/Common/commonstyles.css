@@ -410,40 +410,592 @@
   }
 }
 
-/* common mui custom datepicker styles */
-.common_muicustomdatepicker_daterange_button {
-  border: 1px solid #d9d9d9 !important;
-  /* padding: 4px 40px !important; */
-  height: 35px !important;
-  color: rgba(0, 0, 0, 0.88) !important;
-  font-weight: 400 !important;
-  font-size: 13px !important;
-}
-.common_muicustomdatepicker_daterange_button:hover {
-  background-color: transparent !important;
-  opacity: 1 !important;
-  border-color: rgba(128, 128, 128, 0.712) !important;
-}
-.common_muicustomdatepicker_floating_label {
-  position: absolute;
-  top: -12px;
-  left: 10px;
-  z-index: 2;
-  padding: 0 9px 0px 4px;
-  background-color: #fff;
-  /* color: #000000a2; */
-  color: #707074;
-  font-size: 8.5px;
-  font-weight: 400 !important;
-  font-family: "Poppins", sans-serif;
-  line-height: 16px;
-  text-transform: none;
+/* ========================================================
+   COMMON MUI CUSTOM DATEPICKER STYLES (MODERN REDESIGN)
+======================================================== */
 
-  /* Prevent text breaking */
-  white-space: nowrap;
-  width: max-content;
-  max-width: none;
+/* Trigger / Input Button */
+.common_muicustomdatepicker_daterange_button {
+  position: relative !important;
+  border: 1px solid #d0d5dd !important;
+  height: 35px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-family: "Poppins", sans-serif !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  outline: none !important;
 }
+
+.common_muicustomdatepicker_daterange_button:hover {
+  background-color: #ffffff !important;
+  border-color: #a4a4a4 !important;
+  opacity: 1 !important;
+}
+
+.common_muicustomdatepicker_daterange_button.is-active,
+.common_muicustomdatepicker_daterange_button:focus,
+.common_muicustomdatepicker_daterange_button:focus-visible,
+.common_muicustomdatepicker_daterange_button.Mui-focusVisible,
+.common_muicustomdatepicker_daterange_button:active {
+  background-color: #ffffff !important;
+}
+
+.common_muicustomdatepicker_daterange_button.is-disabled {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* Floating Label */
+.common_muicustomdatepicker_floating_label {
+  position: absolute !important;
+  top: -9px !important;
+  left: 10px !important;
+  z-index: 2 !important;
+  padding: 0 5px !important;
+  background-color: #ffffff !important;
+  color: #64748b !important;
+  font-size: 9px !important;
+  font-weight: 400 !important;
+  font-family: "Poppins", sans-serif !important;
+  line-height: 14px !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  width: max-content !important;
+  max-width: none !important;
+  border-radius: 3px !important;
+  transition:
+    color 0.2s ease,
+    font-weight 0.2s ease !important;
+  pointer-events: none !important;
+}
+
+.common_muicustomdatepicker_floating_label.is-focused,
+.common_muicustomdatepicker_daterange_button:hover
+  .common_muicustomdatepicker_floating_label,
+.common_muicustomdatepicker_daterange_button.is-active
+  .common_muicustomdatepicker_floating_label {
+  /* color: #5b69ca !important; */
+  font-weight: 600 !important;
+}
+
+/* Content inside Input Button */
+.common_muicustomdatepicker_content {
+  display: flex !important;
+  width: 100% !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.common_muicustomdatepicker_left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.common_muicustomdatepicker_calendar_icon {
+  color: #5b69ca !important;
+  flex-shrink: 0 !important;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease !important;
+}
+
+.common_muicustomdatepicker_daterange_button:hover
+  .common_muicustomdatepicker_calendar_icon {
+  transform: scale(1.08) !important;
+}
+
+.common_muicustomdatepicker_dates {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  gap: 6px !important;
+}
+
+.common_muicustomdatepicker_date_text {
+  color: #1e293b !important;
+  font-weight: 500 !important;
+  font-family: "Poppins", sans-serif !important;
+  letter-spacing: -0.2px !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+.common_muicustomdatepicker_separator {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  user-select: none !important;
+  padding: 0 2px !important;
+}
+
+.common_muicustomdatepicker_right {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+}
+
+.common_muicustomdatepicker_chevron {
+  color: #94a3b8 !important;
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s ease !important;
+}
+
+.common_muicustomdatepicker_chevron.is-open {
+  transform: rotate(180deg) !important;
+  color: #5b69ca !important;
+}
+
+/* Dashboard trigger enhancements */
+.dashboard_scorecard_dateiconContainer {
+  transition: all 0.2s ease !important;
+  user-select: none !important;
+}
+
+.dashboard_scorecard_dateiconContainer:hover,
+.dashboard_scorecard_dateiconContainer.is-active {
+  background-color: rgba(91, 105, 202, 0.08) !important;
+  color: #5b69ca !important;
+}
+
+.dashboard_scorecard_dateiconContainer:hover svg,
+.dashboard_scorecard_dateiconContainer.is-active svg {
+  color: #5b69ca !important;
+}
+
+/* Popover Paper */
+.common_muicustomdatepicker_popover_paper {
+  border-radius: 12px !important;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.12),
+    0 2px 6px rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  width: 320px !important;
+  max-width: calc(100vw - 24px) !important;
+  overflow: hidden !important;
+}
+
+.common_muicustomdatepicker_popover_content {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Popover Header */
+.common_muicustomdatepicker_popover_header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  background: linear-gradient(180deg, #fbfcfe 0%, #f8faff 100%) !important;
+}
+
+.common_muicustomdatepicker_header_title_wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.common_muicustomdatepicker_header_icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 6px !important;
+  background-color: #eef0fb !important;
+  color: #5b69ca !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.common_muicustomdatepicker_header_title {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  font-family: "Poppins", sans-serif !important;
+  line-height: 1.2 !important;
+}
+
+.common_muicustomdatepicker_header_subtitle {
+  margin: 2px 0 0 0 !important;
+  font-size: 11px !important;
+  color: #64748b !important;
+  font-family: "Poppins", sans-serif !important;
+  line-height: 1.2 !important;
+}
+
+.common_muicustomdatepicker_close_btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  color: #94a3b8 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.common_muicustomdatepicker_close_btn:hover {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+/* Popover Body */
+.common_muicustomdatepicker_popover_body {
+  padding: 14px 16px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.common_muicustomdatepicker_select_wrapper {
+  width: 100% !important;
+}
+
+/* Custom Range Section */
+.common_muicustomdatepicker_custom_section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding-top: 12px !important;
+  border-top: 1px dashed #e2e8f0 !important;
+  animation: commonDatePickerFadeIn 0.2s ease-in-out !important;
+}
+
+@keyframes commonDatePickerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.common_muicustomdatepicker_custom_header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.common_muicustomdatepicker_custom_title {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #5b69ca !important;
+  font-family: "Poppins", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+}
+
+.common_muicustomdatepicker_pickers_row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin-top: 4px;
+}
+
+.common_muicustomdatepicker_picker_col {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.common_muicustomdatepicker_picker_arrow {
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  user-select: none !important;
+  flex-shrink: 0 !important;
+}
+
+.common_muicustomdatepicker_custom_footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  margin-top: 2px !important;
+}
+
+.common_muicustomdatepicker_apply_btn {
+  background-color: #5b69ca !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 5px 14px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  font-family: "Poppins", sans-serif !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(91, 105, 202, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.common_muicustomdatepicker_apply_btn:hover {
+  background-color: #4a58b0 !important;
+  box-shadow: 0 2px 6px rgba(91, 105, 202, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ========================================================
+   GLOBAL MUI DATE PICKER POPUP STYLES & CALENDAR ENHANCEMENTS
+======================================================== */
+
+/* Ant Design Message Toast on top of all modals/popovers */
+.ant-message {
+  z-index: 9999999999999999 !important;
+}
+
+/* Calendar Popper Container */
+.MuiPickersPopper-root {
+  z-index: 999999999999999 !important;
+  max-height: calc(100vh - 16px) !important;
+}
+
+.MuiPickersPopper-paper {
+  border-radius: 12px !important;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.14),
+    0 2px 6px rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid #eef0f5 !important;
+  background-color: #ffffff !important;
+  font-family: "Poppins", sans-serif !important;
+  max-height: calc(100vh - 20px) !important;
+  overflow-y: auto !important;
+}
+
+/* Calendar Header */
+.MuiPickersCalendarHeader-root {
+  padding: 12px 14px 6px 16px !important;
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+}
+
+.MuiPickersCalendarHeader-label {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+.MuiPickersArrowSwitcher-button {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 6px !important;
+  color: #5b69ca !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiPickersArrowSwitcher-button:hover {
+  background-color: rgba(91, 105, 202, 0.1) !important;
+}
+
+/* Weekday Labels */
+.MuiDayCalendar-weekDayLabel {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+  width: 34px !important;
+  height: 34px !important;
+}
+
+/* Day Buttons */
+.MuiPickersDay-root {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 400 !important;
+  color: #334155 !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  margin: 1px !important;
+  transition: all 0.15s ease !important;
+}
+
+.MuiPickersDay-root:hover:not(.Mui-selected) {
+  background-color: rgba(91, 105, 202, 0.08) !important;
+  color: #5b69ca !important;
+  font-weight: 500 !important;
+}
+
+/* Today's Date Highlighting (Unselected) */
+.MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected) {
+  background-color: rgba(91, 105, 202, 0.08) !important;
+  border: 1.5px solid #5b69ca !important;
+  color: #5b69ca !important;
+  font-weight: 600 !important;
+}
+
+/* Selected Date Highlighting */
+.MuiPickersDay-root.Mui-selected {
+  border-radius: 50% !important;
+  background-color: #5b69ca !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 6px rgba(91, 105, 202, 0.35) !important;
+}
+
+.MuiPickersDay-root.Mui-selected:hover {
+  background-color: #4a58b0 !important;
+}
+
+/* Disabled Days */
+.MuiPickersDay-root.Mui-disabled {
+  color: #cbd5e1 !important;
+  opacity: 0.55 !important;
+}
+
+/* Month and Year Views */
+.MuiPickersMonth-monthButton,
+.MuiMonthCalendar-root button {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 12.5px !important;
+  border-radius: 16px !important;
+  transition: all 0.15s ease !important;
+}
+
+.MuiPickersMonth-monthButton.Mui-selected,
+.MuiMonthCalendar-root button.Mui-selected {
+  background-color: #5b69ca !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.MuiPickersMonth-monthButton:hover:not(.Mui-selected),
+.MuiMonthCalendar-root button:hover:not(.Mui-selected) {
+  background-color: rgba(91, 105, 202, 0.1) !important;
+  color: #5b69ca !important;
+}
+
+.MuiYearCalendar-button,
+.MuiYearCalendar-root button {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 13px !important;
+  border-radius: 18px !important;
+  transition: all 0.15s ease !important;
+}
+
+.MuiYearCalendar-button.Mui-selected,
+.MuiYearCalendar-root button.Mui-selected {
+  background-color: #5b69ca !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.MuiYearCalendar-button:hover:not(.Mui-selected),
+.MuiYearCalendar-root button:hover:not(.Mui-selected) {
+  background-color: rgba(91, 105, 202, 0.1) !important;
+  color: #5b69ca !important;
+}
+
+/* Reduce gap between calendar dates and CLEAR button */
+.MuiPickersLayout-root {
+  display: flex !important;
+  flex-direction: column !important;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+.MuiPickersLayout-contentWrapper {
+  flex: none !important;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+.MuiDateCalendar-root {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+.MuiDayCalendar-root {
+  height: auto !important;
+  min-height: auto !important;
+}
+
+.MuiPickersSlideTransition-root {
+  display: block !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 200px !important;
+  height: 200px !important;
+}
+
+.MuiDayCalendar-monthContainer {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+}
+
+.MuiPickersLayout-actionBar,
+.MuiPickersPopper-paper .MuiDialogActions-root {
+  padding: 0px 8px 4px 8px !important;
+  margin-top: 0px !important;
+  min-height: auto !important;
+}
+
+.MuiPickersLayout-actionBar .MuiButton-root,
+.MuiPickersPopper-paper .MuiDialogActions-root .MuiButton-root {
+  font-family: "Poppins", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #5b69ca !important;
+  padding: 8px 12px !important;
+  min-width: unset !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 6px !important;
+}
+
+.MuiPickersLayout-actionBar .MuiButton-root:hover,
+.MuiPickersPopper-paper .MuiDialogActions-root .MuiButton-root:hover {
+  background-color: rgba(91, 105, 202, 0.08) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .common_muicustomdatepicker_popover_paper {
+    width: 94vw !important;
+  }
+  .common_muicustomdatepicker_date_text {
+    font-size: 11.5px !important;
+  }
+  .common_muicustomdatepicker_popover_header {
+    padding: 10px 12px !important;
+  }
+  .common_muicustomdatepicker_popover_body {
+    padding: 12px !important;
+  }
+}
+
 /* view invoice styles */
 .invoice-container table {
   border: none; /* or your invoice-specific border */

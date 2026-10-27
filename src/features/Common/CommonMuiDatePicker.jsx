@@ -85,8 +85,37 @@ export default function CommonMuiDatePicker({
           },
           popper: {
             disablePortal: false,
+            placement: "auto",
+            modifiers: [
+              {
+                name: "flip",
+                enabled: true,
+                options: {
+                  fallbackPlacements: [
+                    "top-start",
+                    "top",
+                    "top-end",
+                    "bottom-start",
+                    "bottom",
+                    "bottom-end",
+                  ],
+                  padding: 8,
+                },
+              },
+              {
+                name: "preventOverflow",
+                enabled: true,
+                options: {
+                  boundary: "viewport",
+                  padding: 8,
+                  altAxis: true,
+                  tether: false,
+                },
+              },
+            ],
             sx: {
               zIndex: 999999999999999,
+              maxHeight: "calc(100vh - 20px)",
               "& .MuiTypography-root": {
                 fontFamily: "Poppins, sans-serif !important",
                 fontSize: "13px",
@@ -123,6 +152,32 @@ export default function CommonMuiDatePicker({
                 {
                   backgroundColor: "#4a58b0 !important",
                 },
+              // Gap reduction between dates and Clear button
+              "& .MuiDateCalendar-root": {
+                height: "auto !important",
+                minHeight: "auto !important",
+                maxHeight: "none !important",
+              },
+              "& .MuiDayCalendar-root": {
+                height: "auto !important",
+                minHeight: "auto !important",
+              },
+              "& .MuiPickersSlideTransition-root": {
+                minHeight: "216px !important",
+                height: "216px !important",
+                overflow: "hidden !important",
+                position: "relative !important",
+                display: "block !important",
+              },
+              "& .MuiDayCalendar-monthContainer": {
+                position: "absolute !important",
+                top: "0 !important",
+                left: "0 !important",
+                right: "0 !important",
+              },
+              "& .MuiPickersLayout-actionBar": {
+                minHeight: "auto !important",
+              },
             },
           },
           actionBar: {
