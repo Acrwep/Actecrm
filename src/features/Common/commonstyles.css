@@ -420,7 +420,7 @@
   border: 1px solid #d0d5dd !important;
   height: 35px !important;
   padding: 0 10px !important;
-  border-radius: 6px !important;
+  border-radius: 5px !important;
   background-color: #ffffff !important;
   color: #1e293b !important;
   font-weight: 500 !important;
@@ -468,7 +468,7 @@
   background-color: #ffffff !important;
   color: #64748b !important;
   font-size: 9px !important;
-  font-weight: 400 !important;
+  font-weight: 500 !important;
   font-family: "Poppins", sans-serif !important;
   line-height: 14px !important;
   text-transform: none !important;
@@ -488,7 +488,7 @@
 .common_muicustomdatepicker_daterange_button.is-active
   .common_muicustomdatepicker_floating_label {
   /* color: #5b69ca !important; */
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
 
 /* Content inside Input Button */

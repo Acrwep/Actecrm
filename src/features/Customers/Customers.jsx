@@ -3149,13 +3149,13 @@ export default function Customers() {
                               fontSize: "12px",
                             }}
                           >
-                            Filter by Updated By
+                            Filter by Last Updated By
                           </Radio>
                           <Radio
                             value="Created"
                             style={{ marginBottom: "12px", fontSize: "12px" }}
                           >
-                            Filter by Created By
+                            Filter by Joining Date
                           </Radio>
                         </Radio.Group>
                       }

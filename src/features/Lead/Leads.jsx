@@ -2534,6 +2534,11 @@ export default function Leads({
 
             <Col flex="1.5 1 0%">
               <CommonMuiCustomDatePicker
+                label={
+                  leadBucketName === "Followup Leads"
+                    ? "Filter by Nxt Followup Date"
+                    : "Filter by Created Date"
+                }
                 width="100%"
                 dateFontSize={"12.5px"}
                 value={selectedDates}

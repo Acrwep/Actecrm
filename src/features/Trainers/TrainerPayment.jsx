@@ -3155,6 +3155,7 @@ export default function TrainerPayment() {
             <Col flex="1.5 1 0%">
               <CommonMuiCustomDatePicker
                 width={"100%"}
+                label={"Filter by Bill Raise Date"}
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
