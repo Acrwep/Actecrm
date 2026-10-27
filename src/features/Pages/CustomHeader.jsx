@@ -172,7 +172,7 @@ export default function CustomHeader() {
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
     const payload = {
-      keyword: convertAsJson?.user_id || "",
+      keyword: convertAsJson?.view_user_id || "",
     };
     try {
       const response = await getUsers(payload);

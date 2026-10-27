@@ -1161,6 +1161,7 @@ export default function Placement() {
             {/* Date Picker */}
             <Col flex="1 1 240px">
               <CommonMuiCustomDatePicker
+                label={"Filter by Joining Date"}
                 width="100%"
                 dateFontSize="12.5px"
                 value={selectedDates}
