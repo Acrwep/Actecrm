@@ -2057,6 +2057,21 @@ export default function Trainers() {
             setIsOpenAddCourseModal={setIsOpenAddCourseModal}
             setIsOpenAddSkillModal={setIsOpenAddSkillModal}
             callgetTrainersApi={(targetStatus, targetBucket) => {
+              const effectiveBucket =
+                targetBucket !== undefined && targetBucket !== null
+                  ? targetBucket
+                  : previousBucketStatus;
+
+              if (!effectiveBucket || effectiveBucket === "AddTrainer") {
+                setStatus("AddTrainer");
+                setBucketStatus("AddTrainer");
+                setPreviousStatus(null);
+                setPreviousBucketStatus(null);
+                setEditTrainerId(null);
+                setEditTrainerData(null);
+                return;
+              }
+
               const statusToFetch =
                 targetStatus !== undefined && targetStatus !== null
                   ? targetStatus
@@ -2065,14 +2080,7 @@ export default function Trainers() {
                     : status !== "AddTrainer"
                       ? status
                       : "";
-              const bucketToSet =
-                targetBucket !== undefined && targetBucket !== null
-                  ? targetBucket
-                  : previousBucketStatus !== null
-                    ? previousBucketStatus
-                    : bucketStatus !== "AddTrainer"
-                      ? bucketStatus
-                      : "";
+              const bucketToSet = effectiveBucket;
 
               if (statusToFetch !== undefined) setStatus(statusToFetch);
               if (bucketToSet) setBucketStatus(bucketToSet);
@@ -2137,6 +2145,16 @@ export default function Trainers() {
               className="animated-cancel-btn"
               onClick={() => {
                 addTrainerRef.current.resetForm();
+                if (
+                  !previousBucketStatus ||
+                  previousBucketStatus === "AddTrainer"
+                ) {
+                  setStatus("AddTrainer");
+                  setBucketStatus("AddTrainer");
+                  setEditTrainerId(null);
+                  setEditTrainerData(null);
+                  return;
+                }
                 const targetStatus =
                   previousStatus !== null
                     ? previousStatus

@@ -340,6 +340,7 @@ const AddTrainer = forwardRef(
         languagesValidate ||
         locationValidate
       ) {
+        CommonMessage("error", "Please fill all mandatory fields.");
         return;
       }
 
@@ -438,18 +439,12 @@ const AddTrainer = forwardRef(
           setTimeout(() => {
             if (setButtonLoading) setButtonLoading(false);
             resetForm();
-            const targetStatus = previousStatus;
-            const targetBucket = previousBucketStatus;
-            if (previousStatus !== null) {
-              if (setStatus) setStatus(previousStatus);
-              if (setPreviousStatus) setPreviousStatus(null);
-            }
-            if (previousBucketStatus !== null) {
-              if (setBucketStatus) setBucketStatus(previousBucketStatus);
-              if (setPreviousBucketStatus) setPreviousBucketStatus(null);
-            }
+            if (setStatus) setStatus("AddTrainer");
+            if (setBucketStatus) setBucketStatus("AddTrainer");
+            if (setPreviousStatus) setPreviousStatus(null);
+            if (setPreviousBucketStatus) setPreviousBucketStatus(null);
             if (callgetTrainersApi)
-              callgetTrainersApi(targetStatus, targetBucket);
+              callgetTrainersApi("AddTrainer", "AddTrainer");
           }, 300);
         } catch (error) {
           if (setButtonLoading) setButtonLoading(false);

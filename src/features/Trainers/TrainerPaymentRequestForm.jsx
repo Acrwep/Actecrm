@@ -17,7 +17,6 @@ import {
   getTrainerById,
   getTrainerPaymentRequestForm,
   insertTrainerPaymentRequest,
-  sendTrainerPaymentRequestMail,
   updateTrainerPaymentRequestForm,
 } from "../ApiService/action";
 import {
@@ -671,6 +670,9 @@ const TrainerPaymentRequestForm = forwardRef(
       } else {
         const payload = {
           trainer_id: trainer_id,
+          trainer_payment_link: `${
+            import.meta.env.VITE_EMAIL_URL
+          }/trainer-payment-claim`,
           request_amount:
             commercialType == "Batch" ? totalPayable : request_amount,
           bank_id: lastTransactionBankId,
@@ -697,10 +699,6 @@ const TrainerPaymentRequestForm = forwardRef(
             const success_data = response?.data?.data;
             // Refresh the payment requests data
             setButtonLoading(false);
-            handleSendFormLink(
-              success_data?.trainer_id,
-              success_data?.payment_master_id,
-            );
             onFormRefresh();
           }, 300);
         } catch (error) {
@@ -711,27 +709,6 @@ const TrainerPaymentRequestForm = forwardRef(
               "Something went wrong. Try again later",
           );
         }
-      }
-    };
-
-    const handleSendFormLink = async (trainerId, paymentMasterId) => {
-      const payload = {
-        email: trainerEmail,
-        link: `${
-          import.meta.env.VITE_EMAIL_URL
-        }/trainer-payment-claim/${trainerId}/${paymentMasterId}`,
-        trainer_id: trainerId,
-        payment_master_id: paymentMasterId,
-      };
-
-      try {
-        await sendTrainerPaymentRequestMail(payload);
-      } catch (error) {
-        CommonMessage(
-          "error",
-          error?.response?.data?.details ||
-            "Something went wrong. Try again later",
-        );
       }
     };
 
