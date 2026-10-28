@@ -184,7 +184,7 @@ export default function PassesOutProcess({
       );
     } finally {
       setButtonLoading({
-        generate_or_update: true,
+        generate_or_update: false,
       });
     }
   };

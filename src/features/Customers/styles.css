@@ -2467,3 +2467,65 @@
   color: #999 !important;
   border-color: #d9d9d9 !important;
 }
+/* Self-Paced Indication */
+/* Self-Paced Indication */
+.customers_selfpaced_indication {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.customers_selfpaced_icon_wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #e84393;
+}
+
+.customers_selfpaced_indication_icon {
+  position: relative;
+  z-index: 2;
+  color: #e84393;
+}
+
+/* Single Ripple Ring */
+.customers_selfpaced_ripple {
+  position: absolute;
+  inset: 0;
+  border: 1.2px solid rgba(232, 67, 147, 0.65);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: customers_selfpaced_ripple 4s ease-out infinite;
+}
+
+/* Slow Ripple Animation */
+@keyframes customers_selfpaced_ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Self-Paced Text */
+.customers_selfpaced_indication_text {
+  font-size: 12px;
+  color: #e84393;
+  font-weight: 600;
+  margin: 0;
+}
+
+.customers_financeverify_selfpaced_indication_container {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: end;
+  margin-bottom: 9px;
+  margin-top: -6px;
+}

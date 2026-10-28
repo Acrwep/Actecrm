@@ -34,11 +34,30 @@ export default function CommonMultiSelectField({
   borderLeftNone,
   onFocus,
   onBlur,
+  onKeyDown,
 }) {
+  const [inputValue, setInputValue] = React.useState("");
   const onBlurRef = React.useRef(onBlur);
   React.useEffect(() => {
     onBlurRef.current = onBlur;
   }, [onBlur]);
+
+  const handleKeyDown = (event) => {
+    onKeyDown?.(event);
+    if (event.key === "Enter") {
+      event.defaultMuiPrevented = true;
+      event.preventDefault();
+      setInputValue("");
+      if (event.target && typeof event.target.blur === "function") {
+        event.target.blur();
+      } else if (
+        document.activeElement &&
+        typeof document.activeElement.blur === "function"
+      ) {
+        document.activeElement.blur();
+      }
+    }
+  };
 
   // Resolve the string IDs from value into option objects
   const selectedOptions = React.useMemo(() => {
@@ -103,6 +122,18 @@ export default function CommonMultiSelectField({
           options={options}
           value={selectedOptions}
           disableClearable
+          inputValue={inputValue}
+          onInputChange={(event, newInputValue, reason) => {
+            if (reason === "input") {
+              setInputValue(newInputValue);
+            } else if (reason === "clear") {
+              setInputValue("");
+            } else if (reason === "reset") {
+              // Do not clear search word when item is selected
+            }
+          }}
+          onClose={() => setInputValue("")}
+          onKeyDown={handleKeyDown}
           getOptionLabel={(option) =>
             showLabelStatus === "Name"
               ? option?.name
@@ -131,31 +162,47 @@ export default function CommonMultiSelectField({
               No data found
             </span>
           }
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label={label}
-              required={required}
-              sx={{
-                "& .MuiInputBase-input": {
-                  fontSize: fontSize || "14px",
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderRight: borderRightNone ? "none" : "",
-                  borderLeft: borderLeftNone ? "none" : "",
-                  borderTopRightRadius: borderRightNone ? "0px" : "4px",
-                  borderBottomRightRadius: borderRightNone ? "0px" : "4px",
-                  borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
-                  borderBottomLeftRadius: borderLeftNone ? "0px" : "4px",
-                },
-              }}
-              className="common_inputfield"
-              error={error}
-              onFocus={onFocus}
-              onBlur={onBlur}
-            />
-          )}
+          renderInput={(params) => {
+            const { onKeyDown: paramsOnKeyDown, ...restInputProps } =
+              params.inputProps;
+            return (
+              <TextField
+                {...params}
+                inputProps={{
+                  ...restInputProps,
+                  onKeyDown: (event) => {
+                    handleKeyDown(event);
+                    if (!event.defaultMuiPrevented) {
+                      paramsOnKeyDown?.(event);
+                    }
+                  },
+                }}
+                size="small"
+                label={label}
+                required={required}
+                sx={{
+                  "& .MuiInputBase-input": {
+                    fontSize: fontSize || "14px",
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderRight: borderRightNone ? "none" : "",
+                    borderLeft: borderLeftNone ? "none" : "",
+                    borderTopRightRadius: borderRightNone ? "0px" : "4px",
+                    borderBottomRightRadius: borderRightNone ? "0px" : "4px",
+                    borderTopLeftRadius: borderLeftNone ? "0px" : "4px",
+                    borderBottomLeftRadius: borderLeftNone ? "0px" : "4px",
+                  },
+                }}
+                className="common_inputfield"
+                error={error}
+                onFocus={onFocus}
+                onBlur={(event) => {
+                  setInputValue("");
+                  onBlur?.(event);
+                }}
+              />
+            );
+          }}
           renderOption={
             renderOption ||
             ((props, option, { selected }) => {

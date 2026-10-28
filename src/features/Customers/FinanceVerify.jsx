@@ -43,6 +43,7 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import { PiClockCounterClockwiseBold } from "react-icons/pi";
 import moment from "moment";
 import CommonTextArea from "../Common/CommonTextArea";
+import { IoPlayCircleOutline } from "react-icons/io5";
 import CommonGroupedSelectField from "../Common/CommonGroupedSelectField";
 import axios from "axios";
 
@@ -302,7 +303,7 @@ const FinanceVerify = forwardRef(
       };
       try {
         const verifyResponse = await verifyCustomerPayment(payment_payload);
-        CommonMessage("success", "Updated Successfully");
+        CommonMessage("success", "Payment Verified Successfully");
         console.log("verifyResponse", verifyResponse);
         const isFullyPaid = verifyResponse?.data?.data?.is_fully_paid === true;
         if (isFullyPaid && customerDetails?.lms_access == 1) {
@@ -317,9 +318,11 @@ const FinanceVerify = forwardRef(
               {
                 customer_id: customerDetails.id,
                 status:
-                  customerDetails?.is_second_due === 1
-                    ? (customerDetails?.status ?? "Unknown")
-                    : "Awaiting Verify",
+                  customerDetails?.is_videos_only === 1
+                    ? "Videos Given"
+                    : customerDetails?.is_second_due === 1
+                      ? (customerDetails?.status ?? "Unknown")
+                      : "Awaiting Verify",
                 updated_at: formatToBackendIST(new Date()),
                 updated_by: converAsJson?.user_id || "",
               },
@@ -390,7 +393,7 @@ const FinanceVerify = forwardRef(
       };
       try {
         await rejectCustomerPayment(payload);
-        CommonMessage("success", "Updated Successfully");
+        CommonMessage("success", "Payment Rejected");
         setTimeout(async () => {
           setRejectLoading(false);
           if (customerDetails?.is_second_due == 0) {
@@ -527,7 +530,7 @@ const FinanceVerify = forwardRef(
       };
       try {
         await updateCustomerPaymentTransaction(payload);
-        CommonMessage("success", "Updated Successfully");
+        CommonMessage("success", "Payment Updated Successfully");
         setTimeout(async () => {
           const payload = {
             // status:
@@ -972,6 +975,25 @@ const FinanceVerify = forwardRef(
                       >
                         <div>
                           <div style={{ padding: "0px 12px" }}>
+                            {item.payment_status === "Verify Pending" &&
+                              Number(customerDetails?.is_videos_only) === 1 && (
+                                <div className="customers_financeverify_selfpaced_indication_container">
+                                  <div className="customers_selfpaced_indication">
+                                    <span className="customers_selfpaced_icon_wrapper">
+                                      <span className="customers_selfpaced_ripple" />
+
+                                      <IoPlayCircleOutline
+                                        className="customers_selfpaced_indication_icon"
+                                        size={16}
+                                      />
+                                    </span>
+
+                                    <p className="customers_selfpaced_indication_text">
+                                      Self-Paced
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
                             <table className="transaction-details-table">
                               <tbody>
                                 <tr>
@@ -1272,6 +1294,25 @@ const FinanceVerify = forwardRef(
                           }
                         >
                           <div style={{ padding: "0px 12px" }}>
+                            {item.payment_status === "Rejected" &&
+                              Number(customerDetails?.is_videos_only) === 1 && (
+                                <div className="customers_financeverify_selfpaced_indication_container">
+                                  <div className="customers_selfpaced_indication">
+                                    <span className="customers_selfpaced_icon_wrapper">
+                                      <span className="customers_selfpaced_ripple" />
+
+                                      <IoPlayCircleOutline
+                                        className="customers_selfpaced_indication_icon"
+                                        size={16}
+                                      />
+                                    </span>
+
+                                    <p className="customers_selfpaced_indication_text">
+                                      Self-Paced
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
                             <table className="transaction-details-table">
                               <tbody>
                                 <tr>

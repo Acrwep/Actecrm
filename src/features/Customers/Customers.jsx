@@ -90,6 +90,7 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 import CustomerOverview from "./CustomerOverview";
 import CustomerOverviewSkeleton from "./CustomerOverviewSkeleton";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
+import CustomerStatusRenderer from "./CustomerStatusRenderer";
 
 export default function Customers() {
   const scrollRef = useRef();
@@ -838,7 +839,7 @@ export default function Customers() {
               color="#fff"
               styles={{
                 body: {
-                  width: "300px",
+                  width: text === "Videos Given" ? "150px" : "300px",
                   maxWidth: "none",
                   whiteSpace: "normal",
                 },
@@ -846,8 +847,23 @@ export default function Customers() {
               // open={true}
               title={
                 <>
-                  <Row>
-                    {/* <Col span={12}>
+                  {text === "Videos Given" ? (
+                    <Row>
+                      <Col span={24}>
+                        <div
+                          className="customers_classcompleted_container"
+                          style={{ marginBottom: "6px" }}
+                        >
+                          <BsPatchCheckFill color="#3c9111" />
+                          <p className="customers_classgoing_completedtext">
+                            Videos Purchased
+                          </p>
+                        </div>
+                      </Col>
+                    </Row>
+                  ) : (
+                    <Row>
+                      {/* <Col span={12}>
                       {record.is_last_pay_rejected === 1 ? (
                         <>
                           <button
@@ -906,217 +922,219 @@ export default function Customers() {
                       )}
                     </Col> */}
 
-                    <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ||
-                      record.status === "Payment Rejected" ||
-                      record.status === "Awaiting Verify" ? (
-                        <Checkbox
-                          className="customers_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status === "Form Pending") {
-                              CommonMessage(
-                                "warning",
-                                "Form not submitted yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Finance" ||
-                              record.status === "Payment Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Payment not verified yet",
-                              );
-                            } else if (record.status != "Awaiting Verify") {
-                              CommonMessage("warning", "Already Verified");
-                            } else if (record.status === "Awaiting Verify") {
-                              if (!permissions.includes("Student Verify")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
-                              if (record.user_edit_access === "no") {
+                      <Col span={12}>
+                        {record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.status === "Payment Rejected" ||
+                        record.status === "Awaiting Verify" ? (
+                          <Checkbox
+                            className="customers_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record.status === "Form Pending") {
                                 CommonMessage(
-                                  "error",
-                                  "Candidate is assigned to another branch",
+                                  "warning",
+                                  "Form not submitted yet",
                                 );
-                                return;
-                              }
-                              getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Student Verify");
-                              setIsStatusUpdateDrawer(true);
-                            }
-                          }}
-                        >
-                          Student Verify
-                        </Checkbox>
-                      ) : (
-                        <>
-                          {permissions.includes("Student Verify") &&
-                          record.trainer_fixation_call == 0 ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                marginTop: "3px",
-                                marginBottom: "6px",
-                              }}
-                            >
-                              <button
-                                className="customers_update_studentverify_button"
-                                onClick={() => {
-                                  if (!permissions.includes("Student Verify")) {
-                                    CommonMessage("error", "Access Denied");
-                                    return;
-                                  }
-                                  if (record.user_edit_access === "no") {
-                                    CommonMessage(
-                                      "error",
-                                      "Candidate is assigned to another branch",
-                                    );
-                                    return;
-                                  }
-                                  getParticularCustomerDetails(record?.id);
-                                  setDrawerContentStatus("Student Verify");
-                                  setIsStatusUpdateDrawer(true);
-                                }}
-                              >
-                                Update Std Verify
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              className="customers_classcompleted_container"
-                              style={{ marginBottom: "6px" }}
-                            >
-                              <BsPatchCheckFill color="#3c9111" />
-                              <p className="customers_classgoing_completedtext">
-                                Student Verified
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </Col>
-
-                    <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ||
-                      record.status === "Awaiting Verify" ||
-                      record.status === "Awaiting Trainer" ||
-                      record.status === "Payment Rejected" ||
-                      record.status === "Trainer Rejected" ||
-                      (record.status === "Escalated" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Hold" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Partially Closed" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Discontinued" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Videos Given" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Demo Completed" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Refund" &&
-                        record.trainer_hr_id == null) ? (
-                        <Checkbox
-                          className="customers_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status === "Form Pending") {
-                              CommonMessage(
-                                "warning",
-                                "Form not submitted yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Finance" ||
-                              record.status === "Payment Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Payment not verified yet",
-                              );
-                            } else if (record.status === "Awaiting Verify") {
-                              CommonMessage(
-                                "warning",
-                                "Customer not Verified Yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected" ||
-                              (record.status === "Escalated" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Hold" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Partially Closed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Discontinued" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Videos Given" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Demo Completed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Refund" &&
-                                record.trainer_hr_id == null)
-                            ) {
-                              if (!permissions.includes("Trainer Assign")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
-                              if (record.user_edit_access === "no") {
+                              } else if (
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Payment Rejected"
+                              ) {
                                 CommonMessage(
-                                  "error",
-                                  "Candidate is assigned to another branch",
+                                  "warning",
+                                  "Payment not verified yet",
                                 );
-                                return;
-                              }
-                              getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Assign Trainer");
-                              setIsStatusUpdateDrawer(true);
-                            } else {
-                              CommonMessage(
-                                "warning",
-                                "Trainer Already Assigned",
-                              );
-                            }
-                          }}
-                        >
-                          Assign Trainer
-                        </Checkbox>
-                      ) : (
-                        <>
-                          {permissions.includes("Update Assigned Trainer") ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                marginTop: "3px",
-                              }}
-                            >
-                              {/* {isSpecialUser || isJoiningDateEligible ? ( */}
-                              <button
-                                className="customers_update_trainer_button"
-                                onClick={() => {
-                                  if (
-                                    !permissions.includes(
-                                      "Update Assigned Trainer",
-                                    )
-                                  ) {
-                                    CommonMessage("error", "Access Denied");
-                                    return;
-                                  }
-
-                                  getParticularCustomerDetails(record?.id);
-                                  setDrawerContentStatus(
-                                    "Update Assigned Trainer",
+                              } else if (record.status != "Awaiting Verify") {
+                                CommonMessage("warning", "Already Verified");
+                              } else if (record.status === "Awaiting Verify") {
+                                if (!permissions.includes("Student Verify")) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                if (record.user_edit_access === "no") {
+                                  CommonMessage(
+                                    "error",
+                                    "Candidate is assigned to another branch",
                                   );
-                                  setIsStatusUpdateDrawer(true);
+                                  return;
+                                }
+                                getParticularCustomerDetails(record?.id);
+                                setDrawerContentStatus("Student Verify");
+                                setIsStatusUpdateDrawer(true);
+                              }
+                            }}
+                          >
+                            Student Verify
+                          </Checkbox>
+                        ) : (
+                          <>
+                            {permissions.includes("Student Verify") &&
+                            record.trainer_fixation_call == 0 ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  marginTop: "3px",
+                                  marginBottom: "6px",
                                 }}
                               >
-                                Update Trainer
-                              </button>
-                              {/* ) : (
+                                <button
+                                  className="customers_update_studentverify_button"
+                                  onClick={() => {
+                                    if (
+                                      !permissions.includes("Student Verify")
+                                    ) {
+                                      CommonMessage("error", "Access Denied");
+                                      return;
+                                    }
+                                    if (record.user_edit_access === "no") {
+                                      CommonMessage(
+                                        "error",
+                                        "Candidate is assigned to another branch",
+                                      );
+                                      return;
+                                    }
+                                    getParticularCustomerDetails(record?.id);
+                                    setDrawerContentStatus("Student Verify");
+                                    setIsStatusUpdateDrawer(true);
+                                  }}
+                                >
+                                  Update Std Verify
+                                </button>
+                              </div>
+                            ) : (
+                              <div
+                                className="customers_classcompleted_container"
+                                style={{ marginBottom: "6px" }}
+                              >
+                                <BsPatchCheckFill color="#3c9111" />
+                                <p className="customers_classgoing_completedtext">
+                                  Student Verified
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </Col>
+
+                      <Col span={12}>
+                        {record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.status === "Awaiting Verify" ||
+                        record.status === "Awaiting Trainer" ||
+                        record.status === "Payment Rejected" ||
+                        record.status === "Trainer Rejected" ||
+                        (record.status === "Escalated" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Hold" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Partially Closed" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Discontinued" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Videos Given" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Demo Completed" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Refund" &&
+                          record.trainer_hr_id == null) ? (
+                          <Checkbox
+                            className="customers_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record.status === "Form Pending") {
+                                CommonMessage(
+                                  "warning",
+                                  "Form not submitted yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Payment Rejected"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not verified yet",
+                                );
+                              } else if (record.status === "Awaiting Verify") {
+                                CommonMessage(
+                                  "warning",
+                                  "Customer not Verified Yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Trainer Rejected" ||
+                                (record.status === "Escalated" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Hold" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Partially Closed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Discontinued" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Videos Given" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Demo Completed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Refund" &&
+                                  record.trainer_hr_id == null)
+                              ) {
+                                if (!permissions.includes("Trainer Assign")) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                if (record.user_edit_access === "no") {
+                                  CommonMessage(
+                                    "error",
+                                    "Candidate is assigned to another branch",
+                                  );
+                                  return;
+                                }
+                                getParticularCustomerDetails(record?.id);
+                                setDrawerContentStatus("Assign Trainer");
+                                setIsStatusUpdateDrawer(true);
+                              } else {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer Already Assigned",
+                                );
+                              }
+                            }}
+                          >
+                            Assign Trainer
+                          </Checkbox>
+                        ) : (
+                          <>
+                            {permissions.includes("Update Assigned Trainer") ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  marginTop: "3px",
+                                }}
+                              >
+                                {/* {isSpecialUser || isJoiningDateEligible ? ( */}
+                                <button
+                                  className="customers_update_trainer_button"
+                                  onClick={() => {
+                                    if (
+                                      !permissions.includes(
+                                        "Update Assigned Trainer",
+                                      )
+                                    ) {
+                                      CommonMessage("error", "Access Denied");
+                                      return;
+                                    }
+
+                                    getParticularCustomerDetails(record?.id);
+                                    setDrawerContentStatus(
+                                      "Update Assigned Trainer",
+                                    );
+                                    setIsStatusUpdateDrawer(true);
+                                  }}
+                                >
+                                  Update Trainer
+                                </button>
+                                {/* ) : (
                                 <div
                                   className="customers_classcompleted_container"
                                   style={{ marginBottom: "6px" }}
@@ -1127,318 +1145,346 @@ export default function Customers() {
                                   </p>
                                 </div>
                               )} */}
-                            </div>
-                          ) : (
-                            <div
-                              className="customers_classcompleted_container"
-                              style={{ marginBottom: "6px" }}
-                            >
-                              <BsPatchCheckFill color="#3c9111" />
-                              <p className="customers_classgoing_completedtext">
-                                Trainer Assigned
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </Col>
+                              </div>
+                            ) : (
+                              <div
+                                className="customers_classcompleted_container"
+                                style={{ marginBottom: "6px" }}
+                              >
+                                <BsPatchCheckFill color="#3c9111" />
+                                <p className="customers_classgoing_completedtext">
+                                  Trainer Assigned
+                                </p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </Col>
 
-                    <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ||
-                      record.status === "Awaiting Verify" ||
-                      record.status === "Awaiting Trainer" ||
-                      record.status === "Awaiting Trainer Verify" ||
-                      record.status === "Approval Rejected" ||
-                      record.status === "Payment Rejected" ||
-                      record.status === "Trainer Rejected" ||
-                      (record.status === "Escalated" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Hold" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Partially Closed" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Discontinued" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Videos Given" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Demo Completed" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Refund" &&
-                        record.trainer_hr_id == null) ? (
-                        <Checkbox
-                          className="customers_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status === "Form Pending") {
-                              CommonMessage(
-                                "warning",
-                                "Form not submitted yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Finance" ||
-                              record.status === "Payment Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Payment not verified yet",
-                              );
-                            } else if (record.status === "Awaiting Verify") {
-                              CommonMessage(
-                                "warning",
-                                "Customer not Verified Yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected" ||
-                              (record.status === "Escalated" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Hold" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Partially Closed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Discontinued" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Videos Given" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Demo Completed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Refund" &&
-                                record.trainer_hr_id == null)
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Trainer not assigned yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer Verify" ||
-                              record.status === "Approval Rejected"
-                            ) {
-                              if (!permissions.includes("Trainer Verify")) {
-                                CommonMessage("error", "Access Denied");
-                                return;
+                      <Col span={12}>
+                        {record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.status === "Awaiting Verify" ||
+                        record.status === "Awaiting Trainer" ||
+                        record.status === "Awaiting Trainer Verify" ||
+                        record.status === "Approval Rejected" ||
+                        record.status === "Payment Rejected" ||
+                        record.status === "Trainer Rejected" ||
+                        (record.status === "Escalated" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Hold" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Partially Closed" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Discontinued" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Videos Given" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Demo Completed" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Refund" &&
+                          record.trainer_hr_id == null) ? (
+                          <Checkbox
+                            className="customers_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record.status === "Form Pending") {
+                                CommonMessage(
+                                  "warning",
+                                  "Form not submitted yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Payment Rejected"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not verified yet",
+                                );
+                              } else if (record.status === "Awaiting Verify") {
+                                CommonMessage(
+                                  "warning",
+                                  "Customer not Verified Yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Trainer Rejected" ||
+                                (record.status === "Escalated" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Hold" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Partially Closed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Discontinued" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Videos Given" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Demo Completed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Refund" &&
+                                  record.trainer_hr_id == null)
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer not assigned yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer Verify" ||
+                                record.status === "Approval Rejected"
+                              ) {
+                                if (!permissions.includes("Trainer Verify")) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                getParticularCustomerDetails(record?.id);
+                                setDrawerContentStatus("Trainer Verify");
+                                setIsStatusUpdateDrawer(true);
+                              } else {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer Already Verified",
+                                );
                               }
-                              getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Trainer Verify");
-                              setIsStatusUpdateDrawer(true);
-                            } else {
-                              CommonMessage(
-                                "warning",
-                                "Trainer Already Verified",
-                              );
-                            }
-                          }}
-                        >
-                          Verify Trainer
-                        </Checkbox>
-                      ) : (
-                        <div
-                          className="customers_classcompleted_container"
-                          style={{ marginBottom: "6px" }}
-                        >
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Trainer Verified
-                          </p>
-                        </div>
-                      )}
-                    </Col>
+                            }}
+                          >
+                            Verify Trainer
+                          </Checkbox>
+                        ) : (
+                          <div
+                            className="customers_classcompleted_container"
+                            style={{ marginBottom: "6px" }}
+                          >
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Trainer Verified
+                            </p>
+                          </div>
+                        )}
+                      </Col>
 
-                    <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ||
-                      record.status === "Awaiting Verify" ||
-                      record.status === "Awaiting Trainer" ||
-                      record.status === "Awaiting Trainer Verify" ||
-                      record.status === "Payment Rejected" ||
-                      record.status === "Trainer Rejected" ||
-                      record.status === "Trainer Approval" ||
-                      record.status === "Approval Rejected" ||
-                      (record.status === "Escalated" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Hold" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Partially Closed" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Discontinued" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Videos Given" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Demo Completed" &&
-                        record.trainer_hr_id == null) ||
-                      (record.status === "Refund" &&
-                        record.trainer_hr_id == null) ? (
-                        <Checkbox
-                          className="customers_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status === "Form Pending") {
-                              CommonMessage(
-                                "warning",
-                                "Form not submitted yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Finance" ||
-                              record.status === "Payment Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Payment not verified yet",
-                              );
-                            } else if (record.status === "Awaiting Verify") {
-                              CommonMessage(
-                                "warning",
-                                "Customer not Verified Yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected" ||
-                              (record.status === "Escalated" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Hold" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Partially Closed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Discontinued" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Videos Given" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Demo Completed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Refund" &&
-                                record.trainer_hr_id == null)
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Trainer not assigned yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer Verify" ||
-                              record.status === "Approval Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Trainer not verified yet",
-                              );
-                              return;
-                            } else if (record.status === "Trainer Approval") {
-                              if (!permissions.includes("Approve Trainer")) {
-                                CommonMessage("error", "Access Denied");
+                      <Col span={12}>
+                        {record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.status === "Awaiting Verify" ||
+                        record.status === "Awaiting Trainer" ||
+                        record.status === "Awaiting Trainer Verify" ||
+                        record.status === "Payment Rejected" ||
+                        record.status === "Trainer Rejected" ||
+                        record.status === "Trainer Approval" ||
+                        record.status === "Approval Rejected" ||
+                        (record.status === "Escalated" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Hold" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Partially Closed" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Discontinued" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Videos Given" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Demo Completed" &&
+                          record.trainer_hr_id == null) ||
+                        (record.status === "Refund" &&
+                          record.trainer_hr_id == null) ? (
+                          <Checkbox
+                            className="customers_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record.status === "Form Pending") {
+                                CommonMessage(
+                                  "warning",
+                                  "Form not submitted yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Payment Rejected"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not verified yet",
+                                );
+                              } else if (record.status === "Awaiting Verify") {
+                                CommonMessage(
+                                  "warning",
+                                  "Customer not Verified Yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Trainer Rejected" ||
+                                (record.status === "Escalated" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Hold" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Partially Closed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Discontinued" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Videos Given" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Demo Completed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Refund" &&
+                                  record.trainer_hr_id == null)
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer not assigned yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer Verify" ||
+                                record.status === "Approval Rejected"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer not verified yet",
+                                );
                                 return;
+                              } else if (record.status === "Trainer Approval") {
+                                if (!permissions.includes("Approve Trainer")) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                getParticularCustomerDetails(record?.id);
+                                setDrawerContentStatus("Trainer Approval");
+                                setIsStatusUpdateDrawer(true);
+                              } else {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer Already Verified",
+                                );
                               }
-                              getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Trainer Approval");
-                              setIsStatusUpdateDrawer(true);
-                            } else {
-                              CommonMessage(
-                                "warning",
-                                "Trainer Already Verified",
-                              );
-                            }
-                          }}
-                        >
-                          Approve Trainer
-                        </Checkbox>
-                      ) : (
-                        <div
-                          className="customers_classcompleted_container"
-                          style={{ marginBottom: "6px" }}
-                        >
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Trainer Approved
-                          </p>
-                        </div>
-                      )}
-                    </Col>
+                            }}
+                          >
+                            Approve Trainer
+                          </Checkbox>
+                        ) : (
+                          <div
+                            className="customers_classcompleted_container"
+                            style={{ marginBottom: "6px" }}
+                          >
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Trainer Approved
+                            </p>
+                          </div>
+                        )}
+                      </Col>
 
-                    <Col span={12}>
-                      {record.status === "Form Pending" ||
-                      record.status === "Awaiting Finance" ||
-                      record.status === "Awaiting Verify" ||
-                      record.status === "Awaiting Trainer" ||
-                      record.status === "Awaiting Trainer Verify" ||
-                      record.status === "Trainer Approval" ||
-                      record.status === "Approval Rejected" ||
-                      record.status === "Payment Rejected" ||
-                      record.status === "Trainer Rejected" ||
-                      record.status === "Awaiting Class" ||
-                      record.status === "Hold" ||
-                      record.status === "Escalated" ||
-                      record.status === "Partially Closed" ||
-                      record.status === "Discontinued" ||
-                      record.status === "Demo Completed" ||
-                      record.status === "Videos Given" ||
-                      record.status === "Refund" ? (
-                        <Checkbox
-                          className="customers_statuscheckbox"
-                          checked={false}
-                          onChange={(e) => {
-                            if (record.status === "Form Pending") {
-                              CommonMessage(
-                                "warning",
-                                "Form not submitted yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Finance" ||
-                              record.status === "Payment Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Payment not verified yet",
-                              );
-                            } else if (record.status === "Awaiting Verify") {
-                              CommonMessage(
-                                "warning",
-                                "Customer not Verified Yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer" ||
-                              record.status === "Trainer Rejected" ||
-                              (record.status === "Escalated" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Hold" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Partially Closed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Discontinued" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Videos Given" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Demo Completed" &&
-                                record.trainer_hr_id == null) ||
-                              (record.status === "Refund" &&
-                                record.trainer_hr_id == null)
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Trainer not assigned yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer Verify"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Trainer not Verified yet",
-                              );
-                            } else if (
-                              record.status === "Awaiting Trainer Verify" ||
-                              record.status === "Approval Rejected"
-                            ) {
-                              CommonMessage(
-                                "warning",
-                                "Trainer not verified yet",
-                              );
-                              return;
-                            } else if (
-                              record.status === "Awaiting Class" ||
-                              record.status === "Hold" ||
-                              record.status === "Escalated" ||
-                              record.status === "Partially Closed" ||
-                              record.status === "Discontinued" ||
-                              record.status === "Demo Completed" ||
-                              record.status === "Refund"
-                            ) {
+                      <Col span={12}>
+                        {record.status === "Form Pending" ||
+                        record.status === "Awaiting Finance" ||
+                        record.status === "Awaiting Verify" ||
+                        record.status === "Awaiting Trainer" ||
+                        record.status === "Awaiting Trainer Verify" ||
+                        record.status === "Trainer Approval" ||
+                        record.status === "Approval Rejected" ||
+                        record.status === "Payment Rejected" ||
+                        record.status === "Trainer Rejected" ||
+                        record.status === "Awaiting Class" ||
+                        record.status === "Hold" ||
+                        record.status === "Escalated" ||
+                        record.status === "Partially Closed" ||
+                        record.status === "Discontinued" ||
+                        record.status === "Demo Completed" ||
+                        record.status === "Videos Given" ||
+                        record.status === "Refund" ? (
+                          <Checkbox
+                            className="customers_statuscheckbox"
+                            checked={false}
+                            onChange={(e) => {
+                              if (record.status === "Form Pending") {
+                                CommonMessage(
+                                  "warning",
+                                  "Form not submitted yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Finance" ||
+                                record.status === "Payment Rejected"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Payment not verified yet",
+                                );
+                              } else if (record.status === "Awaiting Verify") {
+                                CommonMessage(
+                                  "warning",
+                                  "Customer not Verified Yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer" ||
+                                record.status === "Trainer Rejected" ||
+                                (record.status === "Escalated" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Hold" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Partially Closed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Discontinued" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Videos Given" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Demo Completed" &&
+                                  record.trainer_hr_id == null) ||
+                                (record.status === "Refund" &&
+                                  record.trainer_hr_id == null)
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer not assigned yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer Verify"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer not Verified yet",
+                                );
+                              } else if (
+                                record.status === "Awaiting Trainer Verify" ||
+                                record.status === "Approval Rejected"
+                              ) {
+                                CommonMessage(
+                                  "warning",
+                                  "Trainer not verified yet",
+                                );
+                                return;
+                              } else if (
+                                record.status === "Awaiting Class" ||
+                                record.status === "Hold" ||
+                                record.status === "Escalated" ||
+                                record.status === "Partially Closed" ||
+                                record.status === "Discontinued" ||
+                                record.status === "Demo Completed" ||
+                                record.status === "Refund"
+                              ) {
+                                if (!permissions.includes("Class Schedule")) {
+                                  CommonMessage("error", "Access Denied");
+                                  return;
+                                }
+                                if (record.user_edit_access === "no") {
+                                  CommonMessage(
+                                    "error",
+                                    "Candidate is assigned to another branch",
+                                  );
+                                  return;
+                                }
+                                getParticularCustomerDetails(record?.id);
+                                setDrawerContentStatus("Class Schedule");
+                                setIsStatusUpdateDrawer(true);
+                              } else {
+                                CommonMessage(
+                                  "warning",
+                                  "Class Already Scheduled",
+                                );
+                              }
+                            }}
+                          >
+                            Schedule Class
+                          </Checkbox>
+                        ) : record.status === "Class Scheduled" ? (
+                          <button
+                            className="customers_updateschedulebutton"
+                            onClick={() => {
                               if (!permissions.includes("Class Schedule")) {
                                 CommonMessage("error", "Access Denied");
                                 return;
@@ -1453,52 +1499,24 @@ export default function Customers() {
                               getParticularCustomerDetails(record?.id);
                               setDrawerContentStatus("Class Schedule");
                               setIsStatusUpdateDrawer(true);
-                            } else {
-                              CommonMessage(
-                                "warning",
-                                "Class Already Scheduled",
-                              );
-                            }
-                          }}
-                        >
-                          Schedule Class
-                        </Checkbox>
-                      ) : record.status === "Class Scheduled" ? (
-                        <button
-                          className="customers_updateschedulebutton"
-                          onClick={() => {
-                            if (!permissions.includes("Class Schedule")) {
-                              CommonMessage("error", "Access Denied");
-                              return;
-                            }
-                            if (record.user_edit_access === "no") {
-                              CommonMessage(
-                                "error",
-                                "Candidate is assigned to another branch",
-                              );
-                              return;
-                            }
-                            getParticularCustomerDetails(record?.id);
-                            setDrawerContentStatus("Class Schedule");
-                            setIsStatusUpdateDrawer(true);
-                          }}
-                        >
-                          Update Schedule
-                        </button>
-                      ) : (
-                        <div
-                          className="customers_classcompleted_container"
-                          style={{ marginBottom: "6px" }}
-                        >
-                          <BsPatchCheckFill color="#3c9111" />
-                          <p className="customers_classgoing_completedtext">
-                            Class Scheduled
-                          </p>
-                        </div>
-                      )}
-                    </Col>
+                            }}
+                          >
+                            Update Schedule
+                          </button>
+                        ) : (
+                          <div
+                            className="customers_classcompleted_container"
+                            style={{ marginBottom: "6px" }}
+                          >
+                            <BsPatchCheckFill color="#3c9111" />
+                            <p className="customers_classgoing_completedtext">
+                              Class Scheduled
+                            </p>
+                          </div>
+                        )}
+                      </Col>
 
-                    {/* {record.status === "Class Going" ||
+                      {/* {record.status === "Class Going" ||
                     record.status === "Passedout process" ||
                     record.status === "Completed" ? (
                       <Col span={12}>
@@ -1541,22 +1559,108 @@ export default function Customers() {
                       ""
                     )} */}
 
-                    {record.status === "Class Going" ||
-                    record.status === "Passedout process" ||
-                    record.status === "Completed" ? (
-                      <Col span={12}>
-                        {classPercent < 100 ? (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                            }}
+                      {record.status === "Class Going" ||
+                      record.status === "Passedout process" ||
+                      record.status === "Completed" ? (
+                        <Col span={12}>
+                          {classPercent < 100 ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <button
+                                className="customers_classgoing_updatebutton"
+                                onClick={() => {
+                                  if (
+                                    !permissions.includes("Update Class Going")
+                                  ) {
+                                    CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  if (record.user_edit_access === "no") {
+                                    CommonMessage(
+                                      "error",
+                                      "Candidate is assigned to another branch",
+                                    );
+                                    return;
+                                  }
+                                  getParticularCustomerDetails(record?.id);
+                                  setDrawerContentStatus("Class Going");
+                                  setIsStatusUpdateDrawer(true);
+                                }}
+                              >
+                                Update Class Going
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="customers_classcompleted_container">
+                              <BsPatchCheckFill color="#3c9111" />
+                              <p className="customers_classgoing_completedtext">
+                                100% Class Completed
+                              </p>
+                            </div>
+                          )}
+                        </Col>
+                      ) : (
+                        ""
+                      )}
+
+                      {classPercent > 25 &&
+                        (record.status === "Class Going" ||
+                          record.status === "Passedout process" ||
+                          record.status === "Completed") && (
+                          <Col span={12}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginTop: "6px",
+                                marginBottom: "6px",
+                              }}
+                            >
+                              <button
+                                className="customers_reviews_updatebutton"
+                                onClick={() => {
+                                  if (
+                                    !permissions.includes(
+                                      "Update Passedout Process",
+                                    )
+                                  ) {
+                                    CommonMessage("error", "Access Denied");
+                                    return;
+                                  }
+                                  if (record.user_edit_access === "no") {
+                                    CommonMessage(
+                                      "error",
+                                      "Candidate is assigned to another branch",
+                                    );
+                                    return;
+                                  }
+                                  getParticularCustomerDetails(record?.id);
+                                  setDrawerContentStatus("Update Reviews");
+                                  setIsStatusUpdateDrawer(true);
+                                }}
+                              >
+                                Update Reviews
+                              </button>
+                            </div>
+                          </Col>
+                        )}
+
+                      {record.status === "Passedout process" ||
+                      record.status === "Completed" ? (
+                        <>
+                          <Col
+                            span={12}
+                            style={{ marginTop: "6px", marginBottom: "6px" }}
                           >
                             <button
-                              className="customers_classgoing_updatebutton"
+                              className="customers_addfeedbackbutton"
                               onClick={() => {
                                 if (
-                                  !permissions.includes("Update Class Going")
+                                  !permissions.includes("Passedout Process")
                                 ) {
                                   CommonMessage("error", "Access Denied");
                                   return;
@@ -1568,44 +1672,8 @@ export default function Customers() {
                                   );
                                   return;
                                 }
-                                getParticularCustomerDetails(record?.id);
-                                setDrawerContentStatus("Class Going");
-                                setIsStatusUpdateDrawer(true);
-                              }}
-                            >
-                              Update Class Going
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="customers_classcompleted_container">
-                            <BsPatchCheckFill color="#3c9111" />
-                            <p className="customers_classgoing_completedtext">
-                              100% Class Completed
-                            </p>
-                          </div>
-                        )}
-                      </Col>
-                    ) : (
-                      ""
-                    )}
-
-                    {classPercent > 25 &&
-                      (record.status === "Class Going" ||
-                        record.status === "Passedout process" ||
-                        record.status === "Completed") && (
-                        <Col span={12}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              marginTop: "6px",
-                              marginBottom: "6px",
-                            }}
-                          >
-                            <button
-                              className="customers_reviews_updatebutton"
-                              onClick={() => {
                                 if (
+                                  record.status === "Completed" &&
                                   !permissions.includes(
                                     "Update Passedout Process",
                                   )
@@ -1613,35 +1681,49 @@ export default function Customers() {
                                   CommonMessage("error", "Access Denied");
                                   return;
                                 }
-                                if (record.user_edit_access === "no") {
-                                  CommonMessage(
-                                    "error",
-                                    "Candidate is assigned to another branch",
-                                  );
-                                  return;
-                                }
                                 getParticularCustomerDetails(record?.id);
-                                setDrawerContentStatus("Update Reviews");
+                                setDrawerContentStatus("Passedout Process");
                                 setIsStatusUpdateDrawer(true);
                               }}
                             >
-                              Update Reviews
+                              {record.status === "Completed"
+                                ? "Update Certificate"
+                                : "Passedout process"}
                             </button>
-                          </div>
-                        </Col>
+                          </Col>
+
+                          {record.status === "Completed" && (
+                            <Col span={12}>
+                              <div className="customers_classcompleted_container">
+                                <BsPatchCheckFill color="#3c9111" />
+                                <p className="customers_classgoing_completedtext">
+                                  Course Completed
+                                </p>
+                              </div>
+                            </Col>
+                          )}
+                        </>
+                      ) : (
+                        ""
                       )}
 
-                    {record.status === "Passedout process" ||
-                    record.status === "Completed" ? (
-                      <>
-                        <Col
-                          span={12}
-                          style={{ marginTop: "6px", marginBottom: "6px" }}
-                        >
-                          <button
-                            className="customers_addfeedbackbutton"
-                            onClick={() => {
-                              if (!permissions.includes("Passedout Process")) {
+                      <Col span={12}>
+                        <Checkbox
+                          className="customers_statuscheckbox"
+                          checked={false}
+                          onChange={(e) => {
+                            if (record.status === "Form Pending") {
+                              CommonMessage(
+                                "warning",
+                                "Form not submitted yet",
+                              );
+                            } else if (record.status === "Awaiting Finance") {
+                              CommonMessage(
+                                "warning",
+                                "Payment not verified yet",
+                              );
+                            } else {
+                              if (!permissions.includes("Others Checkbox")) {
                                 CommonMessage("error", "Access Denied");
                                 return;
                               }
@@ -1652,216 +1734,26 @@ export default function Customers() {
                                 );
                                 return;
                               }
-                              if (
-                                record.status === "Completed" &&
-                                !permissions.includes(
-                                  "Update Passedout Process",
-                                )
-                              ) {
-                                CommonMessage("error", "Access Denied");
-                                return;
-                              }
                               getParticularCustomerDetails(record?.id);
-                              setDrawerContentStatus("Passedout Process");
+                              setDrawerContentStatus("Others");
                               setIsStatusUpdateDrawer(true);
-                            }}
-                          >
-                            {record.status === "Completed"
-                              ? "Update Certificate"
-                              : "Passedout process"}
-                          </button>
-                        </Col>
-
-                        {record.status === "Completed" && (
-                          <Col span={12}>
-                            <div className="customers_classcompleted_container">
-                              <BsPatchCheckFill color="#3c9111" />
-                              <p className="customers_classgoing_completedtext">
-                                Course Completed
-                              </p>
-                            </div>
-                          </Col>
-                        )}
-                      </>
-                    ) : (
-                      ""
-                    )}
-
-                    <Col span={12}>
-                      <Checkbox
-                        className="customers_statuscheckbox"
-                        checked={false}
-                        onChange={(e) => {
-                          if (record.status === "Form Pending") {
-                            CommonMessage("warning", "Form not submitted yet");
-                          } else if (record.status === "Awaiting Finance") {
-                            CommonMessage(
-                              "warning",
-                              "Payment not verified yet",
-                            );
-                          } else {
-                            if (!permissions.includes("Others Checkbox")) {
-                              CommonMessage("error", "Access Denied");
-                              return;
                             }
-                            if (record.user_edit_access === "no") {
-                              CommonMessage(
-                                "error",
-                                "Candidate is assigned to another branch",
-                              );
-                              return;
-                            }
-                            getParticularCustomerDetails(record?.id);
-                            setDrawerContentStatus("Others");
-                            setIsStatusUpdateDrawer(true);
-                          }
-                        }}
-                      >
-                        Others
-                      </Checkbox>
-                    </Col>
-                  </Row>
+                          }}
+                        >
+                          Others
+                        </Checkbox>
+                      </Col>
+                    </Row>
+                  )}
                 </>
               }
             >
-              {
-                // record.is_second_due === 1 && status == "Awaiting Finance" ? (
-                //   <div>
-                //     <Button className="customers_status_awaitfinance_button">
-                //       Payment Verify
-                //     </Button>
-                //   </div>
-                // ) : record.is_second_due === 1 &&
-                //   permissions.includes("Finance Verify") ? (
-                //   <div>
-                //     <Button className="customers_status_awaitfinance_button">
-                //       Payment Verify
-                //     </Button>
-                //   </div>
-                // ):
-                text === "Form Pending" || text === "Refunded" ? (
-                  <div>
-                    <Button className="customers_status_formpending_button">
-                      {text}
-                    </Button>
-                  </div>
-                ) : record.is_last_pay_rejected === 1 &&
-                  isSwap == true &&
-                  status == "Payment Rejected" ? (
-                  <div>
-                    <Button className="trainers_rejected_button">
-                      Payment Rejected
-                    </Button>
-                  </div>
-                ) : text === "Awaiting Finance" ? (
-                  <div>
-                    <Button className="customers_status_awaitfinance_button">
-                      Payment Verify
-                    </Button>
-                  </div>
-                ) : text === "Awaiting Verify" ||
-                  text === "Hold" ||
-                  text === "Refund Ready to Pay" ? (
-                  <div>
-                    <Button className="customers_status_awaitverify_button">
-                      {text === "Refund Ready to Pay"
-                        ? "Ready for Refund"
-                        : text}
-                    </Button>
-                  </div>
-                ) : text === "Awaiting Trainer" ? (
-                  <div>
-                    <Button className="customers_status_awaittrainer_button">
-                      {text}
-                    </Button>
-                  </div>
-                ) : text === "Awaiting Trainer Verify" ? (
-                  <div>
-                    <Button className="customers_status_awaittrainerverify_button">
-                      {text}
-                    </Button>
-                  </div>
-                ) : text === "Trainer Approval" ? (
-                  <div>
-                    <Button className="customers_status_trainerapproval_button">
-                      {text}
-                    </Button>
-                  </div>
-                ) : text === "Awaiting Class" || text === "Refund Request" ? (
-                  <div>
-                    <Button className="customers_status_awaitingclass_button">
-                      {text === "Refund Request" ? "Refund Requested" : text}
-                    </Button>
-                  </div>
-                ) : text === "Class Scheduled" ? (
-                  <div>
-                    <Button className="customers_status_classscheduled_button">
-                      {text}
-                    </Button>
-                  </div>
-                ) : text === "Passedout process" ? (
-                  <div>
-                    <Button className="customers_status_awaitfeedback_button">
-                      {text}
-                    </Button>
-                  </div>
-                ) : text === "Completed" ? (
-                  <div>
-                    <Button className="customers_status_completed_button">
-                      Course Completed
-                    </Button>
-                  </div>
-                ) : text === "Rejected" ||
-                  text === "REJECTED" ||
-                  text === "Payment Rejected" ||
-                  text === "Trainer Rejected" ||
-                  text === "Approval Rejected" ||
-                  text === "Escalated" ||
-                  text === "Partially Closed" ||
-                  text === "Discontinued" ||
-                  text === "Refund" ? (
-                  <Button className="trainers_rejected_button">{text}</Button>
-                ) : text === "Demo Completed" ? (
-                  <Button className="customers_status_classgoing_button">
-                    Only Demo
-                  </Button>
-                ) : text === "Videos Given" ? (
-                  <Button className="customers_status_videos_given_button">
-                    Self-Paced
-                  </Button>
-                ) : text === "Class Going" ? (
-                  <div style={{ display: "flex", gap: "12px" }}>
-                    <Button className="customers_status_classgoing_button">
-                      {text}
-                    </Button>
-
-                    <p
-                      className="customer_classgoing_percentage"
-                      style={{ flexShrink: 0 }}
-                    >{`${parseFloat(classPercent)}%`}</p>
-                  </div>
-                ) : (
-                  <p style={{ marginLeft: "6px" }}>-</p>
-                )
-              }
+              <CustomerStatusRenderer
+                text={text}
+                record={record}
+                classPercent={classPercent}
+              />
             </Tooltip>
-            {record.status === "Form Pending" && (
-              <Tooltip placement="top" title="Copy form link">
-                <FaRegCopy
-                  size={14}
-                  className="customers_formlink_copybutton"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      `${
-                        import.meta.env.VITE_EMAIL_URL
-                      }/customer-registration/${record.id}`,
-                    );
-                    CommonMessage("success", "Link Copied");
-                  }}
-                />
-              </Tooltip>
-            )}
             {record.status === "Completed" ? (
               <Tooltip placement="top" title="View Certificate">
                 <GrCertificate

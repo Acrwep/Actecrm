@@ -8,9 +8,14 @@ import { Row, Col, Switch, Divider, Checkbox } from "antd";
 import { Country, State } from "country-state-city";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
-import { IoCallOutline } from "react-icons/io5";
+import {
+  IoCallOutline,
+  IoLocationOutline,
+  IoSchoolOutline,
+  IoPlayCircleOutline,
+} from "react-icons/io5";
 import { FaWhatsapp } from "react-icons/fa";
-import { IoLocationOutline } from "react-icons/io5";
+import "./styles.css";
 import { SlGlobe } from "react-icons/sl";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -52,6 +57,11 @@ const MakeAsCustomer = forwardRef(
   ) => {
     const courseOptions = useSelector((state) => state.courselist);
 
+    const [trainingType, setTrainingType] = useState(
+      clickedLeadItem?.training_type ||
+        clickedLeadItem?.course_type ||
+        "Training",
+    );
     const [selectedRA, setSelectedRA] = useState(null);
     const [selectedRAError, setSelectedRAError] = useState("");
     const [hrUsers, setHrUsers] = useState([]);
@@ -339,13 +349,21 @@ const MakeAsCustomer = forwardRef(
       const paymentTypeValidate = selectValidator(paymentMode);
       const transactionToValidate = selectValidator(transactionTo);
       const paymentDateValidate = selectValidator(paymentDate);
-      const modeOfClassValidate = selectValidator(modeOfClass);
-      const placeOfServiceValidate = selectValidator(placeOfService);
+      const modeOfClassValidate =
+        trainingType === "Self-Paced" ? "" : selectValidator(modeOfClass);
+      const placeOfServiceValidate =
+        trainingType === "Self-Paced" ? "" : selectValidator(placeOfService);
       const raValidate = selectValidator(selectedRA);
-      const hrValidate = selectValidator(hrId);
-      const batchTimingValidate = selectValidator(customerBatchTimingId);
-      const placementSupportValidate = selectValidator(placementSupport);
-      const lmsAccessValidate = selectValidator(lmsAccess);
+      const hrValidate =
+        trainingType === "Self-Paced" ? "" : selectValidator(hrId);
+      const batchTimingValidate =
+        trainingType === "Self-Paced"
+          ? ""
+          : selectValidator(customerBatchTimingId);
+      const placementSupportValidate =
+        trainingType === "Self-Paced" ? "" : selectValidator(placementSupport);
+      const lmsAccessValidate =
+        trainingType === "Self-Paced" ? "" : selectValidator(lmsAccess);
 
       //gst invoice
       const contactPersonValidate = isGstInvoice
@@ -508,8 +526,11 @@ const MakeAsCustomer = forwardRef(
         placement_support: placementSupport,
         lms_access: lmsAccess == 1 ? 1 : 0,
         is_server_required: serverRequired,
+        training_type: trainingType,
+        course_type: trainingType,
         updated_by:
           converAsJson && converAsJson.user_id ? converAsJson.user_id : 0,
+        is_videos_only: trainingType === "Self-Paced" ? 1 : 0,
       };
 
       console.log("payment payload", payload);
@@ -825,6 +846,68 @@ const MakeAsCustomer = forwardRef(
         </Row>
 
         <Divider className="leadmanger_paymentdrawer_divider" />
+
+        <div className="leadmanager_training_type_container">
+          <div className="leadmanager_training_type_cards">
+            <div
+              className={`leadmanager_training_type_card ${
+                trainingType === "Training" ? "active" : ""
+              }`}
+              onClick={() => setTrainingType("Training")}
+              role="radio"
+              aria-checked={trainingType === "Training"}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setTrainingType("Training");
+                }
+              }}
+            >
+              <div className="leadmanager_training_type_radio">
+                {trainingType === "Training" && (
+                  <div className="leadmanager_training_type_radio_dot" />
+                )}
+              </div>
+              <div className="leadmanager_training_type_icon_wrapper">
+                <IoSchoolOutline size={15} />
+              </div>
+              <div className="leadmanager_training_type_label_wrap">
+                <span className="leadmanager_training_type_text">Training</span>
+              </div>
+            </div>
+
+            <div
+              className={`leadmanager_training_type_card ${
+                trainingType === "Self-Paced" ? "active" : ""
+              }`}
+              onClick={() => setTrainingType("Self-Paced")}
+              role="radio"
+              aria-checked={trainingType === "Self-Paced"}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setTrainingType("Self-Paced");
+                }
+              }}
+            >
+              <div className="leadmanager_training_type_radio">
+                {trainingType === "Self-Paced" && (
+                  <div className="leadmanager_training_type_radio_dot" />
+                )}
+              </div>
+              <div className="leadmanager_training_type_icon_wrapper">
+                <IoPlayCircleOutline size={15} />
+              </div>
+              <div className="leadmanager_training_type_label_wrap">
+                <span className="leadmanager_training_type_text">
+                  Self-Paced
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <>
           <p
@@ -1353,64 +1436,69 @@ const MakeAsCustomer = forwardRef(
                 disabled={true}
               />
             </Col>
-            <Col span={8}>
-              <CommonSelectField
-                width="100%"
-                label="Mode of Training"
-                required={true}
-                labelMarginTop={"1px"}
-                labelFontSize={"11px"}
-                options={[
-                  { id: 1, name: "Online" },
-                  { id: 2, name: "Classroom" },
-                ]}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setModeOfClass(value);
-                  if (value == 1) {
-                    setPlaceOfService(10);
-                    setPlaceOfServiceError("");
-                  } else {
-                    setPlaceOfService(null);
-                  }
-                  if (paymentValidationTrigger) {
-                    setModeOfClassError(selectValidator(value));
-                  }
-                }}
-                value={modeOfClass}
-                error={modeOfClassError}
-                errorFontSize={"9px"}
-              />
-            </Col>
 
-            <Col span={8}>
-              <CommonSelectField
-                width="100%"
-                label="Place Of Service"
-                required={true}
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                options={
-                  modeOfClass == 2
-                    ? allBranchesData.filter(
-                        (b) =>
-                          b.name.toLowerCase() !== "bdc" &&
-                          b.name.toLowerCase() !== "virtual",
-                      )
-                    : allBranchesData
-                }
-                onChange={(e) => {
-                  setPlaceOfService(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setPlaceOfServiceError(selectValidator(e.target.value));
-                  }
-                }}
-                value={placeOfService}
-                error={placeOfServiceError}
-                errorFontSize={"9px"}
-                disabled={modeOfClass == 1}
-              />
-            </Col>
+            {trainingType === "Training" && (
+              <>
+                <Col span={8}>
+                  <CommonSelectField
+                    width="100%"
+                    label="Mode of Training"
+                    required={true}
+                    labelMarginTop={"1px"}
+                    labelFontSize={"11px"}
+                    options={[
+                      { id: 1, name: "Online" },
+                      { id: 2, name: "Classroom" },
+                    ]}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setModeOfClass(value);
+                      if (value == 1) {
+                        setPlaceOfService(10);
+                        setPlaceOfServiceError("");
+                      } else {
+                        setPlaceOfService(null);
+                      }
+                      if (paymentValidationTrigger) {
+                        setModeOfClassError(selectValidator(value));
+                      }
+                    }}
+                    value={modeOfClass}
+                    error={modeOfClassError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+
+                <Col span={8}>
+                  <CommonSelectField
+                    width="100%"
+                    label="Place Of Service"
+                    required={true}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    options={
+                      modeOfClass == 2
+                        ? allBranchesData.filter(
+                            (b) =>
+                              b.name.toLowerCase() !== "bdc" &&
+                              b.name.toLowerCase() !== "virtual",
+                          )
+                        : allBranchesData
+                    }
+                    onChange={(e) => {
+                      setPlaceOfService(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setPlaceOfServiceError(selectValidator(e.target.value));
+                      }
+                    }}
+                    value={placeOfService}
+                    error={placeOfServiceError}
+                    errorFontSize={"9px"}
+                    disabled={modeOfClass == 1}
+                  />
+                </Col>
+              </>
+            )}
 
             <Col span={8}>
               <CommonSelectField
@@ -1431,25 +1519,27 @@ const MakeAsCustomer = forwardRef(
               />
             </Col>
 
-            <Col span={8}>
-              <CommonSelectField
-                required={true}
-                width="100%"
-                label="Select HR"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                options={hrUsers}
-                loading={hrLoading}
-                onChange={(e) => {
-                  setHrId(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setHrIdError(selectValidator(e.target.value));
-                  }
-                }}
-                value={hrId}
-                error={hrIdError}
-              />
-            </Col>
+            {trainingType === "Training" && (
+              <Col span={8}>
+                <CommonSelectField
+                  required={true}
+                  width="100%"
+                  label="Select HR"
+                  labelFontSize={"11px"}
+                  labelMarginTop={"1px"}
+                  options={hrUsers}
+                  loading={hrLoading}
+                  onChange={(e) => {
+                    setHrId(e.target.value);
+                    if (paymentValidationTrigger) {
+                      setHrIdError(selectValidator(e.target.value));
+                    }
+                  }}
+                  value={hrId}
+                  error={hrIdError}
+                />
+              </Col>
+            )}
 
             <Col span={8}>
               <CommonSelectField
@@ -1462,92 +1552,101 @@ const MakeAsCustomer = forwardRef(
                 disabled={true}
               />
             </Col>
-            <Col span={8}>
-              <CommonSelectField
-                label="Batch Timing"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                required={true}
-                options={batchTimingOptions}
-                onChange={(e) => {
-                  setCustomerBatchTimingId(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setCustomerBatchTimingIdError(
-                      selectValidator(e.target.value),
-                    );
-                  }
-                }}
-                value={customerBatchTimingId}
-                error={customerBatchTimingIdError}
-                errorFontSize={"9px"}
-              />
-            </Col>
 
-            <Col span={8}>
-              <CommonSelectField
-                label="Placement Support"
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                required={true}
-                options={[
-                  { id: "Need", name: "Need" },
-                  { id: "Not Need", name: "Not Need" },
-                ]}
-                onChange={(e) => {
-                  setPlacementSupport(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setPlacementSupportError(selectValidator(e.target.value));
-                  }
-                }}
-                value={placementSupport}
-                error={placementSupportError}
-                errorFontSize={"9px"}
-              />
-            </Col>
+            {trainingType === "Training" && (
+              <>
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Batch Timing"
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    required={true}
+                    options={batchTimingOptions}
+                    onChange={(e) => {
+                      setCustomerBatchTimingId(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setCustomerBatchTimingIdError(
+                          selectValidator(e.target.value),
+                        );
+                      }
+                    }}
+                    value={customerBatchTimingId}
+                    error={customerBatchTimingIdError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
 
-            <Col span={8}>
-              <CommonSelectField
-                width="100%"
-                label="LMS Access"
-                required={true}
-                labelFontSize={"11px"}
-                labelMarginTop={"1px"}
-                options={[
-                  { id: 1, name: "Allowed" },
-                  { id: 2, name: "Not Allowed" },
-                ]}
-                onChange={(e) => {
-                  setLmsAccess(e.target.value);
-                  if (paymentValidationTrigger) {
-                    setLmsAccessError(selectValidator(e.target.value));
-                  }
-                }}
-                value={lmsAccess}
-                error={lmsAccessError}
-                errorFontSize={"9px"}
-              />
-            </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    label="Placement Support"
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    required={true}
+                    options={[
+                      { id: "Need", name: "Need" },
+                      { id: "Not Need", name: "Not Need" },
+                    ]}
+                    onChange={(e) => {
+                      setPlacementSupport(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setPlacementSupportError(
+                          selectValidator(e.target.value),
+                        );
+                      }
+                    }}
+                    value={placementSupport}
+                    error={placementSupportError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
 
-            <Col span={8}>
-              <div
-                style={{
-                  marginTop: "10px",
-                  display: "flex",
-                  gap: "6px",
-                  alignItems: "center",
-                }}
-              >
-                <p className="leads_serverrequired_label">Server Required</p>
-                <Switch
-                  style={{ color: "#333" }}
-                  checked={serverRequired}
-                  onChange={(checked) => {
-                    setServerRequired(checked);
-                  }}
-                  className="leads_serverrequired_switch"
-                />
-              </div>
-            </Col>
+                <Col span={8}>
+                  <CommonSelectField
+                    width="100%"
+                    label="LMS Access"
+                    required={true}
+                    labelFontSize={"11px"}
+                    labelMarginTop={"1px"}
+                    options={[
+                      { id: 1, name: "Allowed" },
+                      { id: 2, name: "Not Allowed" },
+                    ]}
+                    onChange={(e) => {
+                      setLmsAccess(e.target.value);
+                      if (paymentValidationTrigger) {
+                        setLmsAccessError(selectValidator(e.target.value));
+                      }
+                    }}
+                    value={lmsAccess}
+                    error={lmsAccessError}
+                    errorFontSize={"9px"}
+                  />
+                </Col>
+
+                <Col span={8}>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      display: "flex",
+                      gap: "6px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <p className="leads_serverrequired_label">
+                      Server Required
+                    </p>
+                    <Switch
+                      style={{ color: "#333" }}
+                      checked={serverRequired}
+                      onChange={(checked) => {
+                        setServerRequired(checked);
+                      }}
+                      className="leads_serverrequired_switch"
+                    />
+                  </div>
+                </Col>
+              </>
+            )}
           </Row>
         </>
       </div>

@@ -44,6 +44,7 @@ import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
 import ViewServerDetails from "../Server/ViewServerDetails";
 import CustomerHistory from "../Customers/CustomerHistory";
 import ServerPurchase from "../Server/ServerPurchase";
+import CustomerStatusRenderer from "../Customers/CustomerStatusRenderer";
 
 export default function Server({ setServerCount }) {
   const scrollRef = useRef();
@@ -330,123 +331,11 @@ export default function Server({ setServerCount }) {
           classPercent = isNaN(parsed) ? 0 : parsed;
         }
         return (
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            {text === "Form Pending" || text === "Refunded" ? (
-              <div>
-                <Button className="customers_status_formpending_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Awaiting Finance" ? (
-              <div>
-                <Button className="customers_status_awaitfinance_button">
-                  Payment Verify
-                </Button>
-              </div>
-            ) : text === "Awaiting Verify" ||
-              text === "Hold" ||
-              text === "Refund Ready to Pay" ? (
-              <div>
-                <Button className="customers_status_awaitverify_button">
-                  {text === "Refund Ready to Pay" ? "Ready for Refund" : text}
-                </Button>
-              </div>
-            ) : text === "Awaiting Trainer" ? (
-              <div>
-                <Button className="customers_status_awaittrainer_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Awaiting Trainer Verify" ? (
-              <div>
-                <Button className="customers_status_awaittrainerverify_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Trainer Approval" ? (
-              <div>
-                <Button className="customers_status_trainerapproval_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Awaiting Class" || text === "Refund Request" ? (
-              <div>
-                <Button className="customers_status_awaitingclass_button">
-                  {text === "Refund Request" ? "Refund Requested" : text}
-                </Button>
-              </div>
-            ) : text === "Class Scheduled" ? (
-              <div>
-                <Button className="customers_status_classscheduled_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Passedout process" ? (
-              <div>
-                <Button className="customers_status_awaitfeedback_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Completed" ? (
-              <div>
-                <Button className="customers_status_completed_button">
-                  {text}
-                </Button>
-              </div>
-            ) : text === "Rejected" ||
-              text === "REJECTED" ||
-              text === "Trainer Rejected" ||
-              text === "Payment Rejected" ||
-              text === "Escalated" ||
-              text === "Partially Closed" ||
-              text === "Discontinued" ||
-              text === "Videos Given" ||
-              text === "Refund" ? (
-              <Button className="trainers_rejected_button">{text}</Button>
-            ) : text === "Demo Completed" ? (
-              <Button className="customers_status_classgoing_button">
-                Only Demo
-              </Button>
-            ) : text === "Videos Given" ? (
-              <Button className="customers_status_videos_given_button">
-                Self-Paced
-              </Button>
-            ) : text === "Class Going" ? (
-              <div style={{ display: "flex", gap: "12px" }}>
-                <Button className="customers_status_classgoing_button">
-                  {text}
-                </Button>
-
-                <p className="customer_classgoing_percentage">{`${parseFloat(
-                  classPercent,
-                )}%`}</p>
-              </div>
-            ) : (
-              <p style={{ marginLeft: "6px" }}>-</p>
-            )}
-            {record.status === "Form Pending" && (
-              <Tooltip
-                placement="top"
-                title="Copy form link"
-                trigger={["hover", "click"]}
-              >
-                <FaRegCopy
-                  size={14}
-                  className="customers_formlink_copybutton"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      `${
-                        import.meta.env.VITE_EMAIL_URL
-                      }/customer-registration/${record.id}`,
-                    );
-                    CommonMessage("success", "Link Copied");
-                    console.log("Copied: eeee");
-                  }}
-                />
-              </Tooltip>
-            )}
-          </div>
+          <CustomerStatusRenderer
+            text={text}
+            record={record}
+            classPercent={classPercent}
+          />
         );
       },
     },

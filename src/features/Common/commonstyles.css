@@ -1272,3 +1272,11 @@
   margin-top: 5px;
   letter-spacing: 0.2px;
 }
+
+.whatsapp-tooltip-number {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 5px;
+  letter-spacing: 0.2px;
+}

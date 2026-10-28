@@ -30,7 +30,27 @@ export default function CommonMultiSelect({
   borderLeftNone,
   onFocus,
   onBlur,
+  onKeyDown,
 }) {
+  const [inputValue, setInputValue] = React.useState("");
+
+  const handleKeyDown = (event) => {
+    onKeyDown?.(event);
+    if (event.key === "Enter") {
+      event.defaultMuiPrevented = true;
+      event.preventDefault();
+      setInputValue("");
+      if (event.target && typeof event.target.blur === "function") {
+        event.target.blur();
+      } else if (
+        document.activeElement &&
+        typeof document.activeElement.blur === "function"
+      ) {
+        document.activeElement.blur();
+      }
+    }
+  };
+
   // Map stored ids -> option objects
   const selectedOptions = options.filter((opt) =>
     value.includes(String(opt.user_id ?? opt.id)),
@@ -86,6 +106,18 @@ export default function CommonMultiSelect({
           disabled={disabled}
           groupBy={groupBy}
           getOptionLabel={getLabel}
+          inputValue={inputValue}
+          onInputChange={(event, newInputValue, reason) => {
+            if (reason === "input") {
+              setInputValue(newInputValue);
+            } else if (reason === "clear") {
+              setInputValue("");
+            } else if (reason === "reset") {
+              // Do not clear search word when item is selected
+            }
+          }}
+          onClose={() => setInputValue("")}
+          onKeyDown={handleKeyDown}
           onChange={(event, newValue) => {
             onChange?.({
               target: {
@@ -131,32 +163,48 @@ export default function CommonMultiSelect({
               })}
             </div>
           )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label={label}
-              required={required}
-              size="small"
-              error={error}
-              onFocus={onFocus}
-              onBlur={onBlur}
-              sx={{
-                "& .MuiInputBase-input": {
-                  fontSize: fontSize || "14px",
-                  paddingTop: "4px !important",
-                  paddingBottom: "4px !important",
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderRight: borderRightNone ? "none" : "",
-                  borderLeft: borderLeftNone ? "none" : "",
-                  borderTopRightRadius: borderRightNone ? 0 : 4,
-                  borderBottomRightRadius: borderRightNone ? 0 : 4,
-                  borderTopLeftRadius: borderLeftNone ? 0 : 4,
-                  borderBottomLeftRadius: borderLeftNone ? 0 : 4,
-                },
-              }}
-            />
-          )}
+          renderInput={(params) => {
+            const { onKeyDown: paramsOnKeyDown, ...restInputProps } =
+              params.inputProps;
+            return (
+              <TextField
+                {...params}
+                inputProps={{
+                  ...restInputProps,
+                  onKeyDown: (event) => {
+                    handleKeyDown(event);
+                    if (!event.defaultMuiPrevented) {
+                      paramsOnKeyDown?.(event);
+                    }
+                  },
+                }}
+                label={label}
+                required={required}
+                size="small"
+                error={error}
+                onFocus={onFocus}
+                onBlur={(event) => {
+                  setInputValue("");
+                  onBlur?.(event);
+                }}
+                sx={{
+                  "& .MuiInputBase-input": {
+                    fontSize: fontSize || "14px",
+                    paddingTop: "4px !important",
+                    paddingBottom: "4px !important",
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderRight: borderRightNone ? "none" : "",
+                    borderLeft: borderLeftNone ? "none" : "",
+                    borderTopRightRadius: borderRightNone ? 0 : 4,
+                    borderBottomRightRadius: borderRightNone ? 0 : 4,
+                    borderTopLeftRadius: borderLeftNone ? 0 : 4,
+                    borderBottomLeftRadius: borderLeftNone ? 0 : 4,
+                  },
+                }}
+              />
+            );
+          }}
           slotProps={{
             listbox: {
               sx: {

@@ -5,6 +5,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoCallOutline, IoLocationOutline } from "react-icons/io5";
 import { FaWhatsapp, FaRegUser } from "react-icons/fa";
+import { IoPlayCircleOutline } from "react-icons/io5";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 const CustomerOverview = ({ customerDetails }) => {
@@ -56,12 +57,31 @@ const CustomerOverview = ({ customerDetails }) => {
         )}
 
         <div>
-          <p className="customer_nametext">
-            {" "}
-            {customerDetails && customerDetails.name
-              ? customerDetails.name
-              : "-"}
-          </p>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <p className="customer_nametext">
+              {" "}
+              {customerDetails && customerDetails.name
+                ? customerDetails.name
+                : "-"}
+            </p>
+
+            {customerDetails?.is_videos_only === 1 && (
+              <div className="customers_selfpaced_indication">
+                <span className="customers_selfpaced_icon_wrapper">
+                  <span className="customers_selfpaced_ripple" />
+
+                  <IoPlayCircleOutline
+                    className="customers_selfpaced_indication_icon"
+                    size={16}
+                  />
+                </span>
+
+                <p className="customers_selfpaced_indication_text">
+                  Self-Paced
+                </p>
+              </div>
+            )}
+          </div>
           {customerDetails?.student_id && (
             <p className="customer_overview_studentid_badge">
               {customerDetails && customerDetails.student_id
