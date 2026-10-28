@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Upload, Modal, Skeleton, Typography, Spin } from "antd";
 import { FaRegUser } from "react-icons/fa";
-import {
-  MdPerson,
-  MdBook,
-  MdAssignment,
-  MdAssignmentInd,
-} from "react-icons/md";
+import { MdPerson, MdBook, MdAssignment } from "react-icons/md";
+import { IoPlayCircleOutline } from "react-icons/io5";
 import moment from "moment";
 import { getCustomerById } from "../ApiService/action";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -196,16 +192,35 @@ export default function ParticularCustomerDetails({ customerId }) {
           )}
         </div>
         <div>
-          <h2
-            style={{
-              margin: 0,
-              color: "#1e293b",
-              fontSize: "20px",
-              fontWeight: 600,
-            }}
-          >
-            {customerDetails?.name || "-"}
-          </h2>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <h2
+              style={{
+                margin: 0,
+                color: "#1e293b",
+                fontSize: "20px",
+                fontWeight: 600,
+              }}
+            >
+              {customerDetails?.name || "-"}
+            </h2>
+
+            {customerDetails?.is_videos_only === 1 && (
+              <div className="customers_selfpaced_indication">
+                <span className="customers_selfpaced_icon_wrapper">
+                  <span className="customers_selfpaced_ripple" />
+
+                  <IoPlayCircleOutline
+                    className="customers_selfpaced_indication_icon"
+                    size={16}
+                  />
+                </span>
+
+                <p className="customers_selfpaced_indication_text">
+                  Self-Paced
+                </p>
+              </div>
+            )}
+          </div>
           {customerDetails?.student_id && (
             <p
               style={{
