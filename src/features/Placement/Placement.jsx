@@ -10,13 +10,8 @@ import {
   Popover,
 } from "antd";
 import { CiSearch } from "react-icons/ci";
-import {
-  IoIosClose,
-  IoMdArrowDropleft,
-  IoMdArrowDropright,
-} from "react-icons/io";
+import { IoIosClose } from "react-icons/io";
 import { IoFilter } from "react-icons/io5";
-import { MdOutlineSwapVert } from "react-icons/md";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonTable from "../Common/CommonTable";
 import "./styles.css";
@@ -37,11 +32,9 @@ import {
   regionOptions,
 } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
-import { RedoOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { CommonMessage } from "../Common/CommonMessage";
 import { FiFilter } from "react-icons/fi";
-import { FaRegCopy } from "react-icons/fa6";
 import { LuFileClock } from "react-icons/lu";
 import CommonDnd from "../Common/CommonDnd";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
@@ -54,10 +47,46 @@ import CommonSelectField from "../Common/CommonSelectField";
 import CustomerHistory from "../Customers/CustomerHistory";
 import OverflowTooltip from "../Common/OverflowTooltip";
 import CandidateNumberWithWhatsApp from "../Common/CandidateNumberWithWhatsApp";
-import ScrollableTabContainer from "../Common/ScrollableTabContainer";
 import CustomerStatusRenderer from "../Customers/CustomerStatusRenderer";
+import { FaWhatsapp, FaPlus } from "react-icons/fa";
+import { GiCheckMark } from "react-icons/gi";
+import { FaXmark } from "react-icons/fa6";
+import PlacementSendWhatsAppModal from "./PlacementSendWhatsAppModal";
+import WhatsappTemplate from "../Marketing/WhatsappTemplate";
+import "../Marketing/styles.css";
 
-export default function Placement() {
+export default function Placement({ setPlacementCount }) {
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [isBulkWhatsApp, setIsBulkWhatsApp] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedWhatsAppCustomer, setSelectedWhatsAppCustomer] =
+    useState(null);
+
+  const handleOpenSingleWhatsApp = (record) => {
+    setSelectedWhatsAppCustomer(record);
+    setIsBulkWhatsApp(false);
+    setIsWhatsAppModalOpen(true);
+  };
+
+  const handleOpenBulkWhatsApp = () => {
+    if (!selectedCustomers || selectedCustomers.length === 0) {
+      CommonMessage(
+        "warning",
+        "Please select at least one student from the table.",
+      );
+      return;
+    }
+    setIsBulkWhatsApp(true);
+    setSelectedWhatsAppCustomer(null);
+    setIsWhatsAppModalOpen(true);
+  };
+
+  const handleSelectedRow = (rows) => {
+    setSelectedCustomers(rows);
+    setSelectedRowKeys(rows.map((item) => item.id));
+  };
   //mount
   const mounted = useRef(false);
   //search userefs start
@@ -112,23 +141,10 @@ export default function Placement() {
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [branchOptions, setBranchOptions] = useState([]);
   //status bucket
-  const [placementStatus, setPlacementStatus] = useState("");
-  const [isSwap, setIsSwap] = useState(false);
-  const [customerStatusCount, setCustomerStatusCount] = useState(null);
   const [classGoingCounts, setClassGoingCounts] = useState(null);
-  const [trainerSubbucketStatus, setTrainerSubbucketsStatus] = useState("");
   const [classGoingSubBucketStatus, setClassGoingSubBucketStatus] =
     useState("");
   const scrollRef = useRef();
-  const statusBuckets = [
-    {
-      label: "All",
-      value: "",
-      countKey: "total_count",
-      activeClass: "addlead_tab_activebutton",
-      inactiveClass: "addlead_tab_inactivebutton",
-    },
-  ];
 
   //pagination
   const [pagination, setPagination] = useState({
@@ -141,6 +157,27 @@ export default function Placement() {
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);
   const [checkAll, setCheckAll] = useState(false);
+
+  const renderCampaignStatusBadge = (label, tooltipText, value) => {
+    const isSuccess = Number(value) === 1 || value === true || value === "1";
+    return (
+      <div
+        className={`placement_status_badge ${
+          isSuccess
+            ? "placement_status_badge_success"
+            : "placement_status_badge_error"
+        }`}
+      >
+        <span className="placement_status_badge_label">{label}</span>
+
+        {isSuccess ? (
+          <GiCheckMark className="placement_status_badge_success_icon" />
+        ) : (
+          <FaXmark className="placement_status_badge_error_icon" />
+        )}
+      </div>
+    );
+  };
 
   const nonChangeColumns = [
     {
@@ -283,6 +320,43 @@ export default function Placement() {
       },
     },
     {
+      title: "Campaign Status",
+      key: "campaign_status",
+      dataIndex: "campaign_status",
+      width: 270,
+      align: "center",
+      fixed: "right",
+      render: (_, record) => {
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              flexWrap: "nowrap",
+            }}
+          >
+            {renderCampaignStatusBadge(
+              "Welcome",
+              "Placement Welcome Message",
+              record.placement_welcome_message,
+            )}
+            {renderCampaignStatusBadge(
+              "Reg Link",
+              "Placement Registration Link",
+              record.placement_registration_link,
+            )}
+            {renderCampaignStatusBadge(
+              "Add-On",
+              "Placement Add-On Course",
+              record.placement_add_on_course,
+            )}
+          </div>
+        );
+      },
+    },
+    {
       title: "Status",
       key: "status",
       dataIndex: "status",
@@ -320,6 +394,21 @@ export default function Placement() {
         return {
           children: (
             <div className="trainers_actionbuttonContainer">
+              <Tooltip
+                placement="top"
+                title="Send WhatsApp"
+                trigger={["hover", "click"]}
+              >
+                <FaWhatsapp
+                  size={16}
+                  style={{
+                    color: "#25D366",
+                    cursor: "pointer",
+                    visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                  }}
+                  onClick={() => handleOpenSingleWhatsApp(record)}
+                />
+              </Tooltip>
               <Tooltip
                 placement="top"
                 title="View Candidate Details"
@@ -431,6 +520,13 @@ export default function Placement() {
     }
   }, [childUsers]);
 
+  useEffect(() => {
+    const triggerRefresh = () => handleRefresh();
+    window.addEventListener("refreshPlacementTab", triggerRefresh);
+    return () =>
+      window.removeEventListener("refreshPlacementTab", triggerRefresh);
+  });
+
   const getAllDownlineUsersData = async (user_id, isRefresh = false) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
@@ -485,11 +581,7 @@ export default function Placement() {
         ? overrides.pageNumber
         : pagination?.page || 1,
       overrides.limit !== undefined ? overrides.limit : pagination?.limit || 10,
-      overrides.status !== undefined
-        ? overrides.status
-        : trainerSubbucketStatus
-          ? trainerSubbucketStatus
-          : selectedStatus,
+      overrides.status !== undefined ? overrides.status : selectedStatus,
       overrides.classGoingSubBucketStatus !== undefined
         ? overrides.classGoingSubBucketStatus
         : classGoingSubBucketStatus,
@@ -544,6 +636,7 @@ export default function Placement() {
         total: pagination.total,
         totalPages: pagination.totalPages,
       });
+      setPlacementCount(response?.data?.data?.total_count || 0);
       setAllAdmissionsRegionCounts({
         total_count: response?.data?.data?.total_count || 0,
         chennai_region: response?.data?.data?.chennai_region || 0,
@@ -552,12 +645,10 @@ export default function Placement() {
         online_mode: response?.data?.data?.online_mode || 0,
         classroom_mode: response?.data?.data?.classroom_mode || 0,
       });
-      setCustomerStatusCount(
-        response?.data?.data?.customer_status_count || null,
-      );
       setClassGoingCounts(response?.data?.data?.class_going_sub_bucket || null);
     } catch (error) {
       setPlacementCustomersData([]);
+      setPlacementCount(0);
       console.log("get placement error", error);
     } finally {
       setLoading(false);
@@ -679,37 +770,12 @@ export default function Placement() {
   };
 
   const handlePaginationChange = ({ page, limit }) => {
+    setSelectedRowKeys([]);
+    setSelectedCustomers([]);
     fetchPlacementSupportData({
       pageNumber: page,
       limit: limit,
     });
-  };
-
-  const handleBucketClick = (config) => {
-    if (
-      placementStatus === config.value &&
-      !trainerSubbucketStatus &&
-      !classGoingSubBucketStatus
-    ) {
-      return;
-    }
-
-    const extraOverrides = config.onClick?.() || {};
-
-    const overrides = {
-      placementStatus: config.value,
-      pageNumber: 1,
-      ...extraOverrides,
-    };
-
-    setPlacementStatus(config.value);
-
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-    }));
-
-    // fetchPlacementSupportData(overrides);
   };
 
   const handleSearch = (e) => {
@@ -849,15 +915,15 @@ export default function Placement() {
   };
 
   const handleRefresh = () => {
+    setSelectedRowKeys([]);
+    setSelectedCustomers([]);
     setSearchValue("");
     setSelectedUserId([]);
     prevSelectedUserIdRef.current = "[]";
     prevSelectedTechnologyRef.current = "[]";
     setSelectedTechnology(null);
     setModeStatus("");
-    setPlacementStatus("");
     setSelectedStatus("");
-    setTrainerSubbucketsStatus("");
     setClassGoingSubBucketStatus("");
     setSelectedRegionId(null);
     setBranchOptions([]);
@@ -873,19 +939,7 @@ export default function Placement() {
 
   return (
     <div>
-      <div className="admissions_overall_header">
-        <div className="admissions_overall_indicator"></div>
-
-        <div className="admissions_overall_content">
-          <span className="admissions_overall_label">OverAll</span>
-
-          <span className="admissions_overall_count">
-            {allAdmissionsRegionCounts?.total_count ?? 0}
-          </span>
-        </div>
-      </div>
-
-      <Row align="middle" gutter={[12, 12]}>
+      <Row align="middle" gutter={[12, 12]} style={{ marginTop: "22px" }}>
         <Col
           xs={24}
           sm={24}
@@ -1278,15 +1332,6 @@ export default function Placement() {
               getTableColumnsData(loginUserId);
             }}
           />
-
-          <Tooltip placement="top" title="Refresh">
-            <Button
-              className="leadmanager_refresh_button"
-              onClick={handleRefresh}
-            >
-              <RedoOutlined className="refresh_icon" />
-            </Button>
-          </Tooltip>
         </Col>
       </Row>
 
@@ -1360,7 +1405,7 @@ export default function Placement() {
             </div>
           </div>
         </Col>
-        {permissions.includes("Show Region Summary") && (
+        {permissions.includes("Show Region Summary") ? (
           <Col
             span={16}
             style={{
@@ -1430,11 +1475,63 @@ export default function Placement() {
               </div>
             </div>
           </Col>
+        ) : (
+          <Col
+            span={16}
+            style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
+          >
+            {selectedRowKeys.length > 0 && (
+              <button
+                className="marketing_bulk_whatsapp_button"
+                onClick={handleOpenBulkWhatsApp}
+              >
+                <FaWhatsapp size={15} />
+                Send Bulk WhatsApp ({selectedRowKeys.length})
+              </button>
+            )}
+
+            <button
+              className={"create_whatsapp_template_button"}
+              onClick={() => setIsTemplateModalOpen(true)}
+              style={{ width: "160px" }}
+            >
+              <FaPlus style={{ marginRight: "6px" }} />
+              Create Template
+            </button>
+          </Col>
         )}
       </Row>
 
+      {permissions.includes("Show Region Summary") && (
+        <Row style={{ marginTop: "18px" }}>
+          <Col
+            span={24}
+            style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
+          >
+            {selectedRowKeys.length > 0 && (
+              <button
+                className="marketing_bulk_whatsapp_button"
+                onClick={handleOpenBulkWhatsApp}
+              >
+                <FaWhatsapp size={15} />
+                Send Bulk WhatsApp ({selectedRowKeys.length})
+              </button>
+            )}
+
+            <button
+              className={"create_whatsapp_template_button"}
+              onClick={() => setIsTemplateModalOpen(true)}
+              style={{ width: "160px" }}
+            >
+              <FaPlus style={{ marginRight: "6px" }} />
+              Create Template
+            </button>
+          </Col>
+        </Row>
+      )}
+
       {/* Status Buckets */}
-      <ScrollableTabContainer>
+      {/* <ScrollableTabContainer>
         {statusBuckets.map((config, index) => {
           const isActive = placementStatus === config.value;
           const count = customerStatusCount?.[config.countKey] ?? "-";
@@ -1448,7 +1545,7 @@ export default function Placement() {
             </div>
           );
         })}
-      </ScrollableTabContainer>
+      </ScrollableTabContainer> */}
 
       <div
         style={{
@@ -1467,7 +1564,10 @@ export default function Placement() {
           dataSource={placementCustomersData}
           dataPerPage={10}
           loading={loading}
-          checkBox="false"
+          checkBox="true"
+          selectedDatas={handleSelectedRow}
+          selectedRowKeys={selectedRowKeys}
+          rowKey={(record) => record.id}
           size="small"
           className="questionupload_table"
           onPaginationChange={handlePaginationChange} // callback to fetch new data
@@ -1584,6 +1684,26 @@ export default function Placement() {
           setIsOpenCustomerHistoryDrawer(false);
           setCustomerId(null);
         }}
+      />
+      <PlacementSendWhatsAppModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => {
+          setIsWhatsAppModalOpen(false);
+          setIsBulkWhatsApp(false);
+          setSelectedWhatsAppCustomer(null);
+        }}
+        customer={selectedWhatsAppCustomer}
+        customers={selectedCustomers}
+        courseOptions={technologiesData}
+        isBulk={isBulkWhatsApp}
+        onSuccess={() => {
+          setSelectedRowKeys([]);
+          setSelectedCustomers([]);
+        }}
+      />
+      <WhatsappTemplate
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
       />
     </div>
   );

@@ -1748,11 +1748,13 @@ export default function Customers() {
                 </>
               }
             >
-              <CustomerStatusRenderer
-                text={text}
-                record={record}
-                classPercent={classPercent}
-              />
+              <span style={{ display: "inline-flex", alignItems: "center" }}>
+                <CustomerStatusRenderer
+                  text={text}
+                  record={record}
+                  classPercent={classPercent}
+                />
+              </span>
             </Tooltip>
             {record.status === "Completed" ? (
               <Tooltip placement="top" title="View Certificate">
@@ -2641,6 +2643,8 @@ export default function Customers() {
           col.key === "ra_name" &&
           (bucketStatus === null ||
             bucketStatus === "" ||
+            status === "Videos Given" ||
+            status === "Demo Completed" ||
             (bucketStatus === "Student Onboarding" &&
               (status === "" ||
                 status === null ||
@@ -2653,11 +2657,13 @@ export default function Customers() {
 
         // Trainer-related columns
         if (
-          ["trainer_hr_name", "trainer_name", "commercial_percentage"].includes(
+          ["hr_name", "trainer_name", "commercial_percentage"].includes(
             col.key,
           ) &&
           (bucketStatus === "" ||
             bucketStatus === null ||
+            status === "Videos Given" ||
+            status === "Demo Completed" ||
             (bucketStatus === "Student Onboarding" && status === "") ||
             hideTrainerStatuses.includes(status) ||
             trainerSubbucketStatus === "Awaiting Trainer")
@@ -2670,7 +2676,9 @@ export default function Customers() {
           col.key === "review_status" &&
           (bucketStatus === null ||
             bucketStatus === "" ||
-            bucketStatus === "Student Onboarding")
+            bucketStatus === "Student Onboarding" ||
+            status === "Demo Completed" ||
+            status === "Videos Given")
         ) {
           return false;
         }

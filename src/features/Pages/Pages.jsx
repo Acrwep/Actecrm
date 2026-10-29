@@ -47,15 +47,13 @@ import WorkSheet from "../WorkSheet/WorkSheet";
 import Helpdesk from "../Helpdesk/Helpdesk";
 import Tickets from "../Helpdesk/Tickets";
 import TrainerPaymentRequestPage from "../Trainers/TrainerPaymentRequestPage";
-import TrainerPaymentRequestForm from "../Trainers/TrainerPaymentRequestForm";
 import RequestSuccess from "../Trainers/RequestSuccess";
 import AcknowledgeClassCompletion from "../Trainers/AcknowledgeClassCompletion";
 import Admissions from "../Admissions/Admissions";
 import Accounts from "../Accounts/Accounts";
 import BatchManagement from "../Batches/BatchManagement";
-import Placement from "../Placement/Placement";
+import PlacementMainTab from "../Placement/PlacementMainTab";
 import Marketing from "../Marketing/Marketing";
-import WhatsAppCampaigns from "../Marketing/WhatsAppCampaigns";
 import ServerAcknowledge from "../Server/ServerAcknowledge";
 
 const { Sider, Content, Header } = Layout;
@@ -308,7 +306,7 @@ export default function Pages() {
             <Route element={<Tickets />} path="/tickets" />
             <Route element={<WorkSheet />} path="/react-worksheet" />
             <Route element={<Accounts />} path="/accounts" />
-            <Route element={<Placement />} path="/placement" />
+            <Route element={<PlacementMainTab />} path="/placement" />
             <Route element={<Marketing />} path="/marketing" />
             <Route element={<Marketing />} path="/whatsapp-campaigns" />
             <Route element={<Marketing />} path="/marketing/campaigns" />

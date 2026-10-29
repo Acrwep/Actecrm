@@ -2385,3 +2385,147 @@ export const sendFollowupTemplate = async ({
     throw error;
   }
 };
+
+// ==========================================
+// Placement WhatsApp Campaigns APIs
+// ==========================================
+
+export const getPlacementWhatsAppCampaignStatistics = async (params = {}) => {
+  try {
+    const response = await api.get(
+      "/api/whatsapp/placement/campaigns/statistics",
+      { params },
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPlacementCampaignStats = getPlacementWhatsAppCampaignStatistics;
+
+export const getPlacementWhatsAppCampaigns = async (params = {}) => {
+  try {
+    const response = await api.get("/api/whatsapp/placement/campaigns", {
+      params,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPlacementCampaigns = getPlacementWhatsAppCampaigns;
+
+export const getPlacementWhatsAppCampaignById = async (id) => {
+  try {
+    const response = await api.get(`/api/whatsapp/placement/campaigns/${id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPlacementCampaignById = getPlacementWhatsAppCampaignById;
+
+export const getPlacementWhatsAppCampaignMessages = async (id, params = {}) => {
+  try {
+    const response = await api.get(
+      `/api/whatsapp/placement/campaigns/${id}/messages`,
+      { params },
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPlacementCampaignMessages =
+  getPlacementWhatsAppCampaignMessages;
+
+export const sendSinglePlacementWhatsApp = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/whatsapp/placement/send-single",
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendBulkPlacementWhatsApp = async (payload) => {
+  try {
+    const response = await api.post(
+      "/api/whatsapp/placement/send-bulk",
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendPlacementFollowUp = async (campaignId, payload) => {
+  try {
+    const response = await api.post(
+      `/api/whatsapp/placement/campaigns/${campaignId}/send-template`,
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendPlacementFollowupTemplate = async ({
+  campaignId,
+  templateId,
+  statusFilter = ["Sent", "Delivered", "Read"],
+  campaignName,
+  values = {},
+  mediaUrl = "",
+  mediaFilename = "",
+  selectedMobiles = null,
+  ...rest
+}) => {
+  try {
+    const targetCampaignId = campaignId || rest.campaign_id;
+    const payload = {
+      campaign_id: targetCampaignId,
+      template_id: templateId || rest.template_id,
+      status_filter: statusFilter ||
+        rest.status_filter || ["Sent", "Delivered", "Read"],
+      campaign_name: campaignName || rest.campaign_name,
+      values,
+      media_url: mediaUrl || rest.media_url || undefined,
+      media_filename: mediaFilename || rest.media_filename || undefined,
+      selected_mobile_numbers: selectedMobiles?.length
+        ? selectedMobiles
+        : rest.selected_mobile_numbers?.length
+          ? rest.selected_mobile_numbers
+          : undefined,
+    };
+
+    const response = await api.post(
+      `/api/whatsapp/placement/campaigns/${targetCampaignId}/send-template`,
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getEligiblePlacementCustomers = async (payload = {}) => {
+  try {
+    const response = await api.post(
+      "/api/whatsapp/placement/eligible-customers",
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -156,7 +156,7 @@ export default function WhatsAppCampaignDetails({
       },
     },
     {
-      title: "Mobile Number",
+      title: "Whatsapp Number",
       dataIndex: "mobile_number",
       key: "mobile_number",
       width: 140,
@@ -316,7 +316,8 @@ export default function WhatsAppCampaignDetails({
               onClick={() => setIsFollowupModalOpen(true)}
             >
               <FaWhatsapp size={15} />
-              Send Follow-up Template {selectedRows.length > 0 && `(${selectedRows.length})`}
+              Send Follow-up Template{" "}
+              {selectedRows.length > 0 && `(${selectedRows.length})`}
             </Button>
             <Tooltip placement="top" title="Refresh">
               <Button
@@ -475,7 +476,7 @@ export default function WhatsAppCampaignDetails({
 
   const selectedMobiles = useMemo(
     () => selectedRows.map((r) => r.mobile_number).filter(Boolean),
-    [selectedRows]
+    [selectedRows],
   );
 
   const followupModal = (

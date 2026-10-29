@@ -300,7 +300,7 @@ export default function Login() {
                   {/* <p className="login_forgotpasswordtext">Forgot Password?</p> */}
                 </div>
                 {loading ? (
-                  <button className="login_loadingsigninbutton">
+                  <button className="login_loadingsigninbutton" disabled={true}>
                     <CommonSpinner />
                   </button>
                 ) : (
