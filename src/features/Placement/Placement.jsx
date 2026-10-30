@@ -1342,7 +1342,7 @@ export default function Placement({ setPlacementCount }) {
      
       </div> */}
 
-      <Row style={{ marginTop: "18px" }}>
+      <Row style={{ marginTop: "22px" }}>
         <Col span={8} style={{ display: "flex", alignItems: "center" }}>
           <div
             className="customers_status_mainContainer"
@@ -1351,6 +1351,7 @@ export default function Placement({ setPlacementCount }) {
               marginBottom: "0px",
               display: "flex",
               gap: "12px",
+              padding: "0px",
             }}
           >
             <div
@@ -1485,7 +1486,7 @@ export default function Placement({ setPlacementCount }) {
                 className="marketing_bulk_whatsapp_button"
                 onClick={handleOpenBulkWhatsApp}
               >
-                <FaWhatsapp size={15} />
+                <FaWhatsapp size={15} style={{ marginRight: "6px" }} />
                 Send Bulk WhatsApp ({selectedRowKeys.length})
               </button>
             )}
@@ -1513,7 +1514,7 @@ export default function Placement({ setPlacementCount }) {
                 className="marketing_bulk_whatsapp_button"
                 onClick={handleOpenBulkWhatsApp}
               >
-                <FaWhatsapp size={15} />
+                <FaWhatsapp size={15} style={{ marginRight: "6px" }} />
                 Send Bulk WhatsApp ({selectedRowKeys.length})
               </button>
             )}
@@ -1549,7 +1550,7 @@ export default function Placement({ setPlacementCount }) {
 
       <div
         style={{
-          marginTop: "16px",
+          marginTop: "22px",
         }}
       >
         <CommonTable
@@ -1699,6 +1700,8 @@ export default function Placement({ setPlacementCount }) {
         onSuccess={() => {
           setSelectedRowKeys([]);
           setSelectedCustomers([]);
+          fetchPlacementSupportData({});
+          window.dispatchEvent(new CustomEvent("refreshPlacementCampaigns"));
         }}
       />
       <WhatsappTemplate

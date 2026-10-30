@@ -115,6 +115,25 @@ export default function PlacementCampaigns() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleRefreshCampaigns = () => {
+      fetchStatisticsData({});
+      fetchCampaignsData({});
+    };
+
+    window.addEventListener(
+      "refreshPlacementCampaigns",
+      handleRefreshCampaigns,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "refreshPlacementCampaigns",
+        handleRefreshCampaigns,
+      );
+    };
+  }, []);
+
   // Listen to refresh events from main tab
   useEffect(() => {
     const triggerRefresh = () => handleRefresh();
@@ -362,14 +381,8 @@ export default function PlacementCampaigns() {
         return (
           <Tooltip title={"Click to view details"} placement="top">
             <p
+              className="whatsapp_campaign_id"
               onClick={() => handleViewDetails(record)}
-              style={{
-                fontWeight: 700,
-                color: "#1e40af",
-                cursor: "pointer",
-                fontSize: "11.5px",
-                margin: 0,
-              }}
             >
               {displayId}
             </p>

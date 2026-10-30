@@ -307,13 +307,8 @@ export default function WhatsAppCampaigns({ onSwitchToLeads }) {
       render: (text, record) => (
         <Tooltip title={"Click to view details"} placement="top">
           <p
+            className="whatsapp_campaign_id"
             onClick={() => handleViewDetails(record)}
-            style={{
-              fontWeight: 700,
-              color: "#1e40af",
-              cursor: "pointer",
-              fontSize: "11.5px",
-            }}
           >
             {text}
           </p>

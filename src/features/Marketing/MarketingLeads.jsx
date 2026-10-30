@@ -995,7 +995,36 @@ export default function MarketingLeads({ courseOptions }) {
           </Col>
         </Row>
       ) : (
-        <div></div>
+        <Row style={{ marginTop: "8px", alignItems: "center" }}>
+          <Col
+            span={24}
+            style={{
+              display: "flex",
+              marginTop: "14px",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            {selectedRowKeys.length > 0 && (
+              <button
+                className="marketing_bulk_whatsapp_button"
+                onClick={handleOpenBulkWhatsApp}
+              >
+                <FaWhatsapp style={{ marginRight: "6px" }} size={15} />
+                Send Bulk WhatsApp {`( ${selectedRowKeys.length} )`}
+              </button>
+            )}
+            <button
+              className={"create_whatsapp_template_button"}
+              onClick={() => setIsTemplateModalOpen(true)}
+              style={{ width: "160px" }}
+            >
+              <FaPlus style={{ marginRight: "6px" }} />
+              Create Template
+            </button>
+          </Col>
+        </Row>
       )}
 
       <div style={{ marginTop: "22px" }}>
