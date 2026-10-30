@@ -1052,29 +1052,43 @@ export default function Server({ setServerCount }) {
         </Col>
       </Row>
 
-      <div className="customers_scroll_wrapper" style={{ marginBottom: "8px" }}>
-        <div className="customers_status_mainContainer" ref={scrollRef}>
-          {" "}
-          {statusBuckets.map((config, index) => {
-            const isActive = status === config.value;
+      <Row style={{ position: "relative" }}>
+        <Col span={12}>
+          <div
+            className="customers_scroll_wrapper"
+            style={{ marginTop: "0px", marginBottom: "0px" }}
+          >
+            <div className="customers_status_mainContainer" ref={scrollRef}>
+              {" "}
+              {statusBuckets.map((config, index) => {
+                const isActive = status === config.value;
 
-            const count = statusCount?.[config.countKey] ?? "-";
-            return (
-              <div
-                key={config.value || index}
-                className={isActive ? config.activeClass : config.inactiveClass}
-                onClick={() => handleBucketClick(config)}
-              >
-                <p>{`${config.label} (${count})`}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+                const count = statusCount?.[config.countKey] ?? "-";
+                return (
+                  <div
+                    key={config.value || index}
+                    className={
+                      isActive ? config.activeClass : config.inactiveClass
+                    }
+                    onClick={() => handleBucketClick(config)}
+                  >
+                    <p>{`${config.label} (${count})`}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Col>
 
-      {permissions.includes("Show Region Summary") ? (
-        <Row style={{ position: "relative" }}>
-          <Col span={12}>
+        {permissions.includes("Show Region Summary") && (
+          <Col
+            span={12}
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
             <div
               className="livelead_today_summary_container"
               style={{ marginTop: "0px" }}
@@ -1121,80 +1135,14 @@ export default function Server({ setServerCount }) {
               </div>
             </div>
           </Col>
-          <Col
-            span={12}
-            style={{
-              marginTop: "12px",
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          >
-            <div
-              className={
-                selectedRowKeys.length >= 1
-                  ? "show_server_total_container"
-                  : "server_total_container"
-              }
-            >
-              <div className="server_total_card">
-                <p className="server_total_label">
-                  Selected Total
-                  {selectedRows.length > 0 && (
-                    <span className="server_total_selected_badge">
-                      {selectedRows.length}
-                    </span>
-                  )}
-                  :
-                </p>
-                <p className="server_total_value">
-                  {"₹" +
-                    selectedRows
-                      .reduce(
-                        (acc, row) => acc + (Number(row.server_cost) || 0),
-                        0,
-                      )
-                      .toLocaleString("en-IN")}
-                </p>
-              </div>
-            </div>
-          </Col>
-        </Row>
-      ) : (
-        <div
-          className={
-            selectedRowKeys.length >= 1
-              ? "show_server_total_container"
-              : "server_total_container"
-          }
-          style={{
-            ...(selectedRowKeys.length <= 0 && { height: "20px" }),
-          }}
-        >
-          <div className="server_total_card">
-            <p className="server_total_label">
-              Selected Total
-              {selectedRows.length > 0 && (
-                <span className="server_total_selected_badge">
-                  {selectedRows.length}
-                </span>
-              )}
-              :
-            </p>
-            <p className="server_total_value">
-              {"₹" +
-                selectedRows
-                  .reduce((acc, row) => acc + (Number(row.server_cost) || 0), 0)
-                  .toLocaleString("en-IN")}
-            </p>
-          </div>
-        </div>
-      )}
+        )}
+      </Row>
 
       <div
         style={{
           marginTop: permissions.includes("Show Region Summary")
-            ? "8px"
-            : "0px",
+            ? "20px"
+            : "14px",
         }}
       >
         <CommonTable

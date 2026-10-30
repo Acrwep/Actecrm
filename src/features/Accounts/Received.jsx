@@ -1152,7 +1152,7 @@ export default function Received({
 
       {permissions.includes("Show Region Summary") ? (
         <>
-          <Row style={{ marginBottom: "16px" }}>
+          <Row style={{ marginBottom: "20px" }}>
             <Col
               span={24}
               style={{ display: "flex", gap: "16px", alignItems: "center" }}
@@ -1218,7 +1218,7 @@ export default function Received({
             </Col>
           </Row>
 
-          <Row style={{ marginTop: "16px" }}>
+          <Row style={{ marginTop: "16px", marginBottom: "20px" }}>
             <Col span={12}>
               <div
                 className="livelead_today_summary_container"
@@ -1301,7 +1301,7 @@ export default function Received({
           </Row>
         </>
       ) : (
-        <Row style={{ marginTop: "16px", marginBottom: "16px" }}>
+        <Row style={{ marginTop: "16px", marginBottom: "20px" }}>
           <Col
             span={12}
             style={{ display: "flex", gap: "16px", alignItems: "center" }}
@@ -1382,7 +1382,7 @@ export default function Received({
         </Row>
       )}
 
-      <div style={{ marginTop: "16px" }}>
+      <div>
         <CommonTable
           // scroll={{ x: 2350 }}
           scroll={{

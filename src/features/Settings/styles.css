@@ -339,7 +339,7 @@
   justify-content: center;
   align-items: center;
   opacity: 0.7;
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .settings_formfields_deletebutton {

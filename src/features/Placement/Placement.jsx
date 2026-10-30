@@ -1343,7 +1343,7 @@ export default function Placement({ setPlacementCount }) {
       </div> */}
 
       <Row style={{ marginTop: "22px" }}>
-        <Col span={8} style={{ display: "flex", alignItems: "center" }}>
+        <Col span={12} style={{ display: "flex", alignItems: "center" }}>
           <div
             className="customers_status_mainContainer"
             style={{
@@ -1406,129 +1406,92 @@ export default function Placement({ setPlacementCount }) {
             </div>
           </div>
         </Col>
-        {permissions.includes("Show Region Summary") ? (
-          <Col
-            span={16}
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-            }}
-          >
-            <div
-              className="livelead_today_summary_container"
-              style={{ marginTop: "0px" }}
-            >
-              <p className="livelead_today_label">REGION SUMMARY</p>
-
-              <div className="livelead_badge_item online">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#3c9111" }}
-                />
-                <p className="livelead_badge_text">
-                  Hub{" "}
-                  <span className="livelead_badge_count">
-                    {allAdmissionsRegionCounts?.hub_region ?? 0}
-                  </span>
-                </p>
-              </div>
-
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#1e90ff" }}
-                />
-                <p className="livelead_badge_text">
-                  Chennai{" "}
-                  <span className="livelead_badge_count">
-                    {allAdmissionsRegionCounts?.chennai_region ?? 0}
-                  </span>
-                </p>
-              </div>
-
-              <div className="livelead_badge_item classroom">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#5b69ca" }}
-                />
-                <p className="livelead_badge_text">
-                  Bangalore{" "}
-                  <span className="livelead_badge_count">
-                    {allAdmissionsRegionCounts?.bangalore_region ?? 0}
-                  </span>
-                </p>
-              </div>
-
-              <div className="livelead_badge_item total">
-                <div
-                  className="livelead_badge_dot"
-                  style={{ backgroundColor: "#5b69ca" }}
-                />
-                <p className="livelead_badge_text">
-                  Total{" "}
-                  <span className="livelead_badge_count">
-                    {(allAdmissionsRegionCounts?.hub_region ?? 0) +
-                      (allAdmissionsRegionCounts?.chennai_region ?? 0) +
-                      (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </Col>
-        ) : (
-          <Col
-            span={16}
-            style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
-          >
-            {selectedRowKeys.length > 0 && (
-              <button
-                className="marketing_bulk_whatsapp_button"
-                onClick={handleOpenBulkWhatsApp}
-              >
-                <FaWhatsapp size={15} style={{ marginRight: "6px" }} />
-                Send Bulk WhatsApp ({selectedRowKeys.length})
-              </button>
-            )}
-
+        <Col
+          span={12}
+          style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
+        >
+          {selectedRowKeys.length > 0 && (
             <button
-              className={"create_whatsapp_template_button"}
-              onClick={() => setIsTemplateModalOpen(true)}
-              style={{ width: "160px" }}
+              className="marketing_bulk_whatsapp_button"
+              onClick={handleOpenBulkWhatsApp}
             >
-              <FaPlus style={{ marginRight: "6px" }} />
-              Create Template
+              <FaWhatsapp size={15} style={{ marginRight: "6px" }} />
+              Send Bulk WhatsApp ({selectedRowKeys.length})
             </button>
-          </Col>
-        )}
+          )}
+
+          <button
+            className={"create_whatsapp_template_button"}
+            onClick={() => setIsTemplateModalOpen(true)}
+            style={{ width: "160px" }}
+          >
+            <FaPlus style={{ marginRight: "6px" }} />
+            Create Template
+          </button>
+        </Col>
       </Row>
 
       {permissions.includes("Show Region Summary") && (
-        <Row style={{ marginTop: "18px" }}>
-          <Col
-            span={24}
-            style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}
-          >
-            {selectedRowKeys.length > 0 && (
-              <button
-                className="marketing_bulk_whatsapp_button"
-                onClick={handleOpenBulkWhatsApp}
-              >
-                <FaWhatsapp size={15} style={{ marginRight: "6px" }} />
-                Send Bulk WhatsApp ({selectedRowKeys.length})
-              </button>
-            )}
+        <div
+          className="livelead_today_summary_container"
+          style={{ marginTop: "20px" }}
+        >
+          <p className="livelead_today_label">REGION SUMMARY</p>
 
-            <button
-              className={"create_whatsapp_template_button"}
-              onClick={() => setIsTemplateModalOpen(true)}
-              style={{ width: "160px" }}
-            >
-              <FaPlus style={{ marginRight: "6px" }} />
-              Create Template
-            </button>
-          </Col>
-        </Row>
+          <div className="livelead_badge_item online">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#3c9111" }}
+            />
+            <p className="livelead_badge_text">
+              Hub{" "}
+              <span className="livelead_badge_count">
+                {allAdmissionsRegionCounts?.hub_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#1e90ff" }}
+            />
+            <p className="livelead_badge_text">
+              Chennai{" "}
+              <span className="livelead_badge_count">
+                {allAdmissionsRegionCounts?.chennai_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item classroom">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Bangalore{" "}
+              <span className="livelead_badge_count">
+                {allAdmissionsRegionCounts?.bangalore_region ?? 0}
+              </span>
+            </p>
+          </div>
+
+          <div className="livelead_badge_item total">
+            <div
+              className="livelead_badge_dot"
+              style={{ backgroundColor: "#5b69ca" }}
+            />
+            <p className="livelead_badge_text">
+              Total{" "}
+              <span className="livelead_badge_count">
+                {(allAdmissionsRegionCounts?.hub_region ?? 0) +
+                  (allAdmissionsRegionCounts?.chennai_region ?? 0) +
+                  (allAdmissionsRegionCounts?.bangalore_region ?? 0)}
+              </span>
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Status Buckets */}

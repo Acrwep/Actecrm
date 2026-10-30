@@ -1400,7 +1400,7 @@ export default function Refund({
           </Row>
         </>
       ) : (
-        <Row style={{ marginTop: "16px", marginBottom: "16px" }}>
+        <Row style={{ marginTop: "20px", marginBottom: "24px" }}>
           <Col
             span={12}
             style={{ display: "flex", gap: "16px", alignItems: "center" }}
