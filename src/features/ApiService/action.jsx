@@ -536,11 +536,11 @@ export const getTrainerPaymentBankSheet = async (payload) => {
   }
 };
 
-export const deleteTrainerPayment = async (trainer_payment_id) => {
+export const deleteTrainerPayment = async (payload) => {
   try {
-    const response = await api.delete(
-      `/api/deleteTrainerPayment?trainer_payment_id=${trainer_payment_id}`,
-    );
+    const response = await api.delete("/api/deleteTrainerPayment", {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;

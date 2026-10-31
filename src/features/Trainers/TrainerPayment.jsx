@@ -2082,8 +2082,12 @@ export default function TrainerPayment() {
 
   const handleDeletePayment = async () => {
     setButtonLoading(true);
+    const payload = {
+      trainer_payment_id: selectedPaymentDetails.id,
+      updated_by: loginUserId,
+    };
     try {
-      await deleteTrainerPayment(selectedPaymentDetails.id);
+      await deleteTrainerPayment(payload);
       setTimeout(() => {
         setIsOpenDeleteModal(false);
         setButtonLoading(false);
