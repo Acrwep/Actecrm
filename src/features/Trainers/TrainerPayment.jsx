@@ -18,10 +18,7 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { IoIosClose } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 import { PiSealCheckFill } from "react-icons/pi";
-import { BsPatchCheckFill } from "react-icons/bs";
 import { FiFilter } from "react-icons/fi";
-import { FaUserAlt } from "react-icons/fa";
-import { MdGroups } from "react-icons/md";
 import { FaLinkedinIn } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { RedoOutlined } from "@ant-design/icons";
@@ -30,10 +27,10 @@ import { FaXmark } from "react-icons/fa6";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegCopy } from "react-icons/fa6";
 import { LuFileClock } from "react-icons/lu";
+import { RiDeleteBinLine } from "react-icons/ri";
 import { DownloadOutlined } from "@ant-design/icons";
 import CommonTable from "../Common/CommonTable";
 import {
-  deleteTrainerPaymentRequest,
   getAllBranches,
   getCustomerById,
   getTrainerById,
@@ -42,10 +39,10 @@ import {
   updateTrainerPaymentStatus,
   getTableColumns,
   updateTableColumns,
-  getCustomerFullHistory,
   getBranches,
   getTrainerPaymentBankSheet,
   verifyReview,
+  deleteTrainerPayment,
 } from "../ApiService/action";
 import { SlActionUndo } from "react-icons/sl";
 import {
@@ -383,9 +380,6 @@ export default function TrainerPayment() {
   const [isOpenPaymentScreenshotModal, setIsOpenPaymentScreenshotModal] =
     useState(false);
   const [transactionScreenshot, setTransactionScreenshot] = useState("");
-  //delete request
-  const [isOpenRequestDeleteModal, setIsOpenRequestDeleteModal] =
-    useState(false);
   //approve usestates
   const [isOpenApproveModal, setIsOpenApproveModal] = useState(false);
   const [approveButtonLoading, setApproveButtonLoading] = useState(false);
@@ -394,6 +388,8 @@ export default function TrainerPayment() {
   //direct payment
   const [isOpenDirectPaidDrawer, setIsOpenDirectPaidDrawer] = useState(false);
   const directPaymentRef = useRef();
+  //delete payment
+  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
 
   const renderCellWithBackground = (
     status,
@@ -1116,6 +1112,28 @@ export default function TrainerPayment() {
                   />
                 </Tooltip>
               </div>
+              {(record.status === "Link Sent" ||
+                record.status === "Requested") &&
+              permissions.includes("Delete Trainer Payment") ? (
+                <Tooltip
+                  placement="top"
+                  title="Delete Payment"
+                  trigger={["hover", "click"]}
+                >
+                  <RiDeleteBinLine
+                    size={15}
+                    color="#d32f2f"
+                    className="trainers_action_icons"
+                    onClick={() => {
+                      setIsOpenDeleteModal(true);
+                      setSelectedPaymentDetails(record);
+                    }}
+                    style={{
+                      visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                    }}
+                  />
+                </Tooltip>
+              ) : null}
             </div>
           ),
           // props: { rowSpan: flatRecord.rowSpan },
@@ -1753,25 +1771,6 @@ export default function TrainerPayment() {
     }
   };
 
-  const handleRequestDelete = async () => {
-    setButtonLoading(true);
-    try {
-      await deleteTrainerPaymentRequest(selectedPaymentDetails.id);
-      setTimeout(() => {
-        setIsOpenRequestDeleteModal(false);
-        setButtonLoading(false);
-        fetchTrainerPaymentsData({ pageNumber: 1 });
-      }, 300);
-    } catch (error) {
-      setButtonLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
-    }
-  };
-
   const handleSearch = (e) => {
     const input = e.target.value;
     setSearchValue(input);
@@ -2078,6 +2077,25 @@ export default function TrainerPayment() {
         error?.response?.data?.details ||
           "Something went wrong. Try again later",
       );
+    }
+  };
+
+  const handleDeletePayment = async () => {
+    setButtonLoading(true);
+    try {
+      await deleteTrainerPayment(selectedPaymentDetails.id);
+      setTimeout(() => {
+        setIsOpenDeleteModal(false);
+        setButtonLoading(false);
+        fetchTrainerPaymentsData({});
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+        "Failed to delete payment";
+      CommonMessage("error", errorMessage);
     }
   };
 
@@ -3047,17 +3065,6 @@ export default function TrainerPayment() {
         </div>
       </Modal>
 
-      {/* delete request modal */}
-      <CommonDeleteModal
-        open={isOpenRequestDeleteModal}
-        onCancel={() => {
-          setIsOpenRequestDeleteModal(false);
-          setSelectedPaymentDetails(null);
-        }}
-        content="Are you sure want to delete the Request?"
-        loading={buttonLoading}
-        onClick={handleRequestDelete}
-      />
       <TrainerFullDetailsModal
         open={isOpenTrainerFullDetailsModal}
         onClose={() => {
@@ -3307,6 +3314,19 @@ export default function TrainerPayment() {
           </div>
         </div>
       </Drawer>
+
+      {/* delete modal */}
+      <CommonDeleteModal
+        open={isOpenDeleteModal}
+        onCancel={() => {
+          setIsOpenDeleteModal(false);
+          setSelectedPaymentDetails(null);
+        }}
+        title="Delete Lead"
+        content={`Are you sure you want to delete the payment for ${selectedPaymentDetails?.trainer_name} raised on ${moment(selectedPaymentDetails?.bill_raisedate).format("DD/MM/YYYY")}?`}
+        onClick={handleDeletePayment}
+        loading={buttonLoading}
+      />
     </div>
   );
 }

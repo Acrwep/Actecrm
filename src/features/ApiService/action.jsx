@@ -535,6 +535,17 @@ export const getTrainerPaymentBankSheet = async (payload) => {
     throw error;
   }
 };
+
+export const deleteTrainerPayment = async (trainer_payment_id) => {
+  try {
+    const response = await api.delete(
+      `/api/deleteTrainerPayment?trainer_payment_id=${trainer_payment_id}`,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // lead api's
 export const getAllAreas = async (payload) => {
   try {

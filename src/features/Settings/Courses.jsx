@@ -242,14 +242,14 @@ export default function Courses() {
         return (
           <div className="trainers_actionbuttonContainer">
             <AiOutlineEdit
-              size={20}
+              size={16}
               className="trainers_action_icons"
               onClick={() => handleEdit(record)}
             />
 
             <RiDeleteBinLine
               color="#d32f2f"
-              size={19}
+              size={16}
               className="trainers_action_icons"
               onClick={() => {
                 setCourseId(record.id);

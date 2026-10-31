@@ -441,6 +441,7 @@ export default function Settings() {
         "Payment Completion",
         "Add Direct Payment",
         "Download Trainer Payment Data",
+        "Delete Trainer Payment",
       ];
 
       const trainerPaymentSortedArray = trainerPaymentModule.sort(

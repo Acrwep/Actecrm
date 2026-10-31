@@ -8,14 +8,14 @@
 
 .settings_tab_inactivebutton {
   border-radius: 6px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #64748b2a;
   background-color: #f1f5f9;
   color: #64748b;
   padding: 5px 18px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -29,7 +29,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
