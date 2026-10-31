@@ -16,10 +16,7 @@ import {
   getTechnologies,
   getUsers,
 } from "../ApiService/action";
-import {
-  getCurrentandPreviousweekDate,
-  regionOptions,
-} from "../Common/Validation";
+import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { useSelector } from "react-redux";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -42,6 +39,8 @@ export default function MarketingLeads({ courseOptions }) {
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //filter usestates
   const [selectedDates, setSelectedDates] = useState([]);
   const [searchValue, setSearchValue] = useState("");
