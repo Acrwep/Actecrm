@@ -26,10 +26,10 @@ import {
   mobileValidator,
   urlValidator,
   formatToBackendIST,
-  regionOptions,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
+import { useSelector } from "react-redux";
 
 export default function PlacementSendWhatsAppModal({
   isOpen,
@@ -40,6 +40,9 @@ export default function PlacementSendWhatsAppModal({
   isBulk = false,
   onSuccess,
 }) {
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
+
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);

@@ -17,7 +17,6 @@ import "./styles.css";
 import {
   formatToBackendIST,
   getCurrentandPreviousweekDate,
-  isWithin30Days,
   modeOfTrainingOptions,
   selectValidator,
 } from "../Common/Validation";
@@ -34,13 +33,11 @@ import { CiSearch } from "react-icons/ci";
 import { IoIosClose } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { AiOutlineEdit } from "react-icons/ai";
-import { MdAutorenew } from "react-icons/md";
 import ViewLeadDetails from "./ViewLeadDetails";
 import FollowUpDrawerForm from "./FollowUpDrawerForm";
 import CommonDnd from "../Common/CommonDnd";
 import { IoFilter } from "react-icons/io5";
 import {
-  downloadLeads,
   getAllDownlineUsers,
   getLeads,
   getLeadById,
@@ -62,7 +59,6 @@ import { FaRegAddressCard } from "react-icons/fa";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import { useDispatch, useSelector } from "react-redux";
 import DownloadTableAsCSV from "../Common/DownloadTableAsCSV";
-import AddLead from "./AddLead";
 import { storeLeadFilterValues } from "../Redux/Slice";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
 import CommonNxtFollowupDatePicker from "../Common/CommonNxtFollowupDatePicker";
@@ -77,8 +73,6 @@ export default function Leads({
   refreshLeadFollowUp,
   setBucketCounts,
   leadTypeOptions,
-  regionOptions,
-  allUsersList,
   allBranchesData,
   setLeadCountLoading,
   refreshToggle,
@@ -90,25 +84,14 @@ export default function Leads({
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const isTriggerApiInitialMount = useRef(true);
-  const addLeaduseRef = useRef();
   const makeAsCustomerRef = useRef();
-  const scrollRef = useRef();
-
+  const regionOptions = useSelector((state) => state.globalregionslist);
   const [leadBucketOptions, setLeadBucketOptions] = useState([]);
   const [interestedLeadActions, setInterestedLeadActions] = useState({});
   const [validLeadActions, setValidLeadActions] = useState({});
   const [eligibleLeadActions, setEligibleLeadActions] = useState({});
   const [followupLeadActions, setFollowupLeadActions] = useState({});
   const [leadActionFilter, setLeadActionFilter] = useState("super_hot");
-  const statusClassMap = {
-    all: "all",
-    valid_leads: "valid_leads",
-    eligible_leads: "eligible_leads",
-    interested_leads: "interested_leads",
-    sales_ready: "sales_ready",
-    joinings: "joinings",
-    open_leads: "open_leads",
-  };
   const [leadBucketName, setLeadBucketName] = useState("All");
   const leadBucketNameRef = useRef(leadBucketName);
   useEffect(() => {
@@ -124,10 +107,8 @@ export default function Leads({
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isShowEdit, setIsShowEdit] = useState(true);
 
-  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenFilterDrawer, setIsOpenFilterDrawer] = useState(false);
   const [leadId, setLeadId] = useState(null);
-  const [updateLeadItem, setUpdateLeadItem] = useState(null);
   const [isOpenViewDrawer, setIsOpenViewDrawer] = useState(false);
   const [viewLeadItem, setViewLeadItem] = useState(null);
   const [allLeadsRegionCounts, setAllLeadsRegionCounts] = useState({
@@ -139,7 +120,6 @@ export default function Leads({
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [saveOnlyLoading, setSaveOnlyLoading] = useState(false);
   const [isOpenFollowUpDrawer, setIsOpenFollowUpDrawer] = useState(false);
   const [selectedLeadForFollowUp, setSelectedLeadForFollowUp] = useState(null);
   const [followupHistory, setFollowupHistory] = useState([]);
@@ -206,26 +186,9 @@ export default function Leads({
   const [leadExeCountLoading, setLeadExeCountLoading] = useState(false);
   const [executiveCountTooltip, setExecutiveCountTooltip] = useState(false);
   const [allDownliners, setAllDownliners] = useState([]);
-
   // region and branch
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [branchFilterOptions, setBranchFilterOptions] = useState([]);
-
-  const getUsersData = async (regionId, branchId) => {
-    const payload = {
-      ...(regionId && { region_id: regionId }),
-      ...(branchId && { branch_id: branchId }),
-      page: 1,
-      limit: 1000,
-    };
-    try {
-      const response = await getUsers(payload);
-      setSubUsers(response?.data?.data?.data || []);
-    } catch (error) {
-      console.log("users fetch error", error);
-    }
-  };
-
   //lead source filter
   const [modeOfTrainingFilterId, setModeOfTrainingFilterId] = useState(null);
   const [leadSourceFilterId, setLeadSourceFilterId] = useState(null);
@@ -629,10 +592,6 @@ export default function Leads({
                   onClick={() => {
                     if (onEditLead) {
                       onEditLead(record, false);
-                    } else {
-                      setUpdateLeadItem(record);
-                      setLeadId(record.id);
-                      setIsOpenAddDrawer(true);
                     }
                   }}
                 />
@@ -718,18 +677,12 @@ export default function Leads({
                           return;
                         }
                         setIsOpenSelfReAssignModal(true);
-                        setUpdateLeadItem(record);
                         setLeadId(record.id);
                         setCurrentLeadExecutive(
                           `${record?.lead_assigned_to_view_user_id} - ${record?.lead_assigned_to_name}`,
                         );
                       } else if (onEditLead) {
                         onEditLead(record, true);
-                      } else {
-                        setIsReEntry(true);
-                        setUpdateLeadItem(record);
-                        setLeadId(record.id);
-                        setIsOpenAddDrawer(true);
                       }
                     }}
                   />
@@ -813,26 +766,6 @@ export default function Leads({
       }
     }
   }, [leadBucketName, loginUserId]);
-
-  // useEffect(() => {
-  //   getUsersData();
-  //   console.log("pageeeeeeeeeee", pagination);
-  // }, []);
-
-  // const getUsersData = async () => {
-  //   const payload = {
-  //     page: 1,
-  //     limit: 1000,
-  //   };
-  //   try {
-  //     const response = await getUsers(payload);
-  //     console.log("users response", response);
-  //     setAllUsersList(response?.data?.data?.data || []);
-  //   } catch (error) {
-  //     setAllUsersList([]);
-  //     console.log("get all users error", error);
-  //   }
-  // };
 
   useEffect(() => {
     if (
@@ -1377,10 +1310,6 @@ export default function Leads({
                             onClick={() => {
                               if (onEditLead) {
                                 onEditLead(record, false);
-                              } else {
-                                setUpdateLeadItem(record);
-                                setLeadId(record.id);
-                                setIsOpenAddDrawer(true);
                               }
                             }}
                           />
@@ -1473,18 +1402,12 @@ export default function Leads({
                                     return;
                                   }
                                   setIsOpenSelfReAssignModal(true);
-                                  setUpdateLeadItem(record);
                                   setLeadId(record.id);
                                   setCurrentLeadExecutive(
                                     `${record?.lead_assigned_to_view_user_id} - ${record?.lead_assigned_to_name}`,
                                   );
                                 } else if (onEditLead) {
                                   onEditLead(record, true);
-                                } else {
-                                  setIsReEntry(true);
-                                  setUpdateLeadItem(record);
-                                  setLeadId(record.id);
-                                  setIsOpenAddDrawer(true);
                                 }
                               }}
                             />
@@ -1872,6 +1795,21 @@ export default function Leads({
     }
   };
 
+  const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      setSubUsers(response?.data?.data?.data || []);
+    } catch (error) {
+      console.log("users fetch error", error);
+    }
+  };
+
   const getRaUsers = async () => {
     const payload = {
       role: "RA",
@@ -2252,7 +2190,6 @@ export default function Leads({
     setSelfAssignLoading(false);
     setButtonLoading(false);
     setIsOpenSelfReAssignModal(false);
-    setUpdateLeadItem(null);
     setLeadId(null);
     setAssignedBranchId(null);
     setAssignedBranchIdError("");
@@ -2925,29 +2862,6 @@ export default function Leads({
               gap: "12px",
             }}
           >
-            {/* {permissions.includes("Add Lead Button") && isShowEdit === true ? (
-              <button
-                className="leadmanager_addleadbutton"
-                onClick={() => {
-                  setIsOpenAddDrawer(true);
-                  setTimeout(() => {
-                    const drawerBody = document.querySelector(
-                      "#leadform_addlead_drawer .ant-drawer-body",
-                    );
-                    if (drawerBody) {
-                      drawerBody.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }
-                  }, 300);
-                }}
-              >
-                Add Lead
-              </button>
-            ) : (
-              ""
-            )} */}
             {permissions.includes("Download Leads") &&
             selectedRowKeys.length == 0 ? (
               <Tooltip placement="top" title="Download">
@@ -3404,10 +3318,6 @@ export default function Leads({
                               onClick={() => {
                                 if (onEditLead) {
                                   onEditLead(record, false);
-                                } else {
-                                  setUpdateLeadItem(record);
-                                  setLeadId(record.id);
-                                  setIsOpenAddDrawer(true);
                                 }
                               }}
                             />
@@ -3503,18 +3413,12 @@ export default function Leads({
                                       return;
                                     }
                                     setIsOpenSelfReAssignModal(true);
-                                    setUpdateLeadItem(record);
                                     setLeadId(record.id);
                                     setCurrentLeadExecutive(
                                       `${record?.lead_assigned_to_view_user_id} - ${record?.lead_assigned_to_name}`,
                                     );
                                   } else if (onEditLead) {
                                     onEditLead(record, true);
-                                  } else {
-                                    setIsReEntry(true);
-                                    setUpdateLeadItem(record);
-                                    setLeadId(record.id);
-                                    setIsOpenAddDrawer(true);
                                   }
                                 }}
                               />
@@ -3553,93 +3457,7 @@ export default function Leads({
           );
         })()}
       </div>
-      <Drawer
-        title="Add Lead"
-        open={isOpenAddDrawer}
-        onClose={() => {
-          setIsOpenAddDrawer(false);
-          setUpdateLeadItem(null);
-          setIsReEntry(false);
-          setLeadId(null);
-        }}
-        width="52%"
-        style={{ position: "relative" }}
-        id="leadform_addlead_drawer"
-      >
-        <AddLead
-          ref={addLeaduseRef}
-          key={updateLeadItem}
-          leadTypeOptions={leadTypeOptions}
-          regionOptions={regionOptions}
-          leadId={leadId}
-          updateLeadItem={updateLeadItem}
-          isReEntry={isReEntry}
-          subUsers={subUsers}
-          setButtonLoading={setButtonLoading}
-          setSaveOnlyLoading={setSaveOnlyLoading}
-          setIsOpenAddDrawer={setIsOpenAddDrawer}
-          callgetLeadsApi={() => {
-            setUpdateLeadItem(null);
-            setIsReEntry(false);
-            fetchAllLeadsData();
-            refreshLeadFollowUp();
-          }}
-        />
 
-        <div className="leadmanager_submitlead_buttoncontainer">
-          <div style={{ display: "flex", gap: "12px" }}>
-            {leadId ? (
-              ""
-            ) : (
-              <>
-                {saveOnlyLoading ? (
-                  <button className={"leadmanager_loadingupdateleadbutton"}>
-                    <CommonSpinner />
-                  </button>
-                ) : (
-                  <button
-                    className={"leadmanager_updateleadbutton"}
-                    onClick={() =>
-                      addLeaduseRef.current.handleSubmit("Save Only")
-                    }
-                  >
-                    Save
-                  </button>
-                )}
-              </>
-            )}
-
-            {buttonLoading ? (
-              <button
-                className={
-                  leadId
-                    ? "leadmanager_loadingupdateleadbutton"
-                    : "leadmanager_loadingsaveleadbutton"
-                }
-              >
-                <CommonSpinner />
-              </button>
-            ) : (
-              <button
-                className={
-                  leadId
-                    ? "leadmanager_updateleadbutton"
-                    : "leadmanager_saveleadbutton"
-                }
-                onClick={() =>
-                  addLeaduseRef.current.handleSubmit("Save And Add New")
-                }
-              >
-                {isReEntry
-                  ? "Re-Assign"
-                  : leadId
-                    ? "Update"
-                    : "Save And Add New"}
-              </button>
-            )}
-          </div>
-        </div>
-      </Drawer>
       {/* table filter drawer */}
       <Drawer
         title={
@@ -3980,10 +3798,6 @@ export default function Leads({
             errorFontSize={"9px"}
             height={"35px"}
             labelFontSize={"11.5px"}
-            // disabled={
-            //   !permissions.includes("Assign Lead") ||
-            //   (isReAssign == false && updateLeadItem)
-            // }
           />
         </div>
 

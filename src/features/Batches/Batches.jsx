@@ -48,6 +48,8 @@ export default function Batches({ mainType }) {
   const searchTimeoutRef = useRef(null);
   const abortControllerRef = useRef(null);
   //search userefs end
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
 
@@ -63,7 +65,6 @@ export default function Batches({ mainType }) {
   const [selectedDates, setSelectedDates] = useState([]);
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [isOpenAddBatchComponent, setIsOpenAddBatchComponent] = useState(false);
-  const [regionOptions, setRegionOptions] = useState([]);
   const [batchesData, setBatchesData] = useState([]);
   const [editBatchItem, setEditBatchItem] = useState(null);
   const [regionCounts, setRegionCounts] = useState(null);
@@ -110,8 +111,15 @@ export default function Batches({ mainType }) {
   };
 
   useEffect(() => {
-    // getTrainersData(null, 1, true);
-    getRegionData();
+    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
+    fetchBatchesData({
+      trainerId: null,
+      searchvalue: "",
+      regionId: null,
+      branchId: null,
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+    });
   }, []);
 
   /* ---------------- FETCH TRAINERS ---------------- */
@@ -139,29 +147,6 @@ export default function Batches({ mainType }) {
     } finally {
       setTrainerSelectloading(false);
       setLoading(false);
-    }
-  };
-
-  const getRegionData = async () => {
-    const PreviousAndCurrentDate = getPreviousYearDec26ToCurrentYearDec25();
-    setSelectedDates(PreviousAndCurrentDate);
-    try {
-      const response = await getRegions();
-      setRegionOptions(response?.data?.data || []);
-    } catch (error) {
-      setRegionOptions([]);
-      console.log("response status error", error);
-    } finally {
-      setTimeout(() => {
-        fetchBatchesData({
-          trainerId: null,
-          searchvalue: "",
-          regionId: null,
-          branchId: null,
-          startDate: PreviousAndCurrentDate[0],
-          endDate: PreviousAndCurrentDate[1],
-        });
-      }, 300);
     }
   };
 
@@ -349,7 +334,7 @@ export default function Batches({ mainType }) {
           ];
           setBranchOptions(reordered);
         } else {
-          setBranchOptions([]);
+          setBranchOptions(branch_data);
           setSelectedBranchId(branch_data[0]?.id);
         }
       } else {
@@ -864,7 +849,6 @@ export default function Batches({ mainType }) {
           <AddBatch
             ref={addBatchRef}
             mainType={mainType}
-            regionOptions={regionOptions}
             editBatchItem={editBatchItem}
             setButtonLoading={setButtonLoading}
             callgetBatchesApi={() => {

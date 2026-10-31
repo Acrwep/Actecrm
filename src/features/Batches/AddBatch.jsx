@@ -36,12 +36,12 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 import moment from "moment";
 import CommonMuiDatePicker from "../Common/CommonMuiDatePicker";
 import CommonMuiTimePicker from "../Common/CommonMuiTimePicker";
+import { useSelector } from "react-redux";
 
 const AddBatch = forwardRef(
   (
     {
       mainType,
-      regionOptions,
       trainersData,
       editBatchItem,
       callgetBatchesApi,
@@ -49,6 +49,8 @@ const AddBatch = forwardRef(
     },
     ref,
   ) => {
+    //regions
+    const regionOptions = useSelector((state) => state.globalregionslist);
     /* ---------------- BASIC STATES ---------------- */
     const [batchName, setBatchName] = useState("");
     const [batchNameError, setBatchNameError] = useState("");

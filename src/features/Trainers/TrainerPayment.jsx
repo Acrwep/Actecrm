@@ -52,7 +52,6 @@ import {
   bank_sheet_columns,
   formatToBackendIST,
   getPreviousYearDec26ToCurrentYearDec25,
-  regionOptions,
 } from "../Common/Validation";
 import moment from "moment";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -272,7 +271,10 @@ export default function TrainerPayment() {
   const searchTimeoutRef = useRef(null);
   const emailTemplateRef = useRef();
   const addTrainerPaymentRequestUseRef = useRef();
+  //permissions
   const permissions = useSelector((state) => state.userpermissions);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
 
   const [loginUserId, setLoginUserId] = useState("");
   const [updateTableId, setUpdateTableId] = useState(null);

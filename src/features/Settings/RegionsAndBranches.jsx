@@ -1,21 +1,42 @@
 import React, { useEffect, useState } from "react";
 import CommonTable from "../Common/CommonTable";
 import CommonSelectField from "../Common/CommonSelectField";
-import { useSelector } from "react-redux";
-import { Modal } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { Col, Modal, Row, Button } from "antd";
 import {
   getBranchManagers,
   updateBranchManager,
   assignBranchManager,
   getUsers,
+  createRegion,
+  createBranch,
+  getRegions,
 } from "../ApiService/action";
 import "./styles.css";
+import CommonSpinner from "../Common/CommonSpinner";
+import CommonInputField from "../Common/CommonInputField";
+import { addressValidator, selectValidator } from "../Common/Validation";
+import { CommonMessage } from "../Common/CommonMessage";
+import { storeGlobalRegionsList } from "../Redux/Slice";
 
 export default function RegionAndBranches() {
+  const dispatch = useDispatch();
+  const globalRegionsList = useSelector((state) => state.globalregionslist);
   const allUsersData = useSelector((state) => state.alluserslist);
 
   const [allUsersList, setAllUsersList] = useState(allUsersData);
-
+  //region modal usestates
+  const [isOpenRegionModal, setIsOpenRegionModal] = useState(false);
+  const [regionName, setRegionName] = useState("");
+  const [regionNameError, setRegionNameError] = useState("");
+  //branch modal usestates
+  const [isOpenBranchModal, setIsOpenBranchModal] = useState(false);
+  const [regionId, setRegionId] = useState(null);
+  const [regionIdError, setRegionIdError] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [branchNameError, setBranchNameError] = useState("");
+  //other usestates
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
@@ -177,8 +198,119 @@ export default function RegionAndBranches() {
     });
   };
 
+  const handleRegionCreate = async () => {
+    const regionNameValidate = addressValidator(regionName);
+
+    setRegionNameError(regionNameValidate);
+
+    if (regionNameValidate) return;
+    setButtonLoading(true);
+
+    const payload = {
+      region_name: regionName,
+    };
+    try {
+      await createRegion(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Region Created Sucessfully");
+        formReset();
+        getRegionsData();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+        "Failed to create region";
+      CommonMessage("error", errorMessage);
+    }
+  };
+
+  const getRegionsData = async () => {
+    try {
+      const response = await getRegions();
+      dispatch(storeGlobalRegionsList(response?.data?.data || []));
+    } catch (error) {
+      dispatch(storeGlobalRegionsList([]));
+      console.log("get regions error", error);
+    } finally {
+      fetchBranchManagers();
+    }
+  };
+
+  const handleBranchCreate = async () => {
+    const regionIdValidate = selectValidator(regionId);
+    const branchNameValidate = addressValidator(branchName);
+
+    setRegionIdError(regionIdValidate);
+    setBranchNameError(branchNameValidate);
+
+    if (regionIdValidate || branchNameValidate) return;
+
+    setButtonLoading(true);
+    const payload = {
+      region_id: regionId,
+      branch_name: branchName,
+    };
+    try {
+      await createBranch(payload);
+      setTimeout(() => {
+        CommonMessage("success", "Branch Created Sucessfully");
+        formReset();
+        fetchBranchManagers();
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+        "Failed to create branch";
+      CommonMessage("error", errorMessage);
+    }
+  };
+
+  const formReset = () => {
+    setButtonLoading(false);
+    setIsOpenRegionModal(false);
+    setIsOpenBranchModal(false);
+    setRegionName("");
+    setRegionNameError("");
+    setRegionId(null);
+    setRegionIdError("");
+    setBranchName("");
+    setBranchNameError("");
+  };
+
   return (
     <div>
+      <Row>
+        <Col
+          span={24}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "12px",
+          }}
+        >
+          <button
+            className="leadmanager_addleadbutton"
+            onClick={() => {
+              setIsOpenRegionModal(true);
+            }}
+          >
+            Add Region
+          </button>
+          <button
+            className="leadmanager_addleadbutton"
+            onClick={() => {
+              setIsOpenBranchModal(true);
+            }}
+          >
+            Add Branch
+          </button>
+        </Col>
+      </Row>
       <div
         style={{ marginTop: "20px" }}
         className="regions_minimalist_dropdowns"
@@ -198,6 +330,118 @@ export default function RegionAndBranches() {
           totalPageNumber={pagination.total} // total rows
         />
       </div>
+
+      {/* region modal */}
+      <Modal
+        title="Add Region"
+        open={isOpenRegionModal}
+        onCancel={formReset}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={formReset}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleRegionCreate}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="32%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+          <CommonInputField
+            label="Region Name"
+            onChange={(e) => {
+              setRegionName(e.target.value);
+              setRegionNameError(addressValidator(e.target.value));
+            }}
+            value={regionName}
+            error={regionNameError}
+            errorFontSize={"10px"}
+          />
+        </div>
+      </Modal>
+
+      {/* branch modal */}
+      <Modal
+        title="Add Branch"
+        open={isOpenBranchModal}
+        onCancel={formReset}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={formReset}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          buttonLoading ? (
+            <Button
+              key="create"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="create"
+              type="primary"
+              onClick={handleBranchCreate}
+              className="leads_coursemodal_createbutton"
+            >
+              Create
+            </Button>
+          ),
+        ]}
+        width="32%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "24px" }}>
+          <CommonSelectField
+            label="Select Region"
+            options={globalRegionsList}
+            onChange={(e) => {
+              setRegionId(e.target.value);
+              setRegionIdError(selectValidator(e.target.value));
+            }}
+            value={regionId}
+            error={regionIdError}
+            errorFontSize={"10px"}
+          />
+        </div>
+
+        <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+          <CommonInputField
+            label="Branch Name"
+            onChange={(e) => {
+              setBranchName(e.target.value);
+              setBranchNameError(addressValidator(e.target.value));
+            }}
+            value={branchName}
+            error={branchNameError}
+            errorFontSize={"10px"}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

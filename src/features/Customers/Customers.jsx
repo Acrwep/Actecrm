@@ -43,7 +43,6 @@ import {
   getPreviousYearDec26ToCurrentYearDec25,
   isWithin30Days,
   modeOfTrainingOptions,
-  regionOptions,
 } from "../Common/Validation";
 import { FcGoogle } from "react-icons/fc";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -128,6 +127,8 @@ export default function Customers() {
     };
     requestAnimationFrame(animateScroll);
   };
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);

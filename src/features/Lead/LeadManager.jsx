@@ -110,7 +110,6 @@ export default function LeadManager() {
   const [leadCountLoading, setLeadCountLoading] = useState(true);
 
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
-  const [regionOptions, setRegionOptions] = useState([]);
   const [allBranchesData, setAllBranchesData] = useState([]);
   const [leadStatusOptions, setLeadStatusOptions] = useState([]);
   //quality tab section
@@ -327,24 +326,14 @@ export default function LeadManager() {
 
   const loadInitialData = async () => {
     try {
-      const [
-        regionRes,
-        branchesRes,
-        leadTypeRes,
-        courseRes,
-        areaRes,
-        leadStatusRes,
-      ] = await Promise.allSettled([
-        getRegions(),
-        getAllBranches(),
-        getLeadType(),
-        getTechnologies(),
-        getAllAreas(),
-        getLeadStatus(),
-      ]);
-
-      // Regions
-      setRegionOptions(regionRes?.value?.data?.data || []);
+      const [branchesRes, leadTypeRes, courseRes, areaRes, leadStatusRes] =
+        await Promise.allSettled([
+          getAllBranches(),
+          getLeadType(),
+          getTechnologies(),
+          getAllAreas(),
+          getLeadStatus(),
+        ]);
 
       // Branches
       const branchData = branchesRes?.value?.data?.result || [];
@@ -414,7 +403,6 @@ export default function LeadManager() {
       console.error("Error loading initial data:", error);
 
       // Reset states on failure
-      setRegionOptions([]);
       setAllBranchesData([]);
       setLeadTypeOptions([]);
       dispatch(storeCourseList([]));
@@ -763,7 +751,6 @@ export default function LeadManager() {
             refreshLeadFollowUp={refreshLeadFollowUp}
             setBucketCounts={setBucketCounts}
             leadTypeOptions={leadTypeOptions}
-            regionOptions={regionOptions}
             setLeadCountLoading={setLeadCountLoading}
             setRefreshToggle={setRefreshToggle}
             onEditLead={(itemData, isReAssign) => {
@@ -790,7 +777,6 @@ export default function LeadManager() {
             refreshLeads={refreshLeads}
             refreshLeadFollowUp={refreshLeadFollowUp}
             leadTypeOptions={leadTypeOptions}
-            regionOptions={regionOptions}
             refreshJunkLeads={refreshJunkLeads}
             refreshAssignLeads={refreshAssignLeads}
             onPickLead={(itemData) => {
@@ -813,7 +799,6 @@ export default function LeadManager() {
             refreshLeads={refreshLeads}
             refreshLeadFollowUp={refreshLeadFollowUp}
             leadTypeOptions={leadTypeOptions}
-            regionOptions={regionOptions}
             refreshJunkLeads={refreshJunkLeads}
             setAssignLeadCount={setAssignLeadCount}
             onPickLead={(itemData) => {
@@ -834,7 +819,6 @@ export default function LeadManager() {
             key={tabKeys.add_lead}
             setActivePage={handleTabClick}
             leadTypeOptions={leadTypeOptions}
-            regionOptions={regionOptions}
             allBranchesData={allBranchesData}
             subUsers={childUsers}
             liveLeadItem={pickLeadItem}

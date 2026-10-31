@@ -64,7 +64,6 @@ const AddNewLead = forwardRef(
   (
     {
       leadTypeOptions,
-      regionOptions,
       allBranchesData,
       updateLeadItem,
       isReAssign = false,
@@ -77,7 +76,8 @@ const AddNewLead = forwardRef(
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [buttonLoading, setButtonLoading] = useState(false);
-    //course and area options
+    //region,course and area options
+    const regionOptions = useSelector((state) => state.globalregionslist);
     const courseOptions = useSelector((state) => state.courselist);
     const areaOptions = useSelector((state) => state.arealist);
 

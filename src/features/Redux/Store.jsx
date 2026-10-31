@@ -3,6 +3,7 @@ import {
   loginUserProfileBase64Reducer,
   leadManagerActivePageReducer,
   areaListReducer,
+  globalRegionsListReducer,
   courseListReducer,
   groupListReducer,
   nxtFollowupActionIdReducer,
@@ -49,6 +50,7 @@ export const reduxStore = configureStore({
   reducer: {
     loginuserprofilebase64: loginUserProfileBase64Reducer,
     leadmanageractivepage: leadManagerActivePageReducer,
+    globalregionslist: globalRegionsListReducer,
     courselist: courseListReducer,
     arealist: areaListReducer,
     userslist: usersListReducer,

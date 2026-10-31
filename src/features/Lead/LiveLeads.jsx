@@ -58,7 +58,6 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 export default function LiveLead({
   setLiveLeadCount,
   leadTypeOptions,
-  regionOptions,
   refreshLeadFollowUp,
   refreshLeads,
   refreshJunkLeads,
@@ -1761,7 +1760,6 @@ export default function LiveLead({
           ref={addLeaduseRef}
           key={pickLeadItem}
           leadTypeOptions={leadTypeOptions}
-          regionOptions={regionOptions}
           updateLeadItem={null}
           setSaveOnlyLoading={setButtonLoading}
           setButtonLoading={setButtonLoading}

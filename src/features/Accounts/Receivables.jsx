@@ -56,6 +56,9 @@ export default function Receivables({
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
 
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
+
   const [searchValue, setSearchValue] = useState("");
   const [customersData, setCustomersData] = useState([]);
   const [customerDetails, setCustomerDetails] = useState(null);
@@ -861,20 +864,7 @@ export default function Receivables({
                     label="Select Region"
                     labelMarginTop="0px"
                     labelFontSize="11px"
-                    options={[
-                      {
-                        id: 1,
-                        name: "Chennai",
-                      },
-                      {
-                        id: 2,
-                        name: "Bangalore",
-                      },
-                      {
-                        id: 3,
-                        name: "Hub",
-                      },
-                    ]}
+                    options={regionOptions}
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedRegionId(value);

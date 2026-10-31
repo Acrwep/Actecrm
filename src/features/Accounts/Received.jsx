@@ -79,6 +79,8 @@ export default function Received({
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
 
   const [searchValue, setSearchValue] = useState("");
   const [receivedPaymentsData, setReceivedPaymentsData] = useState([]);
@@ -1008,20 +1010,7 @@ export default function Received({
                     label="Select Region"
                     labelMarginTop="0px"
                     labelFontSize="11px"
-                    options={[
-                      {
-                        id: 1,
-                        name: "Chennai",
-                      },
-                      {
-                        id: 2,
-                        name: "Bangalore",
-                      },
-                      {
-                        id: 3,
-                        name: "Hub",
-                      },
-                    ]}
+                    options={regionOptions}
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedRegionId(value);

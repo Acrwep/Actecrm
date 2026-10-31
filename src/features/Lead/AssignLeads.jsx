@@ -57,7 +57,6 @@ import OverflowTooltip from "../Common/OverflowTooltip";
 
 export default function AssignLeads({
   leadTypeOptions,
-  regionOptions,
   refreshLeadFollowUp,
   refreshLeads,
   refreshJunkLeads,

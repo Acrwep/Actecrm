@@ -49,6 +49,9 @@ export default function FeeHistory({
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
 
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
+
   const mounted = useRef(false);
   const [searchValue, setSearchValue] = useState("");
   const [feeHistoryData, setFeeHistoryData] = useState([]);
@@ -880,20 +883,7 @@ export default function FeeHistory({
                     label="Select Region"
                     labelMarginTop="0px"
                     labelFontSize="11px"
-                    options={[
-                      {
-                        id: 1,
-                        name: "Chennai",
-                      },
-                      {
-                        id: 2,
-                        name: "Bangalore",
-                      },
-                      {
-                        id: 3,
-                        name: "Hub",
-                      },
-                    ]}
+                    options={regionOptions}
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedRegionId(value);

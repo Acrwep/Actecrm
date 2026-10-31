@@ -15,7 +15,6 @@ import {
   addressValidator,
   formatToBackendIST,
   getPreviousYearDec26ToCurrentYearDec25,
-  regionOptions,
 } from "../Common/Validation";
 import {
   getAllDownlineUsers,
@@ -60,6 +59,8 @@ export default function Server({ setServerCount }) {
   const childUsers = useSelector((state) => state.childusers);
   const permissions = useSelector((state) => state.userpermissions);
   const downlineUsers = useSelector((state) => state.downlineusers);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //filter usestates
   const statusBuckets = [
     {

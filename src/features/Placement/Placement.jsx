@@ -29,7 +29,6 @@ import {
 import {
   customersStatusDisplay,
   getPreviousYearDec26ToCurrentYearDec25,
-  regionOptions,
 } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
 import moment from "moment";
@@ -97,7 +96,8 @@ export default function Placement({ setPlacementCount }) {
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
-
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //======eye icon loading
   const [customerDetailsLoading, setCustomerDetailsLoading] = useState("");
   const customerDetailsLoadingRef = useRef(customerDetailsLoading);

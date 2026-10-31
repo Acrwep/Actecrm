@@ -15,6 +15,7 @@ import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import {
+  getRegions,
   getUserDownline,
   getUserPermissions,
   LoginApi,
@@ -24,6 +25,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import {
   storeChildUsers,
   storeDownlineUsers,
+  storeGlobalRegionsList,
   storeloginUserProfileBase64,
   storeUserPermissions,
 } from "../Redux/Slice";
@@ -205,6 +207,18 @@ export default function Login() {
       }
     } catch (error) {
       console.log("user permissions error", error);
+    } finally {
+      getRegionsData();
+    }
+  };
+
+  const getRegionsData = async () => {
+    try {
+      const response = await getRegions();
+      dispatch(storeGlobalRegionsList(response?.data?.data || []));
+    } catch (error) {
+      dispatch(storeGlobalRegionsList([]));
+      console.log("get regions error", error);
     } finally {
       setTimeout(() => {
         setLoading(false);

@@ -30,7 +30,6 @@ import {
   formatToBackendIST,
   getCurrentandPreviousweekDate,
   getPreviousYearDec26ToCurrentYearDec25,
-  regionOptions,
   selectValidator,
 } from "../Common/Validation";
 import {
@@ -87,6 +86,8 @@ export default function Server() {
   const childUsers = useSelector((state) => state.childusers);
   const permissions = useSelector((state) => state.userpermissions);
   const downlineUsers = useSelector((state) => state.downlineusers);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //filter usestates
   const statusBuckets = [
     {

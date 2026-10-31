@@ -17,6 +17,7 @@ import { TbSchool } from "react-icons/tb";
 import { BiRupee } from "react-icons/bi";
 import { IoTicketOutline } from "react-icons/io5";
 import {
+  getRegions,
   getTableColumns,
   getUserDownline,
   getUserPermissions,
@@ -26,6 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   storeChildUsers,
   storeDownlineUsers,
+  storeGlobalRegionsList,
   storeloginUserProfileBase64,
   storeUserPermissions,
 } from "../Redux/Slice";
@@ -356,11 +358,15 @@ export default function SideMenu() {
       }
 
       setSideMenuOptions(updatedMenu);
+
+      // Fourth API
+      const regionResponse = await getRegions();
+      dispatch(storeGlobalRegionsList(regionResponse?.data?.data || []));
     } catch (error) {
       dispatch(storeChildUsers([]));
       dispatch(storeDownlineUsers([]));
       dispatch(storeUserPermissions([]));
-
+      dispatch(storeGlobalRegionsList([]));
       console.log("user data error", error);
     }
   };

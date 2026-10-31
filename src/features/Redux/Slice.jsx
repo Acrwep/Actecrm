@@ -26,6 +26,17 @@ const leadManagerActivePageSlice = createSlice({
   },
 });
 
+const globalRegionsListSlice = createSlice({
+  name: "globalregionslist",
+  initialState,
+  reducers: {
+    storeGlobalRegionsList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 const courseListSlice = createSlice({
   name: "courselist",
   initialState,
@@ -537,6 +548,7 @@ export const { storeloginUserProfileBase64 } =
   loginUserProfileBase64Slice.actions;
 export const { storeLeadManagerActivePage } =
   leadManagerActivePageSlice.actions;
+export const { storeGlobalRegionsList } = globalRegionsListSlice.actions;
 export const { storeCourseList } = courseListSlice.actions;
 export const { storeAreaList } = areaListSlice.actions;
 export const { storeUserSearchValue } = userSearchValueSlice.actions;
@@ -603,6 +615,7 @@ export const { storeBulkSearchData } = bulkSearchDataSlice.actions;
 export const loginUserProfileBase64Reducer =
   loginUserProfileBase64Slice.reducer;
 export const leadManagerActivePageReducer = leadManagerActivePageSlice.reducer;
+export const globalRegionsListReducer = globalRegionsListSlice.reducer;
 export const courseListReducer = courseListSlice.reducer;
 export const areaListReducer = areaListSlice.reducer;
 export const usersListReducer = usersListSlice.reducer;

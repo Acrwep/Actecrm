@@ -26,10 +26,7 @@ import {
   getBranches,
   getUsers,
 } from "../ApiService/action";
-import {
-  getPreviousYearDec26ToCurrentYearDec25,
-  regionOptions,
-} from "../Common/Validation";
+import { getPreviousYearDec26ToCurrentYearDec25 } from "../Common/Validation";
 import { FaRegEye } from "react-icons/fa";
 import { RedoOutlined } from "@ant-design/icons";
 import moment from "moment";
@@ -83,6 +80,8 @@ export default function Admissions() {
   //search userefs start
   const searchTimeoutRef = useRef(null);
   const abortControllerRef = useRef(null);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);

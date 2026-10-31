@@ -83,6 +83,79 @@ export const setUserTarget = async (payload) => {
     throw error;
   }
 };
+// region and branch api's
+export const createRegion = async (payload) => {
+  try {
+    const response = await api.post("/api/addRegion", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+export const createBranch = async (payload) => {
+  try {
+    const response = await api.post("/api/addBranches", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRegions = async (payload) => {
+  try {
+    const response = await api.get("/api/getRegion", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getBranches = async (payload) => {
+  try {
+    const response = await api.get("/api/getBranches", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllBranches = async (payload) => {
+  try {
+    const response = await api.get("/api/getAllBranches", { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getBranchManagers = async (payload) => {
+  try {
+    const response = await api.get("/api/getBranchManagers", {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const assignBranchManager = async (payload) => {
+  try {
+    const response = await api.post("/api/assignBranchManager", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateBranchManager = async (payload) => {
+  try {
+    const response = await api.put("/api/updateBranchManager", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // trainer api's
 export const createTechnology = async (payload) => {
   try {
@@ -533,62 +606,6 @@ export const getLeadResponseStatus = async (payload) => {
     const response = await api.get("/api/getResponseStatus", {
       params: payload,
     });
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getRegions = async (payload) => {
-  try {
-    const response = await api.get("/api/getRegion", { params: payload });
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getBranches = async (payload) => {
-  try {
-    const response = await api.get("/api/getBranches", { params: payload });
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getAllBranches = async (payload) => {
-  try {
-    const response = await api.get("/api/getAllBranches", { params: payload });
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getBranchManagers = async (payload) => {
-  try {
-    const response = await api.get("/api/getBranchManagers", {
-      params: payload,
-    });
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const assignBranchManager = async (payload) => {
-  try {
-    const response = await api.post("/api/assignBranchManager", payload);
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const updateBranchManager = async (payload) => {
-  try {
-    const response = await api.put("/api/updateBranchManager", payload);
     return response;
   } catch (error) {
     throw error;

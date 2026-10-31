@@ -32,10 +32,10 @@ import {
   mobileValidator,
   urlValidator,
   formatToBackendIST,
-  regionOptions,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
+import { useSelector } from "react-redux";
 
 export default function SendWhatsAppMessage({
   isOpen,
@@ -47,6 +47,9 @@ export default function SendWhatsAppMessage({
   isBulk = false,
   onSuccess,
 }) {
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
+
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
