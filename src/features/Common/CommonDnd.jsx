@@ -17,9 +17,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+const getItemId = (item, index) =>
+  item.key || (typeof item.title === "string" ? item.title : `col-${index}`);
+
 const SortableItem = ({ item, index, lastIndex, handleColumnCheck }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: item.title });
+    useSortable({ id: getItemId(item, index) });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -74,9 +77,15 @@ export default function CommonDnd({ data, setColumns }) {
     if (!over) return;
 
     if (active.id !== over.id) {
-      const oldIndex = data.findIndex((i) => i.title === active.id);
-      const newIndex = data.findIndex((i) => i.title === over.id);
-      setColumns((items) => arrayMove(items, oldIndex, newIndex));
+      const oldIndex = data.findIndex(
+        (i, idx) => getItemId(i, idx) === active.id
+      );
+      const newIndex = data.findIndex(
+        (i, idx) => getItemId(i, idx) === over.id
+      );
+      if (oldIndex !== -1 && newIndex !== -1) {
+        setColumns((items) => arrayMove(items, oldIndex, newIndex));
+      }
     }
   };
 
@@ -94,12 +103,12 @@ export default function CommonDnd({ data, setColumns }) {
       onDragEnd={handleDragEnd}
     >
       <SortableContext
-        items={data.map((item) => item.title)}
+        items={data.map((item, index) => getItemId(item, index))}
         strategy={verticalListSortingStrategy}
       >
         {data.map((item, index) => (
           <SortableItem
-            key={item.title}
+            key={getItemId(item, index)}
             item={item}
             index={index}
             lastIndex={data.length - 1}

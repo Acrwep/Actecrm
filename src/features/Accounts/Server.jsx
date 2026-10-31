@@ -438,10 +438,61 @@ export default function Server({ setServerCount }) {
     },
   ];
 
+  const getFilteredColumns = (cols) => {
+    if (!cols) return [];
+    if (status === "Awaiting Approval") {
+      const hiddenKeys = ["approved_on"];
+      return cols.filter(
+        (col) =>
+          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
+      );
+    }
+    return cols;
+  };
+
   const [columns, setColumns] = useState(
     nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
+
+  // Drawer columns filtered by current bucket/status
+  const drawerColumns = getFilteredColumns(columns);
+
+  const handleSetDrawerColumns = (updatedDrawerColumnsOrUpdater) => {
+    setColumns((prevColumns) => {
+      const currentDrawerColumns = getFilteredColumns(prevColumns);
+      const updatedDrawerColumns =
+        typeof updatedDrawerColumnsOrUpdater === "function"
+          ? updatedDrawerColumnsOrUpdater(currentDrawerColumns)
+          : updatedDrawerColumnsOrUpdater;
+
+      let drawerIdx = 0;
+      const updatedColumns = prevColumns.map((col) => {
+        const isDrawerCol = currentDrawerColumns.some((c) => c.key === col.key);
+        if (isDrawerCol && drawerIdx < updatedDrawerColumns.length) {
+          const replacement = updatedDrawerColumns[drawerIdx];
+          drawerIdx++;
+          return replacement;
+        }
+        return col;
+      });
+
+      if (drawerIdx < updatedDrawerColumns.length) {
+        updatedColumns.push(...updatedDrawerColumns.slice(drawerIdx));
+      }
+
+      return updatedColumns;
+    });
+  };
+
+  useEffect(() => {
+    if (drawerColumns.length > 0) {
+      const allChecked = drawerColumns.every((col) => col.isChecked);
+      setCheckAll(allChecked);
+    } else {
+      setCheckAll(false);
+    }
+  }, [drawerColumns]);
 
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
@@ -852,15 +903,7 @@ export default function Server({ setServerCount }) {
   };
 
   const filteredTableColumns = useMemo(() => {
-    if (status === "Awaiting Approval") {
-      const hiddenKeys = ["approved_on"];
-
-      return tableColumns.filter(
-        (col) =>
-          !hiddenKeys.includes(col.key) && !hiddenKeys.includes(col.dataIndex),
-      );
-    }
-    return tableColumns;
+    return getFilteredColumns(tableColumns);
   }, [tableColumns, status]);
 
   return (
@@ -1270,11 +1313,18 @@ export default function Server({ setServerCount }) {
                 onChange={(e) => {
                   const checked = e.target.checked;
                   setCheckAll(checked);
-                  // Update all checkboxes
-                  const updated = columns.map((col) => ({
-                    ...col,
-                    isChecked: checked,
-                  }));
+                  const currentDrawerKeys = new Set(
+                    drawerColumns.map((col) => col.key),
+                  );
+                  const updated = columns.map((col) => {
+                    if (currentDrawerKeys.has(col.key)) {
+                      return {
+                        ...col,
+                        isChecked: checked,
+                      };
+                    }
+                    return col;
+                  });
                   setColumns(updated);
                 }}
                 checked={checkAll}
@@ -1293,7 +1343,10 @@ export default function Server({ setServerCount }) {
         <Row>
           <Col span={24}>
             <div className="leadmanager_tablefiler_container">
-              <CommonDnd data={columns} setColumns={setColumns} />
+              <CommonDnd
+                data={drawerColumns}
+                setColumns={handleSetDrawerColumns}
+              />
             </div>
           </Col>
         </Row>

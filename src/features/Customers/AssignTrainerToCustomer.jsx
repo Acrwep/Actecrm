@@ -896,13 +896,14 @@ export default function AssignTrainerToCustomer({
                             </button>,
                           )}
                         </Col>
-                        <Col span={6}>
-                          {renderField(
-                            "Comments",
-                            item.comments ? item.comments : "-",
-                          )}
-                        </Col>
-
+                        {item.is_rejected != 1 && (
+                          <Col span={6}>
+                            {renderField(
+                              "Comments",
+                              item.comments ? item.comments : "-",
+                            )}
+                          </Col>
+                        )}
                         {/* rejected/verified comment section */}
                         {item.is_rejected == 1 ? (
                           <>

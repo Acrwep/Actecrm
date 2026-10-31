@@ -1023,9 +1023,13 @@ const AssignAndVerifyTrainer = forwardRef(
                                 <FaRegEye size={14} /> View screenshot
                               </button>,
                             )}
-                            {renderField(
-                              "Comments",
-                              item.comments ? item.comments : "-",
+                            {item.is_rejected != 1 && (
+                              <>
+                                {renderField(
+                                  "Comments",
+                                  item.comments ? item.comments : "-",
+                                )}
+                              </>
                             )}
                             {/* rejected/verified comment section */}
                             {item.is_rejected == 1 ? (
@@ -1066,6 +1070,17 @@ const AssignAndVerifyTrainer = forwardRef(
                                 : `${0} Candidates`,
                               item,
                             )}
+                            {/* approval rejected comment section */}
+                            {item?.approval_rejected_reason ? (
+                              <>
+                                {renderField(
+                                  "Reason for Approval Rejection",
+                                  item.approval_rejected_reason
+                                    ? item.approval_rejected_reason
+                                    : "-",
+                                )}
+                              </>
+                            ) : null}
                           </Col>
                         </Row>
 

@@ -628,7 +628,7 @@ export default function Customers() {
       title: "Trainer Name",
       key: "trainer_name",
       dataIndex: "trainer_data",
-      width: 180,
+      width: 120,
       render: (trainerData) => {
         const trainerNames = trainerData
           ?.map((trainer) => trainer.trainer_name)
@@ -642,7 +642,7 @@ export default function Customers() {
       title: "Trainer Comm. %",
       key: "commercial_percentage",
       dataIndex: "trainer_data",
-      width: 150,
+      width: 130,
       render: (trainerData) => {
         const percentages = trainerData
           ?.map((trainer) => trainer.commercial_percentage)
@@ -695,6 +695,64 @@ export default function Customers() {
         return <EllipsisTooltip text={comments || "-"} />;
       },
     },
+    //rejected trainer details start
+    {
+      title: "Trainer Name",
+      key: "last_rejected_trainer_name",
+      dataIndex: "last_rejected_trainer_name",
+      width: 120,
+      render: (text) => {
+        return <EllipsisTooltip text={text || "-"} />;
+      },
+    },
+    {
+      title: "Trainer Comm. %",
+      key: "last_rejected_trainer_commercial_percentage",
+      dataIndex: "last_rejected_trainer_commercial_percentage",
+      width: 130,
+      render: (text) => {
+        if (text === null || text === undefined || text === "") {
+          return "-";
+        }
+
+        const percentages = Number(text);
+
+        return (
+          <p
+            className="customerdetails_text"
+            style={{
+              fontWeight: 700,
+              fontSize: "12px",
+            }}
+          >
+            <span
+              style={{
+                color:
+                  percentages < 18
+                    ? "#3c9111"
+                    : percentages >= 18 && percentages <= 22
+                      ? "#ffa502"
+                      : percentages > 24
+                        ? "#d32f2f"
+                        : "",
+              }}
+            >
+              {percentages}%
+            </span>
+          </p>
+        );
+      },
+    },
+    {
+      title: "Rejected Reason",
+      key: "last_trainer_rejected_reason",
+      dataIndex: "last_trainer_rejected_reason",
+      width: 140,
+      render: (text) => {
+        return <EllipsisTooltip text={text || "-"} />;
+      },
+    },
+    //rejected trainer details end
     {
       title: "Rejected Reason",
       key: "approval_rejected_reason",
@@ -1885,18 +1943,149 @@ export default function Customers() {
     },
   ];
 
+  //table column filteration
+  const hideTrainerStatuses = [
+    "Form Pending",
+    "Awaiting Finance",
+    "Payment Rejected",
+    "Awaiting Verify",
+  ];
+
+  const showComments = ["Awaiting Trainer Verify", "Trainer Approval"];
+
+  const getFilteredColumns = (cols) => {
+    return (cols || []).filter((col) => {
+      // RA column
+      if (
+        col.key === "ra_name" &&
+        (bucketStatus === null ||
+          bucketStatus === "" ||
+          status === "Videos Given" ||
+          status === "Demo Completed" ||
+          (bucketStatus === "Student Onboarding" &&
+            (status === "" ||
+              status === null ||
+              status === "Form Pending" ||
+              status === "Awaiting Finance" ||
+              status === "Awaiting Verify")))
+      ) {
+        return false;
+      }
+
+      // Trainer-related columns
+      if (
+        ["hr_name", "trainer_name", "commercial_percentage"].includes(
+          col.key,
+        ) &&
+        (bucketStatus === "" ||
+          bucketStatus === null ||
+          status === "Videos Given" ||
+          status === "Demo Completed" ||
+          (bucketStatus === "Student Onboarding" && status === "") ||
+          hideTrainerStatuses.includes(status) ||
+          trainerSubbucketStatus === "Awaiting Trainer" ||
+          trainerSubbucketStatus === "Trainer Rejected")
+      ) {
+        return false;
+      }
+
+      // Review Status
+      if (
+        col.key === "review_status" &&
+        (bucketStatus === null ||
+          bucketStatus === "" ||
+          bucketStatus === "Student Onboarding" ||
+          status === "Demo Completed" ||
+          status === "Videos Given")
+      ) {
+        return false;
+      }
+
+      // Trainer Mapping Comments
+      if (col.key === "trainer_mapping_comments") {
+        return showComments.includes(trainerSubbucketStatus);
+      }
+
+      // Class Scheduled Date
+      if (col.key === "class_scheduled_at" && status !== "Class Scheduled") {
+        return false;
+      }
+
+      //rejected trainer start
+      if (
+        col.key === "last_rejected_trainer_name" &&
+        trainerSubbucketStatus !== "Trainer Rejected"
+      ) {
+        return false;
+      }
+      if (
+        col.key === "last_rejected_trainer_commercial_percentage" &&
+        trainerSubbucketStatus !== "Trainer Rejected"
+      ) {
+        return false;
+      }
+      if (
+        col.key === "last_trainer_rejected_reason" &&
+        trainerSubbucketStatus !== "Trainer Rejected"
+      ) {
+        return false;
+      }
+      //rejected trainer end
+      if (
+        col.key === "approval_rejected_reason" &&
+        trainerSubbucketStatus !== "Approval Rejected"
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
   const [columns, setColumns] = useState(
     nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
   const [customersData, setCustomersData] = useState([]);
 
+  // Drawer columns filtered by current bucket/status
+  const drawerColumns = getFilteredColumns(columns);
+
+  const handleSetDrawerColumns = (updatedDrawerColumnsOrUpdater) => {
+    setColumns((prevColumns) => {
+      const currentDrawerColumns = getFilteredColumns(prevColumns);
+      const updatedDrawerColumns =
+        typeof updatedDrawerColumnsOrUpdater === "function"
+          ? updatedDrawerColumnsOrUpdater(currentDrawerColumns)
+          : updatedDrawerColumnsOrUpdater;
+
+      let drawerIdx = 0;
+      const updatedColumns = prevColumns.map((col) => {
+        const isDrawerCol = currentDrawerColumns.some((c) => c.key === col.key);
+        if (isDrawerCol && drawerIdx < updatedDrawerColumns.length) {
+          const replacement = updatedDrawerColumns[drawerIdx];
+          drawerIdx++;
+          return replacement;
+        }
+        return col;
+      });
+
+      if (drawerIdx < updatedDrawerColumns.length) {
+        updatedColumns.push(...updatedDrawerColumns.slice(drawerIdx));
+      }
+
+      return updatedColumns;
+    });
+  };
+
   useEffect(() => {
-    if (columns.length > 0) {
-      const allChecked = columns.every((col) => col.isChecked);
+    if (drawerColumns.length > 0) {
+      const allChecked = drawerColumns.every((col) => col.isChecked);
       setCheckAll(allChecked);
+    } else {
+      setCheckAll(false);
     }
-  }, [columns]);
+  }, [drawerColumns]);
 
   useEffect(() => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
@@ -2619,103 +2808,6 @@ export default function Customers() {
           "Something went wrong. Try again later",
       );
     }
-  };
-
-  //table column filteration
-  const hideTrainerStatuses = [
-    "Form Pending",
-    "Awaiting Finance",
-    "Payment Rejected",
-    "Awaiting Verify",
-  ];
-
-  const showComments = [
-    "Trainer Rejected",
-    "Awaiting Trainer Verify",
-    "Trainer Approval",
-  ];
-
-  const getFilteredColumns = (columns) => {
-    return columns
-      .filter((col) => {
-        // RA column
-        if (
-          col.key === "ra_name" &&
-          (bucketStatus === null ||
-            bucketStatus === "" ||
-            status === "Videos Given" ||
-            status === "Demo Completed" ||
-            (bucketStatus === "Student Onboarding" &&
-              (status === "" ||
-                status === null ||
-                status === "Form Pending" ||
-                status === "Awaiting Finance" ||
-                status === "Awaiting Verify")))
-        ) {
-          return false;
-        }
-
-        // Trainer-related columns
-        if (
-          ["hr_name", "trainer_name", "commercial_percentage"].includes(
-            col.key,
-          ) &&
-          (bucketStatus === "" ||
-            bucketStatus === null ||
-            status === "Videos Given" ||
-            status === "Demo Completed" ||
-            (bucketStatus === "Student Onboarding" && status === "") ||
-            hideTrainerStatuses.includes(status) ||
-            trainerSubbucketStatus === "Awaiting Trainer")
-        ) {
-          return false;
-        }
-
-        // Review Status
-        if (
-          col.key === "review_status" &&
-          (bucketStatus === null ||
-            bucketStatus === "" ||
-            bucketStatus === "Student Onboarding" ||
-            status === "Demo Completed" ||
-            status === "Videos Given")
-        ) {
-          return false;
-        }
-
-        // Trainer Mapping Comments
-        if (col.key === "trainer_mapping_comments") {
-          return showComments.includes(trainerSubbucketStatus);
-        }
-
-        // Class Scheduled Date
-        if (col.key === "class_scheduled_at" && status !== "Class Scheduled") {
-          return false;
-        }
-
-        if (
-          col.key === "approval_rejected_reason" &&
-          trainerSubbucketStatus !== "Approval Rejected"
-        ) {
-          return false;
-        }
-
-        return true;
-      })
-      .map((col) => {
-        // Change title for rejected cases
-        if (
-          col.key === "trainer_mapping_comments" &&
-          ["Trainer Rejected"].includes(trainerSubbucketStatus)
-        ) {
-          return {
-            ...col,
-            title: "Rejected Reason",
-          };
-        }
-
-        return col;
-      });
   };
 
   const filteredTableColumns = getFilteredColumns(tableColumns);
@@ -3959,11 +4051,18 @@ export default function Customers() {
                 onChange={(e) => {
                   const checked = e.target.checked;
                   setCheckAll(checked);
-                  // Update all checkboxes
-                  const updated = columns.map((col) => ({
-                    ...col,
-                    isChecked: checked,
-                  }));
+                  const currentDrawerKeys = new Set(
+                    drawerColumns.map((col) => col.key),
+                  );
+                  const updated = columns.map((col) => {
+                    if (currentDrawerKeys.has(col.key)) {
+                      return {
+                        ...col,
+                        isChecked: checked,
+                      };
+                    }
+                    return col;
+                  });
                   setColumns(updated);
                 }}
                 checked={checkAll}
@@ -3980,7 +4079,10 @@ export default function Customers() {
         <Row>
           <Col span={24}>
             <div className="leadmanager_tablefiler_container">
-              <CommonDnd data={columns} setColumns={setColumns} />
+              <CommonDnd
+                data={drawerColumns}
+                setColumns={handleSetDrawerColumns}
+              />
             </div>
 
             {/* <Divider className="customer_statusupdate_divider" />

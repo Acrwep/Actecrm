@@ -1129,784 +1129,231 @@ export default function TrainerPayment() {
     return true;
   });
 
+  const getFilteredColumns = (cols) => {
+    return (cols || []).filter((col) => {
+      // Batch-specific columns
+      if (
+        commercialType !== "Batch" &&
+        (col.key === "batch_student_count" ||
+          col.key === "batch_number" ||
+          col.key === "batch_amount")
+      ) {
+        return false;
+      }
+
+      // Approved date
+      if (col.key === "approved_date" && status !== "Awaiting Finance") {
+        return false;
+      }
+
+      // Paid date
+      if (col.key === "paid_date" && status !== "Paid") {
+        return false;
+      }
+
+      // Hide these columns for Awaiting Finance / Paid
+      if (
+        (col.key === "review_status" ||
+          col.key === "ra" ||
+          col.key === "hr_user_id" ||
+          col.key === "lead_assigned_to_id" ||
+          col.key === "is_payment_cleared" ||
+          col.key === "is_class_percentage" ||
+          col.key === "is_acknowledged") &&
+        (status === "Awaiting Finance" || status === "Paid")
+      ) {
+        return false;
+      }
+
+      // Hide these columns for empty / Requested status
+      if (
+        (col.key === "deadline_date" ||
+          col.key === "days_taken_topay" ||
+          col.key === "std_region_name" ||
+          col.key === "std_place_of_sale_name" ||
+          col.key === "std_place_of_service_name" ||
+          col.key === "mode_of_training" ||
+          col.key === "request_amount" ||
+          col.key === "lead_assigned_to_id" ||
+          col.key === "is_payment_cleared" ||
+          col.key === "is_class_percentage" ||
+          col.key === "is_acknowledged" ||
+          col.key === "review_status") &&
+        status === ""
+      ) {
+        return false;
+      }
+
+      if (
+        (col.key === "deadline_date" ||
+          col.key === "days_taken_topay" ||
+          col.key === "std_region_name" ||
+          col.key === "std_place_of_sale_name" ||
+          col.key === "std_place_of_service_name" ||
+          col.key === "mode_of_training" ||
+          col.key === "lead_assigned_to_id") &&
+        status === "Link Sent"
+      ) {
+        return false;
+      }
+
+      // hide action column
+      if (
+        col.key === "action" &&
+        (status === "" || status === "Link Sent" || status === "Paid")
+      ) {
+        return false;
+      }
+
+      // hide status column
+      if (
+        col.key === "trainer_payment_status" &&
+        (status === "Requested" ||
+          status === "Awaiting Finance" ||
+          status === "Paid")
+      ) {
+        return false;
+      }
+      return true;
+    });
+  };
+
   const [columns, setColumns] = useState(
     nonChangeColumns.map((col) => ({ ...col, isChecked: true })),
   );
   const [tableColumns, setTableColumns] = useState(nonChangeColumns);
 
+  // Drawer columns filtered by current bucket/status
+  const drawerColumns = getFilteredColumns(columns);
+
+  const handleSetDrawerColumns = (updatedDrawerColumnsOrUpdater) => {
+    setColumns((prevColumns) => {
+      const currentDrawerColumns = getFilteredColumns(prevColumns);
+      const updatedDrawerColumns =
+        typeof updatedDrawerColumnsOrUpdater === "function"
+          ? updatedDrawerColumnsOrUpdater(currentDrawerColumns)
+          : updatedDrawerColumnsOrUpdater;
+
+      if (!Array.isArray(updatedDrawerColumns)) return prevColumns;
+
+      const updatedDrawerMap = new Map();
+      updatedDrawerColumns.forEach((col) => {
+        if (col && col.key) updatedDrawerMap.set(col.key, col);
+      });
+
+      const drawerKeyOrder = updatedDrawerColumns.map((c) => c.key);
+      const isDrawerKey = new Set(drawerKeyOrder);
+
+      let drawerIdx = 0;
+      return prevColumns.map((col) => {
+        if (isDrawerKey.has(col.key)) {
+          const replacementKey = drawerKeyOrder[drawerIdx];
+          drawerIdx++;
+          return updatedDrawerMap.get(replacementKey) || col;
+        }
+        return col;
+      });
+    });
+  };
+
   useEffect(() => {
-    if (columns.length > 0) {
-      const allChecked = columns.every((col) => col.isChecked);
+    if (drawerColumns.length > 0) {
+      const allChecked = drawerColumns.every((col) => col.isChecked);
       setCheckAll(allChecked);
+    } else {
+      setCheckAll(false);
     }
-  }, [columns]);
+  }, [drawerColumns]);
 
   const getTableColumnsData = async (user_id) => {
     try {
       const response = await getTableColumns(user_id);
       const data = response?.data?.data || [];
       if (data.length === 0) {
-        return updateTableColumnsData();
+        setUpdateTableId(null);
+        const newCols = nonChangeColumns.map((c) => ({
+          ...c,
+          isChecked: true,
+        }));
+        setColumns(newCols);
+        setTableColumns(nonChangeColumns);
+        return updateTableColumnsData(newCols);
       }
 
       const filterPage = data.find((f) => f.page_name === "Trainer Payment");
-      console.log("filterPage", filterPage);
 
       if (!filterPage) {
         setUpdateTableId(null);
-        return updateTableColumnsData();
+        const newCols = nonChangeColumns.map((c) => ({
+          ...c,
+          isChecked: true,
+        }));
+        setColumns(newCols);
+        setTableColumns(nonChangeColumns);
+        return updateTableColumnsData(newCols);
       }
-
-      const hasPermission = permissions?.includes("View Financial Details");
-      const hasRequestAmount = filterPage.column_names?.some(
-        (item) =>
-          item.title === "Request Amount" || item.title === "Days Taken To Pay",
-      );
-
-      if (hasPermission && !hasRequestAmount) {
-        setUpdateTableId(null);
-        return updateTableColumnsData();
-      }
-
-      const attachRenderFunctions = (cols) =>
-        cols.map((col) => {
-          switch (col.key) {
-            case "bill_raisedate":
-              return {
-                ...col,
-                width: 130,
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <p style={{ margin: 0 }}>
-                        {text ? moment(text).format("DD/MM/YYYY") : "-"}
-                      </p>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "approved_date":
-              return {
-                ...col,
-                width: 130,
-                render: (text, record) => {
-                  return (
-                    <p style={{ margin: 0 }}>
-                      {text ? moment(text).format("DD/MM/YYYY") : "-"}
-                    </p>
-                  );
-                },
-              };
-            case "paid_date":
-              return {
-                ...col,
-                width: 110,
-                render: (text, record) => {
-                  return (
-                    <p style={{ margin: 0 }}>
-                      {text ? moment(text).format("DD/MM/YYYY") : "-"}
-                    </p>
-                  );
-                },
-              };
-            case "days_taken_topay":
-              return {
-                ...col,
-                title: permissions.includes("View Financial Details")
-                  ? "Days Taken"
-                  : "Days Taken To Complete",
-                width: permissions.includes("View Financial Details")
-                  ? 140
-                  : 175,
-                render: (text, record) => {
-                  const hasPermission = permissions.includes(
-                    "View Financial Details",
-                  );
-                  const deadlineDate = calculateDeadlineDate(
-                    record?.bill_raisedate,
-                    record?.students,
-                    hasPermission,
-                  );
-                  return {
-                    children: (
-                      <TimerPill
-                        startDate={record?.bill_raisedate}
-                        deadlineDate={deadlineDate}
-                        status={record?.status}
-                        paidDate={record?.paid_date}
-                      />
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "deadline_date":
-              return {
-                ...col,
-                width: 110,
-                render: (text, record) => {
-                  const hasPermission = permissions.includes(
-                    "View Financial Details",
-                  );
-                  const calcDate = calculateDeadlineDate(
-                    record?.updated_date,
-                    record?.students,
-                    hasPermission,
-                  );
-                  return {
-                    children: (
-                      <p>{calcDate ? calcDate.format("DD/MM/YYYY") : "-"}</p>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "std_region_name":
-              return {
-                ...col,
-                width: 120,
-                render: (students) => {
-                  const text = students?.[0]?.std_region_name || "-";
-                  return <EllipsisTooltip text={text} />;
-                },
-              };
-            case "std_place_of_sale_name":
-              return {
-                ...col,
-                width: 120,
-                render: (students) => {
-                  const text =
-                    students?.[0]?.std_place_of_sale_name ||
-                    students?.[0]?.place_of_sale ||
-                    "-";
-                  return <EllipsisTooltip text={text} />;
-                },
-              };
-            case "std_place_of_service_name":
-              return {
-                ...col,
-                width: 120,
-                render: (students) => {
-                  const text =
-                    students?.[0]?.std_place_of_service_name ||
-                    students?.[0]?.place_of_supply ||
-                    "-";
-                  return <EllipsisTooltip text={text} />;
-                },
-              };
-            case "mode_of_training":
-              return {
-                ...col,
-                width: 120,
-                render: (students) => {
-                  const text =
-                    students?.[0]?.mode_of_training ||
-                    students?.[0]?.training_mode ||
-                    "-";
-                  return <EllipsisTooltip text={text} />;
-                },
-              };
-            case "batch_student_count":
-              return {
-                ...col,
-                width: 115,
-                render: (text) => {
-                  return <p>{`${Number(text).toLocaleString("en-IN")}`}</p>;
-                },
-              };
-            case "batch_number":
-              return {
-                ...col,
-                width: 72,
-                render: (text, record) => <EllipsisTooltip text={text} />,
-              };
-            // case "commercial_type":
-            //   return {
-            //     ...col,
-            //     width: 130,
-            //     render: (text, record) => {
-            //       if (text == "Pay Per Head") {
-            //         return {
-            //           children: (
-            //             <div
-            //               style={{
-            //                 display: "flex",
-            //                 gap: "6px",
-            //                 alignItems: "center",
-            //               }}
-            //             >
-            //               <FaUserAlt size={11} color="#5b69ca" />
-            //               <p>Pay Per Head</p>
-            //             </div>
-            //           ),
-            //           props: { rowSpan: record.rowSpan },
-            //         };
-            //       } else {
-            //         return {
-            //           children: (
-            //             <div style={{ display: "flex", gap: "6px" }}>
-            //               <Tooltip
-            //                 placement="top"
-            //                 title={`Batch Code: ${record?.batch_number}`}
-            //                 trigger={["hover", "click"]}
-            //               >
-            //                 <MdGroups size={18} color="#5b69ca" />
-            //               </Tooltip>
-            //               <p>Batch</p>
-            //             </div>
-            //           ),
-            //           props: { rowSpan: record.rowSpan },
-            //         };
-            //       }
-            //     },
-            //   };
-            case "trainer_name":
-              return {
-                ...col,
-                width: 150,
-                render: (text, record) => {
-                  const isLoading =
-                    trainerDetailsLoadingRef.current == record.id;
-
-                  return {
-                    children: (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                        }}
-                      >
-                        <EllipsisTooltip text={text || "-"} />
-                        {isLoading ? (
-                          <CommonSpinner color="#333" size={14} />
-                        ) : (
-                          <>
-                            <FaRegEye
-                              size={14}
-                              className="trainers_action_icons"
-                              onClick={() => {
-                                setIsOpenTrainerFullDetailsModal(true);
-                                getTrainerByIdData(
-                                  record?.trainer_id,
-                                  record?.id,
-                                );
-                              }}
-                            />
-                          </>
-                        )}
-                      </div>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "customer_name":
-              return {
-                ...col,
-                width: 170,
-                render: (text, record) => {
-                  const isLoading =
-                    customerDetailsLoadingRef.current == record?.customer_id;
-
-                  return (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <EllipsisTooltip text={text || "-"} />
-                      {isLoading ? (
-                        <CommonSpinner color="#333" size={14} />
-                      ) : (
-                        <>
-                          {text && (
-                            <FaRegEye
-                              size={14}
-                              className="trainers_action_icons"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                getParticularCustomerDetails(
-                                  record?.customer_id,
-                                );
-                              }}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  );
-                },
-              };
-            // case "course_name":
-            //   return {
-            //     ...col,
-            //     width: 150,
-            //     render: (text) => <EllipsisTooltip text={text || "-"} />,
-            //   };
-            case "batch_amount":
-              return {
-                ...col,
-                width: 110,
-                hidden: !permissions.includes("View Financial Details")
-                  ? true
-                  : false,
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <p>{text ? `₹${parseFloat(text).toFixed(2)}` : "-"}</p>
-                    ),
-                  };
-                },
-              };
-            case "request_amount":
-              return {
-                ...col,
-                width: 100,
-                hidden: !permissions.includes("View Financial Details")
-                  ? true
-                  : false,
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <p>
-                        {record.commercial
-                          ? `₹${parseFloat(record.commercial).toFixed(2)}`
-                          : "-"}
-                      </p>
-                    ),
-                    props: { rowSpan: record.rowSpan },
-                  };
-                },
-              };
-            case "ra":
-              return {
-                ...col,
-                width: 110,
-                render: (text, record) => (
-                  <EllipsisTooltip
-                    text={text ? `${text} - ${record?.ra_user_name}` : "-"}
-                  />
-                ),
-              };
-            case "hr_user_id":
-              return {
-                ...col,
-                width: 110,
-                render: (text, record) => (
-                  <EllipsisTooltip
-                    text={text ? `${text} - ${record?.hr_user_name}` : "-"}
-                  />
-                ),
-              };
-            case "lead_assigned_to_id":
-              return {
-                ...col,
-                title: (
-                  <Tooltip title="Sales Executive" placement="top">
-                    <div
-                      style={{
-                        cursor: "pointer",
-                        width: "100%",
-                        textAlign: "center",
-                      }}
-                    >
-                      SE
-                    </div>
-                  </Tooltip>
-                ),
-                width: 110,
-                render: (text, record) => {
-                  const lead_executive = `${text} - ${record?.lead_assigned_to_name}`;
-                  return <EllipsisTooltip text={lead_executive} />;
-                },
-              };
-            case "is_payment_cleared":
-              return {
-                ...col,
-                title: (
-                  <Tooltip title="Payment Cleared" placement="top">
-                    <div
-                      style={{
-                        cursor: "pointer",
-                        width: "100%",
-                        textAlign: "center",
-                      }}
-                    >
-                      PC
-                    </div>
-                  </Tooltip>
-                ),
-                width: 60,
-                render: (text) => renderCellWithBackground(text),
-              };
-            case "is_class_percentage":
-              return {
-                ...col,
-                title: (
-                  <Tooltip title="Class Completion 100%" placement="top">
-                    <div
-                      style={{
-                        cursor: "pointer",
-                        width: "100%",
-                        textAlign: "center",
-                      }}
-                    >
-                      AC
-                    </div>
-                  </Tooltip>
-                ),
-                width: 60,
-                render: (text) => renderCellWithBackground(text),
-              };
-            case "is_acknowledged":
-              return {
-                ...col,
-                title: (
-                  <Tooltip title="Student Acknowledgement" placement="top">
-                    <div
-                      style={{
-                        cursor: "pointer",
-                        width: "100%",
-                        textAlign: "center",
-                      }}
-                    >
-                      SA
-                    </div>
-                  </Tooltip>
-                ),
-                width: 60,
-                render: (text, record) =>
-                  renderCellWithBackground(
-                    text,
-                    {},
-                    {
-                      showCopy: true,
-                      onCopy: () => {
-                        navigator.clipboard.writeText(
-                          `${
-                            import.meta.env.VITE_EMAIL_URL
-                          }/acknowledge-class-completion/${record?.customer_id}`,
-                        );
-                        CommonMessage("success", "Link Copied");
-                        console.log("Copied: eeee");
-                      },
-                    },
-                  ),
-              };
-            case "review_status":
-              return {
-                ...col,
-                width: 120,
-                render: (text, record) => {
-                  return (
-                    <div className="customers_review_container">
-                      {record?.google_review ? (
-                        <div
-                          className="customers_review_google_active"
-                          onClick={() => {
-                            setReviewModalTitle("Google Review");
-                            setReviewScreenshot(record?.google_review);
-                            setSelectedPaymentDetails(record);
-                            setIsOpenReviewScreenshotModal(true);
-                          }}
-                        >
-                          <FcGoogle size={15} />
-                          {record?.is_google_verified === 1 && (
-                            <PiSealCheckFill
-                              size={13}
-                              className="google_verified_icon"
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <Tooltip title="Google Review Not Collected">
-                          <div className="customers_review_inactive">
-                            <FcGoogle
-                              size={15}
-                              className="customers_review_grayscale"
-                            />
-                          </div>
-                        </Tooltip>
-                      )}
-                      {record?.linkedin_review ? (
-                        <div
-                          className="customers_review_linkedin_active"
-                          onClick={() => {
-                            setReviewModalTitle("LinkedIn Review");
-                            setReviewScreenshot(record?.linkedin_review);
-                            setSelectedPaymentDetails(record);
-                            setIsOpenReviewScreenshotModal(true);
-                          }}
-                        >
-                          <FaLinkedinIn size={14} color="#0a66c2" />
-                          {record?.is_linkedin_verified === 1 && (
-                            <PiSealCheckFill
-                              size={13}
-                              className="google_verified_icon"
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <Tooltip title="LinkedIn Review Not Collected">
-                          <div className="customers_review_inactive">
-                            <FaLinkedinIn size={14} color="#8c8c8c" />
-                          </div>
-                        </Tooltip>
-                      )}
-                    </div>
-                  );
-                },
-              };
-            case "trainer_payment_status":
-              return {
-                ...col,
-                width: 120,
-                fixed: "right",
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "6px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <>
-                          {text === "Link Sent" ? (
-                            <Button className="customers_status_awaitingclass_button">
-                              Link Sent
-                            </Button>
-                          ) : text === "Requested" ? (
-                            <Button className="customers_status_formpending_button">
-                              Claim
-                            </Button>
-                          ) : text === "Awaiting Approval" ? (
-                            <Button className="customers_status_classscheduled_button">
-                              Awaiting Approval
-                            </Button>
-                          ) : text === "Awaiting Finance" ? (
-                            <Button className="trainers_pending_button">
-                              Ready to Pay
-                            </Button>
-                          ) : text === "Paid" ? (
-                            <div className="trainers_verifieddiv">
-                              <Button className="trainers_verified_button">
-                                Paid
-                              </Button>
-                            </div>
-                          ) : text === "Completed" ? (
-                            <Button className="customers_status_completed_button">
-                              Completed
-                            </Button>
-                          ) : text === "Payment Rejected" ||
-                            text === "Approval Rejected" ? (
-                            <div className="trainers_verifieddiv">
-                              <Button className="trainers_rejected_button">
-                                {text}
-                              </Button>
-                            </div>
-                          ) : (
-                            <p style={{ marginLeft: "6px" }}>-</p>
-                          )}
-                        </>
-
-                        {record?.status == "Link Sent" ? (
-                          <Tooltip
-                            placement="top"
-                            title="Copy form link"
-                            trigger={["hover", "click"]}
-                          >
-                            <FaRegCopy
-                              size={14}
-                              className="customers_formlink_copybutton"
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                navigator.clipboard.writeText(
-                                  `${
-                                    import.meta.env.VITE_EMAIL_URL
-                                  }/trainer-payment-claim/${record.trainer_id}/${record.payment_master_id}`,
-                                );
-                                CommonMessage("success", "Link Copied");
-                                console.log("Copied: eeee");
-                              }}
-                            />
-                          </Tooltip>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    ),
-                  };
-                },
-              };
-            case "action":
-              return {
-                ...col,
-                width: 110,
-                fixed: "right",
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "6px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Tooltip
-                          placement="top"
-                          title={
-                            record?.status === "Requested"
-                              ? "Click to Approve"
-                              : "Click to Pay"
-                          }
-                          trigger={["hover", "click"]}
-                        >
-                          {record?.status === "Requested" ? (
-                            <Button
-                              className="trainers_pending_button"
-                              onClick={() => {
-                                if (permissions.includes("Payment Approval")) {
-                                  if (record?.status == "Link Sent") {
-                                    CommonMessage(
-                                      "error",
-                                      "This payment has not been claimed yet.",
-                                    );
-                                    return;
-                                  }
-                                  // setIsOpenDetailsDrawer(true);
-                                  // setDrawerContentStatus("Approve");
-                                  setIsOpenApproveModal(true);
-                                  setSelectedPaymentDetails(record);
-                                } else {
-                                  CommonMessage("error", "Access Denied");
-                                }
-                              }}
-                            >
-                              Approve
-                            </Button>
-                          ) : record?.status === "Awaiting Finance" ? (
-                            <Button
-                              className="trainers_verified_button"
-                              onClick={() => {
-                                if (record?.status == "Awaiting Finance") {
-                                  if (
-                                    permissions.includes("Payment Completion")
-                                  ) {
-                                    setSelectedPaymentDetails(record);
-                                    setDrawerContentStatus("Awaiting Finance");
-                                    setIsOpenDetailsDrawer(true);
-                                  } else {
-                                    CommonMessage("error", "Access Denied");
-                                  }
-                                } else {
-                                  CommonMessage(
-                                    "warning",
-                                    "Claim not approved yet",
-                                  );
-                                }
-                              }}
-                            >
-                              Pay
-                            </Button>
-                          ) : (
-                            <p style={{ marginLeft: "6px" }}>-</p>
-                          )}
-                        </Tooltip>
-                      </div>
-                    ),
-                  };
-                },
-              };
-            case "details":
-              return {
-                ...col,
-                width: 100,
-                hidden: !permissions.includes("View Financial Details"),
-                fixed: "right",
-                render: (text, record) => {
-                  return {
-                    children: (
-                      <div className="trainers_actionbuttonContainer">
-                        <Tooltip
-                          placement="top"
-                          title="View Details"
-                          trigger={["hover", "click"]}
-                        >
-                          <FaRegEye
-                            size={15}
-                            className="trainers_action_icons"
-                            onClick={() => {
-                              setIsOpenViewDrawer(true);
-                              setSelectedPaymentDetails(record);
-                            }}
-                            style={{
-                              visibility:
-                                record.rowSpan !== 0 ? "visible" : "hidden",
-                            }}
-                          />
-                        </Tooltip>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "16px",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Tooltip
-                            placement="left"
-                            title="View Customer Track"
-                            trigger={["hover", "click"]}
-                          >
-                            <LuFileClock
-                              size={15}
-                              className="trainers_action_icons"
-                              style={{ cursor: "pointer", marginLeft: "4px" }}
-                              onClick={() => {
-                                setSelectedHistoryCustomerId(
-                                  record.customer_id,
-                                );
-                                setIsOpenCustomerHistoryDrawer(true);
-                                setTimeout(() => {
-                                  const container = document.getElementById(
-                                    "customer_history_profilecontainer",
-                                  );
-                                  if (container) {
-                                    container.scrollIntoView({
-                                      behavior: "smooth",
-                                      block: "start",
-                                    });
-                                  }
-                                }, 300);
-                              }}
-                            />
-                          </Tooltip>
-                        </div>
-                      </div>
-                    ),
-                  };
-                },
-              };
-            default:
-              return col;
-          }
-        });
 
       setUpdateTableId(filterPage.id);
 
-      const filteredBackendColumns = filterPage.column_names.filter((col) => {
+      const validKeys = new Set(nonChangeColumns.map((c) => c.key));
+      const backendMap = new Map();
+      const backendOrder = [];
+      (filterPage.column_names || []).forEach((col) => {
+        if (col?.key && validKeys.has(col.key) && !backendMap.has(col.key)) {
+          backendMap.set(col.key, col);
+          backendOrder.push(col.key);
+        }
+      });
+
+      let orderedColumns = [];
+      if (backendOrder.length >= nonChangeColumns.length * 0.8) {
+        orderedColumns = backendOrder.map((key) => {
+          const col = backendMap.get(key);
+          const original = nonChangeColumns.find((c) => c.key === key);
+          return { ...original, ...col };
+        });
+        nonChangeColumns.forEach((c) => {
+          if (!backendMap.has(c.key)) {
+            orderedColumns.push({ ...c, isChecked: true });
+          }
+        });
+      } else {
+        orderedColumns = nonChangeColumns.map((c) => {
+          const saved = backendMap.get(c.key);
+          return {
+            ...c,
+            isChecked: saved ? saved.isChecked !== false : true,
+          };
+        });
+      }
+
+      const filteredBackendColumns = orderedColumns.filter((col) => {
         if (!permissions.includes("View Financial Details")) {
-          return !["request_amount", "action", "details"].includes(col.key);
+          return ![
+            "request_amount",
+            "batch_amount",
+            "action",
+            "details",
+          ].includes(col.key);
         }
         return true;
       });
+
+      const attachRenderFunctions = (cols) =>
+        cols.map((col) => {
+          const original = nonChangeColumns.find((c) => c.key === col.key);
+          if (original) {
+            return {
+              ...original,
+              ...col,
+              title: original.title,
+              width: original.width,
+              fixed: original.fixed,
+              render: original.render,
+            };
+          }
+          return col;
+        });
 
       const allColumns = attachRenderFunctions(filteredBackendColumns);
       const visibleColumns = attachRenderFunctions(
@@ -1920,13 +1367,12 @@ export default function TrainerPayment() {
     }
   };
 
-  const updateTableColumnsData = async () => {
+  const updateTableColumnsData = async (initialCols) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
 
-    // Sanitize columns to prevent "Converting circular structure to JSON"
-    // caused by React nodes in the `title` property
-    const sanitizedColumns = columns.map((col) => {
+    const colsToUse = initialCols || columns;
+    const sanitizedColumns = colsToUse.map((col) => {
       let titleStr = col.title;
       if (typeof col.title !== "string") {
         if (col.key === "is_payment_cleared") titleStr = "PC";
@@ -1936,9 +1382,10 @@ export default function TrainerPayment() {
         else titleStr = col.key || "";
       }
       return {
-        ...col,
+        key: col.key,
+        dataIndex: col.dataIndex,
         title: titleStr,
-        render: undefined, // Remove render functions before saving
+        isChecked: col.isChecked !== false,
       };
     });
 
@@ -2662,92 +2109,7 @@ export default function TrainerPayment() {
     });
   };
 
-  const filteredColumns = tableColumns.filter((col) => {
-    // Batch-specific columns
-    if (
-      commercialType !== "Batch" &&
-      (col.key === "batch_student_count" ||
-        col.key === "batch_number" ||
-        col.key === "batch_amount")
-    ) {
-      return false;
-    }
-
-    // Approved date
-    if (col.key === "approved_date" && status !== "Awaiting Finance") {
-      return false;
-    }
-
-    // Approved date
-    if (col.key === "paid_date" && status !== "Paid") {
-      return false;
-    }
-
-    // Hide these columns for Awaiting Finance / Paid
-    if (
-      (col.key === "review_status" ||
-        col.key === "ra" ||
-        col.key === "hr_user_id" ||
-        col.key === "lead_assigned_to_id" ||
-        col.key === "is_payment_cleared" ||
-        col.key === "is_class_percentage" ||
-        col.key === "is_acknowledged") &&
-      (status === "Awaiting Finance" || status === "Paid")
-    ) {
-      return false;
-    }
-
-    // Hide these columns for empty / Requested status
-    if (
-      (col.key === "deadline_date" ||
-        col.key === "days_taken_topay" ||
-        col.key === "std_region_name" ||
-        col.key === "std_place_of_sale_name" ||
-        col.key === "std_place_of_service_name" ||
-        col.key === "mode_of_training" ||
-        col.key === "request_amount" ||
-        col.key === "lead_assigned_to_id" ||
-        col.key === "is_payment_cleared" ||
-        col.key === "is_class_percentage" ||
-        col.key === "is_acknowledged" ||
-        col.key === "review_status") &&
-      status === ""
-    ) {
-      return false;
-    }
-
-    if (
-      (col.key === "deadline_date" ||
-        col.key === "days_taken_topay" ||
-        col.key === "std_region_name" ||
-        col.key === "std_place_of_sale_name" ||
-        col.key === "std_place_of_service_name" ||
-        col.key === "mode_of_training" ||
-        col.key === "lead_assigned_to_id") &&
-      status === "Link Sent"
-    ) {
-      return false;
-    }
-
-    // hide action column
-    if (
-      col.key === "action" &&
-      (status === "" || status === "Link Sent" || status === "Paid")
-    ) {
-      return false;
-    }
-
-    // hide status column
-    if (
-      col.key === "trainer_payment_status" &&
-      (status === "Requested" ||
-        status === "Awaiting Finance" ||
-        status === "Paid")
-    ) {
-      return false;
-    }
-    return true;
-  });
+  const filteredColumns = getFilteredColumns(tableColumns);
 
   const flattenedTableData = useMemo(() => {
     const flatData = [];
@@ -3119,7 +2481,11 @@ export default function TrainerPayment() {
                   setPagination({
                     page: 1,
                   });
-                  fetchTrainerPaymentsData({ regionId: value, pageNumber: 1 });
+                  fetchTrainerPaymentsData({
+                    regionId: value,
+                    branchId: null,
+                    pageNumber: 1,
+                  });
                   if (value) {
                     getBranchesData(value);
                   } else {
@@ -3723,11 +3089,18 @@ export default function TrainerPayment() {
                 onChange={(e) => {
                   const checked = e.target.checked;
                   setCheckAll(checked);
-                  // Update all checkboxes
-                  const updated = columns.map((col) => ({
-                    ...col,
-                    isChecked: checked,
-                  }));
+                  const currentDrawerKeys = new Set(
+                    drawerColumns.map((col) => col.key),
+                  );
+                  const updated = columns.map((col) => {
+                    if (currentDrawerKeys.has(col.key)) {
+                      return {
+                        ...col,
+                        isChecked: checked,
+                      };
+                    }
+                    return col;
+                  });
                   setColumns(updated);
                 }}
                 checked={checkAll}
@@ -3744,7 +3117,10 @@ export default function TrainerPayment() {
         <Row>
           <Col span={24}>
             <div className="leadmanager_tablefiler_container">
-              <CommonDnd data={columns} setColumns={setColumns} />
+              <CommonDnd
+                data={drawerColumns}
+                setColumns={handleSetDrawerColumns}
+              />
             </div>
           </Col>
         </Row>
@@ -3757,11 +3133,28 @@ export default function TrainerPayment() {
                 setTableColumns(visibleColumns);
                 setIsOpenFilterDrawer(false);
 
+                const sanitizedColumns = columns.map((col) => {
+                  let titleStr = col.title;
+                  if (typeof col.title !== "string") {
+                    if (col.key === "is_payment_cleared") titleStr = "PC";
+                    else if (col.key === "is_class_percentage") titleStr = "AC";
+                    else if (col.key === "is_acknowledged") titleStr = "SA";
+                    else if (col.key === "lead_assigned_to_id") titleStr = "SE";
+                    else titleStr = col.key || "";
+                  }
+                  return {
+                    key: col.key,
+                    dataIndex: col.dataIndex,
+                    title: titleStr,
+                    isChecked: col.isChecked,
+                  };
+                });
+
                 const payload = {
                   user_id: loginUserId,
                   id: updateTableId,
                   page_name: "Trainer Payment",
-                  column_names: columns,
+                  column_names: sanitizedColumns,
                 };
                 try {
                   await updateTableColumns(payload);
