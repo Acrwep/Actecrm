@@ -1066,11 +1066,28 @@ export default function TrainerPayment() {
       dataIndex: "details",
       fixed: "right",
       width: 100,
+      align: "center",
       hidden: !permissions.includes("View Financial Details") ? true : false,
       render: (text, record) => {
+        const allStudents =
+          record.request_details?.students?.length > 0
+            ? record.request_details.students
+            : record.customer_id
+              ? [record]
+              : [];
+
         return {
           children: (
-            <div className="trainers_actionbuttonContainer">
+            <div
+              className="trainers_actionbuttonContainer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "16px",
+                height: "100%",
+              }}
+            >
               <Tooltip
                 placement="top"
                 title="View Details"
@@ -1081,37 +1098,42 @@ export default function TrainerPayment() {
                   className="trainers_action_icons"
                   onClick={() => {
                     setIsOpenViewDrawer(true);
-                    setSelectedPaymentDetails(record);
-                  }}
-                  style={{
-                    visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                    setSelectedPaymentDetails(record.request_details || record);
                   }}
                 />
               </Tooltip>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                  justifyContent: "center",
-                }}
-              >
-                <Tooltip
-                  placement="left"
-                  title="View Customer Track"
-                  trigger={["hover", "click"]}
+              {allStudents.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: allStudents.length > 1 ? "18px" : "0px",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                  }}
                 >
-                  <LuFileClock
-                    size={15}
-                    className="trainers_action_icons"
-                    style={{ cursor: "pointer", marginLeft: "4px" }}
-                    onClick={() => {
-                      setSelectedHistoryCustomerId(record.customer_id);
-                      setIsOpenCustomerHistoryDrawer(true);
-                    }}
-                  />
-                </Tooltip>
-              </div>
+                  {allStudents.map((std, idx) => (
+                    <Tooltip
+                      key={idx}
+                      placement="left"
+                      title="View Customer Track"
+                      trigger={["hover", "click"]}
+                    >
+                      <LuFileClock
+                        size={15}
+                        className="trainers_action_icons"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setSelectedHistoryCustomerId(
+                            std.customer_id || record.customer_id,
+                          );
+                          setIsOpenCustomerHistoryDrawer(true);
+                        }}
+                      />
+                    </Tooltip>
+                  ))}
+                </div>
+              )}
               {(record.status === "Link Sent" ||
                 record.status === "Requested") &&
               permissions.includes("Delete Trainer Payment") ? (
@@ -1126,17 +1148,15 @@ export default function TrainerPayment() {
                     className="trainers_action_icons"
                     onClick={() => {
                       setIsOpenDeleteModal(true);
-                      setSelectedPaymentDetails(record);
-                    }}
-                    style={{
-                      visibility: record.rowSpan !== 0 ? "visible" : "hidden",
+                      setSelectedPaymentDetails(
+                        record.request_details || record,
+                      );
                     }}
                   />
                 </Tooltip>
               ) : null}
             </div>
           ),
-          // props: { rowSpan: flatRecord.rowSpan },
         };
       },
     },
@@ -2085,10 +2105,12 @@ export default function TrainerPayment() {
     const payload = {
       trainer_payment_id: selectedPaymentDetails.id,
       updated_by: loginUserId,
+      status_date: formatToBackendIST(new Date()),
     };
     try {
       await deleteTrainerPayment(payload);
       setTimeout(() => {
+        CommonMessage("success", "Payment Deleted Successfully");
         setIsOpenDeleteModal(false);
         setButtonLoading(false);
         fetchTrainerPaymentsData({});
@@ -2191,7 +2213,6 @@ export default function TrainerPayment() {
     "is_class_percentage",
     "is_acknowledged",
     "review_status",
-    "details",
   ];
 
   const finalColumns = filteredColumns.map((col) => {

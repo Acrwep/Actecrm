@@ -23,6 +23,7 @@ import { RiRefund2Fill } from "react-icons/ri";
 import { LuSend } from "react-icons/lu";
 import { SlActionUndo } from "react-icons/sl";
 import { PiSealCheckFill } from "react-icons/pi";
+import { RiDeleteBinLine } from "react-icons/ri";
 import "./styles.css";
 import CommonCertificateViewer from "../Common/CommonCertificateViewer";
 import {
@@ -342,6 +343,8 @@ export default function CustomerHistory({ customerId, isOpen, onClose }) {
           <RiRefund2Fill style={{ color: "#d32f2f" }} />
         ) : item.status.includes("Rejected") ? (
           <FaRegCircleXmark style={{ color: "#d32f2f" }} />
+        ) : item.status.includes("Deleted") ? (
+          <RiDeleteBinLine style={{ color: "#d32f2f" }} />
         ) : item.status.includes("Awaiting") ||
           item.status.includes("Passedout") ? (
           <PiClockCounterClockwiseBold size={18} style={{ color: "gray" }} />
