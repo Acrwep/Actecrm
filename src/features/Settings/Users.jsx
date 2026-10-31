@@ -89,6 +89,8 @@ export default function Users({
   const rolesData = useSelector((state) => state.rolelist);
   //permissions
   const permissions = useSelector((state) => state.userpermissions);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
 
   const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
   const [assignUsersData, setAssignUsersData] = useState(allUsersData);
@@ -132,10 +134,14 @@ export default function Users({
   const [buttonLoading, setButtonLoading] = useState(false);
   // const [usersData, setUsersData] = useState([]);
   const [editUserId, setEditUserId] = useState(null);
+  //filter usestates
   const [searchValue, setSearchValue] = useState("");
   const [isOpenRoleModal, setIsOpenRoleModal] = useState(false);
   const [selectedRoleIds, setSelectedRoleIds] = useState([]);
   const [isOpenProfileModal, setIsOpenProfileModal] = useState("");
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [filterBranchOptions, setFilterBranchOptions] = useState([]);
   //set target usestates
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -456,6 +462,8 @@ export default function Users({
   const fetchUsersData = (overrides = {}) => {
     getUsersData(
       overrides.searchvalue !== undefined ? overrides.searchvalue : searchValue,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
       overrides.roles !== undefined ? overrides.roles : selectedRoleIds,
       overrides.pageNumber !== undefined
         ? overrides.pageNumber
@@ -464,7 +472,14 @@ export default function Users({
     );
   };
 
-  const getUsersData = async (searchvalue, roles, pageNumber, limit) => {
+  const getUsersData = async (
+    searchvalue,
+    regionId,
+    branchId,
+    roles,
+    pageNumber,
+    limit,
+  ) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -474,6 +489,8 @@ export default function Users({
     setUserTableLoading(true);
     const payload = {
       ...(searchvalue && { keyword: searchvalue }),
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       ...(roles &&
         roles.length > 0 && { roles: roles.map((r) => parseInt(r)) }),
       page: pageNumber,
@@ -531,6 +548,35 @@ export default function Users({
     } catch (error) {
       dispatch(storeAllUsersList([]));
       console.log(error);
+    }
+  };
+
+  const searchGetBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setFilterBranchOptions(reordered);
+        } else {
+          setFilterBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        console.log("ooooooooooooooooooo");
+        setFilterBranchOptions([]);
+      }
+    } catch (error) {
+      setFilterBranchOptions([]);
+      console.log("response status error", error);
     }
   };
 
@@ -1030,9 +1076,9 @@ export default function Users({
         <pre>{JSON.stringify(device, null, 2)}</pre>
       </div> */}
       <Row>
-        <Col xs={24} sm={24} md={24} lg={12}>
+        <Col xs={24} sm={24} md={24} lg={20}>
           <Row gutter={12}>
-            <Col span={9}>
+            <Col span={5}>
               <CommonOutlinedInput
                 label="Search"
                 width="100%"
@@ -1065,7 +1111,63 @@ export default function Users({
                 value={searchValue}
               />
             </Col>
-            <Col span={9}>
+            <Col span={5}>
+              <CommonSelectField
+                height="33px"
+                label="Select Region"
+                labelMarginTop="0px"
+                labelFontSize="11px"
+                options={regionOptions}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedRegionId(value);
+                  setSelectedBranchId(null);
+                  setPagination({
+                    page: 1,
+                    limit: pagination.limit,
+                  });
+                  fetchUsersData({
+                    regionId: value,
+                    branchId: null,
+                    page: 1,
+                  });
+                  if (value) {
+                    searchGetBranchesData(value);
+                  } else {
+                    setFilterBranchOptions([]);
+                  }
+                }}
+                value={selectedRegionId}
+                disableClearable={false}
+              />
+            </Col>
+
+            <Col span={5}>
+              <CommonSelectField
+                height="33px"
+                label="Select Branch"
+                labelMarginTop="0px"
+                labelFontSize="11px"
+                options={filterBranchOptions}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedBranchId(value);
+                  setPagination({
+                    page: 1,
+                    limit: pagination.limit,
+                  });
+                  fetchUsersData({
+                    branchId: value,
+                    page: 1,
+                  });
+                }}
+                value={selectedBranchId}
+                disableClearable={false}
+                disabled={selectedRegionId == 3 ? true : false}
+              />
+            </Col>
+
+            <Col span={5}>
               <CommonMultiSelectField
                 height="34px"
                 label="Select Role"
@@ -1084,7 +1186,7 @@ export default function Users({
           xs={24}
           sm={24}
           md={24}
-          lg={12}
+          lg={4}
           style={{
             display: "flex",
             justifyContent: "flex-end",

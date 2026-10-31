@@ -1073,7 +1073,26 @@ export default function PageAccess({
         <div className="settings_roles_container">
           <p className="settings_roles_heading">Roles</p>
           <Row gutter={[24, 24]} style={{ paddingBottom: "30px" }}>
-            {rolesData.length >= 1 ? (
+            {roleLoading ? (
+              [1, 2, 3, 4, 5, 6].map((_, index) => (
+                <Col span={8} key={index}>
+                  <div
+                    className="settings_groupcard"
+                    style={{ borderLeft: "4px solid #e0e0e0" }}
+                  >
+                    <div style={{ height: "120px" }}>
+                      <Skeleton
+                        avatar
+                        active
+                        paragraph={{
+                          rows: 0,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </Col>
+              ))
+            ) : rolesData.length >= 1 ? (
               <>
                 {rolesData.map((item, index) => {
                   return (
