@@ -2557,3 +2557,25 @@ export const getEligiblePlacementCustomers = async (payload = {}) => {
     throw error;
   }
 };
+
+//new reports api's
+export const getPreSalesReportsCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getPreSalesReportsCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPreSalesReportsSummaryCounts = async (payload) => {
+  try {
+    const response = await api.post(
+      `/api/getPreSalesReportsSummaryCounts`,
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

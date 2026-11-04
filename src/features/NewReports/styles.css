@@ -1,0 +1,1186 @@
+/* ==========================================================================
+   Management Summary & Pre-Sales Report Dashboard Styles
+   ========================================================================== */
+
+.presales_report_wrapper {
+  padding: 10px 4px 40px;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+/* --------------------------------------------------------------------------
+   Management Summary Overview Cards (Initial View)
+   -------------------------------------------------------------------------- */
+.mgmt_summary_wrapper {
+  padding: 10px 4px 40px;
+  color: #1e293b;
+}
+
+.mgmt_header_card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #edf2f7;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.mgmt_header_left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mgmt_header_icon_box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.mgmt_header_title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.mgmt_header_subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 3px 0 0;
+  font-weight: 400;
+}
+
+/* Management Summary Cards (Report Navigation Portal) */
+.mgmt_card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e8eef5;
+  padding: 16px 16px 11px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Subtle top gradient accent indicator */
+.mgmt_card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.mgmt_card_clickable {
+  cursor: pointer;
+}
+
+/* Top Horizontal Row: Circular Icon + Content */
+.mgmt_card_top_row {
+  display: flex;
+  gap: 14px;
+}
+
+/* Left Circular Icon Badge */
+.mgmt_card_icon_circle {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  transition: transform 0.22s ease;
+  flex-shrink: 0;
+}
+
+/* Right Content Info */
+.mgmt_card_content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  gap: 2px;
+}
+
+.mgmt_card_title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.mgmt_card_count_row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.mgmt_card_count {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0;
+  white-space: nowrap;
+  margin-top: 0px;
+}
+
+.mgmt_card_subtext {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  margin-top: 2px !important;
+}
+
+/* Bottom Footer (View Report Button) */
+.mgmt_card_footer {
+  padding-top: 9px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.mgmt_card_action_hint {
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.mgmt_card_action_arrow {
+  font-size: 13px;
+  transition: transform 0.25s ease;
+}
+
+.mgmt_card_clickable:hover .mgmt_card_action_arrow {
+  transform: translateX(4px);
+}
+
+/* Card Themes */
+/* 1. Leads / Pre-Sales Theme (Indigo) */
+.mgmt_theme_leads .mgmt_card_icon_circle {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.mgmt_theme_leads .mgmt_card_count,
+.mgmt_theme_leads .mgmt_card_action_hint {
+  color: #4f46e5;
+}
+.mgmt_theme_leads::after {
+  background: linear-gradient(90deg, #6366f1 0%, #4f46e5 100%);
+}
+.mgmt_theme_leads:hover {
+  transform: translateY(-2px);
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 18px -4px rgba(79, 70, 229, 0.12);
+}
+.mgmt_theme_leads:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_leads:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+/* 2. Admissions Theme (Emerald) */
+.mgmt_theme_admissions .mgmt_card_icon_circle {
+  background: #d1fae5;
+  color: #047857;
+}
+.mgmt_theme_admissions .mgmt_card_count,
+.mgmt_theme_admissions .mgmt_card_action_hint {
+  color: #059669;
+}
+.mgmt_theme_admissions::after {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+.mgmt_theme_admissions:hover {
+  transform: translateY(-2px);
+  border-color: #a7f3d0;
+  box-shadow: 0 8px 18px -4px rgba(5, 150, 105, 0.12);
+}
+.mgmt_theme_admissions:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_admissions:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+/* 3. Revenue Theme (Violet) */
+.mgmt_theme_revenue .mgmt_card_icon_circle {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.mgmt_theme_revenue .mgmt_card_count,
+.mgmt_theme_revenue .mgmt_card_action_hint {
+  color: #7c3aed;
+}
+.mgmt_theme_revenue::after {
+  background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+}
+.mgmt_theme_revenue:hover {
+  transform: translateY(-2px);
+  border-color: #ddd6fe;
+  box-shadow: 0 8px 18px -4px rgba(124, 58, 237, 0.12);
+}
+.mgmt_theme_revenue:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_revenue:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+/* 4. Attention Theme (Rose) */
+.mgmt_theme_attention .mgmt_card_icon_circle {
+  background: #ffe4e6;
+  color: #be123c;
+}
+.mgmt_theme_attention .mgmt_card_count,
+.mgmt_theme_attention .mgmt_card_action_hint {
+  color: #e11d48;
+}
+.mgmt_theme_attention::after {
+  background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);
+}
+.mgmt_theme_attention:hover {
+  transform: translateY(-2px);
+  border-color: #fecdd3;
+  box-shadow: 0 8px 18px -4px rgba(225, 29, 72, 0.12);
+}
+.mgmt_theme_attention:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_attention:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+/* --------------------------------------------------------------------------
+   Header & Action Bar (Pre-Sales View)
+   -------------------------------------------------------------------------- */
+.presales_header_card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px 0px 12px 0px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.presales_header_left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.presales_header_icon_box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.presales_header_title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.presales_header_subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 3px 0 0;
+  font-weight: 400;
+}
+
+.presales_header_actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.presales_preset_tabs {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 9px;
+  gap: 3px;
+}
+
+.presales_preset_tab {
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.presales_preset_tab:hover {
+  color: #0f172a;
+}
+
+.presales_preset_tab.active {
+  background: #ffffff;
+  color: #5b69ca;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.presales_icon_button,
+.newreports_refresh_button {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 8px !important;
+  border: 1px solid #d9d9d9 !important;
+  background: #ffffff !important;
+  color: #5b69ca !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 16px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  margin-top: -2px !important;
+}
+
+.presales_icon_button:hover,
+.newreports_refresh_button:hover {
+  background: #f0f3ff !important;
+  border-color: #5b69ca !important;
+  color: #5b69ca !important;
+}
+
+.newreports_refresh_button .refresh_icon,
+.newreports_refresh_button .anticon,
+.presales_icon_button svg {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #5b69ca !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* --------------------------------------------------------------------------
+   Section Titles
+   -------------------------------------------------------------------------- */
+.presales_section_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 26px 0 14px;
+}
+
+.presales_section_title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.presales_section_title_badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 20px;
+  background: #eef2ff;
+  color: #4f46e5;
+  letter-spacing: 0.5px;
+}
+
+/* --------------------------------------------------------------------------
+   Stat KPI Cards
+   -------------------------------------------------------------------------- */
+.presales_stat_card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+  padding: 16px 18px;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.presales_stat_card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  border-color: #e2e8f0;
+}
+
+.presales_card_top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.presales_stat_label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0 0 4px;
+  letter-spacing: 0.1px;
+}
+
+.presales_stat_value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  margin: 0;
+  margin-top: 8px !important;
+}
+
+.presales_stat_icon_wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.presales_stat_card:hover .presales_stat_icon_wrapper {
+  transform: scale(1.08);
+}
+
+.presales_card_bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 8px;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.presales_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2.5px 8.5px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.presales_avg_badge {
+  gap: 5px;
+}
+
+.presales_avg_label {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.presales_avg_val {
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+.presales_stat_subtext {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+  flex-shrink: 1;
+}
+
+/* Card Themes */
+.presales_theme_indigo .presales_stat_icon_wrapper {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+.presales_theme_indigo .presales_badge {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.presales_theme_emerald .presales_stat_icon_wrapper {
+  background: #ecfdf5;
+  color: #059669;
+}
+.presales_theme_emerald .presales_badge {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.presales_theme_sky .presales_stat_icon_wrapper {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+.presales_theme_sky .presales_badge {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+.presales_theme_amber .presales_stat_icon_wrapper {
+  background: #fffbeb;
+  color: #d97706;
+}
+.presales_theme_amber .presales_badge {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.presales_theme_blue .presales_stat_icon_wrapper {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.presales_theme_blue .presales_badge {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.presales_theme_violet .presales_stat_icon_wrapper {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+.presales_theme_violet .presales_badge {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.presales_theme_rose .presales_stat_icon_wrapper {
+  background: #fff1f2;
+  color: #e11d48;
+}
+.presales_theme_rose .presales_badge {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.presales_theme_orange .presales_stat_icon_wrapper {
+  background: #fff7ed;
+  color: #ea580c;
+}
+.presales_theme_orange .presales_badge {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+/* Hero Highlight Card: Joining Count */
+.presales_stat_card_hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 1.5px solid #a7f3d0;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+  position: relative;
+}
+
+.presales_stat_card_hero:hover {
+  border-color: #6ee7b7;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.16);
+}
+
+.presales_stat_card_hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.presales_hero_icon {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+}
+
+.presales_hero_value {
+  color: #047857 !important;
+  font-size: 28px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Funnel Progression Bar
+   -------------------------------------------------------------------------- */
+.presales_funnel_container {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+  padding: 16px 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.presales_funnel_steps {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  padding: 4px 0;
+  gap: 6px;
+  width: 100%;
+}
+
+.presales_funnel_step {
+  flex: 1 1 0;
+  min-width: 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Subcategories stick to top under header, extra space goes to the bottom */
+  transition: all 0.22s ease;
+  position: relative;
+}
+
+.presales_funnel_step:hover {
+  background: #ffffff;
+  border-color: #5b69ca;
+  box-shadow: 0 4px 14px rgba(91, 105, 202, 0.12);
+  transform: translateY(-2px);
+}
+
+.presales_funnel_step.hero_step {
+  background: #f0fdf4;
+  border-color: #a7f3d0;
+}
+
+.presales_funnel_step.hero_step:hover {
+  border-color: #34d399;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.14);
+}
+
+.presales_funnel_step_header {
+  margin-bottom: 4px;
+}
+
+.presales_funnel_step_label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.presales_funnel_count_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.presales_funnel_step_count {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.presales_funnel_step_rate {
+  font-size: 10px;
+  font-weight: 600;
+  color: #10b981;
+  white-space: nowrap;
+}
+
+.presales_funnel_arrow {
+  font-size: 13px;
+  color: #cbd5e1;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* Subcategories Section inside each Funnel Step */
+.presales_funnel_subitems {
+  border-top: 1px solid #eef2f6;
+  padding-top: 8px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.presales_funnel_subitem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  font-size: 10.5px;
+  transition: all 0.18s ease;
+}
+
+.presales_funnel_step:hover .presales_funnel_subitem {
+  border-color: #e2e8f0;
+}
+
+.presales_funnel_subitem:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.presales_funnel_subitem_name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #475569;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10.5px;
+}
+
+.presales_subitem_dot {
+  width: 5.5px;
+  height: 5.5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.presales_funnel_subitem_count {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 10.5px;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+/* Hero step outcome box (Joining Count) */
+.presales_funnel_hero_box {
+  border-top: 1px solid #d1fae5;
+  padding-top: 8px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.presales_funnel_hero_tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2.5px 6px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 10px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.presales_funnel_hero_stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #d1fae5;
+  font-size: 10.5px;
+}
+
+.presales_funnel_hero_stat_label {
+  color: #047857;
+  font-weight: 500;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.presales_funnel_hero_stat_val {
+  color: #047857;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* Responsive Breakpoints for Funnel */
+@media (max-width: 991px) {
+  .presales_funnel_steps {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .presales_funnel_step {
+    flex: 1 1 calc(50% - 10px);
+    min-width: calc(50% - 10px);
+  }
+  .presales_funnel_arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .presales_funnel_step {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+}
+
+.presales_funnel_hero_stat_label {
+  color: #047857;
+  font-weight: 500;
+}
+
+.presales_funnel_hero_stat_val {
+  color: #047857;
+  font-weight: 700;
+}
+
+.presales_funnel_arrow {
+  color: #94a3b8;
+  font-size: 16px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* --------------------------------------------------------------------------
+   Follow-up Activity & Execution Cards
+   -------------------------------------------------------------------------- */
+.presales_followup_progress_box {
+  margin: 4px 0 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.presales_followup_progress_track {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+}
+
+.presales_followup_progress_fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.presales_followup_progress_fill.handled {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.presales_followup_progress_fill.unhandled {
+  background: linear-gradient(90deg, #fb7185 0%, #e11d48 100%);
+}
+
+.presales_followup_progress_fill.total {
+  background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+}
+
+.presales_followup_progress_labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* --------------------------------------------------------------------------
+   Source & Sub-Source Breakdown Panels
+   -------------------------------------------------------------------------- */
+.presales_panel_card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.presales_panel_header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafbfc;
+}
+
+.presales_panel_title_box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.presales_panel_title_icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.presales_panel_title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+}
+
+.presales_panel_subtitle {
+  font-size: 11.5px;
+  color: #64748b;
+  margin: 1px 0 0;
+}
+
+.presales_panel_total_badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #e0e7ff;
+}
+
+.presales_panel_body {
+  padding: 16px 20px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 420px;
+}
+
+.presales_source_item {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.presales_source_item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.presales_source_meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.presales_source_name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.presales_source_dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.presales_source_stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.presales_source_count {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.presales_source_pct {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #64748b;
+  min-width: 42px;
+  text-align: right;
+}
+
+.presales_source_bar_bg {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.presales_source_bar_fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sub-source chip cloud */
+.presales_subsource_grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.presales_subsource_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.presales_subsource_row:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.presales_subsource_name_box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.presales_subsource_parent_tag {
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: #475569;
+  font-weight: 500;
+}
+
+.presales_subsource_count_pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Design
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+  .presales_header_card,
+  .mgmt_header_card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .presales_header_actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .presales_funnel_steps {
+    flex-wrap: wrap;
+  }
+  .presales_funnel_arrow {
+    display: none;
+  }
+  .mgmt_banner_card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .presales_stat_value,
+  .mgmt_card_value {
+    font-size: 24px;
+  }
+  .presales_preset_tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

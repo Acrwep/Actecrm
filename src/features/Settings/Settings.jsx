@@ -487,6 +487,7 @@ export default function Settings() {
         "Customer Fees History Report",
         "Server Report",
         "Tickets Report",
+        "New Reports Page",
       ];
 
       const reportsSortedArray = reportsModule.sort(

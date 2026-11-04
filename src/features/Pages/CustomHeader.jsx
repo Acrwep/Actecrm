@@ -796,7 +796,9 @@ Course Advisor
                                                   "/settings"
                                                 ? "Settings"
                                                 : location.pathname ===
-                                                    "/reports"
+                                                      "/reports" ||
+                                                    location.pathname ===
+                                                      "/newreports"
                                                   ? "Reports"
                                                   : ""}
           </p>

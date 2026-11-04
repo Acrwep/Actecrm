@@ -55,6 +55,8 @@ import BatchManagement from "../Batches/BatchManagement";
 import PlacementMainTab from "../Placement/PlacementMainTab";
 import Marketing from "../Marketing/Marketing";
 import ServerAcknowledge from "../Server/ServerAcknowledge";
+//New Reports
+import NewReports from "../NewReports/NewReports";
 
 const { Sider, Content, Header } = Layout;
 
@@ -310,6 +312,7 @@ export default function Pages() {
             <Route element={<Marketing />} path="/marketing" />
             <Route element={<Marketing />} path="/whatsapp-campaigns" />
             <Route element={<Marketing />} path="/marketing/campaigns" />
+            <Route element={<NewReports />} path="/newreports" />
             <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>
         </Content>

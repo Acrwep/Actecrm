@@ -115,6 +115,11 @@ export default function SideMenu() {
       icon: <MdOutlineCampaign size={17} />,
       path: "marketing",
     },
+    16: {
+      title: "New Reports",
+      icon: <TbReport size={17} />,
+      path: "newreports",
+    },
     // 14: {
     //   title: "Accounts",
     //   icon: <BiRupee size={17} />,
@@ -198,6 +203,11 @@ export default function SideMenu() {
       icon: <MdOutlineCampaign size={17} />,
       path: "marketing",
     },
+    16: {
+      title: "New Reports",
+      icon: <TbReport size={17} />,
+      path: "newreports",
+    },
     // 14: {
     //   title: "Accounts",
     //   icon: <BiRupee size={17} />,
@@ -251,6 +261,10 @@ export default function SideMenu() {
 
     if (!permissions.includes("Marketing Page")) {
       delete updatedMenu[15];
+    }
+
+    if (!permissions.includes("New Reports Page")) {
+      delete updatedMenu[16];
     }
 
     setSideMenuOptions(updatedMenu);
@@ -355,6 +369,10 @@ export default function SideMenu() {
 
       if (!permissions.includes("Marketing Page")) {
         delete updatedMenu[15];
+      }
+
+      if (!permissions.includes("New Reports Page")) {
+        delete updatedMenu[16];
       }
 
       setSideMenuOptions(updatedMenu);
