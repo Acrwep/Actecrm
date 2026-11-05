@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
-import { Button, Col, message, Row, Tooltip } from "antd";
+import { Button, Col, message, Row, Tooltip, Skeleton } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PreSalesReports from "./PreSalesReports";
@@ -11,19 +11,71 @@ import { TbReportAnalytics } from "react-icons/tb";
 import {
   getPreSalesReportsSummaryCounts,
   getRoles,
-  getUsers,
+  getUsersByTheirRole,
 } from "../ApiService/action";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { useSelector } from "react-redux";
+
+/**
+ * Dedicated Skeleton Loader for Management Summary Portal Cards
+ */
+function NewReportsSkeleton({ cardCount = 2 }) {
+  return (
+    <Row gutter={[16, 16]}>
+      {Array.from({ length: cardCount }).map((_, i) => (
+        <Col xs={24} sm={12} lg={12} xl={6} key={i}>
+          <div className="mgmt_card" style={{ cursor: "default" }}>
+            <div className="mgmt_card_top_row">
+              <Skeleton.Avatar
+                active
+                size={44}
+                shape="circle"
+                style={{ flexShrink: 0 }}
+              />
+              <div
+                className="mgmt_card_content"
+                style={{ width: "100%", gap: 6 }}
+              >
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 120, height: 16 }}
+                />
+                <Skeleton.Input
+                  active
+                  style={{ width: 75, height: 26, margin: "2px 0" }}
+                />
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 85, height: 13 }}
+                />
+              </div>
+            </div>
+
+            <div className="mgmt_card_footer" style={{ marginTop: 10 }}>
+              <Skeleton.Input
+                active
+                size="small"
+                style={{ width: 90, height: 14 }}
+              />
+            </div>
+          </div>
+        </Col>
+      ))}
+    </Row>
+  );
+}
 
 export default function NewReports() {
   const downlineUsers = useSelector((state) => state.downlineusers);
 
   const [activeReport, setActiveReport] = useState(null);
   const [selectedDates, setSelectedDates] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [summaryCounts, setSummaryCounts] = useState(null);
-  const [saleUsers, setSaleUsers] = useState([]);
+  const [saleDownliners, setSaleDownliners] = useState([]);
   const [saleRoleId, setSaleRoleId] = useState(null);
 
   // Available Report Portal Cards (Compact Angle + Subtext + View Report Action)
@@ -49,8 +101,10 @@ export default function NewReports() {
   ];
 
   useEffect(() => {
-    getRolesData();
-  }, []);
+    if (downlineUsers.length >= 1) {
+      getRolesData();
+    }
+  }, [downlineUsers]);
 
   const getRolesData = async () => {
     try {
@@ -78,23 +132,24 @@ export default function NewReports() {
       limit: 1000,
     };
     try {
-      const response = await getUsers(payload);
+      const response = await getUsersByTheirRole(payload);
       console.log("get sale users response", response);
-      const sale_users = response?.data?.data?.data || [];
+      const sale_users = response?.data?.data || [];
 
-      const saleDownlines = downlineUsers.filter((downline) =>
+      const sale_downlines = downlineUsers.filter((downline) =>
         sale_users.some((user) => user.user_id === downline.user_id),
       );
-      console.log("sale downliners", saleDownlines);
-      setSaleUsers(saleDownlines);
+      console.log("sale downliners", sale_downlines);
+      setSaleDownliners(sale_downlines);
 
       fetchNewReportsSummary({
         startDate: PreviousAndCurrentDate[0],
         endDate: PreviousAndCurrentDate[1],
-        user_ids: sale_users.map((su) => su.user_id),
+        user_ids: sale_downlines.map((su) => su.user_id),
       });
     } catch (error) {
       console.log("get sale users error", error);
+      setIsLoading(false);
     }
   };
 
@@ -108,11 +163,12 @@ export default function NewReports() {
         : selectedDates?.[1] || null,
       overrides.user_ids !== undefined
         ? overrides.user_ids
-        : saleUsers.map((su) => su.user_id),
+        : saleDownliners.map((su) => su.user_id),
     );
   };
 
   const getNewReportsSummary = async (startDate, endDate, user_ids) => {
+    setIsLoading(true);
     const payload = {
       start_date: startDate,
       end_date: endDate,
@@ -128,9 +184,10 @@ export default function NewReports() {
       setSummaryCounts(null);
       console.log("summary error", error);
     } finally {
+      setIsLoading(false);
       setTimeout(() => {
         setIsRefreshing(false);
-      }, 600);
+      }, 400);
     }
   };
 
@@ -144,12 +201,12 @@ export default function NewReports() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    setIsLoading(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     fetchNewReportsSummary({
       startDate: PreviousAndCurrentDate[0],
       endDate: PreviousAndCurrentDate[1],
-      user_ids: saleUsers,
     });
   };
 
@@ -202,6 +259,7 @@ export default function NewReports() {
               value={selectedDates}
               onDateChange={(dates) => {
                 setSelectedDates(dates);
+                setIsLoading(true);
                 fetchNewReportsSummary({
                   startDate: dates[0],
                   endDate: dates[1],
@@ -213,9 +271,12 @@ export default function NewReports() {
                 className="newreports_refresh_button"
                 onClick={handleRefresh}
                 aria-label="Refresh Report"
-                disabled={isRefreshing}
+                disabled={isRefreshing || isLoading}
               >
-                <RedoOutlined className="refresh_icon" spin={isRefreshing} />
+                <RedoOutlined
+                  className="refresh_icon"
+                  spin={isRefreshing || isLoading}
+                />
               </Button>
             </Tooltip>
           </Col>
@@ -223,43 +284,48 @@ export default function NewReports() {
       </div>
 
       {/* Report Cards Grid (Compact Horizontal Angle + Subtext + View Report Button) */}
-      <Row gutter={[16, 16]}>
-        {reportCards.map((card) => {
-          const count = summaryCounts?.[card.countKey] ?? "-";
+      {isLoading ? (
+        <NewReportsSkeleton cardCount={reportCards.length} />
+      ) : (
+        <Row gutter={[16, 16]}>
+          {reportCards.map((card) => {
+            const count = summaryCounts?.[card.countKey] ?? "-";
 
-          return (
-            <Col xs={24} sm={12} lg={12} xl={6} key={card.id}>
-              <div
-                className={`mgmt_card mgmt_card_clickable mgmt_theme_${card.theme}`}
-                onClick={() => handleCardClick(card)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") handleCardClick(card);
-                }}
-              >
-                <div className="mgmt_card_top_row">
-                  <div className="mgmt_card_icon_circle">{card.icon}</div>
-                  <div className="mgmt_card_content">
-                    <h3 className="mgmt_card_title">{card.title}</h3>
-                    <div className="mgmt_card_count_row">
-                      <span className="mgmt_card_count">{count}</span>
+            return (
+              <Col xs={24} sm={12} lg={12} xl={6} key={card.id}>
+                <div
+                  className={`mgmt_card mgmt_card_clickable mgmt_theme_${card.theme}`}
+                  onClick={() => handleCardClick(card)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                      handleCardClick(card);
+                  }}
+                >
+                  <div className="mgmt_card_top_row">
+                    <div className="mgmt_card_icon_circle">{card.icon}</div>
+                    <div className="mgmt_card_content">
+                      <h3 className="mgmt_card_title">{card.title}</h3>
+                      <div className="mgmt_card_count_row">
+                        <span className="mgmt_card_count">{count}</span>
+                      </div>
+                      <p className="mgmt_card_subtext">{card.subtext}</p>
                     </div>
-                    <p className="mgmt_card_subtext">{card.subtext}</p>
+                  </div>
+
+                  <div className="mgmt_card_footer">
+                    <span className="mgmt_card_action_hint">
+                      View Report{" "}
+                      <FiArrowRight className="mgmt_card_action_arrow" />
+                    </span>
                   </div>
                 </div>
-
-                <div className="mgmt_card_footer">
-                  <span className="mgmt_card_action_hint">
-                    View Report{" "}
-                    <FiArrowRight className="mgmt_card_action_arrow" />
-                  </span>
-                </div>
-              </div>
-            </Col>
-          );
-        })}
-      </Row>
+              </Col>
+            );
+          })}
+        </Row>
+      )}
     </div>
   );
 }

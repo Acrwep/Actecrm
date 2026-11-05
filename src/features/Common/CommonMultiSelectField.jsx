@@ -42,6 +42,26 @@ export default function CommonMultiSelectField({
     onBlurRef.current = onBlur;
   }, [onBlur]);
 
+  const blurTimerRef = React.useRef(null);
+  const triggerBlur = React.useCallback((event) => {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current);
+    }
+    blurTimerRef.current = setTimeout(() => {
+      if (onBlurRef.current) {
+        onBlurRef.current(event);
+      }
+    }, 60);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (blurTimerRef.current) {
+        clearTimeout(blurTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleKeyDown = (event) => {
     onKeyDown?.(event);
     if (event.key === "Enter") {
@@ -132,7 +152,13 @@ export default function CommonMultiSelectField({
               // Do not clear search word when item is selected
             }
           }}
-          onClose={() => setInputValue("")}
+          onClose={(event, reason) => {
+            setInputValue("");
+            triggerBlur(event);
+          }}
+          onBlur={(event) => {
+            triggerBlur(event);
+          }}
           onKeyDown={handleKeyDown}
           getOptionLabel={(option) =>
             showLabelStatus === "Name"
@@ -198,7 +224,7 @@ export default function CommonMultiSelectField({
                 onFocus={onFocus}
                 onBlur={(event) => {
                   setInputValue("");
-                  onBlur?.(event);
+                  triggerBlur(event);
                 }}
               />
             );
@@ -288,13 +314,7 @@ export default function CommonMultiSelectField({
                   if (onChange) {
                     onChange({ target: { value: [], options: [] } });
                   }
-                  if (onBlur) {
-                    setTimeout(() => {
-                      if (onBlurRef.current) {
-                        onBlurRef.current();
-                      }
-                    }, 150);
-                  }
+                  triggerBlur();
                 }}
                 sx={{
                   height: "22px",

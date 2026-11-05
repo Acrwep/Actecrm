@@ -1503,6 +1503,15 @@ export const getUsersByRole = async (payload) => {
     throw error;
   }
 };
+
+export const getUsersByTheirRole = async (payload) => {
+  try {
+    const response = await api.post(`/api/getUsersByRoleId`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //dashboard api's
 export const updateDashboardDates = async (payload) => {
   try {

@@ -7,7 +7,7 @@ import {
   getAllDownlineUsers,
   getBranches,
   getPreSalesReportsCounts,
-  getUsers,
+  getUsersByTheirRole,
 } from "../ApiService/action";
 import dayjs from "dayjs";
 import jsPDF from "jspdf";
@@ -492,12 +492,17 @@ export default function PreSalesReports({
   const regionOptions = useSelector((state) => state.globalregionslist);
 
   const prevSelectedUserIdRef = useRef("[]");
+  const selectedUserIdRef = useRef([]);
   const reportContentRef = useRef(null);
 
   //filter usestated
   const [selectedDates, setSelectedDates] = useState([]);
   const [saleUsers, setSaleUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
+
+  useEffect(() => {
+    selectedUserIdRef.current = selectedUserId;
+  }, [selectedUserId]);
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
@@ -561,17 +566,31 @@ export default function PreSalesReports({
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       console.log("downlineUsers", downlineUsers);
-      getSaleUsersData(null, null, false);
+      setSelectedDates(summaryStartAndEndDate);
+      fetchSalesUsersData({
+        startDate: summaryStartAndEndDate[0],
+        endDate: summaryStartAndEndDate[1],
+        regionId: null,
+        branchId: null,
+      });
     }
   }, [childUsers]);
 
-  const getSaleUsersData = async (regionId, branchId, isRefresh = false) => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    if (isRefresh) {
-      setSelectedDates(PreviousAndCurrentDate);
-    } else {
-      setSelectedDates(summaryStartAndEndDate);
-    }
+  const fetchSalesUsersData = async (overrides = {}) => {
+    getSaleUsersData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+    );
+  };
+
+  const getSaleUsersData = async (startDate, endDate, regionId, branchId) => {
+    setIsLoading(true);
     const payload = {
       roles: [saleRoleId],
       ...(regionId && { region_id: regionId }),
@@ -580,9 +599,9 @@ export default function PreSalesReports({
       limit: 1000,
     };
     try {
-      const response = await getUsers(payload);
+      const response = await getUsersByTheirRole(payload);
       console.log("get sale users response", response);
-      const sale_users = response?.data?.data?.data || [];
+      const sale_users = response?.data?.data || [];
 
       const saleDownlines = downlineUsers.filter((downline) =>
         sale_users.some((user) => user.user_id === downline.user_id),
@@ -591,15 +610,11 @@ export default function PreSalesReports({
       setSaleUsers(saleDownlines);
 
       fetchPreSalesData({
-        startDate: isRefresh
-          ? PreviousAndCurrentDate[0]
-          : summaryStartAndEndDate[0],
-        endDate: isRefresh
-          ? PreviousAndCurrentDate[1]
-          : summaryStartAndEndDate[1],
+        startDate: startDate,
+        endDate: endDate,
         regionId: regionId,
         branchId: branchId,
-        user_ids: sale_users.map((su) => su.user_id),
+        user_ids: saleDownlines.map((su) => su.user_id),
       });
     } catch (error) {
       setSaleUsers([]);
@@ -619,7 +634,9 @@ export default function PreSalesReports({
       overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
       overrides.user_ids !== undefined
         ? overrides.user_ids
-        : saleUsers.map((su) => su.user_id),
+        : (selectedUserIdRef.current || selectedUserId).length >= 1
+          ? selectedUserIdRef.current || selectedUserId
+          : saleUsers.map((su) => su.user_id),
     );
   };
 
@@ -761,7 +778,8 @@ export default function PreSalesReports({
             parent: "SMO",
             count: parseInt(ssc.whatsapp_smo ?? 0),
           },
-        ].sort((a, b) => b.count - a.count);
+        ];
+        // .sort((a, b) => b.count - a.count);
 
         // Build interested subcategories
         const interestedSubs = [
@@ -773,49 +791,39 @@ export default function PreSalesReports({
           { name: "Hot", count: parseInt(ila.hot ?? 0), color: "#ea580c" },
           { name: "Warm", count: parseInt(ila.warm ?? 0), color: "#eab308" },
           { name: "Cold", count: parseInt(ila.cold ?? 0), color: "#3b82f6" },
-          { name: "Dormant", count: parseInt(ila.cold ?? 0), color: "#6b7280" },
+          {
+            name: "Dormant",
+            count: parseInt(ila.dormant ?? 0),
+            color: "#6b7280",
+          },
           {
             name: "Not Interested",
-            count: parseInt(ila.cold ?? 0),
+            count: parseInt(ila.not_interested ?? 0),
             color: "#991b1b",
           },
         ];
-        if (parseInt(ila.dormant ?? 0) > 0) {
-          interestedSubs.push({
-            name: "Dormant",
-            count: parseInt(ila.dormant),
-            color: "#6b7280",
-          });
-        }
-        if (parseInt(ila.not_interested ?? 0) > 0) {
-          interestedSubs.push({
-            name: "Not Interested",
-            count: parseInt(ila.not_interested),
-            color: "#94a3b8",
-          });
-        }
 
         // Build followup subcategories
         const followupSubs = [
           {
             name: "Sales Ready",
             count: parseInt(nfa.sales_ready_leads ?? 0),
-            color: "#16a34a",
+            color: "#DC2626",
           },
           {
             name: "Highly Interested",
             count: parseInt(nfa.highly_interested_leads ?? 0),
-            color: "#059669",
+            color: "#F97416",
           },
           {
             name: "Interested",
             count: parseInt(nfa.interested_leads ?? 0),
-            color: "#0284c7",
+            color: "#EAB208",
           },
           {
             name: "Exploring",
             count: parseInt(nfa.exploring_leads ?? 0),
-            color: "#8b5cf6",
+            color: "#3B83F6",
           },
           {
             name: "Not Responding",
@@ -913,11 +921,15 @@ export default function PreSalesReports({
 
   const handleSelectUser = async (e) => {
     const value = e.target.value;
+    selectedUserIdRef.current = value;
     setSelectedUserId(value);
   };
 
   const handleSelectUserBlur = async () => {
-    const value = selectedUserId;
+    const value =
+      selectedUserIdRef.current !== undefined
+        ? selectedUserIdRef.current
+        : selectedUserId;
 
     const stringifiedValue = JSON.stringify(value || []);
     if (prevSelectedUserIdRef.current === stringifiedValue) {
@@ -930,12 +942,15 @@ export default function PreSalesReports({
     if (Array.isArray(value) && value.length <= 0) {
       const payload = {
         roles: [saleRoleId],
+        ...(selectedRegionId && { region_id: selectedRegionId }),
+        ...(selectedBranchId && { branch_id: selectedBranchId }),
         page: 1,
         limit: 1000,
       };
       try {
-        const response = await getUsers(payload);
-        const sale_users = response?.data?.data?.data || [];
+        const response = await getUsersByTheirRole(payload);
+        const sale_users = response?.data?.data || [];
+        console.log("user search sale users", sale_users);
 
         if (sale_users.length >= 1) {
           const saleDownlines = downlineUsers.filter((downline) =>
@@ -943,7 +958,7 @@ export default function PreSalesReports({
           );
           setSaleUsers(saleDownlines);
           fetchPreSalesData({
-            user_ids: sale_users.map((su) => su.user_id),
+            user_ids: saleDownlines.map((su) => su.user_id),
           });
         } else {
           setSaleUsers([]);
@@ -993,8 +1008,14 @@ export default function PreSalesReports({
     setSelectedBranchId(null);
     setFilterBranchOptions([]);
     prevSelectedUserIdRef.current = "[]";
+    selectedUserIdRef.current = [];
     setSelectedUserId([]);
-    getSaleUsersData(null, null, true);
+    fetchSalesUsersData({
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+      regionId: null,
+      branchId: null,
+    });
   };
 
   // Helper calculations for rates & conversion
@@ -1424,7 +1445,7 @@ export default function PreSalesReports({
         </div>
       </div>
 
-      <Row gutter={[0, 24]} style={{ marginTop: "0px" }}>
+      <Row gutter={[12, 8]} style={{ marginTop: "0px" }}>
         <Col xs={24} sm={24} md={24} lg={20}>
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1.5 1 0%">
@@ -1449,9 +1470,14 @@ export default function PreSalesReports({
                   const value = e.target.value;
                   setSelectedRegionId(value);
                   setSelectedBranchId(null);
+                  prevSelectedUserIdRef.current = "[]";
+                  selectedUserIdRef.current = [];
                   setSelectedUserId([]);
+                  fetchSalesUsersData({
+                    regionId: value,
+                    branchId: null,
+                  });
                   if (value) {
-                    getSaleUsersData(value, null);
                     getBranchesData(value);
                   } else {
                     setFilterBranchOptions([]);
@@ -1471,8 +1497,13 @@ export default function PreSalesReports({
                 onChange={(e) => {
                   const value = e.target.value;
                   setSelectedBranchId(value);
+                  prevSelectedUserIdRef.current = "[]";
+                  selectedUserIdRef.current = [];
                   setSelectedUserId([]);
-                  getSaleUsersData(selectedRegionId, value);
+                  fetchSalesUsersData({
+                    regionId: selectedRegionId,
+                    branchId: value,
+                  });
                 }}
                 value={selectedBranchId}
                 disableClearable={false}
