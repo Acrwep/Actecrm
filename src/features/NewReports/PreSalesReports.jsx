@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles.css";
-import { Button, Col, Divider, Row, Tooltip, Skeleton } from "antd";
+import { Button, Col, Divider, Row, Tooltip, Skeleton, Dropdown } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
   getAllDownlineUsers,
+  getBranches,
   getPreSalesReportsCounts,
-  getUsersByRole,
+  getUsers,
 } from "../ApiService/action";
 import dayjs from "dayjs";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import * as XLSX from "xlsx";
 import {
   FiUsers,
   FiActivity,
@@ -24,12 +28,17 @@ import {
   FiPhoneForwarded,
   FiPhoneMissed,
   FiCheckCircle,
+  FiFileText,
+  FiTable,
 } from "react-icons/fi";
 import { TbReportAnalytics, TbTargetArrow } from "react-icons/tb";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
+import moment from "moment";
+import { useSelector } from "react-redux";
+import CommonSelectField from "../Common/CommonSelectField";
 
 /**
  * Dedicated Skeleton Loader for Pre-Sales Reports
@@ -81,16 +90,33 @@ function PreSalesReportsSkeleton() {
                   alignItems: "center",
                 }}
               >
-                <Skeleton.Button
-                  active
-                  size="small"
-                  style={{ width: 95, height: 22, borderRadius: 12 }}
-                />
-                <Skeleton.Input
-                  active
-                  size="small"
-                  style={{ width: 55, height: 12 }}
-                />
+                {i === 3 ? (
+                  <>
+                    <Skeleton.Button
+                      active
+                      size="small"
+                      style={{ width: 100, height: 22, borderRadius: 12 }}
+                    />
+                    <Skeleton.Button
+                      active
+                      size="small"
+                      style={{ width: 90, height: 22, borderRadius: 12 }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Skeleton.Button
+                      active
+                      size="small"
+                      style={{ width: 95, height: 22, borderRadius: 12 }}
+                    />
+                    <Skeleton.Input
+                      active
+                      size="small"
+                      style={{ width: 55, height: 12 }}
+                    />
+                  </>
+                )}
               </div>
             </div>
           </Col>
@@ -452,26 +478,46 @@ function PreSalesReportsSkeleton() {
   );
 }
 
-export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
-  const prevSelectedUserIdRef = useRef("[]");
+export default function PreSalesReports({
+  onBack,
+  summaryStartAndEndDate,
+  saleRoleId,
+}) {
+  const mounted = useRef(false);
+  //permissions
+  const permissions = useSelector((state) => state.userpermissions);
+  const childUsers = useSelector((state) => state.childusers);
+  const downlineUsers = useSelector((state) => state.downlineusers);
+  //regions
+  const regionOptions = useSelector((state) => state.globalregionslist);
 
-  // Default to last 7 days to match CommonMuiCustomDatePicker's initial state
+  const prevSelectedUserIdRef = useRef("[]");
+  const reportContentRef = useRef(null);
+
+  //filter usestated
   const [selectedDates, setSelectedDates] = useState([]);
   const [saleUsers, setSaleUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
-  const [loginUserId, setLoginUserId] = useState("");
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
+  //other usestates
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Pre-Sales Metric Data State
   const [reportData, setReportData] = useState({
     totalLeads: 0,
     liveLeads: 0,
     assignedLeads: 0,
+    awaitingLeads: 0,
+    consignedLeads: 0,
     openLeads: 0,
     avgTotalLeads: 0,
     avgLiveLeads: 0,
+    avgAssignLeads: 0,
     avgOpenLeads: 0,
     validLeads: 0,
     validSubcategories: [
@@ -513,42 +559,37 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
 
   // Trigger fetch when selectedDates changes
   useEffect(() => {
-    setSelectedDates(summaryStartAndEndDate);
-    getSaleUsersData();
-  }, []);
-
-  const getSaleUsersData = async () => {
-    const payload = {
-      role: "SALE",
-    };
-    try {
-      const response = await getUsersByRole(payload);
-      console.log("get sale users response", response);
-      setSaleUsers(response?.data?.data?.data || []);
-    } catch (error) {
-      setSaleUsers([]);
-      console.log("get sale users error", error);
-    } finally {
-      getAllDownlineUsersData();
+    if (childUsers.length > 0 && !mounted.current) {
+      console.log("downlineUsers", downlineUsers);
+      getSaleUsersData(null, null, false);
     }
-  };
+  }, [childUsers]);
 
-  const getAllDownlineUsersData = async (isRefresh = false) => {
-    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
-    const convertAsJson = JSON.parse(getLoginUserDetails);
-    setLoginUserId(convertAsJson?.user_id);
+  const getSaleUsersData = async (regionId, branchId, isRefresh = false) => {
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-
     if (isRefresh) {
       setSelectedDates(PreviousAndCurrentDate);
+    } else {
+      setSelectedDates(summaryStartAndEndDate);
     }
+    const payload = {
+      roles: [saleRoleId],
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
     try {
-      const response = await getAllDownlineUsers(convertAsJson?.user_id);
-      console.log("all downlines response", response);
-      const downliners = response?.data?.data || [];
-      const downliners_ids = downliners.map((u) => {
-        return u.user_id;
-      });
+      const response = await getUsers(payload);
+      console.log("get sale users response", response);
+      const sale_users = response?.data?.data?.data || [];
+
+      const saleDownlines = downlineUsers.filter((downline) =>
+        sale_users.some((user) => user.user_id === downline.user_id),
+      );
+      console.log("sale downliners", saleDownlines);
+      setSaleUsers(saleDownlines);
+
       fetchPreSalesData({
         startDate: isRefresh
           ? PreviousAndCurrentDate[0]
@@ -556,10 +597,13 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
         endDate: isRefresh
           ? PreviousAndCurrentDate[1]
           : summaryStartAndEndDate[1],
-        user_ids: downliners_ids,
+        regionId: regionId,
+        branchId: branchId,
+        user_ids: sale_users.map((su) => su.user_id),
       });
     } catch (error) {
-      console.log("all downlines error", error);
+      setSaleUsers([]);
+      console.log("get sale users error", error);
     }
   };
 
@@ -571,18 +615,32 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
       overrides.endDate !== undefined
         ? overrides.endDate
         : selectedDates?.[1] || null,
-      overrides.user_ids !== undefined ? overrides.user_ids : selectedUserId,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.user_ids !== undefined
+        ? overrides.user_ids
+        : saleUsers.map((su) => su.user_id),
     );
   };
 
   // Fetch report counts from backend API
-  const getPreSalesReportsData = async (startDate, endDate, user_ids) => {
+  const getPreSalesReportsData = async (
+    startDate,
+    endDate,
+    regionId,
+    branchId,
+    user_ids,
+  ) => {
     setIsLoading(true);
     // Only pass start_date and end_date as requested
     const payload = {
       start_date: startDate,
       end_date: endDate,
-      ...(user_ids && user_ids.length >= 1 ? { user_ids: user_ids } : {}),
+      ...(regionId && { region: regionId }),
+      ...(branchId && { branch: branchId }),
+      ...(user_ids && user_ids.length >= 1
+        ? { user_ids: user_ids }
+        : { user_ids: [] }),
     };
 
     try {
@@ -600,12 +658,19 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
         const ila = apiData.interested_lead_actions || {};
         const nfa = apiData.followup_actions || {};
         const tfups = apiData.followup_leads || {};
+        const alc = apiData.assign_leads_counts || {};
         const avg = apiData.average || {};
         const pct = apiData.percentage || {};
 
         const totalLeads = parseInt(bc.all ?? 0);
         const openLeads = parseInt(bc.open_leads ?? 0);
-        const assignedLeads = Math.max(0, totalLeads - openLeads);
+        const assignedLeads = parseInt(
+          alc.assign_leads != null
+            ? alc.assign_leads
+            : Math.max(0, totalLeads - openLeads),
+        );
+        const awaitingLeads = parseInt(alc.awaiting_leads ?? 0);
+        const consignedLeads = parseInt(alc.consigned_leads ?? 0);
 
         // Sources formatting & share calculation
         const rawSources = [
@@ -770,6 +835,8 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
           totalLeads: totalLeads,
           liveLeads: parseInt(bc.website_leads ?? 0),
           assignedLeads: assignedLeads,
+          awaitingLeads: awaitingLeads,
+          consignedLeads: consignedLeads,
           openLeads: openLeads,
           avgTotalLeads: avg.all != null ? avg.all : "-",
           avgLiveLeads:
@@ -778,6 +845,7 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
               : parseInt(bc.website_leads ?? 0)
                 ? (parseInt(bc.website_leads ?? 0) / 7).toFixed(1)
                 : 0,
+          avgAssignLeads: avg.assign_leads != null ? avg.assign_leads : "-",
           avgOpenLeads: avg.open_leads != null ? avg.open_leads : "-",
           validLeads: parseInt(bc.valid_leads ?? 0),
           validSubcategories: [
@@ -860,19 +928,60 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
     console.log("stringifiedValue", stringifiedValue);
 
     if (Array.isArray(value) && value.length <= 0) {
+      const payload = {
+        roles: [saleRoleId],
+        page: 1,
+        limit: 1000,
+      };
       try {
-        const response = await getAllDownlineUsers(loginUserId);
-        console.log("all downlines response", response);
-        const downliners = response?.data?.data || [];
-        const downliners_ids = downliners.map((u) => {
-          return u.user_id;
-        });
-        fetchPreSalesData({ user_ids: downliners_ids });
+        const response = await getUsers(payload);
+        const sale_users = response?.data?.data?.data || [];
+
+        if (sale_users.length >= 1) {
+          const saleDownlines = downlineUsers.filter((downline) =>
+            sale_users.some((user) => user.user_id === downline.user_id),
+          );
+          setSaleUsers(saleDownlines);
+          fetchPreSalesData({
+            user_ids: sale_users.map((su) => su.user_id),
+          });
+        } else {
+          setSaleUsers([]);
+        }
       } catch (error) {
-        console.log("all downlines error", error);
+        console.log("get sale users error", error);
+        setSaleUsers([]);
       }
     } else {
       fetchPreSalesData({ user_ids: value });
+    }
+  };
+
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
+    try {
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setFilterBranchOptions(reordered);
+        } else {
+          setFilterBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setFilterBranchOptions([]);
+      }
+    } catch (error) {
+      setFilterBranchOptions([]);
+      console.log("response status error", error);
     }
   };
 
@@ -880,9 +989,12 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
+    setSelectedRegionId(null);
+    setSelectedBranchId(null);
+    setFilterBranchOptions([]);
     prevSelectedUserIdRef.current = "[]";
     setSelectedUserId([]);
-    getAllDownlineUsersData(true);
+    getSaleUsersData(null, null, true);
   };
 
   // Helper calculations for rates & conversion
@@ -913,9 +1025,9 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
     : "0.0";
 
   // Follow-up Activity & Status calculations
-  const totalFollowups = Number(reportData.totalFollowups ?? 485);
-  const handledFollowups = Number(reportData.handledFollowups ?? 412);
-  const unhandledFollowups = Number(reportData.unhandledFollowups ?? 73);
+  const totalFollowups = Number(reportData.totalFollowups ?? 0);
+  const handledFollowups = Number(reportData.handledFollowups ?? 0);
+  const unhandledFollowups = Number(reportData.unhandledFollowups ?? 0);
 
   const followupHandledRate =
     totalFollowups > 0
@@ -929,7 +1041,317 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
   // Average count metrics for Lead Inflow & Allocation cards
   const avgTotalLeads = reportData.avgTotalLeads ?? 0;
   const avgLiveLeads = reportData.avgLiveLeads ?? 0;
+  const avgAssignLeads = reportData.avgAssignLeads ?? 0;
   const avgOpenLeads = reportData.avgOpenLeads ?? 0;
+
+  // Helper to format date strings for filenames
+  const getFormattedDateString = () => {
+    const start = selectedDates?.[0]
+      ? moment(selectedDates[0]).format("DD-MM-YYYY")
+      : "start";
+    const end = selectedDates?.[1]
+      ? moment(selectedDates[1]).format("DD-MM-YYYY")
+      : "end";
+    return `${start}_to_${end}`;
+  };
+
+  // ==========================================================================
+  // Export Feature: Download as CSV
+  // ==========================================================================
+  const handleDownloadCSV = () => {
+    if (isLoading) {
+      CommonMessage("warning", "Please wait for report data to finish loading");
+      return;
+    }
+
+    try {
+      const startDate = selectedDates?.[0] || "N/A";
+      const endDate = selectedDates?.[1] || "N/A";
+
+      const rows = [
+        ["ACTE CRM - PRE-SALES PERFORMANCE & CONVERSION REPORT"],
+        [
+          "Date Range",
+          `${startDate ? moment(startDate).format("DD/MM/YYYY") : "-"} to ${endDate ? moment(endDate).format("DD/MM/YYYY") : "-"}`,
+        ],
+        ["Generated On", moment().format("DD MMM YYYY, hh:mm:ss A")],
+        [""],
+
+        // 1. LEAD INFLOW & ALLOCATION
+        ["--- 1. LEAD INFLOW & ALLOCATION (TOP OF FUNNEL) ---", "", "", ""],
+        ["Metric", "Total Count", "Daily Average", "Notes / Breakdown"],
+        [
+          "Total Leads",
+          reportData.totalLeads ?? 0,
+          avgTotalLeads,
+          "100% Inbound Volume",
+        ],
+        [
+          "Picked from Live Leads",
+          reportData.liveLeads ?? 0,
+          avgLiveLeads,
+          "Real-time Inflow",
+        ],
+        [
+          "Picked from Assigned Leads",
+          reportData.assignedLeads ?? 0,
+          avgAssignLeads,
+          `Awaiting: ${reportData.awaitingLeads ?? 0} | Consigned: ${reportData.consignedLeads ?? 0}`,
+        ],
+        [
+          "  - Consigned Leads",
+          reportData.consignedLeads ?? 0,
+          "-",
+          "Consigned to Sale Executive",
+        ],
+        [
+          "  - Awaiting Leads",
+          reportData.awaitingLeads ?? 0,
+          "-",
+          "Awaiting Sale Executive Action",
+        ],
+        [
+          "Picked from Open Leads",
+          reportData.openLeads ?? 0,
+          avgOpenLeads,
+          "Pending Assignment",
+        ],
+        [""],
+
+        // 2. LEAD QUALIFICATION & CONVERSION LIFECYCLE
+        ["--- 2. LEAD QUALIFICATION & CONVERSION LIFECYCLE ---", "", "", ""],
+        ["Stage", "Volume Count", "Conversion Rate"],
+        [
+          "1. Valid Leads",
+          reportData.validLeads ?? 0,
+          `${validRate}% of Total`,
+        ],
+        [
+          "2. Eligible Leads",
+          reportData.eligibleLeads ?? 0,
+          `${eligibleRate}% of Valid`,
+        ],
+        [
+          "3. Interested Leads",
+          reportData.interestedLeads ?? 0,
+          `${interestedRate}% of Eligible`,
+        ],
+        [
+          "4. Nxt Follow-up Leads",
+          reportData.nextFollowupLeads ?? 0,
+          "Active Nurturing",
+        ],
+        [
+          "5. Joining Count",
+          reportData.joiningCount ?? 0,
+          `${joiningFromInterestedRate}% Win Rate`,
+        ],
+        [""],
+
+        // 3. SUBCATEGORY BREAKDOWN
+        ["--- 3. SUBCATEGORY BREAKDOWN BY STAGE ---", "", "", ""],
+        ["Main Stage", "Subcategory", "Volume Count"],
+        ...(reportData.validSubcategories || []).map((sub) => [
+          "Valid Leads",
+          sub.name,
+          sub.count,
+        ]),
+        ...(reportData.eligibleSubcategories || []).map((sub) => [
+          "Eligible Leads",
+          sub.name,
+          sub.count,
+        ]),
+        ...(reportData.interestedSubcategories || []).map((sub) => [
+          "Interested Leads",
+          sub.name,
+          sub.count,
+        ]),
+        ...(reportData.nxtFollowupSubcategories || []).map((sub) => [
+          "Nxt Follow-up Leads",
+          sub.name,
+          sub.count,
+        ]),
+        [""],
+
+        // 4. FOLLOW-UP ACTIVITY & EXECUTION
+        ["--- 4. FOLLOW-UP ACTIVITY & STATUS ---", "", "", ""],
+        ["Follow-up Category", "Volume Count", "Rate %"],
+        ["Total Follow-ups", totalFollowups, "100%"],
+        ["Handled Follow-ups", handledFollowups, `${followupHandledRate}%`],
+        [
+          "Un-Handled Follow-ups",
+          unhandledFollowups,
+          `${followupUnhandledRate}%`,
+        ],
+        [""],
+
+        // 5. ACQUISITION CHANNELS (SOURCES)
+        ["--- 5. ACQUISITION CHANNEL ATTRIBUTION (SOURCES) ---", "", "", ""],
+        ["Source Channel", "Leads Count", "Share %"],
+        ...(reportData.leadSources || []).map((src) => [
+          src.name,
+          src.count,
+          `${src.share}%`,
+        ]),
+        [""],
+
+        // 6. ACQUISITION SUB-SOURCES
+        ["--- 6. ACQUISITION SUB-SOURCES ATTRIBUTION ---", "", "", ""],
+        ["Sub-Source Name", "Parent Channel", "Leads Count"],
+        ...(reportData.leadSubSources || []).map((sub) => [
+          sub.name,
+          sub.parent,
+          sub.count,
+        ]),
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet(rows);
+      const csvString = XLSX.utils.sheet_to_csv(worksheet);
+
+      // Add UTF-8 BOM so Excel opens properly without encoding issues
+      const blob = new Blob(["\uFEFF" + csvString], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const filename = `PreSales_Report_${getFormattedDateString()}.csv`;
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      CommonMessage("success", "Pre-Sales CSV report exported successfully!");
+    } catch (error) {
+      console.error("CSV Export Error:", error);
+      CommonMessage("error", "Failed to export CSV report");
+    }
+  };
+
+  // ==========================================================================
+  // Export Feature: Download as PDF
+  // ==========================================================================
+  const handleDownloadPDF = async () => {
+    if (isLoading) {
+      CommonMessage("warning", "Please wait for report data to finish loading");
+      return;
+    }
+    if (!reportContentRef.current) return;
+
+    try {
+      setIsExporting(true);
+      CommonMessage("loading", "Preparing Pre-Sales PDF report...");
+
+      // Small delay to allow state and DOM to render export banner
+      await new Promise((resolve) => setTimeout(resolve, 250));
+
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+
+      const element = reportContentRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        windowWidth: 1240,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+        compress: true,
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      const margin = 10;
+      const printWidth = pageWidth - margin * 2; // 190mm
+      const printHeight = (canvas.height * printWidth) / canvas.width;
+
+      let heightLeft = printHeight;
+      let position = margin;
+
+      pdf.addImage(
+        imgData,
+        "PNG",
+        margin,
+        position,
+        printWidth,
+        printHeight,
+        undefined,
+        "FAST",
+      );
+      heightLeft -= pageHeight - margin * 2;
+
+      while (heightLeft > 0) {
+        position = heightLeft - printHeight + margin;
+        pdf.addPage();
+        pdf.addImage(
+          imgData,
+          "PNG",
+          margin,
+          position,
+          printWidth,
+          printHeight,
+          undefined,
+          "FAST",
+        );
+        heightLeft -= pageHeight - margin * 2;
+      }
+
+      const filename = `PreSales_Report_${getFormattedDateString()}.pdf`;
+      pdf.save(filename);
+
+      CommonMessage("success", "Pre-Sales PDF report downloaded successfully!");
+    } catch (error) {
+      console.error("PDF Export Error:", error);
+      CommonMessage("error", "Failed to generate PDF report");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Dropdown menu items for export
+  const downloadMenuItems = [
+    {
+      key: "pdf",
+      label: (
+        <div className="presales_export_menu_item">
+          <div className="presales_export_icon_box presales_export_icon_pdf">
+            <FiFileText />
+          </div>
+          <div className="presales_export_text_box">
+            <span className="presales_export_title">Download as PDF</span>
+          </div>
+        </div>
+      ),
+      onClick: handleDownloadPDF,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "csv",
+      label: (
+        <div className="presales_export_menu_item">
+          <div className="presales_export_icon_box presales_export_icon_csv">
+            <FiTable />
+          </div>
+          <div className="presales_export_text_box">
+            <span className="presales_export_title">Download as CSV</span>
+          </div>
+        </div>
+      ),
+      onClick: handleDownloadCSV,
+    },
+  ];
 
   return (
     <div className="presales_report_wrapper">
@@ -958,6 +1380,34 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
         </div>
 
         <div style={{ display: "flex", gap: "12px" }}>
+          {/* Download Dropdown Button */}
+          <Dropdown
+            menu={{ items: downloadMenuItems }}
+            trigger={["click"]}
+            placement="bottomRight"
+            disabled={isLoading || isExporting}
+          >
+            <Tooltip
+              title={
+                isExporting
+                  ? "Generating Export..."
+                  : "Export Report (PDF / CSV)"
+              }
+            >
+              <button
+                className={`presales_icon_button ${isExporting ? "is_exporting" : ""}`}
+                aria-label="Export Data"
+                disabled={isLoading || isExporting}
+              >
+                {isExporting ? (
+                  <RedoOutlined spin style={{ color: "#6366f1" }} />
+                ) : (
+                  <FiDownload />
+                )}
+              </button>
+            </Tooltip>
+          </Dropdown>
+
           {/* Refresh Button */}
           <Tooltip placement="top" title="Refresh">
             <Button
@@ -971,44 +1421,78 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
               />
             </Button>
           </Tooltip>
-
-          {/* Download Button */}
-          <Tooltip title="Export Report Data">
-            <button className="presales_icon_button" aria-label="Export Data">
-              <FiDownload />
-            </button>
-          </Tooltip>
         </div>
       </div>
 
       <Row gutter={[0, 24]} style={{ marginTop: "0px" }}>
-        <Col
-          xs={24}
-          sm={24}
-          md={24}
-          lg={14}
-          style={{ display: "flex", gap: "12px" }}
-        >
-          <CommonMuiCustomDatePicker
-            label={"Select Date"}
-            width="280px"
-            value={selectedDates}
-            onDateChange={(dates) => {
-              setSelectedDates(dates);
-              fetchPreSalesData({ startDate: dates[0], endDate: dates[1] });
-            }}
-          />
-          <CommonMultiSelectField
-            height="34px"
-            label="Select User"
-            labelMarginTop="1px"
-            labelFontSize="11px"
-            width={"200px"}
-            options={saleUsers}
-            onChange={handleSelectUser}
-            onBlur={handleSelectUserBlur}
-            value={selectedUserId}
-          />
+        <Col xs={24} sm={24} md={24} lg={20}>
+          <Row gutter={12} align="middle" wrap={false}>
+            <Col flex="1.5 1 0%">
+              <CommonMuiCustomDatePicker
+                label={"Select Date"}
+                width="100%"
+                value={selectedDates}
+                onDateChange={(dates) => {
+                  setSelectedDates(dates);
+                  fetchPreSalesData({ startDate: dates[0], endDate: dates[1] });
+                }}
+              />
+            </Col>
+            <Col flex="1 1 0%">
+              <CommonSelectField
+                height="33px"
+                label="Select Region"
+                labelMarginTop="0px"
+                labelFontSize="11px"
+                options={regionOptions}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedRegionId(value);
+                  setSelectedBranchId(null);
+                  setSelectedUserId([]);
+                  if (value) {
+                    getSaleUsersData(value, null);
+                    getBranchesData(value);
+                  } else {
+                    setFilterBranchOptions([]);
+                  }
+                }}
+                value={selectedRegionId}
+                disableClearable={false}
+              />
+            </Col>
+            <Col flex="1 1 0%">
+              <CommonSelectField
+                height="33px"
+                label="Select Branch"
+                labelMarginTop="0px"
+                labelFontSize="11px"
+                options={filterBranchOptions}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedBranchId(value);
+                  setSelectedUserId([]);
+                  getSaleUsersData(selectedRegionId, value);
+                }}
+                value={selectedBranchId}
+                disableClearable={false}
+                disabled={selectedRegionId == 3 ? true : false}
+              />
+            </Col>
+            <Col flex="1 1 0%">
+              <CommonMultiSelectField
+                height="34px"
+                label="Select User"
+                labelMarginTop="1px"
+                labelFontSize="11px"
+                width="100%"
+                options={saleUsers}
+                onChange={handleSelectUser}
+                onBlur={handleSelectUserBlur}
+                value={selectedUserId}
+              />
+            </Col>
+          </Row>
         </Col>
         <Col
           xs={24}
@@ -1030,7 +1514,77 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
       {isLoading ? (
         <PreSalesReportsSkeleton />
       ) : (
-        <>
+        <div
+          ref={reportContentRef}
+          className={`presales_printable_content ${isExporting ? "is_exporting_pdf" : ""}`}
+        >
+          {/* Dedicated PDF Export Header Banner (Rendered into PDF export) */}
+          {isExporting && (
+            <div className="presales_pdf_export_banner">
+              <div className="presales_pdf_banner_top">
+                <div>
+                  <h1 className="presales_pdf_banner_title">
+                    ACTE CRM — Pre-Sales Analytics Report
+                  </h1>
+                  <p className="presales_pdf_banner_subtitle">
+                    Comprehensive performance report on inbound leads,
+                    qualification stages, follow-up execution, and enrollment
+                    conversions.
+                  </p>
+                </div>
+                <div className="presales_pdf_banner_meta">
+                  <div>
+                    <strong>Date Period:</strong>{" "}
+                    {selectedDates?.[0]
+                      ? `${moment(selectedDates[0]).format("DD/MM/YYYY")} to ${moment(selectedDates[1]).format("DD/MM/YYYY")}`
+                      : "Current Period"}
+                  </div>
+                  <div>
+                    <strong>Generated:</strong>{" "}
+                    {moment().format("DD MMM YYYY, hh:mm A")}
+                  </div>
+                </div>
+              </div>
+              <div className="presales_pdf_banner_kpis">
+                <div className="presales_pdf_kpi_card">
+                  <span className="presales_pdf_kpi_lbl">Total Leads</span>
+                  <strong className="presales_pdf_kpi_val">
+                    {Number(reportData.totalLeads).toLocaleString("en-IN")}
+                  </strong>
+                </div>
+                <div className="presales_pdf_kpi_card">
+                  <span className="presales_pdf_kpi_lbl">Total Joinings</span>
+                  <strong
+                    className="presales_pdf_kpi_val"
+                    style={{ color: "#059669" }}
+                  >
+                    {Number(reportData.joiningCount).toLocaleString("en-IN")}
+                  </strong>
+                </div>
+                <div className="presales_pdf_kpi_card">
+                  <span className="presales_pdf_kpi_lbl">Net Conversion</span>
+                  <strong
+                    className="presales_pdf_kpi_val"
+                    style={{ color: "#059669" }}
+                  >
+                    {conversionRate}%
+                  </strong>
+                </div>
+                <div className="presales_pdf_kpi_card">
+                  <span className="presales_pdf_kpi_lbl">
+                    Follow-up Handled
+                  </span>
+                  <strong
+                    className="presales_pdf_kpi_val"
+                    style={{ color: "#0284c7" }}
+                  >
+                    {followupHandledRate}%
+                  </strong>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ====================================================================
               2. Executive Summary - Top Volume Drivers (4 Metrics)
               ==================================================================== */}
@@ -1075,7 +1629,9 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
               <div className="presales_stat_card presales_theme_emerald">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">Pick from Live Leads</p>
+                    <p className="presales_stat_label">
+                      Picked from Live Leads
+                    </p>
                     <h3 className="presales_stat_value">
                       {Number(reportData.liveLeads).toLocaleString("en-IN")}
                     </h3>
@@ -1099,10 +1655,20 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
             <Col xs={24} sm={12} md={12} lg={6}>
               <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
-                  <div>
-                    <p className="presales_stat_label">
-                      Pick from Assigned Leads
-                    </p>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="presales_card_title_row">
+                      <p className="presales_stat_label" style={{ margin: 0 }}>
+                        Picked from Assigned Leads
+                      </p>
+                      {/* {avgAssignLeads !== "-" && (
+                        <div>
+                          <span className="presales_card_mini_avg">
+                            <FiTrendingUp size={10} />
+                            <span>Avg: {avgAssignLeads}/day</span>
+                          </span>
+                        </div>
+                      )} */}
+                    </div>
                     <h3 className="presales_stat_value">
                       {Number(reportData.assignedLeads).toLocaleString("en-IN")}
                     </h3>
@@ -1111,16 +1677,30 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
                     <FiUserCheck />
                   </div>
                 </div>
-                <div className="presales_card_bottom">
-                  <span className="presales_badge">
-                    {reportData.totalLeads
-                      ? `${((reportData.assignedLeads / reportData.totalLeads) * 100).toFixed(1)}%`
-                      : "0%"}{" "}
-                    Allocated
-                  </span>
-                  <span className="presales_stat_subtext">
-                    Active counseling
-                  </span>
+                <div className="presales_card_bottom presales_assign_card_bottom">
+                  <div>
+                    <span className="presales_badge presales_badge_awaiting">
+                      <span className="presales_assign_dot dot_awaiting" />
+                      <span className="presales_assign_lbl">Awaiting:</span>
+                      <strong className="presales_assign_val">
+                        {Number(reportData.awaitingLeads).toLocaleString(
+                          "en-IN",
+                        )}
+                      </strong>
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="presales_badge presales_badge_consigned">
+                      <span className="presales_assign_dot dot_consigned" />
+                      <span className="presales_assign_lbl">Consigned:</span>
+                      <strong className="presales_assign_val">
+                        {Number(reportData.consignedLeads).toLocaleString(
+                          "en-IN",
+                        )}
+                      </strong>
+                    </span>
+                  </div>
                 </div>
               </div>
             </Col>
@@ -1130,7 +1710,9 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
               <div className="presales_stat_card presales_theme_amber">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">Pick from Open Leads</p>
+                    <p className="presales_stat_label">
+                      Picked from Open Leads
+                    </p>
                     <h3 className="presales_stat_value">
                       {Number(reportData.openLeads).toLocaleString("en-IN")}
                     </h3>
@@ -1660,7 +2242,7 @@ export default function PreSalesReports({ onBack, summaryStartAndEndDate }) {
               </div>
             </Col>
           </Row>
-        </>
+        </div>
       )}
     </div>
   );

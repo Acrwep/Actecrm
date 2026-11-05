@@ -8,14 +8,23 @@ import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 import { LuIndianRupee } from "react-icons/lu";
 import { HiOutlineAcademicCap } from "react-icons/hi2";
 import { TbReportAnalytics } from "react-icons/tb";
-import { getPreSalesReportsSummaryCounts } from "../ApiService/action";
+import {
+  getPreSalesReportsSummaryCounts,
+  getRoles,
+  getUsers,
+} from "../ApiService/action";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import { useSelector } from "react-redux";
 
 export default function NewReports() {
+  const downlineUsers = useSelector((state) => state.downlineusers);
+
   const [activeReport, setActiveReport] = useState(null);
   const [selectedDates, setSelectedDates] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [summaryCounts, setSummaryCounts] = useState(null);
+  const [saleUsers, setSaleUsers] = useState([]);
+  const [saleRoleId, setSaleRoleId] = useState(null);
 
   // Available Report Portal Cards (Compact Angle + Subtext + View Report Action)
   const reportCards = [
@@ -37,39 +46,79 @@ export default function NewReports() {
       theme: "admissions",
       available: false,
     },
-    // {
-    //   id: "revenue",
-    //   title: "Revenue Report",
-    //   count: "₹35.5L",
-    //   subtext: "Total Revenue",
-    //   icon: <LuIndianRupee />,
-    //   theme: "revenue",
-    //   available: false,
-    // },
-    // {
-    //   id: "attention",
-    //   title: "Attention Report",
-    //   count: "53",
-    //   subtext: "Total Overdue",
-    //   icon: <FiAlertCircle />,
-    //   theme: "attention",
-    //   available: false,
-    // },
   ];
 
   useEffect(() => {
-    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
-    setSelectedDates(PreviousAndCurrentDate);
-    fetchNewReportsSummary(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-    );
+    getRolesData();
   }, []);
 
-  const fetchNewReportsSummary = async (startDate, endDate) => {
+  const getRolesData = async () => {
+    try {
+      const response = await getRoles();
+      console.log("roles response", response);
+      const roles_data = response?.data?.data || [];
+
+      const sale_role_id = roles_data.find(
+        (role) => role.role_name?.toLowerCase() === "sale",
+      )?.role_id;
+      setSaleRoleId(sale_role_id);
+      getSaleUsersData(sale_role_id);
+    } catch (error) {
+      console.log("roles error", error);
+      setSaleRoleId(null);
+    }
+  };
+
+  const getSaleUsersData = async (sale_role_id) => {
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+    const payload = {
+      roles: [sale_role_id],
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsers(payload);
+      console.log("get sale users response", response);
+      const sale_users = response?.data?.data?.data || [];
+
+      const saleDownlines = downlineUsers.filter((downline) =>
+        sale_users.some((user) => user.user_id === downline.user_id),
+      );
+      console.log("sale downliners", saleDownlines);
+      setSaleUsers(saleDownlines);
+
+      fetchNewReportsSummary({
+        startDate: PreviousAndCurrentDate[0],
+        endDate: PreviousAndCurrentDate[1],
+        user_ids: sale_users.map((su) => su.user_id),
+      });
+    } catch (error) {
+      console.log("get sale users error", error);
+    }
+  };
+
+  const fetchNewReportsSummary = async (overrides = {}) => {
+    getNewReportsSummary(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.user_ids !== undefined
+        ? overrides.user_ids
+        : saleUsers.map((su) => su.user_id),
+    );
+  };
+
+  const getNewReportsSummary = async (startDate, endDate, user_ids) => {
     const payload = {
       start_date: startDate,
       end_date: endDate,
+      ...(user_ids && user_ids.length >= 1
+        ? { user_ids: user_ids }
+        : { user_ids: [] }),
     };
     try {
       const response = await getPreSalesReportsSummaryCounts(payload);
@@ -97,10 +146,11 @@ export default function NewReports() {
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    fetchNewReportsSummary(
-      PreviousAndCurrentDate[0],
-      PreviousAndCurrentDate[1],
-    );
+    fetchNewReportsSummary({
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+      user_ids: saleUsers,
+    });
   };
 
   // If user selected the Pre-Sales report, render the dedicated PreSalesReports component
@@ -109,6 +159,7 @@ export default function NewReports() {
       <PreSalesReports
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
+        saleRoleId={saleRoleId}
       />
     );
   }
@@ -151,7 +202,10 @@ export default function NewReports() {
               value={selectedDates}
               onDateChange={(dates) => {
                 setSelectedDates(dates);
-                fetchNewReportsSummary(dates[0], dates[1]);
+                fetchNewReportsSummary({
+                  startDate: dates[0],
+                  endDate: dates[1],
+                });
               }}
             />
             <Tooltip placement="top" title="Refresh">
