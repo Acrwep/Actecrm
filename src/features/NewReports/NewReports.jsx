@@ -4,6 +4,7 @@ import { Button, Col, message, Row, Tooltip, Skeleton } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PreSalesReports from "./PreSalesReports";
+import AdmissionReport from "./AdmissionReport";
 import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 import { LuIndianRupee } from "react-icons/lu";
 import { HiOutlineAcademicCap } from "react-icons/hi2";
@@ -92,11 +93,11 @@ export default function NewReports() {
     {
       id: "admissions",
       title: "Admissions Report",
-      countKey: "admission_total",
+      countKey: "joinings",
       subtext: "Total Joinings",
       icon: <HiOutlineAcademicCap />,
       theme: "admissions",
-      available: false,
+      available: true,
     },
   ];
 
@@ -194,6 +195,8 @@ export default function NewReports() {
   const handleCardClick = (card) => {
     if (card.id === "presales") {
       setActiveReport("presales");
+    } else if (card.id === "admissions") {
+      setActiveReport("admissions");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -214,6 +217,17 @@ export default function NewReports() {
   if (activeReport === "presales") {
     return (
       <PreSalesReports
+        onBack={() => setActiveReport(null)}
+        summaryStartAndEndDate={selectedDates}
+        saleRoleId={saleRoleId}
+      />
+    );
+  }
+
+  // If user selected the Admissions report, render the dedicated AdmissionReport component
+  if (activeReport === "admissions") {
+    return (
+      <AdmissionReport
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
         saleRoleId={saleRoleId}

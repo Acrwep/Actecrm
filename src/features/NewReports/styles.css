@@ -958,6 +958,7 @@
   background: #ffffff;
   border: 1px solid #d1fae5;
   font-size: 10.5px;
+  gap: 8px;
 }
 
 .presales_funnel_hero_stat_label {
@@ -965,12 +966,18 @@
   font-weight: 500;
   font-size: 10.5px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
 }
 
 .presales_funnel_hero_stat_val {
   color: #047857;
   font-weight: 700;
   font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Responsive Breakpoints for Funnel */
@@ -993,16 +1000,6 @@
     flex: 1 1 100%;
     min-width: 100%;
   }
-}
-
-.presales_funnel_hero_stat_label {
-  color: #047857;
-  font-weight: 500;
-}
-
-.presales_funnel_hero_stat_val {
-  color: #047857;
-  font-weight: 700;
 }
 
 .presales_funnel_arrow {
@@ -1425,4 +1422,234 @@
   font-size: 11px;
   color: #64748b;
   margin-top: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   Admission Report Specific Styles
+   -------------------------------------------------------------------------- */
+.admission_header_icon_box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.admission_theme_emerald .presales_stat_icon_wrapper {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.admission_theme_emerald .presales_badge {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* Top 10 Best-Selling Courses Leaderboard */
+.admission_course_card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #edf2f7;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.admission_course_card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.admission_course_card.top_1 {
+  border-color: #fde68a;
+  background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.admission_course_card.top_1:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.12);
+}
+
+.admission_course_card.top_2 {
+  border-color: #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.admission_course_card.top_3 {
+  border-color: #fed7aa;
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+}
+
+.admission_course_top_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admission_course_left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.admission_rank_badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.rank_1 {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+}
+
+.rank_2 {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(100, 116, 139, 0.3);
+}
+
+.rank_3 {
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3);
+}
+
+.rank_standard {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.admission_course_info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admission_course_title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admission_course_category {
+  font-size: 10.5px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.admission_course_count_box {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.admission_course_count {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+  letter-spacing: -0.3px;
+}
+
+.admission_course_count_lbl {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.admission_course_progress_track {
+  height: 5px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.admission_course_progress_fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.5s ease;
+}
+
+.admission_course_footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
+  padding-top: 2px;
+}
+
+.admission_course_share_pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1.5px 7px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.admission_demand_pill {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.admission_show_more_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 22px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1);
+}
+
+.admission_show_more_btn:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.18);
 }
