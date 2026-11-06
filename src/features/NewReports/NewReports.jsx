@@ -93,7 +93,7 @@ export default function NewReports() {
     {
       id: "admissions",
       title: "Admissions Report",
-      countKey: "joinings",
+      countKey: "admission_total",
       subtext: "Total Joinings",
       icon: <HiOutlineAcademicCap />,
       theme: "admissions",
