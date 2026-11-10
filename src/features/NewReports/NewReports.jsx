@@ -78,6 +78,7 @@ export default function NewReports() {
   const [summaryCounts, setSummaryCounts] = useState(null);
   const [saleDownliners, setSaleDownliners] = useState([]);
   const [saleRoleId, setSaleRoleId] = useState(null);
+  const [roleIds, setRoleIds] = useState(null);
 
   // Available Report Portal Cards (Compact Angle + Subtext + View Report Action)
   const reportCards = [
@@ -116,6 +117,20 @@ export default function NewReports() {
       const sale_role_id = roles_data.find(
         (role) => role.role_name?.toLowerCase() === "sale",
       )?.role_id;
+
+      const ra_role_id = roles_data.find(
+        (role) => role.role_name?.toLowerCase() === "ra",
+      )?.role_id;
+
+      const hr_role_id = roles_data.find(
+        (role) => role.role_name?.toLowerCase() === "hr",
+      )?.role_id;
+
+      setRoleIds({
+        sale_role_id: sale_role_id,
+        ra_role_id: ra_role_id,
+        hr_role_id: hr_role_id,
+      });
       setSaleRoleId(sale_role_id);
       getSaleUsersData(sale_role_id);
     } catch (error) {
@@ -230,7 +245,7 @@ export default function NewReports() {
       <AdmissionReport
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
-        saleRoleId={saleRoleId}
+        roleIds={roleIds}
       />
     );
   }

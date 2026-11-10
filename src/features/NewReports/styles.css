@@ -886,6 +886,9 @@
   border: 1px solid #edf2f7;
   font-size: 10.5px;
   transition: all 0.18s ease;
+  min-width: 0;
+  gap: 6px;
+  cursor: default;
 }
 
 .presales_funnel_step:hover .presales_funnel_subitem {
@@ -903,10 +906,10 @@
   gap: 5px;
   color: #475569;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-size: 10.5px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .presales_subitem_dot {
@@ -914,6 +917,15 @@
   height: 5.5px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.presales_subitem_text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  min-width: 0;
+  flex: 1;
 }
 
 .presales_funnel_subitem_count {
@@ -1452,9 +1464,9 @@
 
 /* Top 10 Best-Selling Courses Leaderboard */
 .admission_course_card {
-  background: #ffffff;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border-radius: 12px;
-  border: 1px solid #edf2f7;
+  border: 1px solid #e2e8f0;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -1482,13 +1494,23 @@
 }
 
 .admission_course_card.top_2 {
-  border-color: #e2e8f0;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-color: #fed7aa;
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+}
+
+.admission_course_card.top_2:hover {
+  border-color: #f97316;
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.12);
 }
 
 .admission_course_card.top_3 {
   border-color: #fed7aa;
   background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+}
+
+.admission_course_card.top_3:hover {
+  border-color: #ea580c;
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.12);
 }
 
 .admission_course_top_row {
@@ -1525,9 +1547,9 @@
 }
 
 .rank_2 {
-  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(100, 116, 139, 0.3);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.3);
 }
 
 .rank_3 {
@@ -1539,7 +1561,7 @@
 .rank_standard {
   background: #f1f5f9;
   color: #475569;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d2d7df;
 }
 
 .admission_course_info {
@@ -1591,6 +1613,7 @@
   border-radius: 999px;
   overflow: hidden;
   width: 100%;
+  margin-top: 4px;
 }
 
 .admission_course_progress_fill {
@@ -1606,7 +1629,7 @@
   justify-content: space-between;
   font-size: 11px;
   color: #64748b;
-  padding-top: 2px;
+  padding-top: 4px;
 }
 
 .admission_course_share_pill {

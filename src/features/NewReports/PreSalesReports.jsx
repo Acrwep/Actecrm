@@ -497,7 +497,7 @@ export default function PreSalesReports({
 
   //filter usestated
   const [selectedDates, setSelectedDates] = useState([]);
-  const [saleUsers, setSaleUsers] = useState([]);
+  const [saleDownliners, setSaleDownliners] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
 
   useEffect(() => {
@@ -603,21 +603,21 @@ export default function PreSalesReports({
       console.log("get sale users response", response);
       const sale_users = response?.data?.data || [];
 
-      const saleDownlines = downlineUsers.filter((downline) =>
+      const sale_downlines = downlineUsers.filter((downline) =>
         sale_users.some((user) => user.user_id === downline.user_id),
       );
-      console.log("sale downliners", saleDownlines);
-      setSaleUsers(saleDownlines);
+      console.log("sale downliners", sale_downlines);
+      setSaleDownliners(sale_downlines);
 
       fetchPreSalesData({
         startDate: startDate,
         endDate: endDate,
         regionId: regionId,
         branchId: branchId,
-        user_ids: saleDownlines.map((su) => su.user_id),
+        user_ids: sale_downlines.map((su) => su.user_id),
       });
     } catch (error) {
-      setSaleUsers([]);
+      setSaleDownliners([]);
       console.log("get sale users error", error);
     }
   };
@@ -636,7 +636,7 @@ export default function PreSalesReports({
         ? overrides.user_ids
         : (selectedUserIdRef.current || selectedUserId).length >= 1
           ? selectedUserIdRef.current || selectedUserId
-          : saleUsers.map((su) => su.user_id),
+          : saleDownliners.map((su) => su.user_id),
     );
   };
 
@@ -778,8 +778,7 @@ export default function PreSalesReports({
             parent: "SMO",
             count: parseInt(ssc.whatsapp_smo ?? 0),
           },
-        ];
-        // .sort((a, b) => b.count - a.count);
+        ].sort((a, b) => b.count - a.count);
 
         // Build interested subcategories
         const interestedSubs = [
@@ -953,19 +952,19 @@ export default function PreSalesReports({
         console.log("user search sale users", sale_users);
 
         if (sale_users.length >= 1) {
-          const saleDownlines = downlineUsers.filter((downline) =>
+          const sale_downlines = downlineUsers.filter((downline) =>
             sale_users.some((user) => user.user_id === downline.user_id),
           );
-          setSaleUsers(saleDownlines);
+          setSaleDownliners(sale_downlines);
           fetchPreSalesData({
-            user_ids: saleDownlines.map((su) => su.user_id),
+            user_ids: sale_downlines.map((su) => su.user_id),
           });
         } else {
-          setSaleUsers([]);
+          setSaleDownliners([]);
         }
       } catch (error) {
         console.log("get sale users error", error);
-        setSaleUsers([]);
+        setSaleDownliners([]);
       }
     } else {
       fetchPreSalesData({ user_ids: value });
@@ -1517,7 +1516,7 @@ export default function PreSalesReports({
                 labelMarginTop="1px"
                 labelFontSize="11px"
                 width="100%"
-                options={saleUsers}
+                options={saleDownliners}
                 onChange={handleSelectUser}
                 onBlur={handleSelectUserBlur}
                 value={selectedUserId}
@@ -1914,18 +1913,27 @@ export default function PreSalesReports({
 
                 <div className="presales_funnel_subitems">
                   {(reportData.nxtFollowupSubcategories || []).map((sub) => (
-                    <div className="presales_funnel_subitem" key={sub.name}>
-                      <span className="presales_funnel_subitem_name">
-                        <span
-                          className="presales_subitem_dot"
-                          style={{ background: sub.color || "#0284c7" }}
-                        />
-                        {sub.name}
-                      </span>
-                      <span className="presales_funnel_subitem_count">
-                        {Number(sub.count).toLocaleString("en-IN")}
-                      </span>
-                    </div>
+                    <Tooltip
+                      key={sub.name}
+                      title={`${sub.name}: ${Number(sub.count).toLocaleString("en-IN")}`}
+                      placement="top"
+                      mouseEnterDelay={0.1}
+                    >
+                      <div className="presales_funnel_subitem">
+                        <span className="presales_funnel_subitem_name">
+                          <span
+                            className="presales_subitem_dot"
+                            style={{ background: sub.color || "#0284c7" }}
+                          />
+                          <span className="presales_subitem_text">
+                            {sub.name}
+                          </span>
+                        </span>
+                        <span className="presales_funnel_subitem_count">
+                          {Number(sub.count).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    </Tooltip>
                   ))}
                 </div>
               </div>
@@ -2159,7 +2167,7 @@ export default function PreSalesReports({
               Channel Attribution
             </h2>
             <span className="presales_section_title_badge">
-              Source Analytics
+              Source & Sub-Source Analytics
             </span>
           </div>
 

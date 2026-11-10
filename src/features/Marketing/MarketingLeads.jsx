@@ -77,6 +77,7 @@ export default function MarketingLeads({ courseOptions }) {
   const [selectedLead, setSelectedLead] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [loginUserId, setLoginUserId] = useState("");
 
   const columns = [
     {
@@ -281,6 +282,7 @@ export default function MarketingLeads({ courseOptions }) {
   const getAllDownlineUsersData = async (user_id) => {
     const getLoginUserDetails = localStorage.getItem("loginUserDetails");
     const convertAsJson = JSON.parse(getLoginUserDetails);
+    setLoginUserId(convertAsJson?.user_id);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
 
@@ -351,8 +353,8 @@ export default function MarketingLeads({ courseOptions }) {
         : {}),
       start_date: startDate,
       end_date: endDate,
-      ...(regionId && { region_id: regionId }),
-      ...(branchId && { branch_id: branchId }),
+      ...(regionId && { region: regionId }),
+      ...(branchId && { branch: branchId }),
       user_ids: downliners,
       page: pageNumber,
       limit: limit,
@@ -422,28 +424,40 @@ export default function MarketingLeads({ courseOptions }) {
     }, 700);
   };
 
-  const handleSelectUser = (event, newValue) => {
-    setSelectedUserId(newValue);
+  const handleSelectUser = (e) => {
+    const value = e.target.value;
+    setSelectedUserId(value);
   };
 
-  const handleSelectUserBlur = () => {
-    const currentJson = JSON.stringify(selectedUserId || []);
-    if (currentJson === prevSelectedUserIdRef.current) {
+  const handleSelectUserBlur = async () => {
+    const value = selectedUserId;
+
+    const stringifiedValue = JSON.stringify(value || []);
+    if (prevSelectedUserIdRef.current === stringifiedValue) {
       return;
     }
-    prevSelectedUserIdRef.current = currentJson;
+    prevSelectedUserIdRef.current = stringifiedValue;
 
-    const user_ids = (selectedUserId || []).map((u) => u.user_id);
-    const finalDownliners =
-      user_ids.length > 0 ? user_ids : defaultAllDownliners;
-
-    setAllDownliners(finalDownliners);
-    setPagination((prev) => ({ ...prev, page: 1 }));
-
-    fetchLeadsData({
-      downliners: finalDownliners,
-      pageNumber: 1,
-    });
+    try {
+      const response = await getAllDownlineUsers(
+        Array.isArray(value) && value.length > 0 ? value : loginUserId,
+      );
+      console.log("all downlines response", response);
+      const downliners = response?.data?.data || [];
+      const downliners_ids = downliners.map((u) => {
+        return u.user_id;
+      });
+      setAllDownliners(downliners_ids);
+      setPagination({
+        page: 1,
+      });
+      fetchLeadsData({
+        downliners: downliners_ids,
+        pageNumber: 1,
+      });
+    } catch (error) {
+      console.log("all downlines error", error);
+    }
   };
 
   const handleSelectTechnology = async (e) => {
@@ -467,24 +481,42 @@ export default function MarketingLeads({ courseOptions }) {
     });
   };
 
-  const getBranchesData = async (regionId) => {
+  const getBranchesData = async (regionid) => {
+    const payload = {
+      region_id: regionid,
+    };
     try {
-      const response = await getBranches(regionId);
-      const branches = response?.data?.data || [];
-      const formatted = branches.map((b) => ({
-        id: b.id,
-        name: b.branch_name,
-      }));
-      setBranchOptions(formatted);
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+
+      if (branch_data.length >= 1) {
+        if (regionid == 1 || regionid == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setBranchOptions(reordered);
+        } else {
+          setBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setBranchOptions([]);
+      }
     } catch (error) {
       setBranchOptions([]);
-      console.log("get branch error", error);
+      console.log("response status error", error);
     }
   };
-
   const getUsersData = async (regionId, branchId) => {
+    const payload = {
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
     try {
-      const response = await getUsers(regionId, branchId);
+      const response = await getUsers(payload);
       setSubUsers(response?.data?.data?.data || []);
     } catch (error) {
       setSubUsers([]);

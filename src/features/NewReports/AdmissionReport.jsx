@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "./styles.css";
 import { Button, Col, Divider, Row, Tooltip, Skeleton, Dropdown } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import { getBranches, getUsersByTheirRole } from "../ApiService/action";
+import {
+  getBranches,
+  getUsersByTheirRole,
+  getAdmissionsReportsCounts,
+} from "../ApiService/action";
 import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -177,6 +181,152 @@ function AdmissionReportSkeleton() {
           </Col>
         ))}
       </Row>
+
+      {/* 4. Acquisition Channel Attribution Skeleton (2 Panels) */}
+      <div className="presales_section_header" style={{ marginTop: 28 }}>
+        <h2 className="presales_section_title">
+          <FiLayers style={{ color: "#6366f1" }} size={17} /> Acquisition
+          Channel Attribution
+        </h2>
+        <span className="presales_section_title_badge">Source Analytics</span>
+      </div>
+
+      <Row gutter={[16, 16]}>
+        {/* Left Panel: Sources */}
+        <Col xs={24} lg={12}>
+          <div className="presales_panel_card">
+            <div className="presales_panel_header">
+              <div className="presales_panel_title_box">
+                <Skeleton.Avatar
+                  active
+                  size={32}
+                  shape="square"
+                  style={{ borderRadius: 8 }}
+                />
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                >
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 110, height: 14 }}
+                  />
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 180, height: 11 }}
+                  />
+                </div>
+              </div>
+              <Skeleton.Button
+                active
+                size="small"
+                style={{ width: 75, height: 20, borderRadius: 12 }}
+              />
+            </div>
+
+            <div
+              className="presales_panel_body"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                paddingTop: 6,
+              }}
+            >
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <Skeleton.Avatar active size={7} shape="circle" />
+                      <Skeleton.Input
+                        active
+                        size="small"
+                        style={{ width: 90, height: 12 }}
+                      />
+                    </div>
+                    <Skeleton.Input
+                      active
+                      size="small"
+                      style={{ width: 50, height: 12 }}
+                    />
+                  </div>
+                  <Skeleton.Button
+                    active
+                    size="small"
+                    style={{ width: "100%", height: 6, borderRadius: 3 }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Col>
+
+        {/* Right Panel: Sub-Sources */}
+        <Col xs={24} lg={12}>
+          <div className="presales_panel_card">
+            <div className="presales_panel_header">
+              <div className="presales_panel_title_box">
+                <Skeleton.Avatar
+                  active
+                  size={32}
+                  shape="square"
+                  style={{ borderRadius: 8 }}
+                />
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                >
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 130, height: 14 }}
+                  />
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 200, height: 11 }}
+                  />
+                </div>
+              </div>
+              <Skeleton.Button
+                active
+                size="small"
+                style={{ width: 90, height: 20, borderRadius: 12 }}
+              />
+            </div>
+
+            <div className="presales_panel_body">
+              <div className="presales_subsource_grid">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div key={i} className="presales_subsource_row">
+                    <Skeleton.Input
+                      active
+                      size="small"
+                      style={{ width: 110, height: 13 }}
+                    />
+                    <Skeleton.Button
+                      active
+                      size="small"
+                      style={{ width: 65, height: 20, borderRadius: 12 }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Col>
+      </Row>
     </div>
   );
 }
@@ -184,7 +334,7 @@ function AdmissionReportSkeleton() {
 export default function AdmissionReport({
   onBack,
   summaryStartAndEndDate = [],
-  saleRoleId,
+  roleIds,
 }) {
   const downlineUsers = useSelector((state) => state.downlineusers) || [];
   const regionOptions = useSelector((state) => state.globalregionslist) || [];
@@ -202,10 +352,28 @@ export default function AdmissionReport({
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
   // Loading, refresh, and export states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showAllCourses, setShowAllCourses] = useState(false);
+
+  // Backend API Data State
+  const [reportData, setReportData] = useState({
+    admission: {
+      total_count: 0,
+      online_mode: 0,
+      classroom_mode: 0,
+      student_onboarding: {},
+      trainer_coordination: {},
+      progress_monitoring: {},
+      course_completion: {},
+      review_certifications: {},
+    },
+    sources: {},
+    sub_sources: {},
+    leadsCount: { all_leads: 0 },
+    courseResult: [],
+  });
 
   // Synchronize ref with selectedUserId
   useEffect(() => {
@@ -222,16 +390,99 @@ export default function AdmissionReport({
     }
   }, [summaryStartAndEndDate]);
 
-  // Load Counselors
-  useEffect(() => {
-    if (saleRoleId) {
-      fetchCounselorUsers(saleRoleId);
-    }
-  }, [saleRoleId]);
-
-  const fetchCounselorUsers = async (roleId) => {
+  // Fetch report counts from backend API
+  const getAdmissionReportsData = async (
+    startDate,
+    endDate,
+    regionId,
+    branchId,
+    user_ids,
+  ) => {
+    setIsLoading(true);
     const payload = {
-      roles: [roleId],
+      start_date: startDate
+        ? moment(startDate).format("YYYY-MM-DD")
+        : selectedDates?.[0]
+          ? moment(selectedDates[0]).format("YYYY-MM-DD")
+          : undefined,
+      end_date: endDate
+        ? moment(endDate).format("YYYY-MM-DD")
+        : selectedDates?.[1]
+          ? moment(selectedDates[1]).format("YYYY-MM-DD")
+          : undefined,
+      ...(regionId && { region: regionId }),
+      ...(branchId && { branch: branchId }),
+      ...(user_ids && user_ids.length >= 1
+        ? { user_ids: user_ids }
+        : { user_ids: [] }),
+    };
+
+    try {
+      const response = await getAdmissionsReportsCounts(payload);
+      console.log("admissions report response", response);
+      const apiData = response?.data?.data || response?.data || {};
+
+      if (apiData) {
+        setReportData({
+          admission: apiData.admission || {},
+          sources: apiData.sources || {},
+          sub_sources: apiData.sub_sources || {},
+          leadsCount: apiData.leadsCount || { all_leads: 0 },
+          courseResult: Array.isArray(apiData.courseResult)
+            ? apiData.courseResult
+            : [],
+        });
+      }
+    } catch (error) {
+      console.log("get admissions reports error", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+        "Failed to fetch admissions report data";
+      CommonMessage("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  const fetchAdmissionData = (overrides = {}) => {
+    getAdmissionReportsData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.user_ids !== undefined
+        ? overrides.user_ids
+        : (selectedUserIdRef.current || selectedUserId).length >= 1
+          ? selectedUserIdRef.current || selectedUserId
+          : counselorUsers.map((su) => su.user_id),
+    );
+  };
+
+  const fetchCounselorUsersData = async (overrides = {}) => {
+    const regionId =
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId;
+    const branchId =
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId;
+    const startDate =
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null;
+    const endDate =
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null;
+
+    setIsLoading(true);
+    const payload = {
+      roles: [roleIds.sale_role_id, roleIds.ra_role_id, roleIds.hr_role_id],
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
       page: 1,
       limit: 1000,
     };
@@ -241,12 +492,34 @@ export default function AdmissionReport({
       const downlines = downlineUsers.filter((downline) =>
         users.some((user) => user.user_id === downline.user_id),
       );
-      setCounselorUsers(downlines.length > 0 ? downlines : users);
+      const activeCounselors = downlines.length > 0 ? downlines : users;
+      setCounselorUsers(activeCounselors);
+
+      getAdmissionReportsData(
+        startDate,
+        endDate,
+        regionId,
+        branchId,
+        activeCounselors.map((su) => su.user_id),
+      );
     } catch (error) {
       console.log("get counselor users error", error);
       setCounselorUsers([]);
+      getAdmissionReportsData(startDate, endDate, regionId, branchId, []);
     }
   };
+
+  // Initial Counselor Load & Data Fetch
+  useEffect(() => {
+    if (roleIds) {
+      fetchCounselorUsersData({
+        startDate: summaryStartAndEndDate?.[0] || selectedDates?.[0],
+        endDate: summaryStartAndEndDate?.[1] || selectedDates?.[1],
+        regionId: null,
+        branchId: null,
+      });
+    }
+  }, [roleIds]);
 
   const getBranchesData = async (regionId) => {
     const payload = { region_id: regionId };
@@ -275,7 +548,6 @@ export default function AdmissionReport({
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setIsLoading(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
     setSelectedRegionId(null);
@@ -284,12 +556,12 @@ export default function AdmissionReport({
     prevSelectedUserIdRef.current = "[]";
     selectedUserIdRef.current = [];
     setSelectedUserId([]);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      CommonMessage("success", "Admissions Report refreshed");
-    }, 450);
+    fetchCounselorUsersData({
+      startDate: PreviousAndCurrentDate[0],
+      endDate: PreviousAndCurrentDate[1],
+      regionId: null,
+      branchId: null,
+    });
   };
 
   const handleSelectUser = async (e) => {
@@ -310,153 +582,157 @@ export default function AdmissionReport({
     }
     prevSelectedUserIdRef.current = stringifiedValue;
 
-    // Simulate filtering update
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 350);
+    if (Array.isArray(value) && value.length <= 0) {
+      fetchCounselorUsersData();
+    } else {
+      fetchAdmissionData({ user_ids: value });
+    }
   };
 
   // ---------------------------------------------------------------------------
-  // Data Model for Admission Report
+  // Dynamic Data Model for Admission Report (Derived from API state)
   // ---------------------------------------------------------------------------
-  const admissionReportData = {
-    // 1. Admission Summary KPIs
-    totalAdmissions: 142,
-    netConversionRate: 21.8,
-    directWalkinAdmissions: 58,
-    onlineAdmissions: 84,
-    dailyAverage: 4.7,
+  const admissionReportData = useMemo(() => {
+    const admission = reportData?.admission || {};
+    const sources = reportData?.sources || {};
+    const sub_sources = reportData?.sub_sources || {};
+    const leadsCount = reportData?.leadsCount || {};
+    const courseResult = reportData?.courseResult || [];
 
-    // 2. Top 10 Best-Selling Courses
-    topCourses: [
-      {
-        rank: 1,
-        name: "Full Stack Python Developer",
-        category: "Software Development",
-        count: 28,
-        share: 19.7,
-        demand: "🔥 Highest Enrolled",
-        trend: "+15% MoM",
-      },
-      {
-        rank: 2,
-        name: "AWS Cloud & DevOps Engineering",
-        category: "Cloud Computing",
-        count: 24,
-        share: 16.9,
-        demand: "🔥 High Demand",
-        trend: "+12% MoM",
-      },
-      {
-        rank: 3,
-        name: "Data Science & Artificial Intelligence",
-        category: "Data & AI",
-        count: 21,
-        share: 14.8,
-        demand: "🔥 High Demand",
-        trend: "+18% MoM",
-      },
-      {
-        rank: 4,
-        name: "Java Full Stack Development",
-        category: "Software Development",
-        count: 17,
-        share: 12.0,
-        demand: "▲ Consistent",
-        trend: "+8% MoM",
-      },
-      {
-        rank: 5,
-        name: "MERN Stack Web Development",
-        category: "Web Development",
-        count: 14,
-        share: 9.9,
-        demand: "▲ Growing",
-        trend: "+10% MoM",
-      },
-      {
-        rank: 6,
-        name: "Software Testing & QA Automation",
-        category: "Quality Assurance",
-        count: 11,
-        share: 7.7,
-        demand: "▲ Popular",
-        trend: "+5% MoM",
-      },
-      {
-        rank: 7,
-        name: "Data Analytics with Power BI & SQL",
-        category: "Business Intelligence",
-        count: 9,
-        share: 6.3,
-        demand: "▲ Emerging",
-        trend: "+14% MoM",
-      },
-      {
-        rank: 8,
-        name: "Salesforce Admin & Development",
-        category: "Enterprise Cloud",
-        count: 8,
-        share: 5.6,
-        demand: "• Stable",
-        trend: "+4% MoM",
-      },
-      {
-        rank: 9,
-        name: "Cyber Security & Ethical Hacking",
-        category: "Information Security",
-        count: 6,
-        share: 4.2,
-        demand: "• Stable",
-        trend: "+7% MoM",
-      },
-      {
-        rank: 10,
-        name: "UI/UX Design Master Program",
-        category: "Design & Product",
-        count: 5,
-        share: 3.5,
-        demand: "• Stable",
-        trend: "+6% MoM",
-      },
-    ],
+    const totalAdmissions = Number(admission.total_count) || 0;
+    const directWalkinAdmissions = Number(admission.classroom_mode) || 0;
+    const onlineAdmissions = Number(admission.online_mode) || 0;
+    const totalQualifiedLeads = Number(leadsCount.all_leads) || 0;
 
-    // 3. Student Onboarding & Admission Lifecycle (Derived from Admission.jsx)
-    lifecycleStages: [
+    // Date diff calculation for daily averages
+    const startDate = selectedDates?.[0] ? moment(selectedDates[0]) : null;
+    const endDate = selectedDates?.[1] ? moment(selectedDates[1]) : null;
+    const daysDiff =
+      startDate && endDate && startDate.isValid() && endDate.isValid()
+        ? Math.max(1, endDate.diff(startDate, "days") + 1)
+        : 1;
+
+    const dailyAverage = (totalAdmissions / daysDiff).toFixed(1);
+    const walkinDailyAverage = (directWalkinAdmissions / daysDiff).toFixed(1);
+    const onlineDailyAverage = (onlineAdmissions / daysDiff).toFixed(1);
+
+    const netConversionRate =
+      totalQualifiedLeads > 0
+        ? ((totalAdmissions / totalQualifiedLeads) * 100).toFixed(1)
+        : "0.0";
+
+    const calcActivityRate = (count) => {
+      if (!totalAdmissions || totalAdmissions <= 0) return "0.0%";
+      return `${((count / totalAdmissions) * 100).toFixed(1)}%`;
+    };
+
+    // Onboarding Health (Welcome call status / total admissions)
+    const welcomeCallCount =
+      Number(admission?.student_onboarding?.welcome_call_status) || 0;
+    const onboardingHealth =
+      totalAdmissions > 0
+        ? `${((welcomeCallCount / totalAdmissions) * 100).toFixed(1)}%`
+        : "100.0%";
+
+    // Top Courses
+    const sortedCourses = [...courseResult].sort(
+      (a, b) =>
+        (Number(b.customer_count) || 0) - (Number(a.customer_count) || 0),
+    );
+
+    const topCourses = sortedCourses.slice(0, 10).map((c, idx) => {
+      const count = Number(c.customer_count) || 0;
+      const share =
+        totalAdmissions > 0
+          ? Number(((count / totalAdmissions) * 100).toFixed(1))
+          : 0;
+      const rank = idx + 1;
+      const demand =
+        rank === 1
+          ? "🔥 Highest Enrolled"
+          : rank <= 3
+            ? "🔥 High Demand"
+            : "▲ Consistent";
+
+      return {
+        rank,
+        id: c.course_id,
+        name: c.course_name || "Unknown Course",
+        category: "Technology",
+        count,
+        share,
+        demand,
+      };
+    });
+
+    // Lifecycle Stages
+    const onboarding = admission.student_onboarding || {};
+    const coord = admission.trainer_coordination || {};
+    const prog = admission.progress_monitoring || {};
+    const comp = admission.course_completion || {};
+    const cert = admission.review_certifications || {};
+
+    const welcomeCall = Number(onboarding.welcome_call_status) || 0;
+    const reqVerified = Number(onboarding.technology_verified) || 0;
+    const trainerReq = Number(onboarding.trainer_assignment_request) || 0;
+    const trainerFix = Number(onboarding.trainer_fixation_call) || 0;
+
+    const waGroup = Number(coord.whatsapp_group_creation) || 0;
+    const hrWelcome = Number(coord.hr_welcome_message) || 0;
+    const attendLink = Number(coord.shared_attendance_link) || 0;
+    const firstClass = Number(coord.first_class_monitoring) || 0;
+    const trainerConfirm = Number(coord.trainer_confirmation) || 0;
+
+    const classProg = Number(prog.class_progress_monitoring) || 0;
+    const ticketRaised = Number(prog.ticket_raised) || 0;
+    const midFeedback = Number(prog.mid_course_feedback) || 0;
+    const lmsAccess = Number(prog.lms_access) || 0;
+    const serverReq = Number(prog.is_server_required) || 0;
+    const placementHandover = Number(prog.placement_handover) || 0;
+
+    const classCompConfirm = Number(comp.class_completion_confirmation) || 0;
+    const trainerCompRep = Number(comp.trainer_completion_report) || 0;
+    const studentCompRep = Number(comp.student_completion_report) || 0;
+
+    const googleReview = Number(cert.google_review_collection) || 0;
+    const linkedinReview = Number(cert.linkedin_review_collection) || 0;
+    const certIssued = Number(cert.course_completion_certificate) || 0;
+    const closureCall = Number(cert.course_closure_call) || 0;
+
+    const lifecycleStages = [
       {
         stepNum: 1,
         title: "1. Student Onboarding",
-        count: 142,
-        rateLabel: "100% Initiated",
+        count: totalAdmissions,
+        rateLabel: totalAdmissions > 0 ? "100% Initiated" : "0% Initiated",
         rateColor: "#059669",
         activities: [
           {
             name: "Welcome Call",
-            count: 138,
+            count: welcomeCall,
             completedText: "Completed",
-            rate: "97.2%",
+            rate: calcActivityRate(welcomeCall),
             color: "#16a34a",
           },
           {
             name: "Requirement Verification",
-            count: 132,
+            count: reqVerified,
             completedText: "Completed",
-            rate: "93.0%",
+            rate: calcActivityRate(reqVerified),
             color: "#0284c7",
           },
           {
             name: "Trainer Assignment Request",
-            count: 125,
+            count: trainerReq,
             completedText: "Completed",
-            rate: "88.0%",
+            rate: calcActivityRate(trainerReq),
             color: "#8b5cf6",
           },
           {
             name: "Trainer Fixation Call",
-            count: 120,
+            count: trainerFix,
             completedText: "Completed",
-            rate: "84.5%",
+            rate: calcActivityRate(trainerFix),
             color: "#ea580c",
           },
         ],
@@ -464,43 +740,44 @@ export default function AdmissionReport({
       {
         stepNum: 2,
         title: "2. Trainer Coordination",
-        count: 120,
-        rateLabel: "84.5% Coordinated",
+        count: trainerConfirm || trainerFix || 0,
+        rateLabel:
+          calcActivityRate(trainerConfirm || trainerFix || 0) + " Coordinated",
         rateColor: "#0284c7",
         activities: [
           {
             name: "WhatsApp Group Creation",
-            count: 116,
+            count: waGroup,
             completedText: "Completed",
-            rate: "81.7%",
+            rate: calcActivityRate(waGroup),
             color: "#16a34a",
           },
           {
             name: "Welcome Message",
-            count: 112,
+            count: hrWelcome,
             completedText: "Completed",
-            rate: "78.9%",
+            rate: calcActivityRate(hrWelcome),
             color: "#4f46e5",
           },
           {
             name: "Teams Link & Attendance",
-            count: 108,
+            count: attendLink,
             completedText: "Shared",
-            rate: "76.1%",
+            rate: calcActivityRate(attendLink),
             color: "#0284c7",
           },
           {
             name: "First Class Monitoring",
-            count: 104,
+            count: firstClass,
             completedText: "Monitored",
-            rate: "73.2%",
+            rate: calcActivityRate(firstClass),
             color: "#ea580c",
           },
           {
             name: "Trainer Confirmation",
-            count: 100,
+            count: trainerConfirm,
             completedText: "Confirmed",
-            rate: "70.4%",
+            rate: calcActivityRate(trainerConfirm),
             color: "#16a34a",
           },
         ],
@@ -508,43 +785,50 @@ export default function AdmissionReport({
       {
         stepNum: 3,
         title: "3. Progress Monitoring",
-        count: 100,
-        rateLabel: "70.4% In Training",
+        count: classProg,
+        rateLabel: calcActivityRate(classProg) + " In Training",
         rateColor: "#4f46e5",
         activities: [
           {
             name: "Class Progress Monitoring",
-            count: 94,
+            count: classProg,
             completedText: "Active",
-            rate: "66.2%",
+            rate: calcActivityRate(classProg),
             color: "#0284c7",
           },
           {
             name: "Student Support / Tickets",
-            count: 88,
+            count: ticketRaised,
             completedText: "Resolved",
-            rate: "62.0%",
+            rate: calcActivityRate(ticketRaised),
             color: "#16a34a",
           },
           {
             name: "Mid Course Feedback",
-            count: 82,
+            count: midFeedback,
             completedText: "Collected",
-            rate: "57.7%",
+            rate: calcActivityRate(midFeedback),
             color: "#eab308",
           },
           {
             name: "LMS Access",
-            count: 115,
+            count: lmsAccess,
             completedText: "Provisioned",
-            rate: "81.0%",
+            rate: calcActivityRate(lmsAccess),
             color: "#8b5cf6",
           },
           {
             name: "Server Provisioning",
-            count: 74,
+            count: serverReq,
             completedText: "Allocated",
-            rate: "52.1%",
+            rate: calcActivityRate(serverReq),
+            color: "#ea580c",
+          },
+          {
+            name: "Placement Handover",
+            count: placementHandover,
+            completedText: "Handed Over",
+            rate: calcActivityRate(placementHandover),
             color: "#ea580c",
           },
         ],
@@ -552,103 +836,215 @@ export default function AdmissionReport({
       {
         stepNum: 4,
         title: "4. Course Completion",
-        count: 68,
-        rateLabel: "47.9% Final Stage",
+        count: classCompConfirm,
+        rateLabel: calcActivityRate(classCompConfirm) + " Final Stage",
         rateColor: "#ea580c",
         activities: [
           {
             name: "Class Completion Confirmed",
-            count: 64,
+            count: classCompConfirm,
             completedText: "Confirmed",
-            rate: "45.1%",
+            rate: calcActivityRate(classCompConfirm),
             color: "#16a34a",
           },
           {
             name: "Trainer Completion Report",
-            count: 60,
+            count: trainerCompRep,
             completedText: "Submitted",
-            rate: "42.3%",
+            rate: calcActivityRate(trainerCompRep),
             color: "#0284c7",
           },
           {
             name: "Student Completion Report",
-            count: 58,
+            count: studentCompRep,
             completedText: "Submitted",
-            rate: "40.8%",
+            rate: calcActivityRate(studentCompRep),
             color: "#8b5cf6",
-          },
-          {
-            name: "Placement Handover",
-            count: 54,
-            completedText: "Handed Over",
-            rate: "38.0%",
-            color: "#ea580c",
           },
         ],
       },
       {
         stepNum: 5,
         title: "★ Certification & Closure",
-        count: 48,
-        rateLabel: "33.8% Graduated",
+        count: certIssued || Number(cert.is_course_completed) || 0,
+        rateLabel:
+          calcActivityRate(
+            certIssued || Number(cert.is_course_completed) || 0,
+          ) + " Graduated",
         rateColor: "#059669",
         isHero: true,
         activities: [
           {
             name: "Google Reviews",
-            count: 52,
-            completedText: "Verified",
-            rate: "36.6%",
+            count: googleReview,
+            completedText: "Collected",
+            rate: calcActivityRate(googleReview),
             color: "#16a34a",
           },
           {
             name: "LinkedIn Reviews",
-            count: 45,
-            completedText: "Shared",
-            rate: "31.7%",
+            count: linkedinReview,
+            completedText: "Collected",
+            rate: calcActivityRate(linkedinReview),
             color: "#0284c7",
           },
           {
             name: "Certificates Issued",
-            count: 48,
+            count: certIssued,
             completedText: "Issued",
-            rate: "33.8%",
+            rate: calcActivityRate(certIssued),
             color: "#8b5cf6",
           },
           {
             name: "Course Closure Call",
-            count: 46,
+            count: closureCall,
             completedText: "Completed",
-            rate: "32.4%",
+            rate: calcActivityRate(closureCall),
             color: "#ea580c",
           },
         ],
       },
-    ],
+    ];
 
-    // 4. Admission Sources & Sub-Sources Attribution
-    admissionSources: [
-      { name: "Direct / Walk-in", count: 46, share: 32.4, color: "#10b981" },
-      { name: "Website Portal", count: 38, share: 26.8, color: "#6366f1" },
-      { name: "Student Referral", count: 24, share: 16.9, color: "#f59e0b" },
-      { name: "Social Media (SMO)", count: 18, share: 12.7, color: "#ec4899" },
-      { name: "Inbound Tele-Call", count: 11, share: 7.7, color: "#06b6d4" },
-      { name: "Live Chat / WhatsApp", count: 5, share: 3.5, color: "#8b5cf6" },
-    ],
-    admissionSubSources: [
-      { name: "Branch Walk-in Counseling", count: 46, parent: "Direct" },
-      { name: "Website Direct Enrollment", count: 26, parent: "Website" },
-      { name: "Alumni / Friend Referral", count: 24, parent: "Reference" },
-      { name: "Instagram / LinkedIn Campaign", count: 18, parent: "SMO" },
-      { name: "Website Contact Form", count: 12, parent: "Website" },
-      { name: "IVR Helpline Call", count: 11, parent: "Call" },
-      { name: "WhatsApp Business Chat", count: 5, parent: "Live Chat" },
-    ],
-  };
+    // Source share calculation
+    const sourceDirect = Number(sources.direct) || 0;
+    const sourceWebsite = Number(sources.website) || 0;
+    const sourceRef = Number(sources.reference) || 0;
+    const sourceSmo = Number(sources.smo) || 0;
+    const sourceCall = Number(sources.call) || 0;
+    const sourceLiveChat = Number(sources.live_chat) || 0;
+
+    // Raw Sources (Matching PreSalesReport.jsx standard)
+    const rawSources = [
+      {
+        name: "Call",
+        count: Number(sources.call) || 0,
+        color: "#4f46e5",
+      },
+      {
+        name: "Direct",
+        count: Number(sources.direct) || 0,
+        color: "#ec4899",
+      },
+      {
+        name: "Website",
+        count: Number(sources.website) || 0,
+        color: "#10b981",
+      },
+      {
+        name: "SMO",
+        count: Number(sources.smo) || 0,
+        color: "#8b5cf6",
+      },
+      {
+        name: "Live Chat",
+        count: Number(sources.live_chat) || 0,
+        color: "#06b6d4",
+      },
+      {
+        name: "Reference",
+        count: Number(sources.reference) || 0,
+        color: "#f59e0b",
+      },
+    ];
+
+    const totalSrcCount = rawSources.reduce((acc, curr) => acc + curr.count, 0);
+
+    const leadSources = rawSources
+      .map((item) => ({
+        ...item,
+        share:
+          totalSrcCount > 0
+            ? Number(((item.count / totalSrcCount) * 100).toFixed(1))
+            : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Sub-sources formatting (Matching PreSalesReport.jsx standard)
+    const rawSubSources = [
+      {
+        name: "IVR",
+        parent: "Call",
+        count: Number(sub_sources.ivr) || 0,
+      },
+      {
+        name: "Branch",
+        parent: "Call",
+        count: Number(sub_sources.branch) || 0,
+      },
+      {
+        name: "Enquiry Form",
+        parent: "Website",
+        count: Number(sub_sources.enquiry_form) || 0,
+      },
+      {
+        name: "WhatsApp",
+        parent: "Website",
+        count: Number(sub_sources.whatsapp_website) || 0,
+      },
+      {
+        name: "Google Ads",
+        parent: "Website",
+        count: Number(sub_sources.google_ads) || 0,
+      },
+      {
+        name: "Instant Form",
+        parent: "SMO",
+        count: Number(sub_sources.instant_form) || 0,
+      },
+      {
+        name: "Call",
+        parent: "SMO",
+        count: Number(sub_sources.call_sub || sub_sources.call || 0),
+      },
+      {
+        name: "WhatsApp",
+        parent: "SMO",
+        count: Number(sub_sources.whatsapp_smo) || 0,
+      },
+    ];
+
+    if (Number(sub_sources.reference) > 0) {
+      rawSubSources.push({
+        name: "Reference",
+        parent: "Reference",
+        count: Number(sub_sources.reference) || 0,
+      });
+    }
+
+    const leadSubSources = rawSubSources.sort((a, b) => b.count - a.count);
+
+    const leadSourcesCount =
+      leadSources.filter((s) => s.count > 0).length || leadSources.length;
+    const leadSubSourcesCount =
+      leadSubSources.filter((s) => s.count > 0).length || leadSubSources.length;
+
+    return {
+      totalAdmissions,
+      netConversionRate,
+      directWalkinAdmissions,
+      onlineAdmissions,
+      dailyAverage,
+      walkinDailyAverage,
+      onlineDailyAverage,
+      targetConversionRate: 20,
+      totalQualifiedLeads,
+      onboardingHealth,
+      topCourses,
+      lifecycleStages,
+      leadSources,
+      leadSubSources,
+      leadSourcesCount,
+      leadSubSourcesCount,
+      admissionSources: leadSources,
+      admissionSubSources: leadSubSources,
+    };
+  }, [reportData, selectedDates]);
 
   // Max count for scaling the course comparison bar
   const maxCourseCount = Math.max(
-    ...admissionReportData.topCourses.map((c) => c.count),
+    1,
+    ...(admissionReportData?.topCourses?.map((c) => c.count) || [1]),
   );
 
   // ---------------------------------------------------------------------------
@@ -718,18 +1114,18 @@ export default function AdmissionReport({
       rows.push(["Total Admissions", admissionReportData.totalAdmissions]);
       rows.push([
         "Net Conversion Rate",
-        `${admissionReportData.netConversionRate}%`,
+        `${admissionReportData.netConversionRate}% (Daily Avg: ${admissionReportData.dailyAverage}/day)`,
       ]);
       rows.push([
         "Direct / Walk-in Admissions",
-        admissionReportData.directWalkinAdmissions,
+        `${admissionReportData.directWalkinAdmissions} (Daily Avg: ${admissionReportData.walkinDailyAverage}/day)`,
       ]);
       rows.push([
         "Online / Remote Admissions",
-        admissionReportData.onlineAdmissions,
+        `${admissionReportData.onlineAdmissions} (Daily Avg: ${admissionReportData.onlineDailyAverage}/day)`,
       ]);
       rows.push([
-        "Daily Average",
+        "Overall Daily Average",
         `${admissionReportData.dailyAverage} admissions/day`,
       ]);
       rows.push([]);
@@ -772,10 +1168,18 @@ export default function AdmissionReport({
       rows.push([]);
 
       // 4. Sources
-      rows.push(["4. ADMISSION SOURCES ATTRIBUTION"]);
-      rows.push(["Source Channel", "Admissions", "Share (%)"]);
-      admissionReportData.admissionSources.forEach((s) => {
+      rows.push(["4. ACQUISITION CHANNEL ATTRIBUTION (SOURCES)"]);
+      rows.push(["Source Channel", "Count", "Share (%)"]);
+      (admissionReportData.leadSources || []).forEach((s) => {
         rows.push([s.name, s.count, `${s.share}%`]);
+      });
+      rows.push([]);
+
+      // 5. Sub-Sources
+      rows.push(["5. ACQUISITION SUB-SOURCES ATTRIBUTION"]);
+      rows.push(["Sub-Source Name", "Parent Channel", "Count"]);
+      (admissionReportData.leadSubSources || []).forEach((sub) => {
+        rows.push([sub.name, sub.parent, sub.count]);
       });
 
       const worksheet = XLSX.utils.aoa_to_sheet(rows);
@@ -907,13 +1311,15 @@ export default function AdmissionReport({
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1.5 1 0%">
               <CommonMuiCustomDatePicker
-                label={"Select Date"}
+                label={"Filter by Joining Date"}
                 width="100%"
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
-                  setIsLoading(true);
-                  setTimeout(() => setIsLoading(false), 350);
+                  fetchAdmissionData({
+                    startDate: dates?.[0],
+                    endDate: dates?.[1],
+                  });
                 }}
               />
             </Col>
@@ -931,13 +1337,15 @@ export default function AdmissionReport({
                   prevSelectedUserIdRef.current = "[]";
                   selectedUserIdRef.current = [];
                   setSelectedUserId([]);
+                  fetchCounselorUsersData({
+                    regionId: value,
+                    branchId: null,
+                  });
                   if (value) {
                     getBranchesData(value);
                   } else {
                     setFilterBranchOptions([]);
                   }
-                  setIsLoading(true);
-                  setTimeout(() => setIsLoading(false), 350);
                 }}
                 value={selectedRegionId}
                 disableClearable={false}
@@ -956,8 +1364,10 @@ export default function AdmissionReport({
                   prevSelectedUserIdRef.current = "[]";
                   selectedUserIdRef.current = [];
                   setSelectedUserId([]);
-                  setIsLoading(true);
-                  setTimeout(() => setIsLoading(false), 350);
+                  fetchCounselorUsersData({
+                    regionId: selectedRegionId,
+                    branchId: value,
+                  });
                 }}
                 value={selectedBranchId}
                 disableClearable={false}
@@ -967,7 +1377,7 @@ export default function AdmissionReport({
             <Col flex="1 1 0%">
               <CommonMultiSelectField
                 height="34px"
-                label="Select Counselor"
+                label="Select User"
                 labelMarginTop="1px"
                 labelFontSize="11px"
                 width="100%"
@@ -1129,10 +1539,15 @@ export default function AdmissionReport({
                 <div className="presales_card_bottom">
                   <span className="presales_badge presales_avg_badge">
                     <FiTrendingUp size={12} />
-                    <span className="presales_avg_label">Inquiry to Join:</span>
-                    <strong className="presales_avg_val">+3.4%</strong>
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      {admissionReportData.dailyAverage}
+                    </strong>
                   </span>
-                  <span className="presales_stat_subtext">vs last period</span>
+                  <span className="presales_stat_subtext">
+                    {admissionReportData.totalAdmissions} of{" "}
+                    {admissionReportData.totalQualifiedLeads} leads
+                  </span>
                 </div>
               </div>
             </Col>
@@ -1152,17 +1567,14 @@ export default function AdmissionReport({
                   </div>
                 </div>
                 <div className="presales_card_bottom">
-                  <span
-                    className="presales_badge"
-                    style={{
-                      background: "#f0f9ff",
-                      color: "#0284c7",
-                      borderColor: "#bae6fd",
-                    }}
-                  >
-                    40.8% Share
+                  <span className="presales_badge presales_avg_badge">
+                    <FiUserCheck size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      {admissionReportData.walkinDailyAverage}
+                    </strong>
                   </span>
-                  <span className="presales_stat_subtext">Branch visits</span>
+                  <span className="presales_stat_subtext">walk-ins / day</span>
                 </div>
               </div>
             </Col>
@@ -1184,17 +1596,14 @@ export default function AdmissionReport({
                   </div>
                 </div>
                 <div className="presales_card_bottom">
-                  <span
-                    className="presales_badge"
-                    style={{
-                      background: "#fffbeb",
-                      color: "#d97706",
-                      borderColor: "#fde68a",
-                    }}
-                  >
-                    59.2% Share
+                  <span className="presales_badge presales_avg_badge">
+                    <FiActivity size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      {admissionReportData.onlineDailyAverage}
+                    </strong>
                   </span>
-                  <span className="presales_stat_subtext">Remote learners</span>
+                  <span className="presales_stat_subtext">online / day</span>
                 </div>
               </div>
             </Col>
@@ -1213,7 +1622,7 @@ export default function AdmissionReport({
               className="presales_section_title_badge"
               style={{ background: "#ecfdf5", color: "#059669" }}
             >
-              Onboarding Health: 97.2%
+              Onboarding Health: {admissionReportData.onboardingHealth}
             </span>
           </div>
 
@@ -1254,31 +1663,44 @@ export default function AdmissionReport({
                       {!isHero ? (
                         <div className="presales_funnel_subitems">
                           {stage.activities.map((act) => (
-                            <div
-                              className="presales_funnel_subitem"
+                            <Tooltip
                               key={act.name}
-                              title={`${act.name}: ${act.count} ${act.completedText}`}
+                              title={
+                                <span>
+                                  <span
+                                    style={{
+                                      color: "#727272",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {act.name}:
+                                  </span>{" "}
+                                  <span
+                                    style={{ color: "#333", fontWeight: 600 }}
+                                  >
+                                    {act.count}
+                                  </span>{" "}
+                                  <span
+                                    style={{ color: "#333", fontWeight: 500 }}
+                                  >
+                                    {act.completedText || ""}
+                                  </span>
+                                </span>
+                              }
+                              placement="top"
+                              mouseEnterDelay={0.1}
+                              color="#fff"
+                              styles={{
+                                body: {
+                                  backgroundColor: "#fff",
+                                  color: "#333",
+                                  fontWeight: 600,
+                                  fontSize: "12px",
+                                },
+                              }}
                             >
-                              <span className="presales_funnel_subitem_name">
-                                <span
-                                  className="presales_subitem_dot"
-                                  style={{ background: act.color }}
-                                />
-                                {act.name}
-                              </span>
-                              <span className="presales_funnel_subitem_count">
-                                {act.count}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <>
-                          <div className="presales_funnel_subitems">
-                            {stage.activities.map((act) => (
                               <div
                                 className="presales_funnel_subitem"
-                                key={act.name}
                                 title={`${act.name}: ${act.count} ${act.completedText}`}
                               >
                                 <span className="presales_funnel_subitem_name">
@@ -1286,15 +1708,78 @@ export default function AdmissionReport({
                                     className="presales_subitem_dot"
                                     style={{ background: act.color }}
                                   />
-                                  {act.name}
+                                  <span className="presales_subitem_text">
+                                    {act.name}
+                                  </span>
                                 </span>
-                                <span
-                                  className="presales_funnel_subitem_count"
-                                  style={{ color: "#047857" }}
-                                >
+                                <span className="presales_funnel_subitem_count">
                                   {act.count}
                                 </span>
                               </div>
+                            </Tooltip>
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="presales_funnel_subitems">
+                            {stage.activities.map((act) => (
+                              <Tooltip
+                                key={act.name}
+                                title={
+                                  <span>
+                                    <span
+                                      style={{
+                                        color: "#727272",
+                                        fontWeight: 500,
+                                      }}
+                                    >
+                                      {act.name}:
+                                    </span>{" "}
+                                    <span
+                                      style={{ color: "#333", fontWeight: 600 }}
+                                    >
+                                      {act.count}
+                                    </span>{" "}
+                                    <span
+                                      style={{ color: "#333", fontWeight: 500 }}
+                                    >
+                                      {act.completedText || ""}
+                                    </span>
+                                  </span>
+                                }
+                                placement="top"
+                                mouseEnterDelay={0.1}
+                                color="#fff"
+                                styles={{
+                                  body: {
+                                    backgroundColor: "#fff",
+                                    color: "#333",
+                                    fontWeight: 600,
+                                    fontSize: "12px",
+                                  },
+                                }}
+                              >
+                                <div
+                                  className="presales_funnel_subitem"
+                                  title={`${act.name}: ${act.count} ${act.completedText}`}
+                                >
+                                  <span className="presales_funnel_subitem_name">
+                                    <span
+                                      className="presales_subitem_dot"
+                                      style={{ background: act.color }}
+                                    />
+                                    <span className="presales_subitem_text">
+                                      {act.name}
+                                    </span>
+                                  </span>
+                                  <span
+                                    className="presales_funnel_subitem_count"
+                                    style={{ color: "#047857" }}
+                                  >
+                                    {act.count}
+                                  </span>
+                                </div>
+                              </Tooltip>
                             ))}
                           </div>
 
@@ -1305,14 +1790,29 @@ export default function AdmissionReport({
                             <div className="presales_funnel_hero_tag">
                               <span>🎯 Goal Achievement</span>
                             </div>
-                            <div className="presales_funnel_hero_stat">
-                              <span className="presales_funnel_hero_stat_label">
-                                Graduation Rate
-                              </span>
-                              <strong className="presales_funnel_hero_stat_val">
-                                {stage.rateLabel}
-                              </strong>
-                            </div>
+                            <Tooltip
+                              title={`Overall Graduation: ${stage.rateLabel}`}
+                              placement="top"
+                              mouseEnterDelay={0.1}
+                              color="#fff"
+                              styles={{
+                                body: {
+                                  backgroundColor: "#fff",
+                                  color: "#333",
+                                  fontWeight: 600,
+                                  fontSize: "12px",
+                                },
+                              }}
+                            >
+                              <div className="presales_funnel_hero_stat">
+                                <span className="presales_funnel_hero_stat_label">
+                                  Graduation
+                                </span>
+                                <strong className="presales_funnel_hero_stat_val">
+                                  {stage.rateLabel}
+                                </strong>
+                              </div>
+                            </Tooltip>
                           </div>
                         </>
                       )}
@@ -1336,134 +1836,154 @@ export default function AdmissionReport({
               Best-Selling Courses
             </h2>
             <span className="presales_section_title_badge">
-              {showAllCourses
-                ? "Showing All 10 Courses"
-                : "Showing Top 5 Courses"}
+              {admissionReportData.topCourses.length <= 5
+                ? `Showing ${admissionReportData.topCourses.length} Courses`
+                : showAllCourses
+                  ? `Showing All ${admissionReportData.topCourses.length} Courses`
+                  : "Showing Top 5 Courses"}
             </span>
           </div>
 
-          <Row gutter={[16, 16]}>
-            {(showAllCourses
-              ? admissionReportData.topCourses
-              : admissionReportData.topCourses.slice(0, 5)
-            ).map((course) => {
-              const rankClass =
-                course.rank === 1
-                  ? "rank_1"
-                  : course.rank === 2
-                    ? "rank_2"
-                    : course.rank === 3
-                      ? "rank_3"
-                      : "rank_standard";
+          {admissionReportData.topCourses.length === 0 ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "36px 16px",
+                background: "#f8fafc",
+                borderRadius: "12px",
+                border: "1px dashed #cbd5e1",
+                color: "#64748b",
+                marginBottom: 16,
+              }}
+            >
+              No course enrollments found for the selected criteria.
+            </div>
+          ) : (
+            <Row gutter={[16, 16]}>
+              {(showAllCourses
+                ? admissionReportData.topCourses
+                : admissionReportData.topCourses.slice(0, 5)
+              ).map((course) => {
+                const rankClass =
+                  course.rank === 1
+                    ? "rank_1"
+                    : course.rank === 2
+                      ? "rank_2"
+                      : course.rank === 3
+                        ? "rank_3"
+                        : "rank_standard";
 
-              const cardClass =
-                course.rank === 1
-                  ? "top_1"
-                  : course.rank === 2
-                    ? "top_2"
-                    : course.rank === 3
-                      ? "top_3"
-                      : "";
+                const cardClass =
+                  course.rank === 1
+                    ? "top_1"
+                    : course.rank === 2
+                      ? "top_2"
+                      : course.rank === 3
+                        ? "top_3"
+                        : "";
 
-              const barWidthPercent = (course.count / maxCourseCount) * 100;
+                const barWidthPercent = (course.count / maxCourseCount) * 100;
 
-              return (
-                <Col xs={24} sm={24} md={12} key={course.rank}>
-                  <div className={`admission_course_card ${cardClass}`}>
-                    <div className="admission_course_top_row">
-                      <div className="admission_course_left">
-                        <div className={`admission_rank_badge ${rankClass}`}>
-                          {course.rank <= 3 ? `#${course.rank}` : course.rank}
+                return (
+                  <Col xs={24} sm={24} md={12} key={course.rank}>
+                    <div className={`admission_course_card ${cardClass}`}>
+                      <div className="admission_course_top_row">
+                        <div className="admission_course_left">
+                          <div className={`admission_rank_badge ${rankClass}`}>
+                            {course.rank <= 3 ? `#${course.rank}` : course.rank}
+                          </div>
+                          <div className="admission_course_info">
+                            <h4
+                              className="admission_course_title"
+                              title={course.name}
+                            >
+                              {course.name}
+                            </h4>
+                            {/* <span className="admission_course_category">
+                              {course.category}
+                            </span> */}
+                          </div>
                         </div>
-                        <div className="admission_course_info">
-                          <h4
-                            className="admission_course_title"
-                            title={course.name}
-                          >
-                            {course.name}
-                          </h4>
-                          <span className="admission_course_category">
-                            {course.category}
+
+                        <div className="admission_course_count_box">
+                          <span className="admission_course_count">
+                            {course.count}
+                          </span>
+                          <span className="admission_course_count_lbl">
+                            Enrolled
                           </span>
                         </div>
                       </div>
 
-                      <div className="admission_course_count_box">
-                        <span className="admission_course_count">
-                          {course.count}
+                      {/* Relative Popularity Fill Bar */}
+                      <div className="admission_course_progress_track">
+                        <div
+                          className="admission_course_progress_fill"
+                          style={{
+                            width: `${barWidthPercent}%`,
+                            background:
+                              course.rank === 1
+                                ? "linear-gradient(90deg, #f59e0b 0%, #d97706 100%)"
+                                : course.rank === 2
+                                  ? "linear-gradient(90deg, #f97316 0%, #ea580c 100%)"
+                                  : course.rank === 3
+                                    ? "linear-gradient(90deg, #fb923c 0%, #ea580c 100%)"
+                                    : "linear-gradient(90deg, #10b981 0%, #059669 100%)",
+                          }}
+                        />
+                      </div>
+
+                      <div className="admission_course_footer">
+                        <span className="admission_course_share_pill">
+                          {course.share}% of Total Admissions
                         </span>
-                        <span className="admission_course_count_lbl">
-                          Enrolled
+                        <span className="admission_demand_pill">
+                          {course.demand}
                         </span>
                       </div>
                     </div>
+                  </Col>
+                );
+              })}
+            </Row>
+          )}
 
-                    {/* Relative Popularity Fill Bar */}
-                    <div className="admission_course_progress_track">
-                      <div
-                        className="admission_course_progress_fill"
-                        style={{
-                          width: `${barWidthPercent}%`,
-                          background:
-                            course.rank === 1
-                              ? "linear-gradient(90deg, #f59e0b 0%, #d97706 100%)"
-                              : course.rank === 2
-                                ? "linear-gradient(90deg, #64748b 0%, #475569 100%)"
-                                : course.rank === 3
-                                  ? "linear-gradient(90deg, #fb923c 0%, #ea580c 100%)"
-                                  : "linear-gradient(90deg, #10b981 0%, #059669 100%)",
-                        }}
-                      />
-                    </div>
-
-                    <div className="admission_course_footer">
-                      <span className="admission_course_share_pill">
-                        {course.share}% of Total Admissions
-                      </span>
-                      <span className="admission_demand_pill">
-                        {course.demand}
-                      </span>
-                    </div>
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: 18,
-              marginBottom: 6,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setShowAllCourses(!showAllCourses)}
-              className="admission_show_more_btn"
+          {admissionReportData.topCourses.length > 5 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: 18,
+                marginBottom: 6,
+              }}
             >
-              {showAllCourses ? (
-                <>
-                  Show Less <FiChevronUp size={16} />
-                </>
-              ) : (
-                <>
-                  Show All 10 Courses (
-                  {admissionReportData.topCourses.length - 5} More){" "}
-                  <FiChevronDown size={16} />
-                </>
-              )}
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setShowAllCourses(!showAllCourses)}
+                className="admission_show_more_btn"
+              >
+                {showAllCourses ? (
+                  <>
+                    Show Less <FiChevronUp size={16} />
+                  </>
+                ) : (
+                  <>
+                    Show All {admissionReportData.topCourses.length} Courses (
+                    {admissionReportData.topCourses.length - 5} More){" "}
+                    <FiChevronDown size={16} />
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* ====================================================================
               4. Channel & Attribution Breakdown (Sources & Sub-Sources)
-              (Follows Pre-Sales Report's dual-panel layout)
+              (Exact match with PreSalesReport.jsx standard)
               ==================================================================== */}
           <div className="presales_section_header" style={{ marginTop: 28 }}>
             <h2 className="presales_section_title">
-              <FiLayers style={{ color: "#059669" }} size={18} /> Admission
+              <FiLayers style={{ color: "#6366f1" }} size={17} /> Acquisition
               Channel Attribution
             </h2>
             <span className="presales_section_title_badge">
@@ -1472,40 +1992,31 @@ export default function AdmissionReport({
           </div>
 
           <Row gutter={[16, 16]}>
-            {/* Panel 1: Admission Sources */}
+            {/* Metric 4: Lead Sources Panel */}
             <Col xs={24} lg={12}>
               <div className="presales_panel_card">
                 <div className="presales_panel_header">
                   <div className="presales_panel_title_box">
                     <div
                       className="presales_panel_title_icon"
-                      style={{ background: "#ecfdf5", color: "#059669" }}
+                      style={{ background: "#eef2ff", color: "#4f46e5" }}
                     >
                       <FiCompass />
                     </div>
                     <div>
-                      <h4 className="presales_panel_title">
-                        Admission Sources
-                      </h4>
+                      <h4 className="presales_panel_title">Lead Sources</h4>
                       <p className="presales_panel_subtitle">
-                        Student distribution across inbound acquisition channels
+                        Distribution across main marketing acquisition channels
                       </p>
                     </div>
                   </div>
-                  <span
-                    className="presales_panel_total_badge"
-                    style={{
-                      background: "#ecfdf5",
-                      color: "#059669",
-                      borderColor: "#a7f3d0",
-                    }}
-                  >
-                    {admissionReportData.admissionSources.length} Channels
+                  <span className="presales_panel_total_badge">
+                    {admissionReportData.leadSourcesCount} Channels
                   </span>
                 </div>
 
                 <div className="presales_panel_body">
-                  {admissionReportData.admissionSources.map((source, index) => (
+                  {admissionReportData.leadSources.map((source, index) => (
                     <div key={index} className="presales_source_item">
                       <div className="presales_source_meta">
                         <span className="presales_source_name">
@@ -1517,7 +2028,7 @@ export default function AdmissionReport({
                         </span>
                         <div className="presales_source_stats">
                           <span className="presales_source_count">
-                            {source.count}
+                            {Number(source.count).toLocaleString("en-IN")}
                           </span>
                           <span className="presales_source_pct">
                             {source.share}%
@@ -1539,56 +2050,52 @@ export default function AdmissionReport({
               </div>
             </Col>
 
-            {/* Panel 2: Admission Sub-Sources */}
+            {/* Metric 5: Lead Sub-Sources Panel */}
             <Col xs={24} lg={12}>
               <div className="presales_panel_card">
                 <div className="presales_panel_header">
                   <div className="presales_panel_title_box">
                     <div
                       className="presales_panel_title_icon"
-                      style={{ background: "#ecfdf5", color: "#059669" }}
+                      style={{ background: "#f0fdf4", color: "#16a34a" }}
                     >
                       <FiLayers />
                     </div>
                     <div>
-                      <h4 className="presales_panel_title">
-                        Admission Sub-Sources
-                      </h4>
+                      <h4 className="presales_panel_title">Lead Sub-Sources</h4>
                       <p className="presales_panel_subtitle">
-                        Granular touchpoint and campaign level enrollment
-                        details
+                        Granular campaign, creative, and partner level
+                        attribution
                       </p>
                     </div>
                   </div>
                   <span
                     className="presales_panel_total_badge"
                     style={{
-                      background: "#ecfdf5",
-                      color: "#059669",
-                      borderColor: "#a7f3d0",
+                      background: "#f0fdf4",
+                      color: "#16a34a",
+                      borderColor: "#bbf7d0",
                     }}
                   >
-                    {admissionReportData.admissionSubSources.length} Touchpoints
+                    {admissionReportData.leadSubSourcesCount} Sub-Sources
                   </span>
                 </div>
 
                 <div className="presales_panel_body">
                   <div className="presales_subsource_grid">
-                    {admissionReportData.admissionSubSources.map(
-                      (sub, index) => (
-                        <div key={index} className="presales_subsource_row">
-                          <div className="presales_subsource_name_box">
-                            <span>{sub.name}</span>
-                            <span className="presales_subsource_parent_tag">
-                              {sub.parent}
-                            </span>
-                          </div>
-                          <span className="presales_subsource_count_pill">
-                            {sub.count} Enrolled
+                    {admissionReportData.leadSubSources.map((sub, index) => (
+                      <div key={index} className="presales_subsource_row">
+                        <div className="presales_subsource_name_box">
+                          <span>{sub.name}</span>
+                          <span className="presales_subsource_parent_tag">
+                            {sub.parent}
                           </span>
                         </div>
-                      ),
-                    )}
+                        <span className="presales_subsource_count_pill">
+                          {Number(sub.count).toLocaleString("en-IN")} leads
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
