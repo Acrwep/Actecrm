@@ -699,210 +699,240 @@ export default function AdmissionReport({
     const certIssued = Number(cert.course_completion_certificate) || 0;
     const closureCall = Number(cert.course_closure_call) || 0;
 
+    const stage1Activities = [
+      {
+        name: "Welcome Call",
+        count: welcomeCall,
+        completedText: "Completed",
+        rate: calcActivityRate(welcomeCall),
+        color: "#16a34a",
+      },
+      {
+        name: "Requirement Verification",
+        count: reqVerified,
+        completedText: "Completed",
+        rate: calcActivityRate(reqVerified),
+        color: "#0284c7",
+      },
+      {
+        name: "Trainer Assignment Request",
+        count: trainerReq,
+        completedText: "Completed",
+        rate: calcActivityRate(trainerReq),
+        color: "#8b5cf6",
+      },
+      {
+        name: "Trainer Fixation Call",
+        count: trainerFix,
+        completedText: "Completed",
+        rate: calcActivityRate(trainerFix),
+        color: "#ea580c",
+      },
+    ];
+    const stage1Total = stage1Activities.reduce(
+      (acc, act) => acc + act.count,
+      0,
+    );
+
+    const stage2Activities = [
+      {
+        name: "WhatsApp Group Creation",
+        count: waGroup,
+        completedText: "Completed",
+        rate: calcActivityRate(waGroup),
+        color: "#16a34a",
+      },
+      {
+        name: "Welcome Message",
+        count: hrWelcome,
+        completedText: "Completed",
+        rate: calcActivityRate(hrWelcome),
+        color: "#4f46e5",
+      },
+      {
+        name: "Teams Link & Attendance",
+        count: attendLink,
+        completedText: "Shared",
+        rate: calcActivityRate(attendLink),
+        color: "#0284c7",
+      },
+      {
+        name: "First Class Monitoring",
+        count: firstClass,
+        completedText: "Monitored",
+        rate: calcActivityRate(firstClass),
+        color: "#ea580c",
+      },
+      {
+        name: "Trainer Confirmation",
+        count: trainerConfirm,
+        completedText: "Confirmed",
+        rate: calcActivityRate(trainerConfirm),
+        color: "#16a34a",
+      },
+    ];
+    const stage2Total = stage2Activities.reduce(
+      (acc, act) => acc + act.count,
+      0,
+    );
+
+    const stage3Activities = [
+      {
+        name: "Class Progress Monitoring",
+        count: classProg,
+        completedText: "Active",
+        rate: calcActivityRate(classProg),
+        color: "#0284c7",
+      },
+      {
+        name: "Student Support / Tickets",
+        count: ticketRaised,
+        completedText: "Resolved",
+        rate: calcActivityRate(ticketRaised),
+        color: "#16a34a",
+      },
+      {
+        name: "Mid Course Feedback",
+        count: midFeedback,
+        completedText: "Collected",
+        rate: calcActivityRate(midFeedback),
+        color: "#eab308",
+      },
+      {
+        name: "LMS Access",
+        count: lmsAccess,
+        completedText: "Provisioned",
+        rate: calcActivityRate(lmsAccess),
+        color: "#8b5cf6",
+      },
+      {
+        name: "Server Provisioning",
+        count: serverReq,
+        completedText: "Allocated",
+        rate: calcActivityRate(serverReq),
+        color: "#ea580c",
+      },
+      {
+        name: "Placement Handover",
+        count: placementHandover,
+        completedText: "Handed Over",
+        rate: calcActivityRate(placementHandover),
+        color: "#ea580c",
+      },
+    ];
+    const stage3Total = stage3Activities.reduce(
+      (acc, act) => acc + act.count,
+      0,
+    );
+
+    const stage4Activities = [
+      {
+        name: "Class Completion Confirmed",
+        count: classCompConfirm,
+        completedText: "Confirmed",
+        rate: calcActivityRate(classCompConfirm),
+        color: "#16a34a",
+      },
+      {
+        name: "Trainer Completion Report",
+        count: trainerCompRep,
+        completedText: "Submitted",
+        rate: calcActivityRate(trainerCompRep),
+        color: "#0284c7",
+      },
+      {
+        name: "Student Completion Report",
+        count: studentCompRep,
+        completedText: "Submitted",
+        rate: calcActivityRate(studentCompRep),
+        color: "#8b5cf6",
+      },
+    ];
+    const stage4Total = stage4Activities.reduce(
+      (acc, act) => acc + act.count,
+      0,
+    );
+
+    const stage5Activities = [
+      {
+        name: "Google Reviews",
+        count: googleReview,
+        completedText: "Collected",
+        rate: calcActivityRate(googleReview),
+        color: "#16a34a",
+      },
+      {
+        name: "LinkedIn Reviews",
+        count: linkedinReview,
+        completedText: "Collected",
+        rate: calcActivityRate(linkedinReview),
+        color: "#0284c7",
+      },
+      {
+        name: "Certificates Issued",
+        count: certIssued,
+        completedText: "Issued",
+        rate: calcActivityRate(certIssued),
+        color: "#8b5cf6",
+      },
+      {
+        name: "Course Closure Call",
+        count: closureCall,
+        completedText: "Completed",
+        rate: calcActivityRate(closureCall),
+        color: "#ea580c",
+      },
+    ];
+    const stage5Total = stage5Activities.reduce(
+      (acc, act) => acc + act.count,
+      0,
+    );
+
     const lifecycleStages = [
       {
         stepNum: 1,
         title: "1. Student Onboarding",
-        count: totalAdmissions,
+        count: stage1Total,
         rateLabel: totalAdmissions > 0 ? "100% Initiated" : "0% Initiated",
         rateColor: "#059669",
-        activities: [
-          {
-            name: "Welcome Call",
-            count: welcomeCall,
-            completedText: "Completed",
-            rate: calcActivityRate(welcomeCall),
-            color: "#16a34a",
-          },
-          {
-            name: "Requirement Verification",
-            count: reqVerified,
-            completedText: "Completed",
-            rate: calcActivityRate(reqVerified),
-            color: "#0284c7",
-          },
-          {
-            name: "Trainer Assignment Request",
-            count: trainerReq,
-            completedText: "Completed",
-            rate: calcActivityRate(trainerReq),
-            color: "#8b5cf6",
-          },
-          {
-            name: "Trainer Fixation Call",
-            count: trainerFix,
-            completedText: "Completed",
-            rate: calcActivityRate(trainerFix),
-            color: "#ea580c",
-          },
-        ],
+        activities: stage1Activities,
       },
       {
         stepNum: 2,
         title: "2. Trainer Coordination",
-        count: trainerConfirm || trainerFix || 0,
+        count: stage2Total,
         rateLabel:
           calcActivityRate(trainerConfirm || trainerFix || 0) + " Coordinated",
         rateColor: "#0284c7",
-        activities: [
-          {
-            name: "WhatsApp Group Creation",
-            count: waGroup,
-            completedText: "Completed",
-            rate: calcActivityRate(waGroup),
-            color: "#16a34a",
-          },
-          {
-            name: "Welcome Message",
-            count: hrWelcome,
-            completedText: "Completed",
-            rate: calcActivityRate(hrWelcome),
-            color: "#4f46e5",
-          },
-          {
-            name: "Teams Link & Attendance",
-            count: attendLink,
-            completedText: "Shared",
-            rate: calcActivityRate(attendLink),
-            color: "#0284c7",
-          },
-          {
-            name: "First Class Monitoring",
-            count: firstClass,
-            completedText: "Monitored",
-            rate: calcActivityRate(firstClass),
-            color: "#ea580c",
-          },
-          {
-            name: "Trainer Confirmation",
-            count: trainerConfirm,
-            completedText: "Confirmed",
-            rate: calcActivityRate(trainerConfirm),
-            color: "#16a34a",
-          },
-        ],
+        activities: stage2Activities,
       },
       {
         stepNum: 3,
         title: "3. Progress Monitoring",
-        count: classProg,
+        count: stage3Total,
         rateLabel: calcActivityRate(classProg) + " In Training",
         rateColor: "#4f46e5",
-        activities: [
-          {
-            name: "Class Progress Monitoring",
-            count: classProg,
-            completedText: "Active",
-            rate: calcActivityRate(classProg),
-            color: "#0284c7",
-          },
-          {
-            name: "Student Support / Tickets",
-            count: ticketRaised,
-            completedText: "Resolved",
-            rate: calcActivityRate(ticketRaised),
-            color: "#16a34a",
-          },
-          {
-            name: "Mid Course Feedback",
-            count: midFeedback,
-            completedText: "Collected",
-            rate: calcActivityRate(midFeedback),
-            color: "#eab308",
-          },
-          {
-            name: "LMS Access",
-            count: lmsAccess,
-            completedText: "Provisioned",
-            rate: calcActivityRate(lmsAccess),
-            color: "#8b5cf6",
-          },
-          {
-            name: "Server Provisioning",
-            count: serverReq,
-            completedText: "Allocated",
-            rate: calcActivityRate(serverReq),
-            color: "#ea580c",
-          },
-          {
-            name: "Placement Handover",
-            count: placementHandover,
-            completedText: "Handed Over",
-            rate: calcActivityRate(placementHandover),
-            color: "#ea580c",
-          },
-        ],
+        activities: stage3Activities,
       },
       {
         stepNum: 4,
         title: "4. Course Completion",
-        count: classCompConfirm,
+        count: stage4Total,
         rateLabel: calcActivityRate(classCompConfirm) + " Final Stage",
         rateColor: "#ea580c",
-        activities: [
-          {
-            name: "Class Completion Confirmed",
-            count: classCompConfirm,
-            completedText: "Confirmed",
-            rate: calcActivityRate(classCompConfirm),
-            color: "#16a34a",
-          },
-          {
-            name: "Trainer Completion Report",
-            count: trainerCompRep,
-            completedText: "Submitted",
-            rate: calcActivityRate(trainerCompRep),
-            color: "#0284c7",
-          },
-          {
-            name: "Student Completion Report",
-            count: studentCompRep,
-            completedText: "Submitted",
-            rate: calcActivityRate(studentCompRep),
-            color: "#8b5cf6",
-          },
-        ],
+        activities: stage4Activities,
       },
       {
         stepNum: 5,
         title: "★ Certification & Closure",
-        count: certIssued || Number(cert.is_course_completed) || 0,
+        count: stage5Total,
         rateLabel:
           calcActivityRate(
             certIssued || Number(cert.is_course_completed) || 0,
           ) + " Graduated",
         rateColor: "#059669",
         isHero: true,
-        activities: [
-          {
-            name: "Google Reviews",
-            count: googleReview,
-            completedText: "Collected",
-            rate: calcActivityRate(googleReview),
-            color: "#16a34a",
-          },
-          {
-            name: "LinkedIn Reviews",
-            count: linkedinReview,
-            completedText: "Collected",
-            rate: calcActivityRate(linkedinReview),
-            color: "#0284c7",
-          },
-          {
-            name: "Certificates Issued",
-            count: certIssued,
-            completedText: "Issued",
-            rate: calcActivityRate(certIssued),
-            color: "#8b5cf6",
-          },
-          {
-            name: "Course Closure Call",
-            count: closureCall,
-            completedText: "Completed",
-            rate: calcActivityRate(closureCall),
-            color: "#ea580c",
-          },
-        ],
+        activities: stage5Activities,
       },
     ];
 

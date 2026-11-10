@@ -283,6 +283,48 @@
   transform: scale(1.06);
 }
 
+/* 5. Post-Sales Theme (Amber/Orange) */
+.mgmt_theme_postsales .mgmt_card_icon_circle {
+  background: #fff7ed;
+  color: #ea580c;
+}
+.mgmt_theme_postsales .mgmt_card_count,
+.mgmt_theme_postsales .mgmt_card_action_hint {
+  color: #ea580c;
+}
+.mgmt_theme_postsales::after {
+  background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+}
+.mgmt_theme_postsales:hover {
+  transform: translateY(-2px);
+  border-color: #fed7aa;
+  box-shadow: 0 8px 18px -4px rgba(234, 88, 12, 0.12);
+}
+.mgmt_theme_postsales:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_postsales:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+/* Card Badge */
+.mgmt_card_badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.3;
+}
+
+.mgmt_badge_coming_soon {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #ffedd5;
+}
+
 /* --------------------------------------------------------------------------
    Header & Action Bar (Pre-Sales View)
    -------------------------------------------------------------------------- */

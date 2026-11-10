@@ -7,24 +7,29 @@ import PreSalesReports from "./PreSalesReports";
 import AdmissionReport from "./AdmissionReport";
 import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 import { LuIndianRupee } from "react-icons/lu";
-import { HiOutlineAcademicCap } from "react-icons/hi2";
+import {
+  HiOutlineAcademicCap,
+  HiOutlineClipboardDocumentCheck,
+} from "react-icons/hi2";
 import { TbReportAnalytics } from "react-icons/tb";
 import {
   getPreSalesReportsSummaryCounts,
+  getAdmissionsReportsCounts,
   getRoles,
   getUsersByTheirRole,
 } from "../ApiService/action";
 import { getCurrentandPreviousweekDate } from "../Common/Validation";
 import { useSelector } from "react-redux";
+import moment from "moment";
 
 /**
  * Dedicated Skeleton Loader for Management Summary Portal Cards
  */
-function NewReportsSkeleton({ cardCount = 2 }) {
+function NewReportsSkeleton({ cardCount = 3 }) {
   return (
     <Row gutter={[16, 16]}>
       {Array.from({ length: cardCount }).map((_, i) => (
-        <Col xs={24} sm={12} lg={12} xl={6} key={i}>
+        <Col xs={24} sm={12} md={8} lg={8} xl={6} key={i}>
           <div className="mgmt_card" style={{ cursor: "default" }}>
             <div className="mgmt_card_top_row">
               <Skeleton.Avatar
@@ -89,7 +94,6 @@ export default function NewReports() {
       subtext: "Total Leads",
       icon: <FiUsers />,
       theme: "leads",
-      available: true,
     },
     {
       id: "admissions",
@@ -98,7 +102,14 @@ export default function NewReports() {
       subtext: "Total Joinings",
       icon: <HiOutlineAcademicCap />,
       theme: "admissions",
-      available: true,
+    },
+    {
+      id: "postsales",
+      title: "Post-Sales Report",
+      countKey: "admission_total",
+      subtext: "Total Admissions",
+      icon: <HiOutlineClipboardDocumentCheck />,
+      theme: "postsales",
     },
   ];
 
@@ -185,17 +196,45 @@ export default function NewReports() {
 
   const getNewReportsSummary = async (startDate, endDate, user_ids) => {
     setIsLoading(true);
+    const formattedStartDate = startDate
+      ? moment(startDate).format("YYYY-MM-DD")
+      : undefined;
+    const formattedEndDate = endDate
+      ? moment(endDate).format("YYYY-MM-DD")
+      : undefined;
+
     const payload = {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: formattedStartDate,
+      end_date: formattedEndDate,
       ...(user_ids && user_ids.length >= 1
         ? { user_ids: user_ids }
         : { user_ids: [] }),
     };
+
     try {
-      const response = await getPreSalesReportsSummaryCounts(payload);
-      console.log("summary response", response);
-      setSummaryCounts(response?.data?.data?.bucket_counts || null);
+      const [preSalesRes, admissionRes] = await Promise.allSettled([
+        getPreSalesReportsSummaryCounts(payload),
+        getAdmissionsReportsCounts(payload),
+      ]);
+
+      const preSalesBucket =
+        preSalesRes.status === "fulfilled"
+          ? preSalesRes.value?.data?.data?.bucket_counts || {}
+          : {};
+
+      const admissionData =
+        admissionRes.status === "fulfilled"
+          ? admissionRes.value?.data?.data?.admission ||
+            admissionRes.value?.data?.admission ||
+            {}
+          : {};
+
+      const admissionTotal = parseInt(admissionData?.total_count || 0);
+
+      setSummaryCounts({
+        ...preSalesBucket,
+        admission_total: admissionTotal,
+      });
     } catch (error) {
       setSummaryCounts(null);
       console.log("summary error", error);
@@ -212,6 +251,8 @@ export default function NewReports() {
       setActiveReport("presales");
     } else if (card.id === "admissions") {
       setActiveReport("admissions");
+    } else if (card.id === "postsales") {
+      message.info("Post Sale Report is Coming Soon");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -321,7 +362,7 @@ export default function NewReports() {
             const count = summaryCounts?.[card.countKey] ?? "-";
 
             return (
-              <Col xs={24} sm={12} lg={12} xl={6} key={card.id}>
+              <Col xs={24} sm={12} md={8} lg={8} xl={6} key={card.id}>
                 <div
                   className={`mgmt_card mgmt_card_clickable mgmt_theme_${card.theme}`}
                   onClick={() => handleCardClick(card)}
@@ -345,7 +386,7 @@ export default function NewReports() {
 
                   <div className="mgmt_card_footer">
                     <span className="mgmt_card_action_hint">
-                      View Report{" "}
+                      View Report
                       <FiArrowRight className="mgmt_card_action_arrow" />
                     </span>
                   </div>
