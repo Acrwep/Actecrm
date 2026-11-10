@@ -1103,8 +1103,8 @@ export default function AdmissionReport({
         heightLeft -= pageHeight;
       }
 
-      const dateStr = dayjs().format("YYYY-MM-DD");
-      pdf.save(`ACTE_Admissions_Report_${dateStr}.pdf`);
+      const dateStr = dayjs().format("DD-MM-YYYY");
+      pdf.save(`Admissions_Report_${dateStr}.pdf`);
       CommonMessage("success", "PDF downloaded successfully!");
     } catch (error) {
       console.error("PDF export error:", error);
@@ -1171,11 +1171,25 @@ export default function AdmissionReport({
       });
       rows.push([]);
 
-      // 3. Lifecycle
-      rows.push(["3. STUDENT ONBOARDING & ADMISSION LIFECYCLE"]);
+      // 3. Lifecycle Stages (Main Stages Overview from API)
+      rows.push([
+        "3. STUDENT ONBOARDING & ADMISSION LIFECYCLE (STAGE OVERVIEW)",
+      ]);
+      rows.push([
+        "Stage Name",
+        "Main Volume Count",
+        "Status / Progression Rate",
+      ]);
+      admissionReportData.lifecycleStages.forEach((stage) => {
+        rows.push([stage.title, stage.count, stage.rateLabel]);
+      });
+      rows.push([]);
+
+      // 4. Lifecycle Activities (Granular Sub-activity Breakdown)
+      rows.push(["4. LIFECYCLE ACTIVITIES DETAILED BREAKDOWN"]);
       rows.push([
         "Stage",
-        "Activity",
+        "Activity Name",
         "Completed Count",
         "Completion Rate (%)",
       ]);
@@ -1186,16 +1200,16 @@ export default function AdmissionReport({
       });
       rows.push([]);
 
-      // 4. Sources
-      rows.push(["4. ACQUISITION CHANNEL ATTRIBUTION (SOURCES)"]);
+      // 5. Sources
+      rows.push(["5. ACQUISITION CHANNEL ATTRIBUTION (SOURCES)"]);
       rows.push(["Source Channel", "Count", "Share (%)"]);
       (admissionReportData.leadSources || []).forEach((s) => {
         rows.push([s.name, s.count, `${s.share}%`]);
       });
       rows.push([]);
 
-      // 5. Sub-Sources
-      rows.push(["5. ACQUISITION SUB-SOURCES ATTRIBUTION"]);
+      // 6. Sub-Sources
+      rows.push(["6. ACQUISITION SUB-SOURCES ATTRIBUTION"]);
       rows.push(["Sub-Source Name", "Parent Channel", "Count"]);
       (admissionReportData.leadSubSources || []).forEach((sub) => {
         rows.push([sub.name, sub.parent, sub.count]);
@@ -1204,8 +1218,8 @@ export default function AdmissionReport({
       const worksheet = XLSX.utils.aoa_to_sheet(rows);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Admissions Report");
-      const dateStr = dayjs().format("YYYY-MM-DD");
-      XLSX.writeFile(workbook, `ACTE_Admissions_Report_${dateStr}.csv`);
+      const dateStr = dayjs().format("DD-MM-YYYY");
+      XLSX.writeFile(workbook, `Admissions_Report_${dateStr}.csv`);
       CommonMessage("success", "CSV downloaded successfully!");
     } catch (error) {
       console.error("CSV export error:", error);
