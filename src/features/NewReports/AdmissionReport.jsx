@@ -626,14 +626,6 @@ export default function AdmissionReport({
       return `${((count / totalAdmissions) * 100).toFixed(1)}%`;
     };
 
-    // Onboarding Health (Welcome call status / total admissions)
-    const welcomeCallCount =
-      Number(admission?.student_onboarding?.welcome_call_status) || 0;
-    const onboardingHealth =
-      totalAdmissions > 0
-        ? `${((welcomeCallCount / totalAdmissions) * 100).toFixed(1)}%`
-        : "100.0%";
-
     // Top Courses
     const sortedCourses = [...courseResult].sort(
       (a, b) =>
@@ -672,17 +664,22 @@ export default function AdmissionReport({
     const comp = admission.course_completion || {};
     const cert = admission.review_certifications || {};
 
+    const studentOnboardingCount =
+      Number(onboarding.student_onboarding_count) || 0;
     const welcomeCall = Number(onboarding.welcome_call_status) || 0;
     const reqVerified = Number(onboarding.technology_verified) || 0;
     const trainerReq = Number(onboarding.trainer_assignment_request) || 0;
     const trainerFix = Number(onboarding.trainer_fixation_call) || 0;
 
+    const trainerCoordinationCount =
+      Number(coord.trainer_coordination_count) || 0;
     const waGroup = Number(coord.whatsapp_group_creation) || 0;
     const hrWelcome = Number(coord.hr_welcome_message) || 0;
     const attendLink = Number(coord.shared_attendance_link) || 0;
     const firstClass = Number(coord.first_class_monitoring) || 0;
     const trainerConfirm = Number(coord.trainer_confirmation) || 0;
 
+    const progressMonitoringCount = Number(prog.progress_monitoring_count) || 0;
     const classProg = Number(prog.class_progress_monitoring) || 0;
     const ticketRaised = Number(prog.ticket_raised) || 0;
     const midFeedback = Number(prog.mid_course_feedback) || 0;
@@ -690,12 +687,16 @@ export default function AdmissionReport({
     const serverReq = Number(prog.is_server_required) || 0;
     const placementHandover = Number(prog.placement_handover) || 0;
 
+    const courseCompletionCount = Number(comp.course_completion_count) || 0;
     const classCompConfirm = Number(comp.class_completion_confirmation) || 0;
     const trainerCompRep = Number(comp.trainer_completion_report) || 0;
     const studentCompRep = Number(comp.student_completion_report) || 0;
 
+    const reviewsAndCertificatesCount =
+      Number(cert.review_certifications_count) || 0;
     const googleReview = Number(cert.google_review_collection) || 0;
     const linkedinReview = Number(cert.linkedin_review_collection) || 0;
+    const reviewVerified = Number(cert.review_verification_status) || 0;
     const certIssued = Number(cert.course_completion_certificate) || 0;
     const closureCall = Number(cert.course_closure_call) || 0;
 
@@ -729,10 +730,6 @@ export default function AdmissionReport({
         color: "#ea580c",
       },
     ];
-    const stage1Total = stage1Activities.reduce(
-      (acc, act) => acc + act.count,
-      0,
-    );
 
     const stage2Activities = [
       {
@@ -771,10 +768,6 @@ export default function AdmissionReport({
         color: "#16a34a",
       },
     ];
-    const stage2Total = stage2Activities.reduce(
-      (acc, act) => acc + act.count,
-      0,
-    );
 
     const stage3Activities = [
       {
@@ -820,10 +813,6 @@ export default function AdmissionReport({
         color: "#ea580c",
       },
     ];
-    const stage3Total = stage3Activities.reduce(
-      (acc, act) => acc + act.count,
-      0,
-    );
 
     const stage4Activities = [
       {
@@ -848,10 +837,6 @@ export default function AdmissionReport({
         color: "#8b5cf6",
       },
     ];
-    const stage4Total = stage4Activities.reduce(
-      (acc, act) => acc + act.count,
-      0,
-    );
 
     const stage5Activities = [
       {
@@ -869,6 +854,13 @@ export default function AdmissionReport({
         color: "#0284c7",
       },
       {
+        name: "Reviews Verified",
+        count: reviewVerified,
+        completedText: "Verified",
+        rate: calcActivityRate(reviewVerified),
+        color: "#0D9488",
+      },
+      {
         name: "Certificates Issued",
         count: certIssued,
         completedText: "Issued",
@@ -883,66 +875,63 @@ export default function AdmissionReport({
         color: "#ea580c",
       },
     ];
-    const stage5Total = stage5Activities.reduce(
-      (acc, act) => acc + act.count,
-      0,
-    );
 
     const lifecycleStages = [
       {
         stepNum: 1,
         title: "1. Student Onboarding",
-        count: stage1Total,
-        rateLabel: totalAdmissions > 0 ? "100% Initiated" : "0% Initiated",
+        count: studentOnboardingCount,
+        rateLabel: calcActivityRate(studentOnboardingCount) + " In Onboarding",
         rateColor: "#059669",
         activities: stage1Activities,
       },
       {
         stepNum: 2,
         title: "2. Trainer Coordination",
-        count: stage2Total,
+        count: trainerCoordinationCount,
         rateLabel:
-          calcActivityRate(trainerConfirm || trainerFix || 0) + " Coordinated",
+          calcActivityRate(trainerCoordinationCount) + " In Coordination",
         rateColor: "#0284c7",
         activities: stage2Activities,
       },
       {
         stepNum: 3,
         title: "3. Progress Monitoring",
-        count: stage3Total,
-        rateLabel: calcActivityRate(classProg) + " In Training",
+        count: progressMonitoringCount,
+        rateLabel: calcActivityRate(progressMonitoringCount) + " In Training",
         rateColor: "#4f46e5",
         activities: stage3Activities,
       },
       {
         stepNum: 4,
         title: "4. Course Completion",
-        count: stage4Total,
-        rateLabel: calcActivityRate(classCompConfirm) + " Final Stage",
+        count: courseCompletionCount,
+        rateLabel: calcActivityRate(courseCompletionCount) + " Final Stage",
         rateColor: "#ea580c",
         activities: stage4Activities,
       },
       {
         stepNum: 5,
         title: "★ Certification & Closure",
-        count: stage5Total,
-        rateLabel:
-          calcActivityRate(
-            certIssued || Number(cert.is_course_completed) || 0,
-          ) + " Graduated",
+        count: reviewsAndCertificatesCount,
+        rateLabel: calcActivityRate(reviewsAndCertificatesCount) + " Graduated",
         rateColor: "#059669",
         isHero: true,
         activities: stage5Activities,
       },
     ];
 
-    // Source share calculation
-    const sourceDirect = Number(sources.direct) || 0;
-    const sourceWebsite = Number(sources.website) || 0;
-    const sourceRef = Number(sources.reference) || 0;
-    const sourceSmo = Number(sources.smo) || 0;
-    const sourceCall = Number(sources.call) || 0;
-    const sourceLiveChat = Number(sources.live_chat) || 0;
+    // Onboarding Health (Welcome call status / total admissions)
+    const totalOnboardedActivities =
+      trainerCoordinationCount +
+      progressMonitoringCount +
+      courseCompletionCount +
+      reviewsAndCertificatesCount;
+
+    const onboardedHealth =
+      totalAdmissions > 0
+        ? `${((totalOnboardedActivities / totalAdmissions) * 100).toFixed(1)}%`
+        : "0.0%";
 
     // Raw Sources (Matching PreSalesReport.jsx standard)
     const rawSources = [
@@ -1059,7 +1048,7 @@ export default function AdmissionReport({
       onlineDailyAverage,
       targetConversionRate: 20,
       totalQualifiedLeads,
-      onboardingHealth,
+      onboardedHealth,
       topCourses,
       lifecycleStages,
       leadSources,
@@ -1652,7 +1641,7 @@ export default function AdmissionReport({
               className="presales_section_title_badge"
               style={{ background: "#ecfdf5", color: "#059669" }}
             >
-              Onboarding Health: {admissionReportData.onboardingHealth}
+              Onboarded Health: {admissionReportData.onboardedHealth}
             </span>
           </div>
 
