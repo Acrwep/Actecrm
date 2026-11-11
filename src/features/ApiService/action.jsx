@@ -2597,3 +2597,12 @@ export const getAdmissionsReportsCounts = async (payload) => {
     throw error;
   }
 };
+
+export const getCustomersReportsCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getCustomersReportsCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

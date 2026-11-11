@@ -5,6 +5,7 @@ import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PreSalesReports from "./PreSalesReports";
 import AdmissionReport from "./AdmissionReport";
+import PostSalesReport from "./PostSalesReport";
 import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 import { LuIndianRupee } from "react-icons/lu";
 import {
@@ -15,6 +16,7 @@ import { TbReportAnalytics } from "react-icons/tb";
 import {
   getPreSalesReportsSummaryCounts,
   getAdmissionsReportsCounts,
+  getCustomersReportsCounts,
   getRoles,
   getUsersByTheirRole,
 } from "../ApiService/action";
@@ -106,8 +108,8 @@ export default function NewReports() {
     {
       id: "postsales",
       title: "Post-Sales Report",
-      countKey: "admission_total",
-      subtext: "Total Admissions",
+      countKey: "postsales_total",
+      subtext: "Total Customers",
       icon: <HiOutlineClipboardDocumentCheck />,
       theme: "postsales",
     },
@@ -212,10 +214,17 @@ export default function NewReports() {
     };
 
     try {
-      const [preSalesRes, admissionRes] = await Promise.allSettled([
-        getPreSalesReportsSummaryCounts(payload),
-        getAdmissionsReportsCounts(payload),
-      ]);
+      const [preSalesRes, admissionRes, postSalesRes] =
+        await Promise.allSettled([
+          getPreSalesReportsSummaryCounts(payload),
+          getAdmissionsReportsCounts(payload),
+          getCustomersReportsCounts({
+            from_date: formattedStartDate,
+            to_date: formattedEndDate,
+            user_ids: user_ids && user_ids.length >= 1 ? user_ids : [],
+            date_type: "Joining",
+          }),
+        ]);
 
       const preSalesBucket =
         preSalesRes.status === "fulfilled"
@@ -231,9 +240,17 @@ export default function NewReports() {
 
       const admissionTotal = parseInt(admissionData?.total_count || 0);
 
+      const postSalesData =
+        postSalesRes.status === "fulfilled"
+          ? postSalesRes.value?.data?.data || {}
+          : {};
+
+      const postSalesTotal = parseInt(postSalesData?.all_counts || 0);
+
       setSummaryCounts({
         ...preSalesBucket,
         admission_total: admissionTotal,
+        postsales_total: postSalesTotal,
       });
     } catch (error) {
       setSummaryCounts(null);
@@ -252,7 +269,7 @@ export default function NewReports() {
     } else if (card.id === "admissions") {
       setActiveReport("admissions");
     } else if (card.id === "postsales") {
-      message.info("Post Sale Report is Coming Soon");
+      setActiveReport("postsales");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -284,6 +301,17 @@ export default function NewReports() {
   if (activeReport === "admissions") {
     return (
       <AdmissionReport
+        onBack={() => setActiveReport(null)}
+        summaryStartAndEndDate={selectedDates}
+        roleIds={roleIds}
+      />
+    );
+  }
+
+  // If user selected the Post-Sales report, render the dedicated PostSalesReport component
+  if (activeReport === "postsales") {
+    return (
+      <PostSalesReport
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
         roleIds={roleIds}
