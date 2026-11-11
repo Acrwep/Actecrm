@@ -314,6 +314,52 @@
   transform: scale(1.06);
 }
 
+/* 6. Trainer Payments Theme (Vibrant Sky / Royal Azure Blue) */
+.mgmt_theme_trainer_payments .mgmt_card_icon_circle {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+.mgmt_theme_trainer_payments .mgmt_card_count,
+.mgmt_theme_trainer_payments .mgmt_card_action_hint {
+  color: #0284c7;
+}
+.mgmt_theme_trainer_payments::after {
+  background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+}
+.mgmt_theme_trainer_payments:hover {
+  transform: translateY(-2px);
+  border-color: #bae6fd;
+  box-shadow: 0 8px 18px -4px rgba(2, 132, 199, 0.16);
+}
+.mgmt_theme_trainer_payments:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_trainer_payments:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+.trainer_payments_header_icon_box {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+.presales_theme_teal .presales_stat_icon_wrapper {
+  background: #f0fdfa;
+  color: #0d9488;
+}
+.presales_theme_teal .presales_badge {
+  background: #f0fdfa;
+  color: #0d9488;
+}
+
 /* Card Badge */
 .mgmt_card_badge {
   font-size: 10px;

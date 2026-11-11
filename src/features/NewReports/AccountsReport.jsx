@@ -926,7 +926,7 @@ export default function AccountsReport({
 
           <Row gutter={[16, 22]}>
             {/* Card 1: Sale Volume */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
               <div className="presales_stat_card presales_theme_indigo">
                 <div className="presales_card_top">
                   <div>
@@ -965,7 +965,7 @@ export default function AccountsReport({
             </Col>
 
             {/* Card 2: New payment Collection */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
               <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
                   <div>
@@ -1009,7 +1009,7 @@ export default function AccountsReport({
             </Col>
 
             {/* Card 3: Re-Payment Collection */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
               <div className="presales_stat_card presales_theme_orange">
                 <div className="presales_card_top">
                   <div>
@@ -1051,7 +1051,7 @@ export default function AccountsReport({
             </Col>
 
             {/* Card 4: Total Collection */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
               <div className="presales_stat_card presales_theme_emerald">
                 <div className="presales_card_top">
                   <div>
@@ -1109,7 +1109,7 @@ export default function AccountsReport({
             </Col>
 
             {/* Card 5: Pending Payment */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
               <div className="presales_stat_card presales_theme_amber">
                 <div className="presales_card_top">
                   <div>
@@ -1151,7 +1151,7 @@ export default function AccountsReport({
             </Col>
 
             {/* Card 6: Need to Verify */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
               <div className="presales_stat_card presales_theme_violet">
                 <div className="presales_card_top">
                   <div>

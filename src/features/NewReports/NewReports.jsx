@@ -7,8 +7,9 @@ import PreSalesReports from "./PreSalesReports";
 import AdmissionReport from "./AdmissionReport";
 import PostSalesReport from "./PostSalesReport";
 import AccountsReport from "./AccountsReport";
+import TrainerPaymentReport from "./TrainerPaymentReport";
 import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
-import { FaIndianRupeeSign } from "react-icons/fa6";
+import { FaIndianRupeeSign, FaMoneyBillWave } from "react-icons/fa6";
 import {
   HiOutlineAcademicCap,
   HiOutlineClipboardDocumentCheck,
@@ -122,6 +123,14 @@ export default function NewReports() {
       subtext: "Total Collections",
       icon: <FaIndianRupeeSign />,
       theme: "accounts",
+    },
+    {
+      id: "trainer_payments",
+      title: "Trainer Payments",
+      countKey: "trainer_payments_total",
+      subtext: "Disbursements & Liabilities",
+      icon: <FaMoneyBillWave />,
+      theme: "trainer_payments",
     },
   ];
 
@@ -255,6 +264,8 @@ export default function NewReports() {
       setActiveReport("postsales");
     } else if (card.id === "accounts") {
       setActiveReport("accounts");
+    } else if (card.id === "trainer_payments") {
+      setActiveReport("trainer_payments");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -308,6 +319,17 @@ export default function NewReports() {
   if (activeReport === "accounts") {
     return (
       <AccountsReport
+        onBack={() => setActiveReport(null)}
+        summaryStartAndEndDate={selectedDates}
+        roleIds={roleIds}
+      />
+    );
+  }
+
+  // If user selected the Trainer Payments report, render TrainerPaymentReport
+  if (activeReport === "trainer_payments") {
+    return (
+      <TrainerPaymentReport
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
         roleIds={roleIds}
@@ -413,7 +435,9 @@ export default function NewReports() {
                               : undefined
                           }
                         >
-                          {card.id === "accounts" && displayCount !== "-"
+                          {(card.id === "accounts" ||
+                            card.id === "trainer_payments") &&
+                          displayCount !== "-"
                             ? `₹${displayCount}`
                             : displayCount}
                         </span>
