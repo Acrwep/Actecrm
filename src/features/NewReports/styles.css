@@ -235,26 +235,33 @@
   transform: scale(1.06);
 }
 
-/* 3. Revenue Theme (Violet) */
+/* 3. Accounts / Revenue Theme (Violet) */
+.mgmt_theme_accounts .mgmt_card_icon_circle,
 .mgmt_theme_revenue .mgmt_card_icon_circle {
   background: #ede9fe;
   color: #6d28d9;
 }
+.mgmt_theme_accounts .mgmt_card_count,
+.mgmt_theme_accounts .mgmt_card_action_hint,
 .mgmt_theme_revenue .mgmt_card_count,
 .mgmt_theme_revenue .mgmt_card_action_hint {
   color: #7c3aed;
 }
+.mgmt_theme_accounts::after,
 .mgmt_theme_revenue::after {
   background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
 }
+.mgmt_theme_accounts:hover,
 .mgmt_theme_revenue:hover {
   transform: translateY(-2px);
   border-color: #ddd6fe;
   box-shadow: 0 8px 18px -4px rgba(124, 58, 237, 0.12);
 }
+.mgmt_theme_accounts:hover::after,
 .mgmt_theme_revenue:hover::after {
   opacity: 1;
 }
+.mgmt_theme_accounts:hover .mgmt_card_icon_circle,
 .mgmt_theme_revenue:hover .mgmt_card_icon_circle {
   transform: scale(1.06);
 }
@@ -1744,6 +1751,7 @@
 .postsales_datetype_box {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .postsales_datetype_box:hover {
@@ -1761,12 +1769,14 @@
 
 .postsales_datetype_toggle {
   display: inline-flex;
+  justify-content: center;
   align-items: center;
   background: #f1f5f9;
   border-radius: 6px;
   padding: 6px 6px;
   gap: 2px;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .postsales_toggle_btn {

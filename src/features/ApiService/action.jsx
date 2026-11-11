@@ -2577,7 +2577,7 @@ export const getPreSalesReportsCounts = async (payload) => {
   }
 };
 
-export const getPreSalesReportsSummaryCounts = async (payload) => {
+export const getNewReportsSummaryCounts = async (payload) => {
   try {
     const response = await api.post(
       `/api/getPreSalesReportsSummaryCounts`,

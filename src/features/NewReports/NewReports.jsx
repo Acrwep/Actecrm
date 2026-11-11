@@ -14,24 +14,25 @@ import {
 } from "react-icons/hi2";
 import { TbReportAnalytics } from "react-icons/tb";
 import {
-  getPreSalesReportsSummaryCounts,
-  getAdmissionsReportsCounts,
-  getCustomersReportsCounts,
+  getNewReportsSummaryCounts,
   getRoles,
   getUsersByTheirRole,
 } from "../ApiService/action";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  formatIndianNumber,
+} from "../Common/Validation";
 import { useSelector } from "react-redux";
 import moment from "moment";
 
 /**
  * Dedicated Skeleton Loader for Management Summary Portal Cards
  */
-function NewReportsSkeleton({ cardCount = 3 }) {
+function NewReportsSkeleton({ cardCount = 4 }) {
   return (
     <Row gutter={[16, 16]}>
       {Array.from({ length: cardCount }).map((_, i) => (
-        <Col xs={24} sm={12} md={8} lg={8} xl={6} key={i}>
+        <Col xs={24} sm={12} md={12} lg={6} xl={6} key={i}>
           <div className="mgmt_card" style={{ cursor: "default" }}>
             <div className="mgmt_card_top_row">
               <Skeleton.Avatar
@@ -92,7 +93,7 @@ export default function NewReports() {
     {
       id: "presales",
       title: "Pre-Sales Report",
-      countKey: "all",
+      countKey: "total_leads",
       subtext: "Total Leads",
       icon: <FiUsers />,
       theme: "leads",
@@ -112,6 +113,14 @@ export default function NewReports() {
       subtext: "Total Customers",
       icon: <HiOutlineClipboardDocumentCheck />,
       theme: "postsales",
+    },
+    {
+      id: "accounts",
+      title: "Accounts",
+      countKey: "total_collection",
+      subtext: "Total Collections",
+      icon: <LuIndianRupee />,
+      theme: "accounts",
     },
   ];
 
@@ -214,43 +223,16 @@ export default function NewReports() {
     };
 
     try {
-      const [preSalesRes, admissionRes, postSalesRes] =
-        await Promise.allSettled([
-          getPreSalesReportsSummaryCounts(payload),
-          getAdmissionsReportsCounts(payload),
-          getCustomersReportsCounts({
-            from_date: formattedStartDate,
-            to_date: formattedEndDate,
-            user_ids: user_ids && user_ids.length >= 1 ? user_ids : [],
-            date_type: "Joining",
-          }),
-        ]);
-
-      const preSalesBucket =
-        preSalesRes.status === "fulfilled"
-          ? preSalesRes.value?.data?.data?.bucket_counts || {}
-          : {};
-
-      const admissionData =
-        admissionRes.status === "fulfilled"
-          ? admissionRes.value?.data?.data?.admission ||
-            admissionRes.value?.data?.admission ||
-            {}
-          : {};
-
-      const admissionTotal = parseInt(admissionData?.total_count || 0);
-
-      const postSalesData =
-        postSalesRes.status === "fulfilled"
-          ? postSalesRes.value?.data?.data || {}
-          : {};
-
-      const postSalesTotal = parseInt(postSalesData?.all_counts || 0);
+      const summary_response = await getNewReportsSummaryCounts(payload);
+      console.log("summary response", summary_response);
+      const summary_counts =
+        summary_response?.data?.data?.bucket_counts || null;
 
       setSummaryCounts({
-        ...preSalesBucket,
-        admission_total: admissionTotal,
-        postsales_total: postSalesTotal,
+        total_leads: summary_counts?.all || 0,
+        admission_total: summary_counts?.admission_total || 0,
+        postsales_total: summary_counts?.admission_total || 0,
+        total_collection: summary_counts?.total_collection || 0,
       });
     } catch (error) {
       setSummaryCounts(null);
@@ -270,6 +252,8 @@ export default function NewReports() {
       setActiveReport("admissions");
     } else if (card.id === "postsales") {
       setActiveReport("postsales");
+    } else if (card.id === "accounts") {
+      message.info("Accounts Report is Coming Soon");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -387,10 +371,11 @@ export default function NewReports() {
       ) : (
         <Row gutter={[16, 16]}>
           {reportCards.map((card) => {
-            const count = summaryCounts?.[card.countKey] ?? "-";
+            const rawCount = summaryCounts?.[card.countKey] ?? "-";
+            const displayCount = formatIndianNumber(rawCount);
 
             return (
-              <Col xs={24} sm={12} md={8} lg={8} xl={6} key={card.id}>
+              <Col xs={24} sm={12} md={12} lg={6} xl={6} key={card.id}>
                 <div
                   className={`mgmt_card mgmt_card_clickable mgmt_theme_${card.theme}`}
                   onClick={() => handleCardClick(card)}
@@ -406,7 +391,18 @@ export default function NewReports() {
                     <div className="mgmt_card_content">
                       <h3 className="mgmt_card_title">{card.title}</h3>
                       <div className="mgmt_card_count_row">
-                        <span className="mgmt_card_count">{count}</span>
+                        <span
+                          className="mgmt_card_count"
+                          title={
+                            rawCount !== "-"
+                              ? typeof rawCount === "number"
+                                ? rawCount.toLocaleString("en-IN")
+                                : String(rawCount)
+                              : undefined
+                          }
+                        >
+                          {displayCount}
+                        </span>
                       </div>
                       <p className="mgmt_card_subtext">{card.subtext}</p>
                     </div>

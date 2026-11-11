@@ -1168,3 +1168,63 @@ export var ReactQuillFormats = [
   "align",
   "size",
 ];
+
+/**
+ * Formats numbers using the Indian numbering system:
+ * - Crores (Cr) for values >= 1,00,00,000 (10^7)
+ * - Lakhs (L) for values >= 1,00,000 (10^5)
+ * - Optional Thousands (K) for values >= 1,000 (10^3) when options.allowK is true
+ * - Indian comma formatting (en-IN) for smaller values
+ * - Removes unnecessary trailing zeros from decimal values (e.g., 5Cr instead of 5.00Cr, 1.2Cr instead of 1.20Cr)
+ *
+ * Examples:
+ *   1000          -> "1,000" (or "1K" if allowK: true)
+ *   100000        -> "1L"
+ *   3500000       -> "35L"
+ *   12500000      -> "1.25Cr"
+ *   50000000      -> "5Cr"
+ *
+ * @param {number|string|null|undefined} value - Numeric value to format
+ * @param {Object} [options]
+ * @param {number} [options.maxDecimals=2] - Maximum decimal places to display (default: 2)
+ * @param {boolean} [options.allowK=false] - Whether to abbreviate thousands as 'K' (default: false)
+ * @returns {string} Formatted number string, or '-' for null/undefined/empty
+ */
+export const formatIndianNumber = (value, options = {}) => {
+  if (value === null || value === undefined || value === "") return "-";
+  if (value === "-") return "-";
+
+  const num =
+    typeof value === "number"
+      ? value
+      : Number(String(value).replace(/,/g, "").trim());
+
+  if (isNaN(num)) return String(value);
+
+  const { maxDecimals = 2, allowK = false } = options;
+  const isNegative = num < 0;
+  const absNum = Math.abs(num);
+
+  const cleanDecimals = (val) => {
+    return parseFloat(val.toFixed(maxDecimals)).toString();
+  };
+
+  let formatted = "";
+  if (absNum >= 1e7) {
+    // 1 Crore = 1,00,00,000
+    formatted = `${cleanDecimals(absNum / 1e7)}Cr`;
+  } else if (absNum >= 1e5) {
+    // 1 Lakh = 1,00,000
+    formatted = `${cleanDecimals(absNum / 1e5)}L`;
+  } else if (allowK && absNum >= 1e3) {
+    // 1 Thousand = 1,000 (optional)
+    formatted = `${cleanDecimals(absNum / 1e3)}K`;
+  } else {
+    // Smaller numbers formatted with Indian comma separators
+    formatted = absNum.toLocaleString("en-IN", {
+      maximumFractionDigits: maxDecimals,
+    });
+  }
+
+  return isNegative ? `-${formatted}` : formatted;
+};
