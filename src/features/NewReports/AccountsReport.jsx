@@ -200,11 +200,7 @@ export default function AccountsReport({
         : convenienceFeesType;
 
     setIsLoading(true);
-    const activeRoles = roleIds
-      ? [roleIds.sale_role_id, roleIds.ra_role_id, roleIds.hr_role_id].filter(
-          Boolean,
-        )
-      : [];
+    const activeRoles = roleIds ? [roleIds.sale_role_id].filter(Boolean) : [];
 
     const payload = {
       ...(activeRoles.length > 0 && { roles: activeRoles }),
@@ -216,19 +212,20 @@ export default function AccountsReport({
 
     try {
       const response = await getUsersByTheirRole(payload);
-      const users = response?.data?.data || [];
-      const downlines = downlineUsers.filter((downline) =>
-        users.some((user) => user.user_id === downline.user_id),
+      const sale_users = response?.data?.data || [];
+
+      const sale_downlines = downlineUsers.filter((downline) =>
+        sale_users.some((user) => user.user_id === downline.user_id),
       );
-      const activeUsers = downlines.length > 0 ? downlines : users;
-      setAccountsUsers(activeUsers);
+
+      setAccountsUsers(sale_downlines);
 
       fetchAccountsData({
         startDate: startDate,
         endDate: endDate,
         regionId: regionId,
         branchId: branchId,
-        user_ids: activeUsers.map((su) => su.user_id),
+        user_ids: sale_downlines.map((su) => su.user_id),
         convenienceFeesType: convenienceFees,
       });
     } catch (error) {
