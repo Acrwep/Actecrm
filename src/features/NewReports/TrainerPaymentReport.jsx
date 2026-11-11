@@ -80,7 +80,7 @@ function TrainerPaymentReportSkeleton() {
 
       <Row gutter={[16, 16]}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Col xs={24} sm={12} md={12} lg={8} xl={4} key={i}>
+          <Col xs={24} sm={12} md={12} lg={8} xl={6} key={i}>
             <div className="presales_stat_card">
               <div className="presales_card_top">
                 <div
