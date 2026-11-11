@@ -28,7 +28,10 @@ import {
   HiOutlineClipboardDocumentCheck,
   HiOutlineSparkles,
 } from "react-icons/hi2";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  getFormattedDateString,
+} from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import moment from "moment";
@@ -681,53 +684,89 @@ export default function PostSalesReport({
   // PDF Export
   // ---------------------------------------------------------------------------
   const handleDownloadPDF = async () => {
+    if (isLoading) {
+      CommonMessage("warning", "Please wait for report data to finish loading");
+      return;
+    }
     if (!reportContentRef.current) return;
-    setIsExporting(true);
-    CommonMessage("info", "Generating high-resolution Post-Sales PDF...");
 
     try {
+      setIsExporting(true);
+      CommonMessage("info", "Preparing Post-Sales PDF report...");
+
+      // Small delay to allow state and DOM to render export banner
+      await new Promise((resolve) => setTimeout(resolve, 250));
+
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+
       const element = reportContentRef.current;
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
         logging: false,
-        backgroundColor: "#f8fafc",
-        windowWidth: 1400,
+        windowWidth: 1240,
       });
 
       const imgData = canvas.toDataURL("image/png");
+
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
+        compress: true,
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const ratio = canvasWidth / pdfWidth;
-      const totalPdfHeight = canvasHeight / ratio;
+      const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      const margin = 10;
+      const printWidth = pageWidth - margin * 2; // 190mm
+      const printHeight = (canvas.height * printWidth) / canvas.width;
 
-      let heightLeft = totalPdfHeight;
-      let position = 0;
+      let heightLeft = printHeight;
+      let position = margin;
 
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, totalPdfHeight);
-      heightLeft -= pdfHeight;
+      pdf.addImage(
+        imgData,
+        "PNG",
+        margin,
+        position,
+        printWidth,
+        printHeight,
+        undefined,
+        "FAST",
+      );
+      heightLeft -= pageHeight - margin * 2;
 
       while (heightLeft > 0) {
-        position = heightLeft - totalPdfHeight;
+        position = heightLeft - printHeight + margin;
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, totalPdfHeight);
-        heightLeft -= pdfHeight;
+        pdf.addImage(
+          imgData,
+          "PNG",
+          margin,
+          position,
+          printWidth,
+          printHeight,
+          undefined,
+          "FAST",
+        );
+        heightLeft -= pageHeight - margin * 2;
       }
 
-      const dateStr = dayjs().format("DD-MM-YYYY");
-      pdf.save(`Post_Sales_Report_${dateStr}.pdf`);
-      CommonMessage("success", "PDF downloaded successfully!");
+      const filename = `Post_Sales_Report_${getFormattedDateString(selectedDates[0], selectedDates[1])}.pdf`;
+      pdf.save(filename);
+
+      CommonMessage(
+        "success",
+        "Post-Sales PDF report downloaded successfully!",
+      );
     } catch (error) {
-      console.error("PDF export error:", error);
-      CommonMessage("error", "Failed to generate PDF. Please try again.");
+      console.error("PDF Export Error:", error);
+      CommonMessage("error", "Failed to generate PDF report");
     } finally {
       setIsExporting(false);
     }
@@ -830,7 +869,7 @@ export default function PostSalesReport({
           <div className="presales_export_text_box">
             <span className="presales_export_title">Download as PDF</span>
             <span className="presales_export_desc">
-              High resolution report document
+              Formatted executive report
             </span>
           </div>
         </div>
@@ -857,7 +896,7 @@ export default function PostSalesReport({
   ];
 
   return (
-    <div className="presales_report_wrapper" ref={reportContentRef}>
+    <div className="presales_report_wrapper">
       {/* ====================================================================
           1. Header & Controls
           ==================================================================== */}
@@ -1056,11 +1095,54 @@ export default function PostSalesReport({
       {isLoading ? (
         <PostSalesReportSkeleton />
       ) : (
-        <>
+        <div
+          ref={reportContentRef}
+          className={`presales_printable_content ${isExporting ? "is_exporting_pdf" : ""}`}
+        >
+          {/* Dedicated PDF Export Header Banner (Rendered into PDF export) */}
+          {isExporting && (
+            <div className="presales_pdf_export_banner">
+              <div
+                className="presales_pdf_banner_top"
+                style={{ borderBottom: "0px" }}
+              >
+                <div>
+                  <h1 className="presales_pdf_banner_title">
+                    ACTE CRM — Post-Sales Analytics Report
+                  </h1>
+                  <p className="presales_pdf_banner_subtitle">
+                    Comprehensive performance report on onboarding verification,
+                    batch allocations, training delivery milestones, and course
+                    completion.
+                  </p>
+                </div>
+                <div className="presales_pdf_banner_meta">
+                  <div>
+                    <strong>Date Period:</strong>{" "}
+                    {selectedDates?.[0]
+                      ? `${moment(selectedDates[0]).format("DD/MM/YYYY")} to ${moment(selectedDates[1]).format("DD/MM/YYYY")}`
+                      : "Current Period"}
+                  </div>
+                  <div>
+                    <strong>Cohort Basis:</strong>{" "}
+                    {dateType === "Joining" ? "Joining Date" : "Updated Date"}
+                  </div>
+                  <div>
+                    <strong>Generated:</strong>{" "}
+                    {moment().format("DD MMM YYYY, hh:mm A")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ----------------------------------------------------------------
               SECTION 1: Post-Sales Executive KPIs (Matching Admission Summary design)
               ---------------------------------------------------------------- */}
-          <div className="presales_section_header" style={{ marginTop: 20 }}>
+          <div
+            className="presales_section_header"
+            style={{ marginTop: isExporting ? 20 : 6 }}
+          >
             <h2 className="presales_section_title">
               <HiOutlineClipboardDocumentCheck
                 style={{ color: "#4f46e5" }}
@@ -1396,7 +1478,7 @@ export default function PostSalesReport({
               })}
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

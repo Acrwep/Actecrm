@@ -2606,3 +2606,12 @@ export const getCustomersReportsCounts = async (payload) => {
     throw error;
   }
 };
+
+export const getAccountsReportsCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getAccountsReportsCounts`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

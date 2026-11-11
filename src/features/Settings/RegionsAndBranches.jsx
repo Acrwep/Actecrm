@@ -262,8 +262,8 @@ export default function RegionAndBranches() {
     } catch (error) {
       setButtonLoading(false);
       const errorMessage =
-        error?.response?.data?.message ||
         error?.response?.data?.details ||
+        error?.response?.data?.message ||
         "Failed to create branch";
       CommonMessage("error", errorMessage);
     }

@@ -36,7 +36,10 @@ import {
   HiOutlineSparkles,
   HiOutlineTrophy,
 } from "react-icons/hi2";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  getFormattedDateString,
+} from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import moment from "moment";
@@ -1103,8 +1106,9 @@ export default function AdmissionReport({
         heightLeft -= pageHeight;
       }
 
-      const dateStr = dayjs().format("DD-MM-YYYY");
-      pdf.save(`Admissions_Report_${dateStr}.pdf`);
+      const filename = `Admissions_Report_${getFormattedDateString(selectedDates[0], selectedDates[1])}.pdf`;
+      pdf.save(filename);
+
       CommonMessage("success", "PDF downloaded successfully!");
     } catch (error) {
       console.error("PDF export error:", error);
@@ -1218,8 +1222,10 @@ export default function AdmissionReport({
       const worksheet = XLSX.utils.aoa_to_sheet(rows);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Admissions Report");
-      const dateStr = dayjs().format("DD-MM-YYYY");
-      XLSX.writeFile(workbook, `Admissions_Report_${dateStr}.csv`);
+      XLSX.writeFile(
+        workbook,
+        `Admissions_Report_${getFormattedDateString(selectedDates[0], selectedDates[1])}.csv`,
+      );
       CommonMessage("success", "CSV downloaded successfully!");
     } catch (error) {
       console.error("CSV export error:", error);

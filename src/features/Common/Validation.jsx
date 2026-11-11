@@ -1228,3 +1228,9 @@ export const formatIndianNumber = (value, options = {}) => {
 
   return isNegative ? `-${formatted}` : formatted;
 };
+
+export const getFormattedDateString = (startDate, endDate) => {
+  const start = startDate ? moment(startDate).format("DD-MM-YYYY") : "start";
+  const end = endDate ? moment(endDate).format("DD-MM-YYYY") : "end";
+  return `${start}_to_${end}`;
+};

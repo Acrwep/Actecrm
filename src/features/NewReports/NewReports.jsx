@@ -6,8 +6,9 @@ import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import PreSalesReports from "./PreSalesReports";
 import AdmissionReport from "./AdmissionReport";
 import PostSalesReport from "./PostSalesReport";
+import AccountsReport from "./AccountsReport";
 import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
-import { LuIndianRupee } from "react-icons/lu";
+import { FaIndianRupeeSign } from "react-icons/fa6";
 import {
   HiOutlineAcademicCap,
   HiOutlineClipboardDocumentCheck,
@@ -119,7 +120,7 @@ export default function NewReports() {
       title: "Accounts",
       countKey: "total_collection",
       subtext: "Total Collections",
-      icon: <LuIndianRupee />,
+      icon: <FaIndianRupeeSign />,
       theme: "accounts",
     },
   ];
@@ -253,7 +254,7 @@ export default function NewReports() {
     } else if (card.id === "postsales") {
       setActiveReport("postsales");
     } else if (card.id === "accounts") {
-      message.info("Accounts Report is Coming Soon");
+      setActiveReport("accounts");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -296,6 +297,17 @@ export default function NewReports() {
   if (activeReport === "postsales") {
     return (
       <PostSalesReport
+        onBack={() => setActiveReport(null)}
+        summaryStartAndEndDate={selectedDates}
+        roleIds={roleIds}
+      />
+    );
+  }
+
+  // If user selected the Accounts report, render the dedicated AccountsReport component
+  if (activeReport === "accounts") {
+    return (
+      <AccountsReport
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
         roleIds={roleIds}
@@ -401,7 +413,9 @@ export default function NewReports() {
                               : undefined
                           }
                         >
-                          {displayCount}
+                          {card.id === "accounts" && displayCount !== "-"
+                            ? `₹${displayCount}`
+                            : displayCount}
                         </span>
                       </div>
                       <p className="mgmt_card_subtext">{card.subtext}</p>

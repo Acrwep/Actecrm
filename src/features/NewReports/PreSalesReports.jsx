@@ -33,7 +33,10 @@ import {
 } from "react-icons/fi";
 import { TbReportAnalytics, TbTargetArrow } from "react-icons/tb";
 import { HiOutlineSparkles } from "react-icons/hi2";
-import { getCurrentandPreviousweekDate } from "../Common/Validation";
+import {
+  getCurrentandPreviousweekDate,
+  getFormattedDateString,
+} from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import moment from "moment";
@@ -1064,17 +1067,6 @@ export default function PreSalesReports({
   const avgAssignLeads = reportData.avgAssignLeads ?? 0;
   const avgOpenLeads = reportData.avgOpenLeads ?? 0;
 
-  // Helper to format date strings for filenames
-  const getFormattedDateString = () => {
-    const start = selectedDates?.[0]
-      ? moment(selectedDates[0]).format("DD-MM-YYYY")
-      : "start";
-    const end = selectedDates?.[1]
-      ? moment(selectedDates[1]).format("DD-MM-YYYY")
-      : "end";
-    return `${start}_to_${end}`;
-  };
-
   // ==========================================================================
   // Export Feature: Download as CSV
   // ==========================================================================
@@ -1234,7 +1226,7 @@ export default function PreSalesReports({
       });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const filename = `PreSales_Report_${getFormattedDateString()}.csv`;
+      const filename = `PreSales_Report_${getFormattedDateString(selectedDates[0], selectedDates[1])}.csv`;
       link.href = url;
       link.setAttribute("download", filename);
       document.body.appendChild(link);
@@ -1326,7 +1318,7 @@ export default function PreSalesReports({
         heightLeft -= pageHeight - margin * 2;
       }
 
-      const filename = `PreSales_Report_${getFormattedDateString()}.pdf`;
+      const filename = `PreSales_Report_${getFormattedDateString(selectedDates[0], selectedDates[1])}.pdf`;
       pdf.save(filename);
 
       CommonMessage("success", "Pre-Sales PDF report downloaded successfully!");
@@ -1349,6 +1341,9 @@ export default function PreSalesReports({
           </div>
           <div className="presales_export_text_box">
             <span className="presales_export_title">Download as PDF</span>
+            <span className="presales_export_desc">
+              Formatted executive report
+            </span>
           </div>
         </div>
       ),
@@ -1366,6 +1361,9 @@ export default function PreSalesReports({
           </div>
           <div className="presales_export_text_box">
             <span className="presales_export_title">Download as CSV</span>
+            <span className="presales_export_desc">
+              Spreadsheet data export
+            </span>
           </div>
         </div>
       ),
