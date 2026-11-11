@@ -1120,7 +1120,7 @@ export default function TrainerPaymentReport({
 
           <Row gutter={[16, 22]}>
             {/* Card 1: Total Payout Claimed */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_indigo">
                 <div className="presales_card_top">
                   <div>
@@ -1156,7 +1156,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Card 2: Total Disbursed */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_emerald">
                 <div className="presales_card_top">
                   <div>
@@ -1194,7 +1194,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Card 3: Ready to Pay (Finance Queue) */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
                   <div>
@@ -1230,7 +1230,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Card 4: Claimed (Awaiting Approval) */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_violet">
                 <div className="presales_card_top">
                   <div>
@@ -1269,7 +1269,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Card 5: Unclaimed Links Sent */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_amber">
                 <div className="presales_card_top">
                   <div>
@@ -1305,7 +1305,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Card 6: Overdue / SLA Breached */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6} xxl={4}>
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_rose">
                 <div className="presales_card_top">
                   <div>
