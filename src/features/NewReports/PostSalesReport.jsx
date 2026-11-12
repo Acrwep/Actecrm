@@ -113,15 +113,26 @@ function PostSalesReportSkeleton() {
           className="presales_section_title_badge"
           style={{ background: "#eef2ff", color: "#4f46e5" }}
         >
-          5 Delivery Milestones
+          6 Key Delivery Milestones
         </span>
       </div>
 
       <div className="presales_funnel_container">
-        <div className="presales_funnel_steps">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <React.Fragment key={i}>
-              <div className="presales_funnel_step">
+        <Row gutter={[24, 16]}>
+          {[1, 2, 3, 4, 5, 6].map((i, idx) => (
+            <Col
+              xs={24}
+              sm={12}
+              md={12}
+              lg={6}
+              xl={6}
+              key={i}
+              className="postsales_pipeline_col"
+            >
+              <div
+                className="presales_funnel_step"
+                style={{ height: "100%", padding: "14px 12px" }}
+              >
                 <div className="presales_funnel_step_header">
                   <Skeleton.Input
                     active
@@ -133,7 +144,7 @@ function PostSalesReportSkeleton() {
                     <Skeleton.Input
                       active
                       size="small"
-                      style={{ width: 40, height: 14 }}
+                      style={{ width: 36, height: 12 }}
                     />
                   </div>
                 </div>
@@ -154,10 +165,14 @@ function PostSalesReportSkeleton() {
                   ))}
                 </div>
               </div>
-              {i < 5 && <FiArrowRight className="presales_funnel_arrow" />}
-            </React.Fragment>
+              {idx < 5 && (
+                <span className="postsales_pipeline_arrow">
+                  <FiArrowRight />
+                </span>
+              )}
+            </Col>
           ))}
-        </div>
+        </Row>
       </div>
     </div>
   );
@@ -193,7 +208,9 @@ export default function PostSalesReport({
   const [reportData, setReportData] = useState({
     all_counts: 0,
     form_completed: 0,
+    part_payment_collected: 0,
     payment_verified: 0,
+    part_payment_verified: 0,
     student_verified: 0,
     trainer_assigned: 0,
     trainer_rejected: 0,
@@ -354,7 +371,9 @@ export default function PostSalesReport({
         setReportData({
           all_counts: Number(apiData.all_counts) || 0,
           form_completed: Number(apiData.form_completed) || 0,
+          part_payment_collected: Number(apiData.part_payment) || 0,
           payment_verified: Number(apiData.payment_verified) || 0,
+          part_payment_verified: Number(apiData.part_payment_verified) || 0,
           student_verified: Number(apiData.student_verified) || 0,
           trainer_assigned: Number(apiData.trainer_assigned) || 0,
           trainer_rejected: Number(apiData.trainer_rejected) || 0,
@@ -491,182 +510,196 @@ export default function PostSalesReport({
       return `${((count / totalCustomers) * 100).toFixed(1)}%`;
     };
 
-    // 5 Lifecycle Stages using ONLY the response fields
-    const lifecycleStages = [
+    // 5 Lifecycle Progression Stages (Each stage total = sum of its related metrics)
+    const rawLifecycleStages = [
       {
         stepNum: 1,
-        title: "1. Finance & Verification",
-        count: reportData.form_completed,
-        rateLabel: `${calcRate(reportData.form_completed)} Forms`,
-        rateColor: "#0284c7",
+        title: "1. Form & Re-Payment",
         activities: [
           {
             name: "Form Completed",
-            count: reportData.form_completed,
+            count: Number(reportData.form_completed) || 0,
             completedText: "Completed",
-            rate: calcRate(reportData.form_completed),
-            color: "#0284c7",
+            rate: calcRate(Number(reportData.form_completed) || 0),
+            color: "#ff6b6b",
           },
           {
-            name: "Payment Verified",
-            count: reportData.payment_verified,
-            completedText: "Verified",
-            rate: calcRate(reportData.payment_verified),
-            color: "#16a34a",
+            name: "Re-Payment Collected",
+            count: Number(reportData.part_payment_collected) || 0,
+            completedText: "Completed",
+            rate: calcRate(Number(reportData.part_payment_collected) || 0),
+            color: "#ff6b6b",
           },
         ],
       },
+
       {
         stepNum: 2,
-        title: "2. Trainer Coordination",
-        count: reportData.trainer_assigned,
-        rateLabel: `${calcRate(reportData.trainer_assigned)} Assigned`,
-        rateColor: "#8b5cf6",
+        title: "2. Verification & Approvals",
         activities: [
           {
-            name: "Student Verified",
-            count: reportData.student_verified,
+            name: "New Payment Verified",
+            count: Number(reportData.payment_verified) || 0,
             completedText: "Verified",
-            rate: calcRate(reportData.student_verified),
-            color: "#ffa502",
+            rate: calcRate(Number(reportData.payment_verified) || 0),
+            color: "#16a34a",
           },
           {
-            name: "Trainer Assigned",
-            count: reportData.trainer_assigned,
-            completedText: "Assigned",
-            rate: calcRate(reportData.trainer_assigned),
-            color: "#2ed573",
+            name: "Re-Payment Verified",
+            count: Number(reportData.part_payment_verified) || 0,
+            completedText: "Verified",
+            rate: calcRate(Number(reportData.part_payment_verified) || 0),
+            color: "#16a34a",
           },
           {
             name: "Trainer Verified",
-            count: reportData.trainer_verified,
-            completedText: "Approved",
-            rate: calcRate(reportData.trainer_verified),
+            count: Number(reportData.trainer_verified) || 0,
+            completedText: "Verified",
+            rate: calcRate(Number(reportData.trainer_verified) || 0),
             color: "#1e90ff",
           },
           {
+            name: "Trainer Rejected",
+            count: Number(reportData.trainer_rejected) || 0,
+            completedText: "Reassign",
+            rate: calcRate(Number(reportData.trainer_rejected) || 0),
+            color: "#ea580c",
+          },
+          {
             name: "Trainer Approved",
-            count: reportData.trainer_approved,
+            count: Number(reportData.trainer_approved) || 0,
             completedText: "Class Ready",
-            rate: calcRate(reportData.trainer_approved),
+            rate: calcRate(Number(reportData.trainer_approved) || 0),
             color: "#8e44ad",
+          },
+          {
+            name: "Trainer Approval Rejected",
+            count: Number(reportData.trainer_approval_rejected) || 0,
+            completedText: "Rejected",
+            rate: calcRate(Number(reportData.trainer_approval_rejected) || 0),
+            color: "#d97706",
           },
         ],
       },
       {
         stepNum: 3,
-        title: "3. Training Delivery",
-        count: reportData.class_scheduled,
-        rateLabel: `${calcRate(reportData.class_scheduled)} Active`,
-        rateColor: "#059669",
+        title: "3. Trainer Coordination",
         activities: [
           {
-            name: "Class Scheduled (Class Going)",
-            count: reportData.class_scheduled,
-            completedText: "In Training",
-            rate: calcRate(reportData.class_scheduled),
-            color: "#00cec9",
+            name: "Student Verified",
+            count: Number(reportData.student_verified) || 0,
+            completedText: "Verified",
+            rate: calcRate(Number(reportData.student_verified) || 0),
+            color: "#ffa502",
           },
           {
-            name: "Demo Completed",
-            count: reportData.demo_completed,
-            completedText: "Completed",
-            rate: calcRate(reportData.demo_completed),
-            color: "#0284c7",
-          },
-          {
-            name: "Videos Given",
-            count: reportData.videos_given,
-            completedText: "Given",
-            rate: calcRate(reportData.videos_given),
-            color: "#e84393",
+            name: "Trainer Assigned",
+            count: Number(reportData.trainer_assigned) || 0,
+            completedText: "Assigned",
+            rate: calcRate(Number(reportData.trainer_assigned) || 0),
+            color: "#2ed573",
           },
         ],
       },
       {
         stepNum: 4,
-        title: "4. Passout & Completion",
-        count: reportData.course_completed,
-        rateLabel: `${calcRate(reportData.course_completed)} Completed`,
-        rateColor: "#059669",
-        isCompletion: true,
+        title: "4. Training Delivery",
         activities: [
           {
-            name: "Passedout Process",
-            count: reportData.passedout_processed,
-            completedText: "Under Review",
-            rate: calcRate(reportData.passedout_processed),
-            color: "#fd79a8",
-          },
-          {
-            name: "Course Completed",
-            count: reportData.course_completed,
-            completedText: "Graduated",
-            rate: calcRate(reportData.course_completed),
-            color: "#3c9111",
+            name: "Class Scheduled (Class Going)",
+            count: Number(reportData.class_scheduled) || 0,
+            completedText: "In Training",
+            rate: calcRate(Number(reportData.class_scheduled) || 0),
+            color: "#00cec9",
           },
         ],
       },
       {
         stepNum: 5,
+        title: "6. Passout & Completion",
+        isCompletion: true,
+        activities: [
+          {
+            name: "Passedout Process",
+            count: Number(reportData.passedout_processed) || 0,
+            completedText: "Under Review",
+            rate: calcRate(Number(reportData.passedout_processed) || 0),
+            color: "#fd79a8",
+          },
+          {
+            name: "Course Completed",
+            count: Number(reportData.course_completed) || 0,
+            completedText: "Graduated",
+            rate: calcRate(Number(reportData.course_completed) || 0),
+            color: "#3c9111",
+          },
+          {
+            name: "Demo Completed",
+            count: Number(reportData.demo_completed) || 0,
+            completedText: "Completed",
+            rate: calcRate(Number(reportData.demo_completed) || 0),
+            color: "#0284c7",
+          },
+          {
+            name: "Videos Given",
+            count: Number(reportData.videos_given) || 0,
+            completedText: "Given",
+            rate: calcRate(Number(reportData.videos_given) || 0),
+            color: "#e84393",
+          },
+        ],
+      },
+      {
+        stepNum: 6,
         title: "★ Retention & Exceptions",
-        count: reportData.others,
-        rateLabel: `${calcRate(reportData.others)} Retention Pool`,
-        rateColor: "#dc2626",
         isRetention: true,
         activities: [
           {
             name: "Escalated",
-            count: reportData.escalated,
+            count: Number(reportData.escalated) || 0,
             completedText: "Action Required",
-            rate: calcRate(reportData.escalated),
+            rate: calcRate(Number(reportData.escalated) || 0),
             color: "#e11d48",
           },
           {
             name: "Hold",
-            count: reportData.hold,
+            count: Number(reportData.hold) || 0,
             completedText: "Paused",
-            rate: calcRate(reportData.hold),
+            rate: calcRate(Number(reportData.hold) || 0),
             color: "#f59e0b",
           },
           {
-            name: "Trainer Rejected",
-            count: reportData.trainer_rejected,
-            completedText: "Reassign",
-            rate: calcRate(reportData.trainer_rejected),
-            color: "#ea580c",
-          },
-          {
-            name: "Trainer Approval Rejected",
-            count: reportData.trainer_approval_rejected,
-            completedText: "Rejected",
-            rate: calcRate(reportData.trainer_approval_rejected),
-            color: "#d97706",
-          },
-          {
             name: "Refunded",
-            count: reportData.refunded,
+            count: Number(reportData.refunded) || 0,
             completedText: "Processed",
-            rate: calcRate(reportData.refunded),
+            rate: calcRate(Number(reportData.refunded) || 0),
             color: "#dc2626",
           },
           {
             name: "Partially Closed",
-            count: reportData.partially_closed,
+            count: Number(reportData.partially_closed) || 0,
             completedText: "Dormant",
-            rate: calcRate(reportData.partially_closed),
+            rate: calcRate(Number(reportData.partially_closed) || 0),
             color: "#64748b",
           },
           {
             name: "Discontinued",
-            count: reportData.discontinued,
+            count: Number(reportData.discontinued) || 0,
             completedText: "Churned",
-            rate: calcRate(reportData.discontinued),
+            rate: calcRate(Number(reportData.discontinued) || 0),
             color: "#475569",
           },
         ],
       },
     ];
+
+    const lifecycleStages = rawLifecycleStages.map((stage) => ({
+      ...stage,
+      count: stage.activities.reduce(
+        (sum, act) => sum + (Number(act.count) || 0),
+        0,
+      ),
+    }));
 
     return {
       totalCustomers,
@@ -827,13 +860,9 @@ export default function PostSalesReport({
 
       // 2. Lifecycle Stages (Main Overview)
       rows.push(["2. OPERATIONAL LIFECYCLE (STAGE OVERVIEW)"]);
-      rows.push([
-        "Stage Name",
-        "Stage Volume Count",
-        "Status / Progression Rate",
-      ]);
+      rows.push(["Stage Name", "Calculated Stage Total"]);
       postSaleAnalytics.lifecycleStages.forEach((stage) => {
-        rows.push([stage.title, stage.count, stage.rateLabel]);
+        rows.push([stage.title, stage.count]);
       });
       rows.push([]);
 
@@ -1310,12 +1339,12 @@ export default function PostSalesReport({
               className="presales_section_title_badge"
               style={{ background: "#eef2ff", color: "#4f46e5" }}
             >
-              5 Key Delivery Milestones
+              6 Key Delivery Milestones
             </span>
           </div>
 
           <div className="presales_funnel_container">
-            <div className="presales_funnel_steps">
+            <Row gutter={[24, 16]}>
               {postSaleAnalytics.lifecycleStages.map((stage, idx) => {
                 const isCompletion = stage.isCompletion;
                 const isRetention = stage.isRetention;
@@ -1337,13 +1366,31 @@ export default function PostSalesReport({
                     ? "#dc2626"
                     : "#0f172a";
 
+                const totalLabelColor = isCompletion
+                  ? "#059669"
+                  : isRetention
+                    ? "#dc2626"
+                    : "#64748b";
+
                 return (
-                  <React.Fragment key={stage.stepNum}>
-                    <div className={`presales_funnel_step ${stepClass}`}>
+                  <Col
+                    xs={24}
+                    sm={12}
+                    md={12}
+                    lg={6}
+                    xl={6}
+                    key={stage.stepNum}
+                    className="postsales_pipeline_col"
+                  >
+                    <div
+                      className={`presales_funnel_step ${stepClass}`}
+                      style={{ height: "100%", padding: "14px 12px" }}
+                    >
                       <div className="presales_funnel_step_header">
                         <p
                           className="presales_funnel_step_label"
                           style={{ color: titleColor }}
+                          title={stage.title}
                         >
                           {stage.title}
                         </p>
@@ -1355,10 +1402,15 @@ export default function PostSalesReport({
                             {stage.count}
                           </span>
                           <span
-                            className="presales_funnel_step_rate"
-                            style={{ color: stage.rateColor }}
+                            style={{
+                              fontSize: "10px",
+                              fontWeight: 600,
+                              color: totalLabelColor,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.3px",
+                            }}
                           >
-                            {stage.rateLabel}
+                            Total
                           </span>
                         </div>
                       </div>
@@ -1431,52 +1483,17 @@ export default function PostSalesReport({
                           </Tooltip>
                         ))}
                       </div>
-
-                      {/* Goal Achievement Badge on Passout & Completion */}
-                      {isCompletion && (
-                        <div
-                          className="presales_funnel_hero_box"
-                          style={{ marginTop: 8 }}
-                        >
-                          <div className="presales_funnel_hero_tag">
-                            <span>🎯 Goal Achievement</span>
-                          </div>
-                          <Tooltip
-                            title={`Overall Graduation: ${postSaleAnalytics.calcRate(reportData.course_completed)} Graduated`}
-                            placement="top"
-                            mouseEnterDelay={0.1}
-                            color="#fff"
-                            styles={{
-                              body: {
-                                backgroundColor: "#fff",
-                                color: "#333",
-                                fontWeight: 600,
-                                fontSize: "12px",
-                              },
-                            }}
-                          >
-                            <div className="presales_funnel_hero_stat">
-                              <span className="presales_funnel_hero_stat_label">
-                                Graduation
-                              </span>
-                              <strong className="presales_funnel_hero_stat_val">
-                                {postSaleAnalytics.calcRate(
-                                  reportData.course_completed,
-                                )}
-                              </strong>
-                            </div>
-                          </Tooltip>
-                        </div>
-                      )}
                     </div>
 
                     {idx < postSaleAnalytics.lifecycleStages.length - 1 && (
-                      <FiArrowRight className="presales_funnel_arrow" />
+                      <span className="postsales_pipeline_arrow">
+                        <FiArrowRight />
+                      </span>
                     )}
-                  </React.Fragment>
+                  </Col>
                 );
               })}
-            </div>
+            </Row>
           </div>
         </div>
       )}

@@ -1874,6 +1874,45 @@
   box-shadow: 0 4px 14px rgba(225, 29, 72, 0.12) !important;
 }
 
+/* Post-Sales Responsive Pipeline Grid Arrows */
+.postsales_pipeline_col {
+  position: relative;
+}
+
+.postsales_pipeline_arrow {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+  color: #94a3b8;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@media (min-width: 992px) {
+  .postsales_pipeline_col:nth-child(4n) .postsales_pipeline_arrow,
+  .postsales_pipeline_col:last-child .postsales_pipeline_arrow {
+    display: none;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  .postsales_pipeline_col:nth-child(2n) .postsales_pipeline_arrow,
+  .postsales_pipeline_col:last-child .postsales_pipeline_arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 575px) {
+  .postsales_pipeline_arrow {
+    display: none;
+  }
+}
+
 .postsales_card_border_indigo {
   border-top: 3px solid #6366f1 !important;
 }

@@ -1596,7 +1596,7 @@ export default function AdmissionReport({
               <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">On-Campus / Walk-in</p>
+                    <p className="presales_stat_label">Classroom Training</p>
                     <h3 className="presales_stat_value">
                       {admissionReportData.directWalkinAdmissions}
                     </h3>
@@ -1613,7 +1613,7 @@ export default function AdmissionReport({
                       {admissionReportData.walkinDailyAverage}
                     </strong>
                   </span>
-                  <span className="presales_stat_subtext">walk-ins / day</span>
+                  <span className="presales_stat_subtext">classroom / day</span>
                 </div>
               </div>
             </Col>
@@ -1623,9 +1623,7 @@ export default function AdmissionReport({
               <div className="presales_stat_card presales_theme_amber">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">
-                      Online / Virtual Intake
-                    </p>
+                    <p className="presales_stat_label">Online Training</p>
                     <h3 className="presales_stat_value">
                       {admissionReportData.onlineAdmissions}
                     </h3>

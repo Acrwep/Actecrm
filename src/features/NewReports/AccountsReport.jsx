@@ -23,6 +23,8 @@ import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import {
   FiArrowLeft,
+  FiArrowUp,
+  FiArrowDown,
   FiDownload,
   FiFileText,
   FiTable,
@@ -55,26 +57,26 @@ import CommonSelectField from "../Common/CommonSelectField";
 function AccountsReportSkeleton() {
   return (
     <div className="presales_skeleton_wrapper">
-      {/* Executive Summary Skeleton (6 Cards) */}
+      {/* Section 1 Skeleton: Total Sales & Realization (3 Cards) */}
       <div className="presales_section_header" style={{ marginTop: 20 }}>
         <h2 className="presales_section_title">
           <HiOutlineClipboardDocumentCheck
             style={{ color: "#7c3aed" }}
             size={19}
           />{" "}
-          Accounts Executive Summary
+          Total Sales & Realization
         </h2>
         <span
           className="presales_section_title_badge"
           style={{ background: "#f5f3ff", color: "#7c3aed" }}
         >
-          Financial Operations & Revenue KPIs
+          Sales Volume, Collection & Pending Receivables
         </span>
       </div>
 
       <Row gutter={[16, 16]}>
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Col xs={24} sm={12} md={12} lg={8} xl={6} key={i}>
+        {[1, 2, 3].map((i) => (
+          <Col xs={24} sm={12} md={8} lg={8} xl={8} key={i}>
             <div className="presales_stat_card">
               <div className="presales_card_top">
                 <div
@@ -84,6 +86,62 @@ function AccountsReportSkeleton() {
                     active
                     size="small"
                     style={{ width: 90, height: 14 }}
+                  />
+                  <Skeleton.Input
+                    active
+                    style={{ width: 110, height: 28, marginTop: 4 }}
+                  />
+                </div>
+                <Skeleton.Avatar
+                  active
+                  size={38}
+                  shape="square"
+                  style={{ borderRadius: 10 }}
+                />
+              </div>
+              <div className="presales_card_bottom">
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 85, height: 16 }}
+                />
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 55, height: 12 }}
+                />
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+
+      {/* Section 2 Skeleton: Collections & Verification (4 Cards) */}
+      <div className="presales_section_header" style={{ marginTop: 28 }}>
+        <h2 className="presales_section_title">
+          <TbTargetArrow style={{ color: "#059669" }} size={19} /> Collections &
+          Verification
+        </h2>
+        <span
+          className="presales_section_title_badge"
+          style={{ background: "#ecfdf5", color: "#059669" }}
+        >
+          Payment Breakdown & ₹3L/Day Target Tracking
+        </span>
+      </div>
+
+      <Row gutter={[16, 16]}>
+        {[1, 2, 3, 4].map((i) => (
+          <Col xs={24} sm={12} md={12} lg={6} xl={6} key={i}>
+            <div className="presales_stat_card">
+              <div className="presales_card_top">
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
+                >
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 95, height: 14 }}
                   />
                   <Skeleton.Input
                     active
@@ -146,6 +204,7 @@ export default function AccountsReport({
   // Backend API Data State (Only fields from API response)
   const [reportData, setReportData] = useState({
     sale_volume: 0,
+    collection: 0,
     total_collection: 0,
     new_payment_collection: 0,
     re_payment_collection: 0,
@@ -298,6 +357,7 @@ export default function AccountsReport({
       if (apiData) {
         setReportData({
           sale_volume: Number(apiData.sale_volume) || 0,
+          collection: Number(apiData.collection) || 0,
           total_collection: Number(apiData.total_collection) || 0,
           new_payment_collection: Number(apiData.new_payment) || 0,
           re_payment_collection: Number(apiData.re_payment) || 0,
@@ -389,17 +449,24 @@ export default function AccountsReport({
   // ---------------------------------------------------------------------------
   // Derived Analytics Data Model
   // ---------------------------------------------------------------------------
+  const DAILY_COLLECTION_TARGET = 300000; // ₹3,00,000 (3L) per day
+
   const accountsAnalytics = useMemo(() => {
     const saleVolume = Number(reportData.sale_volume) || 0;
+    const collection = Number(reportData.collection) || 0;
     const totalCollection = Number(reportData.total_collection) || 0;
     const newPaymentCollection = Number(reportData.new_payment_collection) || 0;
     const rePaymentCollection = Number(reportData.re_payment_collection) || 0;
     const pendingPayment = Number(reportData.pending_payment) || 0;
     const needToVerify = Number(reportData.need_to_verify) || 0;
 
-    // Days difference calculation
-    const startDate = selectedDates?.[0] ? moment(selectedDates[0]) : null;
-    const endDate = selectedDates?.[1] ? moment(selectedDates[1]) : null;
+    // Inclusive calendar days difference calculation
+    const startDate = selectedDates?.[0]
+      ? moment(selectedDates[0]).startOf("day")
+      : null;
+    const endDate = selectedDates?.[1]
+      ? moment(selectedDates[1]).startOf("day")
+      : null;
     const daysDiff =
       startDate && endDate && startDate.isValid() && endDate.isValid()
         ? Math.max(1, endDate.diff(startDate, "days") + 1)
@@ -407,6 +474,7 @@ export default function AccountsReport({
 
     // Daily Averages
     const saleVolumeDailyAvg = Math.round(saleVolume / daysDiff);
+    const collectionDailyAvg = Math.round(collection / daysDiff);
     const totalCollectionDailyAvg = Math.round(totalCollection / daysDiff);
     const newPaymentCollectionDailyAvg = Math.round(
       newPaymentCollection / daysDiff,
@@ -423,15 +491,30 @@ export default function AccountsReport({
       return `${((amount / saleVolume) * 100).toFixed(1)}%`;
     };
 
+    // Collection Target (₹3L per day * number of filtered days) Evaluation
+    const periodTarget = DAILY_COLLECTION_TARGET * daysDiff;
+    const isTargetAchieved = totalCollection >= periodTarget;
+    const targetAchievementPercent =
+      periodTarget > 0
+        ? ((totalCollection / periodTarget) * 100).toFixed(1)
+        : "0.0";
+    const targetDifference = Math.abs(totalCollection - periodTarget);
+
+    // Need to Verify percentage (relative to Total Collection, fallback to Sale Volume)
+    const verifyBase = totalCollection > 0 ? totalCollection : saleVolume;
+    const needToVerifyPercent =
+      verifyBase > 0 ? ((needToVerify / verifyBase) * 100).toFixed(1) : "0.0";
+
     const collectionRatioNum =
-      saleVolume > 0 ? (totalCollection / saleVolume) * 100 : 0;
+      saleVolume > 0 ? (collection / saleVolume) * 100 : 0;
     const pendingRatioNum =
       saleVolume > 0 ? (pendingPayment / saleVolume) * 100 : 0;
     const verifyRatioNum =
-      saleVolume > 0 ? (needToVerify / saleVolume) * 100 : 0;
+      verifyBase > 0 ? (needToVerify / verifyBase) * 100 : 0;
 
     return {
       saleVolume,
+      collection,
       totalCollection,
       newPaymentCollection,
       rePaymentCollection,
@@ -439,16 +522,23 @@ export default function AccountsReport({
       needToVerify,
       daysDiff,
       saleVolumeDailyAvg,
+      collectionDailyAvg,
       totalCollectionDailyAvg,
       newPaymentCollectionDailyAvg,
       rePaymentCollectionDailyAvg,
       pendingPaymentDailyAvg,
       needToVerifyDailyAvg,
+      periodTarget,
+      isTargetAchieved,
+      targetAchievementPercent,
+      targetDifference,
+      needToVerifyPercent,
+      salesCollectionRatio: calcRatio(collection),
       collectionRatio: calcRatio(totalCollection),
       newPaymentRatio: calcRatio(newPaymentCollection),
       rePaymentRatio: calcRatio(rePaymentCollection),
       pendingRatio: calcRatio(pendingPayment),
-      verifyRatio: calcRatio(needToVerify),
+      verifyRatio: `${needToVerifyPercent}%`,
       collectionRatioNum: Math.min(100, Math.max(0, collectionRatioNum)),
       pendingRatioNum: Math.min(100, Math.max(0, pendingRatioNum)),
       verifyRatioNum: Math.min(100, Math.max(0, verifyRatioNum)),
@@ -563,14 +653,14 @@ export default function AccountsReport({
       rows.push(["Generated At:", moment().format("YYYY-MM-DD HH:mm:ss")]);
       rows.push([]);
 
-      // 1. Executive Financial Metrics
-      rows.push(["1. ACCOUNTS EXECUTIVE METRICS"]);
+      // 1. Total Sales & Realization
+      rows.push(["1. TOTAL SALES & REALIZATION"]);
       rows.push([
         "Metric Name",
         "Raw Amount (₹)",
         "Formatted Amount",
         "Daily Average",
-        "Share of Sale Volume",
+        "Share / Ratio",
       ]);
       rows.push([
         "Sale Volume",
@@ -580,11 +670,29 @@ export default function AccountsReport({
         "100.0%",
       ]);
       rows.push([
-        "Total Collection",
-        reportData.total_collection,
-        `₹${Number(reportData.total_collection).toLocaleString("en-IN")}`,
-        `₹${Number(accountsAnalytics.totalCollectionDailyAvg).toLocaleString("en-IN")} / day`,
-        accountsAnalytics.collectionRatio,
+        "Collection",
+        reportData.collection,
+        `₹${Number(reportData.collection).toLocaleString("en-IN")}`,
+        `₹${Number(accountsAnalytics.collectionDailyAvg).toLocaleString("en-IN")} / day`,
+        `${accountsAnalytics.salesCollectionRatio} of Sale Volume`,
+      ]);
+      rows.push([
+        "Pending Payment",
+        reportData.pending_payment,
+        `₹${Number(reportData.pending_payment).toLocaleString("en-IN")}`,
+        `₹${Number(accountsAnalytics.pendingPaymentDailyAvg).toLocaleString("en-IN")} / day`,
+        `${accountsAnalytics.pendingRatio} of Sale Volume`,
+      ]);
+      rows.push([]);
+
+      // 2. Collections & Verification
+      rows.push(["2. COLLECTIONS & VERIFICATION"]);
+      rows.push([
+        "Metric Name",
+        "Raw Amount (₹)",
+        "Formatted Amount",
+        "Daily Average",
+        "Share / Target Status",
       ]);
       rows.push([
         "New payment Collection",
@@ -601,18 +709,18 @@ export default function AccountsReport({
         accountsAnalytics.rePaymentRatio,
       ]);
       rows.push([
-        "Pending Payment",
-        reportData.pending_payment,
-        `₹${Number(reportData.pending_payment).toLocaleString("en-IN")}`,
-        `₹${Number(accountsAnalytics.pendingPaymentDailyAvg).toLocaleString("en-IN")} / day`,
-        accountsAnalytics.pendingRatio,
+        "Total Collection",
+        reportData.total_collection,
+        `₹${Number(reportData.total_collection).toLocaleString("en-IN")}`,
+        `₹${Number(accountsAnalytics.totalCollectionDailyAvg).toLocaleString("en-IN")} / day`,
+        `${accountsAnalytics.isTargetAchieved ? "Target Achieved" : "Below ₹3L/Day Target"} (${accountsAnalytics.targetAchievementPercent}% of ₹${Number(accountsAnalytics.periodTarget).toLocaleString("en-IN")})`,
       ]);
       rows.push([
         "Need to Verify",
         reportData.need_to_verify,
         `₹${Number(reportData.need_to_verify).toLocaleString("en-IN")}`,
         `₹${Number(accountsAnalytics.needToVerifyDailyAvg).toLocaleString("en-IN")} / day`,
-        accountsAnalytics.verifyRatio,
+        `${accountsAnalytics.needToVerifyPercent}% of Collection`,
       ]);
       rows.push([]);
 
@@ -742,7 +850,7 @@ export default function AccountsReport({
           2. Filters Row (Date Range, Region, Branch, User)
           ==================================================================== */}
       <Row gutter={[12, 8]} style={{ marginTop: "0px" }}>
-        <Col span={23}>
+        <Col xs={24} sm={24} md={24} lg={23} xl={23} xxl={20}>
           <Row gutter={12} align="middle">
             <Col flex={"0.8 1 0%"}>
               <div className="postsales_datetype_box">
@@ -903,7 +1011,7 @@ export default function AccountsReport({
           )}
 
           {/* ----------------------------------------------------------------
-              SECTION 1: Accounts Executive Summary (6 Main KPI Cards)
+              SECTION 1: Total Sales & Realization (3 Cards)
               ---------------------------------------------------------------- */}
           <div
             className="presales_section_header"
@@ -914,19 +1022,19 @@ export default function AccountsReport({
                 style={{ color: "#7c3aed" }}
                 size={20}
               />{" "}
-              Accounts Executive Summary
+              Total Sales & Realization
             </h2>
             <span
               className="presales_section_title_badge"
               style={{ background: "#f5f3ff", color: "#7c3aed" }}
             >
-              Financial Operations & Revenue KPIs
+              Sales Volume, Collection & Pending Receivables
             </span>
           </div>
 
-          <Row gutter={[16, 22]}>
+          <Row gutter={[16, 16]}>
             {/* Card 1: Sale Volume */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            <Col xs={24} sm={12} md={8} lg={8} xl={8}>
               <div className="presales_stat_card presales_theme_indigo">
                 <div className="presales_card_top">
                   <div>
@@ -964,8 +1072,107 @@ export default function AccountsReport({
               </div>
             </Col>
 
-            {/* Card 2: New payment Collection */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            {/* Card 2: Collection (Sales Realized) */}
+            <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+              <div className="presales_stat_card presales_theme_emerald">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Collection</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#059669" }}
+                      title={`₹${Number(reportData.collection).toLocaleString("en-IN")}`}
+                    >
+                      ₹{Number(reportData.collection).toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FaRupeeSign size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiCheckCircle size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      ₹
+                      {Number(
+                        accountsAnalytics.collectionDailyAvg,
+                      ).toLocaleString("en-IN")}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title={`${accountsAnalytics.salesCollectionRatio} of Sale Volume`}
+                  >
+                    {accountsAnalytics.salesCollectionRatio} realized
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 3: Pending Payment */}
+            <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+              <div className="presales_stat_card presales_theme_amber">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Pending Payment</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#d97706" }}
+                      title={`₹${Number(reportData.pending_payment).toLocaleString("en-IN")}`}
+                    >
+                      ₹
+                      {Number(reportData.pending_payment).toLocaleString(
+                        "en-IN",
+                      )}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FiClock size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiAlertCircle size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      ₹
+                      {Number(
+                        accountsAnalytics.pendingPaymentDailyAvg,
+                      ).toLocaleString("en-IN")}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title={`${accountsAnalytics.pendingRatio} of Sale Volume outstanding`}
+                  >
+                    {accountsAnalytics.pendingRatio} pending
+                  </span>
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          {/* ----------------------------------------------------------------
+              SECTION 2: Collections & Verification (4 Cards)
+              ---------------------------------------------------------------- */}
+          <div className="presales_section_header" style={{ marginTop: 28 }}>
+            <h2 className="presales_section_title">
+              <TbTargetArrow style={{ color: "#059669" }} size={20} />{" "}
+              Collections & Verification
+            </h2>
+            <span
+              className="presales_section_title_badge"
+              style={{ background: "#ecfdf5", color: "#059669" }}
+            >
+              Payment Breakdown & ₹3L/Day Target Tracking
+            </span>
+          </div>
+
+          <Row gutter={[16, 16]}>
+            {/* Card 1: New payment Collection */}
+            <Col xs={24} sm={12} md={12} lg={6} xl={6}>
               <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
                   <div>
@@ -1008,8 +1215,8 @@ export default function AccountsReport({
               </div>
             </Col>
 
-            {/* Card 3: Re-Payment Collection */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            {/* Card 2: Re-Payment Collection */}
+            <Col xs={24} sm={12} md={12} lg={6} xl={6}>
               <div className="presales_stat_card presales_theme_orange">
                 <div className="presales_card_top">
                   <div>
@@ -1050,22 +1257,14 @@ export default function AccountsReport({
               </div>
             </Col>
 
-            {/* Card 4: Total Collection */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            {/* Card 3: Total Collection (with ₹3L Target Achievement Indicator) */}
+            <Col xs={24} sm={12} md={12} lg={6} xl={6}>
               <div className="presales_stat_card presales_theme_emerald">
-                <div className="presales_card_top">
+                <div className="presales_card_top" style={{ marginBottom: 8 }}>
                   <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <p className="presales_stat_label" style={{ margin: 0 }}>
-                        Total Collection
-                      </p>
-                    </div>
+                    <p className="presales_stat_label" style={{ margin: 0 }}>
+                      Total Collection
+                    </p>
                     <h3
                       className="presales_stat_value"
                       style={{ color: "#059669", marginTop: 4 }}
@@ -1081,6 +1280,52 @@ export default function AccountsReport({
                     <FaRupeeSign size={20} />
                   </div>
                 </div>
+
+                {/* Daily Target ₹3L/Day Achievement Status */}
+                <Tooltip
+                  title={`Target: ₹3,00,000/day × ${accountsAnalytics.daysDiff} ${
+                    accountsAnalytics.daysDiff === 1 ? "day" : "days"
+                  } = ₹${Number(accountsAnalytics.periodTarget).toLocaleString("en-IN")} | ${
+                    accountsAnalytics.isTargetAchieved
+                      ? `Achieved (+₹${accountsAnalytics.targetDifference.toLocaleString("en-IN")} above target)`
+                      : `Short by ₹${accountsAnalytics.targetDifference.toLocaleString("en-IN")}`
+                  }`}
+                >
+                  <div style={{ marginBottom: 4 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "2px 8px",
+                        borderRadius: 12,
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        background: accountsAnalytics.isTargetAchieved
+                          ? "#ecfdf5"
+                          : "#fff1f2",
+                        color: accountsAnalytics.isTargetAchieved
+                          ? "#059669"
+                          : "#e11d48",
+                        border: `1px solid ${
+                          accountsAnalytics.isTargetAchieved
+                            ? "#a7f3d0"
+                            : "#fecdd3"
+                        }`,
+                      }}
+                    >
+                      {accountsAnalytics.isTargetAchieved ? (
+                        <FiArrowUp size={12} />
+                      ) : (
+                        <FiArrowDown size={12} />
+                      )}
+                      {accountsAnalytics.isTargetAchieved
+                        ? `₹3L/day Target Achieved (${accountsAnalytics.targetAchievementPercent}%)`
+                        : `Below ₹3L/day Target (${accountsAnalytics.targetAchievementPercent}%)`}
+                    </span>
+                  </div>
+                </Tooltip>
+
                 <div className="presales_card_bottom">
                   <span className="presales_badge presales_avg_badge">
                     <FiCheckCircle size={12} />
@@ -1108,52 +1353,10 @@ export default function AccountsReport({
               </div>
             </Col>
 
-            {/* Card 5: Pending Payment */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
-              <div className="presales_stat_card presales_theme_amber">
-                <div className="presales_card_top">
-                  <div>
-                    <p className="presales_stat_label">Pending Payment</p>
-                    <h3
-                      className="presales_stat_value"
-                      style={{ color: "#d97706" }}
-                      title={`₹${Number(reportData.pending_payment).toLocaleString("en-IN")}`}
-                    >
-                      ₹
-                      {Number(reportData.pending_payment).toLocaleString(
-                        "en-IN",
-                      )}
-                    </h3>
-                  </div>
-                  <div className="presales_stat_icon_wrapper">
-                    <FiClock size={20} />
-                  </div>
-                </div>
-                <div className="presales_card_bottom">
-                  <span className="presales_badge presales_avg_badge">
-                    <FiAlertCircle size={12} />
-                    <span className="presales_avg_label">Daily Avg:</span>
-                    <strong className="presales_avg_val">
-                      ₹
-                      {Number(
-                        accountsAnalytics.pendingPaymentDailyAvg,
-                      ).toLocaleString("en-IN")}
-                    </strong>
-                  </span>
-                  <span
-                    className="presales_stat_subtext"
-                    title="Outstanding balance"
-                  >
-                    outstanding
-                  </span>
-                </div>
-              </div>
-            </Col>
-
-            {/* Card 6: Need to Verify */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+            {/* Card 4: Need to Verify (with % of Total Collection) */}
+            <Col xs={24} sm={12} md={12} lg={6} xl={6}>
               <div className="presales_stat_card presales_theme_violet">
-                <div className="presales_card_top">
+                <div className="presales_card_top" style={{ marginBottom: 8 }}>
                   <div>
                     <p className="presales_stat_label">Need to Verify</p>
                     <h3
@@ -1171,6 +1374,31 @@ export default function AccountsReport({
                     <HiOutlineShieldCheck size={20} />
                   </div>
                 </div>
+
+                {/* Percentage of Need to Verify Amount */}
+                <Tooltip
+                  title={`₹${Number(reportData.need_to_verify).toLocaleString("en-IN")} awaiting verification (${accountsAnalytics.needToVerifyPercent}% of total collection)`}
+                >
+                  <div style={{ marginBottom: 4 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "2px 8px",
+                        borderRadius: 12,
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        background: "#f5f3ff",
+                        color: "#7c3aed",
+                        border: "1px solid #ddd6fe",
+                      }}
+                    >
+                      {accountsAnalytics.needToVerifyPercent}% of Collection
+                    </span>
+                  </div>
+                </Tooltip>
+
                 <div className="presales_card_bottom">
                   <span className="presales_badge presales_avg_badge">
                     <HiOutlineSparkles size={13} />
