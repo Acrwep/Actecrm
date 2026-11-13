@@ -940,20 +940,20 @@
   min-height: auto !important;
 }
 
-.MuiPickersSlideTransition-root {
+/* .MuiPickersSlideTransition-root {
   display: block !important;
   position: relative !important;
   overflow: hidden !important;
   min-height: 200px !important;
   height: 200px !important;
-}
+} */
 
-.MuiDayCalendar-monthContainer {
+/* .MuiDayCalendar-monthContainer {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-}
+} */
 
 .MuiPickersLayout-actionBar,
 .MuiPickersPopper-paper .MuiDialogActions-root {

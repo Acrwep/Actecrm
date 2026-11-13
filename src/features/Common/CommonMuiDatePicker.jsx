@@ -29,17 +29,17 @@ export default function CommonMuiDatePicker({
         label={label}
         value={value ? dayjs(value) : null} // convert JS Date to Dayjs
         onChange={(newValue, context) => {
-          // Convert Dayjs to JS Date
           const jsDate = newValue ? newValue.toDate() : null;
           onChange(jsDate);
 
-          if (context?.validationError == null) {
-            setOpen(false);
-          }
+          // if (context?.validationError == null && newValue) {
+          // setOpen(false);
+          // }
         }}
         open={!disabled && open} // ✅ only open if not disabled
         format="DD/MM/YYYY"
-        views={["month", "year", "day"]}
+        // views={["month", "year", "day"]}
+        views={["year", "month", "day"]}
         onClose={() => setOpen(false)}
         onOpen={() => {
           if (!disabled) {
@@ -85,98 +85,19 @@ export default function CommonMuiDatePicker({
           },
           popper: {
             disablePortal: false,
-            placement: "auto",
-            modifiers: [
-              {
-                name: "flip",
-                enabled: true,
-                options: {
-                  fallbackPlacements: [
-                    "top-start",
-                    "top",
-                    "top-end",
-                    "bottom-start",
-                    "bottom",
-                    "bottom-end",
-                  ],
-                  padding: 8,
-                },
-              },
-              {
-                name: "preventOverflow",
-                enabled: true,
-                options: {
-                  boundary: "viewport",
-                  padding: 8,
-                  altAxis: true,
-                  tether: false,
-                },
-              },
-            ],
             sx: {
               zIndex: 999999999999999,
-              maxHeight: "calc(100vh - 20px)",
               "& .MuiTypography-root": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: "13px",
+                fontSize: "12px",
               },
-              // Year Button Styles
-              "& .MuiYearCalendar-button, & .MuiYearCalendar-root button": {
-                fontSize: "13px !important",
-                fontFamily: "Poppins, sans-serif !important",
-              },
-              "& .MuiYearCalendar-button.Mui-selected, & .MuiYearCalendar-root button.Mui-selected":
-                {
+              "& .MuiMultiSectionDigitalClockSection-item": {
+                fontSize: "12px",
+                fontFamily: "Poppins, sans-serif",
+                "&.Mui-selected": {
                   backgroundColor: "#5b69ca !important",
                   color: "#fff !important",
                 },
-              "& .MuiYearCalendar-button.Mui-selected:hover, & .MuiYearCalendar-root button.Mui-selected:hover":
-                {
-                  backgroundColor: "#4a58b0 !important",
-                },
-              // Month Button Styles
-              "& .MuiPickersMonth-monthButton, & .MuiMonthCalendar-root button":
-                {
-                  fontSize: "13px !important",
-                  fontFamily: "Poppins, sans-serif !important",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                },
-              "& .MuiPickersMonth-monthButton.Mui-selected, & .MuiMonthCalendar-root button.Mui-selected":
-                {
-                  backgroundColor: "#5b69ca !important",
-                  color: "#fff !important",
-                },
-              "& .MuiPickersMonth-monthButton.Mui-selected:hover, & .MuiMonthCalendar-root button.Mui-selected:hover":
-                {
-                  backgroundColor: "#4a58b0 !important",
-                },
-              // Gap reduction between dates and Clear button
-              "& .MuiDateCalendar-root": {
-                height: "auto !important",
-                minHeight: "auto !important",
-                maxHeight: "none !important",
-              },
-              "& .MuiDayCalendar-root": {
-                height: "auto !important",
-                minHeight: "auto !important",
-              },
-              "& .MuiPickersSlideTransition-root": {
-                minHeight: "216px !important",
-                height: "216px !important",
-                overflow: "hidden !important",
-                position: "relative !important",
-                display: "block !important",
-              },
-              "& .MuiDayCalendar-monthContainer": {
-                position: "absolute !important",
-                top: "0 !important",
-                left: "0 !important",
-                right: "0 !important",
-              },
-              "& .MuiPickersLayout-actionBar": {
-                minHeight: "auto !important",
               },
             },
           },
@@ -204,36 +125,43 @@ export default function CommonMuiDatePicker({
             ) : null,
             onClick: () => setOpen(true),
             sx: {
-              // label font
               "& .MuiPickersInputBase-root": {
                 height: height || "36px !important",
                 fontFamily: "Poppins, sans-serif !important",
+                fontSize: "12px",
               },
-              "& .MuiInputLabel-root": {
-                fontFamily: "Poppins, sans-serif",
-                fontSize: labelFontSize || "12px",
-                marginTop: labelMarginTop || "0px",
+              "& .MuiInputBase-input": {
+                fontFamily: "Poppins, sans-serif !important",
+                fontSize: fontSize || "12px",
+                paddingTop: "10px", // Align vertically for 42px height
+                paddingBottom: "10px",
               },
-              "& .MuiInputLabel-root.Mui-focused": {
-                color: error ? "#d32f2f" : "#5b69ca", // custom focus color
+              "& .MuiPickersSectionList-root": {
+                paddingTop: "10px",
+                paddingBottom: "10px",
               },
-              // value font
               "& .MuiPickersSectionList-section": {
                 fontFamily: "Poppins, sans-serif !important",
-                fontSize: fontSize || "13px",
-                marginTop: "3px",
+                fontSize: fontSize || "12px",
               },
               "& .MuiPickersSectionList-sectionContent": {
                 fontFamily: "Poppins, sans-serif",
                 fontSize: fontSize || "12px",
               },
+              "& .MuiInputLabel-root": {
+                fontFamily: "Poppins, sans-serif",
+                fontSize: labelFontSize || "12px",
+                marginTop: labelMarginTop || "3px",
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: error ? "#d32f2f" : "#5b69ca",
+              },
               "& .MuiSvgIcon-root": {
-                fontSize: iconSize || "16px",
+                fontSize: iconSize || "20px",
                 marginTop: "-1px",
               },
-              /** ✅ Correct border overrides */
               "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: error ? "#d32f2f" : "#b0b0b0", // default
+                borderColor: error ? "#d32f2f" : "#b0b0b0",
               },
               "& .MuiPickersOutlinedInput-root:hover .MuiPickersOutlinedInput-notchedOutline":
                 {
@@ -245,9 +173,9 @@ export default function CommonMuiDatePicker({
                   borderWidth: 1,
                 },
               "& .Mui-disabled": {
-                backgroundColor: "#f5f5f5", // change background
-                color: "#888", // change text color
-                WebkitTextFillColor: "#888", // needed for iOS/Chrome to change disabled text color
+                backgroundColor: "#f5f5f5",
+                color: "#888",
+                WebkitTextFillColor: "#888",
               },
             },
           },

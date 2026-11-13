@@ -210,6 +210,7 @@ export default function AccountsReport({
     re_payment_collection: 0,
     pending_payment: 0,
     need_to_verify: 0,
+    admission_total: 0,
   });
 
   // Synchronize ref with selectedUserId
@@ -363,6 +364,7 @@ export default function AccountsReport({
           re_payment_collection: Number(apiData.re_payment) || 0,
           pending_payment: Number(apiData.pending_payment) || 0,
           need_to_verify: Number(apiData.need_to_verify) || 0,
+          admission_total: Number(apiData.admission_total) || 0,
         });
       }
     } catch (error) {
@@ -459,6 +461,7 @@ export default function AccountsReport({
     const rePaymentCollection = Number(reportData.re_payment_collection) || 0;
     const pendingPayment = Number(reportData.pending_payment) || 0;
     const needToVerify = Number(reportData.need_to_verify) || 0;
+    const admissionTotal = Number(reportData.admission_total) || 0;
 
     // Inclusive calendar days difference calculation
     const startDate = selectedDates?.[0]
@@ -520,6 +523,7 @@ export default function AccountsReport({
       rePaymentCollection,
       pendingPayment,
       needToVerify,
+      admissionTotal,
       daysDiff,
       saleVolumeDailyAvg,
       collectionDailyAvg,
@@ -667,7 +671,7 @@ export default function AccountsReport({
         reportData.sale_volume,
         `₹${Number(reportData.sale_volume).toLocaleString("en-IN")}`,
         `₹${Number(accountsAnalytics.saleVolumeDailyAvg).toLocaleString("en-IN")} / day`,
-        "100.0%",
+        `${Number(reportData.admission_total || 0).toLocaleString("en-IN")} ${Number(reportData.admission_total) === 1 ? "admission" : "admissions"}`,
       ]);
       rows.push([
         "Collection",
@@ -1064,9 +1068,14 @@ export default function AccountsReport({
                   </span>
                   <span
                     className="presales_stat_subtext"
-                    title="Total sales booked"
+                    title={`${Number(reportData.admission_total || 0).toLocaleString("en-IN")} total admissions`}
                   >
-                    total sales booked
+                    {Number(reportData.admission_total || 0).toLocaleString(
+                      "en-IN",
+                    )}{" "}
+                    {Number(reportData.admission_total) === 1
+                      ? "admission"
+                      : "admissions"}
                   </span>
                 </div>
               </div>
