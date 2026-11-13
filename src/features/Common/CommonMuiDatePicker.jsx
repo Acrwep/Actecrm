@@ -8,6 +8,7 @@ export default function CommonMuiDatePicker({
   label,
   required,
   onChange,
+  onAccept,
   value,
   height,
   fontSize,
@@ -38,9 +39,13 @@ export default function CommonMuiDatePicker({
         }}
         open={!disabled && open} // ✅ only open if not disabled
         format="DD/MM/YYYY"
-        // views={["month", "year", "day"]}
         views={["year", "month", "day"]}
         onClose={() => setOpen(false)}
+        onAccept={(acceptedValue) => {
+          setOpen(false);
+          const jsDate = acceptedValue ? acceptedValue.toDate() : null;
+          onAccept?.(jsDate);
+        }}
         onOpen={() => {
           if (!disabled) {
             setOpen(true);

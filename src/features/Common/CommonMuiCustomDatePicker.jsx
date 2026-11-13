@@ -311,6 +311,10 @@ export default function CommonMuiCustomDatePicker({
             vertical: "top",
             horizontal: "left",
           }}
+          disableScrollLock={true}
+          disableAutoFocus={true}
+          disableEnforceFocus={true}
+          disableRestoreFocus={true}
           slotProps={{
             paper: {
               className: "common_muicustomdatepicker_popover_paper",
@@ -415,7 +419,23 @@ export default function CommonMuiCustomDatePicker({
                           setStartDate(newStart);
 
                           // If startDate is after endDate → reset endDate
+                          if (
+                            newStart &&
+                            endDate &&
+                            newStart.isAfter(endDate, "day")
+                          ) {
+                            setEndDate(newStart);
+                            setEndPickerKey((prev) => prev + 1);
+                            CommonMessage(
+                              "error",
+                              "End Date should not be less than Start Date",
+                            );
+                          }
+                        }}
+                        onAccept={(value) => {
+                          const newStart = value ? dayjs(value) : null;
                           let adjustedEnd = endDate;
+
                           if (
                             newStart &&
                             endDate &&
@@ -424,11 +444,9 @@ export default function CommonMuiCustomDatePicker({
                             adjustedEnd = newStart;
                             setEndDate(adjustedEnd);
                             setEndPickerKey((prev) => prev + 1);
-                            CommonMessage(
-                              "error",
-                              "End Date should not be less than Start Date",
-                            );
                           }
+
+                          setStartDate(newStart);
 
                           onDateChange?.([
                             newStart ? newStart.format("YYYY-MM-DD") : null,
@@ -453,6 +471,24 @@ export default function CommonMuiCustomDatePicker({
                           const newEnd = value ? dayjs(value) : null;
 
                           // Validate End Date against Start Date
+                          if (
+                            newEnd &&
+                            startDate &&
+                            newEnd.isBefore(startDate, "day")
+                          ) {
+                            CommonMessage(
+                              "error",
+                              "End Date should not be less than Start Date",
+                            );
+                            setEndPickerKey((prev) => prev + 1);
+                            return;
+                          }
+
+                          setEndDate(newEnd);
+                        }}
+                        onAccept={(value) => {
+                          const newEnd = value ? dayjs(value) : null;
+
                           if (
                             newEnd &&
                             startDate &&
