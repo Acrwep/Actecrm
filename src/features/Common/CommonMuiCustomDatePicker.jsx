@@ -457,6 +457,7 @@ export default function CommonMuiCustomDatePicker({
                         }}
                         allowAllDates={true}
                         height={"33px"}
+                        iconSize={"15px"}
                       />
                     </div>
                     <div className="common_muicustomdatepicker_picker_arrow">
@@ -513,6 +514,7 @@ export default function CommonMuiCustomDatePicker({
                         }}
                         allowAllDates={true}
                         height={"33px"}
+                        iconSize={"15px"}
                       />
                     </div>
                   </div>
