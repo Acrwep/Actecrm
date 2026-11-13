@@ -264,11 +264,9 @@ export default function NewReports() {
       setActiveReport("postsales");
     } else if (card.id === "accounts") {
       setActiveReport("accounts");
-    }
-    //  else if (card.id === "trainer_payments") {
-    //   setActiveReport("trainer_payments");
-    // }
-    else {
+    } else if (card.id === "trainer_payments") {
+      setActiveReport("trainer_payments");
+    } else {
       message.info(`${card.title} is coming soon`);
     }
   };

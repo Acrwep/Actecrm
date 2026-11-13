@@ -92,6 +92,16 @@ export const createRegion = async (payload) => {
     throw error;
   }
 };
+
+export const updateRegion = async (payload) => {
+  try {
+    const response = await api.put("/api/updateRegion", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const createBranch = async (payload) => {
   try {
     const response = await api.post("/api/addBranches", payload);
@@ -101,6 +111,14 @@ export const createBranch = async (payload) => {
   }
 };
 
+export const updateBranch = async (payload) => {
+  try {
+    const response = await api.put("/api/updateBranches", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 export const getRegions = async (payload) => {
   try {
     const response = await api.get("/api/getRegion", { params: payload });

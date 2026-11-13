@@ -609,6 +609,40 @@
   opacity: 1;
 }
 
+/* Region and Branch Table Edit Actions */
+.region_branch_cell_wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.region_branch_inline_edit_btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: #5b69ca;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.region_branch_inline_edit_btn:hover {
+  opacity: 1;
+  background-color: #eef0fb;
+  color: #4a58b0;
+  transform: scale(1.1);
+}
+
+.region_branch_cell_wrapper:hover .region_branch_inline_edit_btn {
+  opacity: 1;
+}
+
 /* Polished Group Card Styles */
 .settings_groupcard {
   padding: 16px;

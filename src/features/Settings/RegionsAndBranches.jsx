@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import CommonTable from "../Common/CommonTable";
 import CommonSelectField from "../Common/CommonSelectField";
 import { useDispatch, useSelector } from "react-redux";
-import { Col, Modal, Row, Button } from "antd";
+import { Col, Modal, Row, Button, Tooltip } from "antd";
+import { AiOutlineEdit } from "react-icons/ai";
 import {
   getBranchManagers,
   updateBranchManager,
@@ -11,6 +12,8 @@ import {
   createRegion,
   createBranch,
   getRegions,
+  updateRegion,
+  updateBranch,
 } from "../ApiService/action";
 import "./styles.css";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -35,8 +38,24 @@ export default function RegionAndBranches() {
   const [regionIdError, setRegionIdError] = useState("");
   const [branchName, setBranchName] = useState("");
   const [branchNameError, setBranchNameError] = useState("");
+
+  //edit region modal usestates
+  const [isOpenEditRegionModal, setIsOpenEditRegionModal] = useState(false);
+  const [editRegionId, setEditRegionId] = useState(null);
+  const [editRegionName, setEditRegionName] = useState("");
+  const [editRegionNameError, setEditRegionNameError] = useState("");
+
+  //edit branch modal usestates
+  const [isOpenEditBranchModal, setIsOpenEditBranchModal] = useState(false);
+  const [editBranchId, setEditBranchId] = useState(null);
+  const [editBranchRegionId, setEditBranchRegionId] = useState(null);
+  const [editBranchRegionIdError, setEditBranchRegionIdError] = useState("");
+  const [editBranchName, setEditBranchName] = useState("");
+  const [editBranchNameError, setEditBranchNameError] = useState("");
+
   //other usestates
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [editButtonLoading, setEditButtonLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   //pagination
   const [pagination, setPagination] = useState({
@@ -134,9 +153,130 @@ export default function RegionAndBranches() {
     });
   };
 
+  const openEditRegion = (record) => {
+    const regId = record?.region_id || null;
+
+    setEditRegionId(regId);
+    setEditRegionName(record?.region_name || "");
+    setEditRegionNameError("");
+    setIsOpenEditRegionModal(true);
+  };
+
+  const openEditBranch = (record) => {
+    const regId = record?.region_id || null;
+
+    setEditBranchId(record?.branch_id || null);
+    setEditBranchRegionId(regId);
+    setEditBranchRegionIdError("");
+    setEditBranchName(record?.branch_name || "");
+    setEditBranchNameError("");
+    setIsOpenEditBranchModal(true);
+  };
+
+  const handleRegionUpdate = async () => {
+    const regionNameValidate = addressValidator(editRegionName);
+    setEditRegionNameError(regionNameValidate);
+
+    if (regionNameValidate) return;
+
+    setEditButtonLoading(true);
+
+    const payload = {
+      region_id: editRegionId,
+      region_name: editRegionName,
+    };
+
+    try {
+      await updateRegion(payload);
+      CommonMessage("success", "Region Name Updated Successfully");
+      formReset();
+      getRegionsData();
+    } catch (error) {
+      setEditButtonLoading(false);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+        "Failed to update region";
+      CommonMessage("error", errorMessage);
+    }
+  };
+
+  const handleBranchUpdate = async () => {
+    const regionIdValidate = selectValidator(editBranchRegionId);
+    const branchNameValidate = addressValidator(editBranchName);
+
+    setEditBranchRegionIdError(regionIdValidate);
+    setEditBranchNameError(branchNameValidate);
+
+    if (regionIdValidate || branchNameValidate) return;
+
+    setEditButtonLoading(true);
+
+    const payload = {
+      branch_id: editBranchId,
+      region_id: editBranchRegionId,
+      branch_name: editBranchName,
+    };
+    console.log("Update Branch Payload (Ready for API):", payload);
+
+    try {
+      await updateBranch(payload);
+      CommonMessage("success", "Branch Updated Successfully");
+      formReset();
+      fetchBranchManagers();
+    } catch (error) {
+      setEditButtonLoading(false);
+      const errorMessage =
+        error?.response?.data?.details ||
+        error?.response?.data?.message ||
+        "Failed to update branch";
+      CommonMessage("error", errorMessage);
+    }
+  };
+
   const columns = [
-    { title: "Region Name", key: "region_name", dataIndex: "region_name" },
-    { title: "Branch Name", key: "branch_name", dataIndex: "branch_name" },
+    {
+      title: "Region Name",
+      key: "region_name",
+      dataIndex: "region_name",
+      render: (text, record) => (
+        <div className="region_branch_cell_wrapper">
+          <span style={{ fontWeight: 500, color: "#1e293b" }}>
+            {text || "-"}
+          </span>
+          <Tooltip title="Edit Region">
+            <button
+              type="button"
+              className="region_branch_inline_edit_btn"
+              onClick={() => openEditRegion(record)}
+              aria-label="Edit Region"
+            >
+              <AiOutlineEdit size={16} />
+            </button>
+          </Tooltip>
+        </div>
+      ),
+    },
+    {
+      title: "Branch Name",
+      key: "branch_name",
+      dataIndex: "branch_name",
+      render: (text, record) => (
+        <div className="region_branch_cell_wrapper">
+          <span style={{ color: "#334155" }}>{text || "-"}</span>
+          <Tooltip title="Edit Branch">
+            <button
+              type="button"
+              className="region_branch_inline_edit_btn"
+              onClick={() => openEditBranch(record)}
+              aria-label="Edit Branch"
+            >
+              <AiOutlineEdit size={16} />
+            </button>
+          </Tooltip>
+        </div>
+      ),
+    },
     {
       title: "Regional Manager",
       key: "regional_manager_name",
@@ -271,14 +411,25 @@ export default function RegionAndBranches() {
 
   const formReset = () => {
     setButtonLoading(false);
+    setEditButtonLoading(false);
     setIsOpenRegionModal(false);
     setIsOpenBranchModal(false);
+    setIsOpenEditRegionModal(false);
+    setIsOpenEditBranchModal(false);
     setRegionName("");
     setRegionNameError("");
     setRegionId(null);
     setRegionIdError("");
     setBranchName("");
     setBranchNameError("");
+    setEditRegionId(null);
+    setEditRegionName("");
+    setEditRegionNameError("");
+    setEditBranchId(null);
+    setEditBranchRegionId(null);
+    setEditBranchRegionIdError("");
+    setEditBranchName("");
+    setEditBranchNameError("");
   };
 
   return (
@@ -438,6 +589,118 @@ export default function RegionAndBranches() {
             }}
             value={branchName}
             error={branchNameError}
+            errorFontSize={"10px"}
+          />
+        </div>
+      </Modal>
+
+      {/* edit region modal */}
+      <Modal
+        title="Edit Region"
+        open={isOpenEditRegionModal}
+        onCancel={formReset}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={formReset}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          editButtonLoading ? (
+            <Button
+              key="update"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="update"
+              type="primary"
+              onClick={handleRegionUpdate}
+              className="leads_coursemodal_createbutton"
+            >
+              Update
+            </Button>
+          ),
+        ]}
+        width="32%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+          <CommonInputField
+            label="Region Name"
+            onChange={(e) => {
+              setEditRegionName(e.target.value);
+              setEditRegionNameError(addressValidator(e.target.value));
+            }}
+            value={editRegionName}
+            error={editRegionNameError}
+            errorFontSize={"10px"}
+          />
+        </div>
+      </Modal>
+
+      {/* edit branch modal */}
+      <Modal
+        title="Edit Branch"
+        open={isOpenEditBranchModal}
+        onCancel={formReset}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={formReset}
+            className="leads_coursemodal_cancelbutton"
+          >
+            Cancel
+          </Button>,
+
+          editButtonLoading ? (
+            <Button
+              key="update"
+              type="primary"
+              className="leads_coursemodal_loading_createbutton"
+            >
+              <CommonSpinner />
+            </Button>
+          ) : (
+            <Button
+              key="update"
+              type="primary"
+              onClick={handleBranchUpdate}
+              className="leads_coursemodal_createbutton"
+            >
+              Update
+            </Button>
+          ),
+        ]}
+        width="32%"
+      >
+        <div style={{ marginTop: "20px", marginBottom: "24px" }}>
+          <CommonSelectField
+            label="Select Region"
+            options={globalRegionsList}
+            onChange={(e) => {
+              setEditBranchRegionId(e.target.value);
+              setEditBranchRegionIdError(selectValidator(e.target.value));
+            }}
+            value={editBranchRegionId}
+            error={editBranchRegionIdError}
+            errorFontSize={"10px"}
+          />
+        </div>
+
+        <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+          <CommonInputField
+            label="Branch Name"
+            onChange={(e) => {
+              setEditBranchName(e.target.value);
+              setEditBranchNameError(addressValidator(e.target.value));
+            }}
+            value={editBranchName}
+            error={editBranchNameError}
             errorFontSize={"10px"}
           />
         </div>
