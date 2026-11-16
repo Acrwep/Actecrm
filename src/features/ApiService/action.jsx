@@ -2633,3 +2633,15 @@ export const getAccountsReportsCounts = async (payload) => {
     throw error;
   }
 };
+
+export const getTrainerReportsCounts = async (payload) => {
+  try {
+    const response = await api.post(
+      `/api/getTrainerPaymentsReportsCounts`,
+      payload,
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

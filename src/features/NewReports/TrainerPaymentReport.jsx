@@ -17,6 +17,7 @@ import {
   getBranches,
   getTrainers,
   getTrainerPayments,
+  getTrainerReportsCounts,
 } from "../ApiService/action";
 import dayjs from "dayjs";
 import jsPDF from "jspdf";
@@ -79,7 +80,7 @@ function TrainerPaymentReportSkeleton() {
       </div>
 
       <Row gutter={[16, 16]}>
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <Col xs={24} sm={12} md={12} lg={8} xl={6} key={i}>
             <div className="presales_stat_card">
               <div className="presales_card_top">
@@ -120,7 +121,63 @@ function TrainerPaymentReportSkeleton() {
         ))}
       </Row>
 
-      {/* 2. Funnel Skeleton */}
+      {/* 2. Trainer & Customer Distribution Skeleton (3 Cards) */}
+      <div className="presales_section_header" style={{ marginTop: 28 }}>
+        <h2 className="presales_section_title">
+          <FiUsers style={{ color: "#0284c7" }} size={19} /> Trainer & Customer
+          Distribution
+        </h2>
+        <span
+          className="presales_section_title_badge"
+          style={{ background: "#e0f2fe", color: "#0284c7" }}
+        >
+          Paid Beneficiary & Volume Reach
+        </span>
+      </div>
+
+      <Row gutter={[16, 16]}>
+        {[1, 2, 3].map((i) => (
+          <Col xs={24} sm={12} md={8} key={i}>
+            <div className="presales_stat_card">
+              <div className="presales_card_top">
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
+                >
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 100, height: 14 }}
+                  />
+                  <Skeleton.Input
+                    active
+                    style={{ width: 120, height: 28, marginTop: 4 }}
+                  />
+                </div>
+                <Skeleton.Avatar
+                  active
+                  size={38}
+                  shape="square"
+                  style={{ borderRadius: 10 }}
+                />
+              </div>
+              <div className="presales_card_bottom">
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 90, height: 16 }}
+                />
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 70, height: 12 }}
+                />
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+
+      {/* 3. Funnel Skeleton */}
       <div className="presales_section_header" style={{ marginTop: 28 }}>
         <h2 className="presales_section_title">
           <TbTargetArrow style={{ color: "#0284c7" }} size={19} /> Payment Claim
@@ -130,13 +187,13 @@ function TrainerPaymentReportSkeleton() {
           className="presales_section_title_badge"
           style={{ background: "#e0f2fe", color: "#0284c7" }}
         >
-          5 Disbursement Milestones
+          4 Disbursement Milestones
         </span>
       </div>
 
       <div className="presales_funnel_container">
         <div className="presales_funnel_steps">
-          {[1, 2, 3, 4, 5].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <React.Fragment key={i}>
               <div className="presales_funnel_step">
                 <div className="presales_funnel_step_header">
@@ -157,24 +214,8 @@ function TrainerPaymentReportSkeleton() {
                     />
                   </div>
                 </div>
-                <div className="presales_funnel_subitems">
-                  {[1, 2].map((j) => (
-                    <div className="presales_funnel_subitem" key={j}>
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "65%", height: 12 }}
-                      />
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "25%", height: 12 }}
-                      />
-                    </div>
-                  ))}
-                </div>
               </div>
-              {i < 5 && <FiArrowRight className="presales_funnel_arrow" />}
+              {i < 4 && <FiArrowRight className="presales_funnel_arrow" />}
             </React.Fragment>
           ))}
         </div>
@@ -193,20 +234,45 @@ export default function TrainerPaymentReport({
 
   // Filter States
   const [selectedDates, setSelectedDates] = useState([]);
-  const [dateFilterType, setDateFilterType] = useState("RaiseDate"); // "RaiseDate" | "PaidDate" | "DeadLineDate"
-  const [commercialType, setCommercialType] = useState(""); // "" (All) | "Pay Per Head" | "Batch"
   const [selectedRegionId, setSelectedRegionId] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
-  const [selectedTrainerId, setSelectedTrainerId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
-  const [trainersList, setTrainersList] = useState([]);
 
   // Loading & Export States
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   // Raw API Data State
+  const [reportCounts, setReportCounts] = useState({
+    total_master_amount: 0,
+    total_master_count: 0,
+    link_sent_count: 0,
+    link_sent_amount: 0,
+    requested_count: 0,
+    requested_amount: 0,
+    awaiting_finance_count: 0,
+    awaiting_finance_amount: 0,
+    paid_count: 0,
+    paid_amount: 0,
+    balance_count: 0,
+    balance_amount: 0,
+    batch_count: 0,
+    batch_amount: 0,
+    pay_per_head_count: 0,
+    pay_per_head_amount: 0,
+    links_dispatched_count: 0,
+    links_dispatched_amount: 0,
+    claim_submitted_count: 0,
+    claim_submitted_amount: 0,
+    paid_total_trainer_count: 0,
+    not_paid_total_trainer_count: 0,
+    paid_total_customer_count: 0,
+    not_paid_total_customer_count: 0,
+    customer_paid_count: 0,
+    trainer_paid_count: 0,
+    by_paid_amount: 0,
+  });
   const [paymentRequests, setPaymentRequests] = useState([]);
   const [statusCounts, setStatusCounts] = useState({
     total: 0,
@@ -232,39 +298,33 @@ export default function TrainerPaymentReport({
 
   // Load Trainer List & Initial Report Data
   useEffect(() => {
-    fetchTrainersDropdown();
     if (selectedDates && selectedDates.length === 2) {
       fetchTrainerPaymentData();
     }
   }, []);
 
-  const fetchTrainersDropdown = async () => {
-    try {
-      const res = await getTrainers({ page: 1, limit: 1000 });
-      const list = res?.data?.data || [];
-      const formatted = list.map((t) => ({
-        label: t.trainer_name || `Trainer #${t.trainer_id}`,
-        value: t.trainer_id,
-      }));
-      setTrainersList(formatted);
-    } catch (err) {
-      console.error("Failed to load trainers dropdown:", err);
-    }
-  };
-
   const getBranchesData = async (regionId) => {
+    const payload = { region_id: regionId };
     try {
-      const res = await getBranches(regionId);
-      const branches = res?.data?.data || [];
-      setFilterBranchOptions(
-        branches.map((b) => ({
-          label: b.branch_name,
-          value: b.branch_id,
-        })),
-      );
-    } catch (err) {
-      console.error("Failed to fetch branches:", err);
+      const response = await getBranches(payload);
+      const branch_data = response?.data?.result || [];
+      if (branch_data.length >= 1) {
+        if (regionId == 1 || regionId == 2) {
+          const reordered = [
+            ...branch_data.filter((item) => item.name !== "Online"),
+            ...branch_data.filter((item) => item.name === "Online"),
+          ];
+          setFilterBranchOptions(reordered);
+        } else {
+          setFilterBranchOptions(branch_data);
+          setSelectedBranchId(branch_data[0]?.id);
+        }
+      } else {
+        setFilterBranchOptions([]);
+      }
+    } catch (error) {
       setFilterBranchOptions([]);
+      console.log("branches error", error);
     }
   };
 
@@ -273,55 +333,84 @@ export default function TrainerPaymentReport({
     setIsLoading(true);
 
     const dates = overrides.dates || selectedDates;
-    const dateType = overrides.dateType || dateFilterType;
-    const comType =
-      overrides.commercialType !== undefined
-        ? overrides.commercialType
-        : commercialType;
     const regionId =
       overrides.regionId !== undefined ? overrides.regionId : selectedRegionId;
     const branchId =
       overrides.branchId !== undefined ? overrides.branchId : selectedBranchId;
-    const trainerId =
-      overrides.trainerId !== undefined
-        ? overrides.trainerId
-        : selectedTrainerId;
 
     const startDate = dates?.[0] ? moment(dates[0]).format("YYYY-MM-DD") : null;
     const endDate = dates?.[1] ? moment(dates[1]).format("YYYY-MM-DD") : null;
 
     const payload = {
-      type: dateType,
+      type: "RaiseDate",
       start_date: startDate,
       end_date: endDate,
       page: 1,
       limit: 10000, // Fetch broad cohort for accurate analytical aggregations
-      ...(comType && { commercial_type: comType }),
       ...(regionId && { region_id: regionId }),
       ...(branchId && { branch_id: branchId }),
-      ...(trainerId && { trainer_id: trainerId }),
     };
 
     try {
-      const response = await getTrainerPayments(payload);
-      const dataArr = response?.data?.data?.data || [];
-      const sCounts = response?.data?.data?.statusCount || {};
-      const cCounts = response?.data?.data?.commercialTypeCount || {};
+      const response = await getTrainerReportsCounts(payload);
+      const apiData =
+        response?.data?.data || response?.data?.result || response?.data || {};
 
-      setPaymentRequests(dataArr);
+      setReportCounts({
+        total_master_amount: Number(apiData.total_master_amount) || 0,
+        total_master_count: Number(apiData.total_master_count) || 0,
+        link_sent_count: Number(apiData.link_sent_count) || 0,
+        link_sent_amount: Number(apiData.link_sent_amount) || 0,
+        requested_count: Number(apiData.requested_count) || 0,
+        requested_amount: Number(apiData.requested_amount) || 0,
+        awaiting_finance_count: Number(apiData.awaiting_finance_count) || 0,
+        awaiting_finance_amount: Number(apiData.awaiting_finance_amount) || 0,
+        paid_count: Number(apiData.paid_count) || 0,
+        paid_amount: Number(apiData.paid_amount) || 0,
+        balance_count: Number(apiData.balance_count) || 0,
+        balance_amount: Number(apiData.balance_amount) || 0,
+        batch_count: Number(apiData.batch_count) || 0,
+        batch_amount: Number(apiData.batch_amount) || 0,
+        pay_per_head_count: Number(apiData.pay_per_head_count) || 0,
+        pay_per_head_amount: Number(apiData.pay_per_head_amount) || 0,
+        links_dispatched_count: Number(apiData.links_dispatched_count) || 0,
+        links_dispatched_amount: Number(apiData.links_dispatched_amount) || 0,
+        claim_submitted_count: Number(apiData.claim_submitted_count) || 0,
+        claim_submitted_amount: Number(apiData.claim_submitted_amount) || 0,
+        paid_total_trainer_count: Number(apiData.paid_total_trainer_count) || 0,
+        not_paid_total_trainer_count:
+          Number(apiData.not_paid_total_trainer_count) || 0,
+        paid_total_customer_count:
+          Number(apiData.paid_total_customer_count) || 0,
+        not_paid_total_customer_count:
+          Number(apiData.not_paid_total_customer_count) || 0,
+        customer_paid_count: Number(apiData.customer_paid_count) || 0,
+        trainer_paid_count: Number(apiData.trainer_paid_count) || 0,
+        by_paid_amount: Number(apiData.by_paid_amount) || 0,
+      });
+
       setStatusCounts({
-        total: Number(sCounts.total) || dataArr.length || 0,
-        link_sent: Number(sCounts.link_sent) || 0,
-        requested: Number(sCounts.requested) || 0,
-        awaiting_finance: Number(sCounts.awaiting_finance) || 0,
-        paid: Number(sCounts.paid) || 0,
+        total: Number(apiData.total_master_count) || 0,
+        link_sent: Number(apiData.link_sent_count) || 0,
+        requested: Number(apiData.requested_count) || 0,
+        awaiting_finance: Number(apiData.awaiting_finance_count) || 0,
+        paid: Number(apiData.paid_count) || 0,
       });
+
       setCommercialTypeCounts({
-        Pay_Per_Head_Count: Number(cCounts.Pay_Per_Head_Count) || 0,
-        Batch_Count: Number(cCounts.Batch_Count) || 0,
+        Pay_Per_Head_Count: Number(apiData.pay_per_head_count) || 0,
+        Batch_Count: Number(apiData.batch_count) || 0,
       });
+
+      if (Array.isArray(apiData.data)) {
+        setPaymentRequests(apiData.data);
+      } else if (Array.isArray(response?.data?.data?.data)) {
+        setPaymentRequests(response.data.data.data);
+      } else {
+        setPaymentRequests([]);
+      }
     } catch (error) {
-      console.error("Error fetching trainer payments report data:", error);
+      console.error("Error fetching trainer payments report counts:", error);
       CommonMessage("error", "Failed to fetch Trainer Payment Report data");
       setPaymentRequests([]);
     } finally {
@@ -332,7 +421,16 @@ export default function TrainerPaymentReport({
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchTrainerPaymentData();
+    const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
+    setSelectedDates(PreviousAndCurrentDate);
+    setSelectedRegionId(null);
+    setSelectedBranchId(null);
+    setFilterBranchOptions([]);
+    fetchTrainerPaymentData({
+      dates: PreviousAndCurrentDate,
+      regionId: null,
+      branchId: null,
+    });
   };
 
   // ---------------------------------------------------------------------------
@@ -347,99 +445,181 @@ export default function TrainerPaymentReport({
         ? Math.max(1, endDate.diff(startDate, "days") + 1)
         : 1;
 
-    let totalPayoutClaimed = 0;
-    let totalDisbursed = 0;
-    let readyToPayAmount = 0;
-    let claimedAmount = 0;
-    let linkSentAmount = 0;
+    // Primary metrics mapped directly from API Report Counts
+    const totalPayoutClaimed = Number(reportCounts.total_master_amount) || 0;
+    const totalPayoutClaimedCount =
+      Number(reportCounts.total_master_count) || 0;
+
+    const totalDisbursed = Number(reportCounts.paid_amount) || 0;
+    const paidCount = Number(reportCounts.paid_count) || 0;
+
+    const readyToPayAmount = Number(reportCounts.awaiting_finance_amount) || 0;
+    const awaitingFinanceCount =
+      Number(reportCounts.awaiting_finance_count) || 0;
+
+    const claimedAmount = Number(reportCounts.requested_amount) || 0;
+    const requestedCount = Number(reportCounts.requested_count) || 0;
+
+    const linkSentAmount = Number(reportCounts.link_sent_amount) || 0;
+    const linkSentCount = Number(reportCounts.link_sent_count) || 0;
+
+    const payPerHeadAmount = Number(reportCounts.pay_per_head_amount) || 0;
+    const payPerHeadCount = Number(reportCounts.pay_per_head_count) || 0;
+
+    const batchAmount = Number(reportCounts.batch_amount) || 0;
+    const batchCount = Number(reportCounts.batch_count) || 0;
+
+    const balanceAmount = Number(reportCounts.balance_amount) || 0;
+    const balanceCount = Number(reportCounts.balance_count) || 0;
+
+    // Executive Summary: 2 new card counts
+    const notPaidTotalTrainerCount =
+      Number(reportCounts.not_paid_total_trainer_count) || 0;
+    const notPaidTotalCustomerCount =
+      Number(reportCounts.not_paid_total_customer_count) || 0;
+
+    // Trainer & Customer Distribution
+    const trainersPaidCount =
+      Number(reportCounts.paid_total_trainer_count) || 0;
+    const customersPaidCount =
+      Number(reportCounts.paid_total_customer_count) || 0;
+    const amountDistributed =
+      Number(reportCounts.by_paid_amount) || totalDisbursed;
+
+    // Total Trainers & Customers (Sum of Paid + Not Paid)
+    const totalTrainersCount = trainersPaidCount + notPaidTotalTrainerCount;
+    const totalCustomersCount = customersPaidCount + notPaidTotalCustomerCount;
+
+    // Daily Averages of Paid Trainers & Customers
+    const paidTrainersDailyAvg =
+      daysDiff > 0 ? (trainersPaidCount / daysDiff).toFixed(1) : "0.0";
+    const paidCustomersDailyAvg =
+      daysDiff > 0 ? (customersPaidCount / daysDiff).toFixed(1) : "0.0";
+
+    // Paid Rates (Percentages)
+    const paidTrainerRate =
+      totalTrainersCount > 0
+        ? ((trainersPaidCount / totalTrainersCount) * 100).toFixed(1)
+        : "0.0";
+    const paidCustomerRate =
+      totalCustomersCount > 0
+        ? ((customersPaidCount / totalCustomersCount) * 100).toFixed(1)
+        : "0.0";
+
+    // Lifecycle / Funnel counts & amounts
+    const linksDispatchedCount =
+      Number(reportCounts.links_dispatched_count) || 0;
+    const linksDispatchedAmount =
+      Number(reportCounts.links_dispatched_amount) || 0;
+    const claimSubmittedCount = Number(reportCounts.claim_submitted_count) || 0;
+    const claimSubmittedAmount =
+      Number(reportCounts.claim_submitted_amount) || 0;
+
+    // Optional detailed metrics computed if transaction array is provided
     let overdueCount = 0;
     let overdueAmount = 0;
     let onTimeCount = 0;
-
-    let payPerHeadAmount = 0;
-    let payPerHeadCount = 0;
-    let batchAmount = 0;
-    let batchCount = 0;
-
     let onlineAmount = 0;
     let onlineCount = 0;
     let classroomAmount = 0;
     let classroomCount = 0;
-
     let totalDaysTaken = 0;
     let paidRecordsWithDays = 0;
 
+    const paidTrainersSet = new Set();
+    const paidCustomersSet = new Set();
     const now = moment();
 
-    paymentRequests.forEach((req) => {
-      const reqAmt = Number(
-        req.request_amount || req.commercial || req.batch_amount || 0,
-      );
-      const paidAmt = Number(req.paid_amount || reqAmt || 0);
-      const status = req.status || "";
-      const isPaid = status === "Paid" || status === "Completed";
-      const isReadyToPay =
-        status === "Awaiting Finance" || status === "Ready to Pay";
-      const isClaimed = status === "Requested" || status === "Claim";
-      const isLinkSent = status === "Link Sent";
+    if (Array.isArray(paymentRequests) && paymentRequests.length > 0) {
+      paymentRequests.forEach((req) => {
+        const reqAmt = Number(
+          req.request_amount || req.commercial || req.batch_amount || 0,
+        );
+        const status = req.status || "";
+        const isPaid =
+          status === "Paid" ||
+          status === "Completed" ||
+          status.toLowerCase() === "paid" ||
+          status.toLowerCase() === "completed";
 
-      totalPayoutClaimed += reqAmt;
+        if (isPaid) {
+          const trainerKey =
+            req.trainer_id || req.trainer_name || req.trainer_code;
+          if (trainerKey) {
+            paidTrainersSet.add(trainerKey);
+          }
 
-      if (isPaid) {
-        totalDisbursed += paidAmt;
-        if (
-          req.days_taken_topay !== undefined &&
-          req.days_taken_topay !== null
-        ) {
-          totalDaysTaken += Number(req.days_taken_topay);
-          paidRecordsWithDays++;
-        }
-      } else if (isReadyToPay) {
-        readyToPayAmount += reqAmt;
-      } else if (isClaimed) {
-        claimedAmount += reqAmt;
-      } else if (isLinkSent) {
-        linkSentAmount += reqAmt;
-      }
+          if (Array.isArray(req.students) && req.students.length > 0) {
+            req.students.forEach((student) => {
+              const custKey =
+                typeof student === "object"
+                  ? student.customer_id ||
+                    student.id ||
+                    student.student_id ||
+                    student.customer_name ||
+                    student.name
+                  : student;
+              if (custKey) {
+                paidCustomersSet.add(custKey);
+              }
+            });
+          }
+          if (
+            req.customer_id ||
+            req.customer_name ||
+            req.student_id ||
+            req.candidate_name
+          ) {
+            const directCustKey =
+              req.customer_id ||
+              req.customer_name ||
+              req.student_id ||
+              req.candidate_name;
+            paidCustomersSet.add(directCustKey);
+          }
 
-      // SLA & Deadline Tracking
-      if (req.deadline_date) {
-        const deadline = moment(req.deadline_date);
-        if (!isPaid && deadline.isBefore(now)) {
-          overdueCount++;
-          overdueAmount += reqAmt;
-        } else if (isPaid) {
-          const paidD = req.paid_date ? moment(req.paid_date) : null;
-          if (paidD && paidD.isAfter(deadline)) {
-            overdueCount++;
-          } else {
-            onTimeCount++;
+          if (
+            req.days_taken_topay !== undefined &&
+            req.days_taken_topay !== null
+          ) {
+            totalDaysTaken += Number(req.days_taken_topay);
+            paidRecordsWithDays++;
           }
         }
-      }
 
-      // Commercial Split
-      const comType = req.commercial_type || "";
-      if (comType === "Pay Per Head") {
-        payPerHeadAmount += reqAmt;
-        payPerHeadCount++;
-      } else if (comType === "Batch") {
-        batchAmount += reqAmt;
-        batchCount++;
-      }
+        // SLA & Deadline Tracking
+        if (req.deadline_date) {
+          const deadline = moment(req.deadline_date);
+          if (!isPaid && deadline.isBefore(now)) {
+            overdueCount++;
+            overdueAmount += reqAmt;
+          } else if (isPaid) {
+            const paidD = req.paid_date ? moment(req.paid_date) : null;
+            if (paidD && paidD.isAfter(deadline)) {
+              overdueCount++;
+            } else {
+              onTimeCount++;
+            }
+          }
+        }
 
-      // Mode Split
-      const mode = req.mode_of_training || req.training_mode || "";
-      if (mode.toLowerCase().includes("online")) {
-        onlineAmount += reqAmt;
-        onlineCount++;
-      } else if (mode.toLowerCase().includes("classroom")) {
-        classroomAmount += reqAmt;
-        classroomCount++;
-      }
-    });
+        // Mode Split
+        const mode = req.mode_of_training || req.training_mode || "";
+        if (mode.toLowerCase().includes("online")) {
+          onlineAmount += reqAmt;
+          onlineCount++;
+        } else if (mode.toLowerCase().includes("classroom")) {
+          classroomAmount += reqAmt;
+          classroomCount++;
+        }
+      });
+    }
 
-    const totalClaimsCount = statusCounts.total || paymentRequests.length || 0;
+    const totalClaimsCount =
+      totalPayoutClaimedCount ||
+      statusCounts.total ||
+      paymentRequests.length ||
+      0;
     const payoutRealizationRate =
       totalPayoutClaimed > 0
         ? ((totalDisbursed / totalPayoutClaimed) * 100).toFixed(1)
@@ -455,10 +635,32 @@ export default function TrainerPaymentReport({
 
     return {
       totalPayoutClaimed,
+      totalPayoutClaimedCount,
       totalDisbursed,
+      paidCount,
       readyToPayAmount,
+      awaitingFinanceCount,
       claimedAmount,
+      requestedCount,
       linkSentAmount,
+      linkSentCount,
+      balanceAmount,
+      balanceCount,
+      balanceDailyAvg: Math.round(balanceAmount / daysDiff),
+      // Executive Summary: 2 new card counts & analytical totals
+      notPaidTotalTrainerCount,
+      notPaidTotalCustomerCount,
+      totalTrainersCount,
+      totalCustomersCount,
+      paidTrainersDailyAvg,
+      paidCustomersDailyAvg,
+      paidTrainerRate,
+      paidCustomerRate,
+      // Lifecycle / Funnel counts & amounts
+      linksDispatchedCount,
+      linksDispatchedAmount,
+      claimSubmittedCount,
+      claimSubmittedAmount,
       overdueCount,
       overdueAmount,
       payoutRealizationRate,
@@ -466,6 +668,11 @@ export default function TrainerPaymentReport({
       onTimeRate,
       daysDiff,
       totalClaimsCount,
+      // Trainer & Customer Distribution KPIs
+      trainersPaidCount,
+      customersPaidCount,
+      amountDistributed,
+      amountDistributedDailyAvg: Math.round(amountDistributed / daysDiff),
       // Daily Averages
       claimedDailyAvg: Math.round(totalPayoutClaimed / daysDiff),
       disbursedDailyAvg: Math.round(totalDisbursed / daysDiff),
@@ -474,17 +681,16 @@ export default function TrainerPaymentReport({
       linkSentDailyAvg: Math.round(linkSentAmount / daysDiff),
       // Commercial Split
       payPerHeadAmount,
-      payPerHeadCount:
-        commercialTypeCounts.Pay_Per_Head_Count || payPerHeadCount,
+      payPerHeadCount,
       batchAmount,
-      batchCount: commercialTypeCounts.Batch_Count || batchCount,
+      batchCount,
       // Mode Split
       onlineAmount,
       onlineCount,
       classroomAmount,
       classroomCount,
     };
-  }, [paymentRequests, statusCounts, commercialTypeCounts, selectedDates]);
+  }, [reportCounts, paymentRequests, statusCounts, selectedDates]);
 
   // ---------------------------------------------------------------------------
   // PDF Export
@@ -587,8 +793,6 @@ export default function TrainerPaymentReport({
           ? `${moment(selectedDates[0]).format("DD/MM/YYYY")} to ${moment(selectedDates[1]).format("DD/MM/YYYY")}`
           : "All Time",
       ]);
-      rows.push(["Date Filter Basis:", dateFilterType]);
-      rows.push(["Commercial Filter:", commercialType || "All Commercials"]);
       rows.push(["Generated At:", moment().format("YYYY-MM-DD HH:mm:ss")]);
       rows.push([]);
 
@@ -636,10 +840,42 @@ export default function TrainerPaymentReport({
         "-",
         `${analytics.overdueCount} Claims Breached`,
       ]);
+      rows.push([
+        "Trainers (Total / Paid)",
+        `${analytics.totalTrainersCount} (${analytics.trainersPaidCount} Paid, ${analytics.notPaidTotalTrainerCount} Pending)`,
+        `${analytics.paidTrainersDailyAvg} / day`,
+        `${analytics.paidTrainerRate}% Paid`,
+      ]);
+      rows.push([
+        "Customers (Total / Paid)",
+        `${analytics.totalCustomersCount} (${analytics.customersPaidCount} Paid, ${analytics.notPaidTotalCustomerCount} Pending)`,
+        `${analytics.paidCustomersDailyAvg} / day`,
+        `${analytics.paidCustomerRate}% Paid`,
+      ]);
       rows.push([]);
 
-      // 2. Commercial Model Breakdown
-      rows.push(["2. COMMERCIAL MODEL BREAKDOWN"]);
+      // 2. Trainer & Customer Distribution
+      rows.push(["2. TRAINER & CUSTOMER DISTRIBUTION"]);
+      rows.push(["Metric", "Count / Value", "Description"]);
+      rows.push([
+        "Trainers Paid",
+        analytics.trainersPaidCount,
+        "Trainers who have been sent payments",
+      ]);
+      rows.push([
+        "Customers Paid",
+        analytics.customersPaidCount,
+        "Customers whose trainers payment sent",
+      ]);
+      rows.push([
+        "Amount Distributed",
+        `₹${analytics.amountDistributed.toLocaleString("en-IN")}`,
+        "Total paid amount disbursed",
+      ]);
+      rows.push([]);
+
+      // 3. Commercial Model Breakdown
+      rows.push(["3. COMMERCIAL MODEL BREAKDOWN"]);
       rows.push([
         "Model",
         "Claims Count",
@@ -664,8 +900,8 @@ export default function TrainerPaymentReport({
       ]);
       rows.push([]);
 
-      // 3. Operational Delivery Split
-      rows.push(["3. OPERATIONAL DELIVERY SPLIT"]);
+      // 4. Operational Delivery Split
+      rows.push(["4. OPERATIONAL DELIVERY SPLIT"]);
       rows.push(["Training Mode", "Claims Count", "Total Amount (₹)"]);
       rows.push([
         "Online Training",
@@ -679,8 +915,8 @@ export default function TrainerPaymentReport({
       ]);
       rows.push([]);
 
-      // 4. Itemized Transactions
-      rows.push(["4. ITEMIZED PAYMENT REQUESTS"]);
+      // 5. Itemized Transactions
+      rows.push(["5. ITEMIZED PAYMENT REQUESTS"]);
       rows.push([
         "Payment ID",
         "Trainer Name",
@@ -839,90 +1075,12 @@ export default function TrainerPaymentReport({
           2. Interactive Filter Bar (Screen only - excluded from PDF)
           ==================================================================== */}
       <Row gutter={[12, 8]} style={{ marginTop: "0px" }}>
-        <Col span={24}>
+        <Col xs={24} sm={24} md={24} lg={16} xl={15} xxl={12}>
           <Row gutter={12} align="middle">
-            {/* Commercial Type Toggle */}
-            <Col flex="0.9 1 0%">
-              <div className="postsales_datetype_box">
-                <div className="postsales_datetype_toggle">
-                  <button
-                    type="button"
-                    className={`postsales_toggle_btn ${commercialType === "" ? "active" : ""}`}
-                    onClick={() => {
-                      setCommercialType("");
-                      fetchTrainerPaymentData({ commercialType: "" });
-                    }}
-                  >
-                    All Types
-                  </button>
-                  <button
-                    type="button"
-                    className={`postsales_toggle_btn ${commercialType === "Pay Per Head" ? "active" : ""}`}
-                    onClick={() => {
-                      setCommercialType("Pay Per Head");
-                      fetchTrainerPaymentData({
-                        commercialType: "Pay Per Head",
-                      });
-                    }}
-                  >
-                    PPH
-                  </button>
-                  <button
-                    type="button"
-                    className={`postsales_toggle_btn ${commercialType === "Batch" ? "active" : ""}`}
-                    onClick={() => {
-                      setCommercialType("Batch");
-                      fetchTrainerPaymentData({ commercialType: "Batch" });
-                    }}
-                  >
-                    Batch
-                  </button>
-                </div>
-              </div>
-            </Col>
-
-            {/* Date Type Toggle */}
-            <Col flex="1 1 0%">
-              <div className="postsales_datetype_box">
-                <div className="postsales_datetype_toggle">
-                  <button
-                    type="button"
-                    className={`postsales_toggle_btn ${dateFilterType === "RaiseDate" ? "active" : ""}`}
-                    onClick={() => {
-                      setDateFilterType("RaiseDate");
-                      fetchTrainerPaymentData({ dateType: "RaiseDate" });
-                    }}
-                  >
-                    Bill Raised
-                  </button>
-                  <button
-                    type="button"
-                    className={`postsales_toggle_btn ${dateFilterType === "PaidDate" ? "active" : ""}`}
-                    onClick={() => {
-                      setDateFilterType("PaidDate");
-                      fetchTrainerPaymentData({ dateType: "PaidDate" });
-                    }}
-                  >
-                    Paid Date
-                  </button>
-                  <button
-                    type="button"
-                    className={`postsales_toggle_btn ${dateFilterType === "DeadLineDate" ? "active" : ""}`}
-                    onClick={() => {
-                      setDateFilterType("DeadLineDate");
-                      fetchTrainerPaymentData({ dateType: "DeadLineDate" });
-                    }}
-                  >
-                    Deadline
-                  </button>
-                </div>
-              </div>
-            </Col>
-
             {/* Date Picker */}
-            <Col flex="1.3 1 0%">
+            <Col flex="1.5 1 0%">
               <CommonMuiCustomDatePicker
-                label="Filter by Date"
+                label="Filter by Bill Raise Date"
                 width="100%"
                 value={selectedDates}
                 onDateChange={(dates) => {
@@ -933,7 +1091,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Region Select */}
-            <Col flex="0.8 1 0%">
+            <Col flex="1 1 0%">
               <CommonSelectField
                 height="33px"
                 label="Select Region"
@@ -957,7 +1115,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Branch Select */}
-            <Col flex="0.8 1 0%">
+            <Col flex="1 1 0%">
               <CommonSelectField
                 height="33px"
                 label="Select Branch"
@@ -972,24 +1130,6 @@ export default function TrainerPaymentReport({
                 value={selectedBranchId}
                 disableClearable={false}
                 disabled={selectedRegionId == 3}
-              />
-            </Col>
-
-            {/* Trainer Select */}
-            <Col flex="1 1 0%">
-              <CommonSelectField
-                height="33px"
-                label="Select Trainer"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={trainersList}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSelectedTrainerId(val);
-                  fetchTrainerPaymentData({ trainerId: val });
-                }}
-                value={selectedTrainerId}
-                disableClearable={false}
               />
             </Col>
           </Row>
@@ -1011,7 +1151,10 @@ export default function TrainerPaymentReport({
           {/* Dedicated PDF Export Header Banner */}
           {isExporting && (
             <div className="presales_pdf_export_banner">
-              <div className="presales_pdf_banner_top">
+              <div
+                className="presales_pdf_banner_top"
+                style={{ borderBottom: "0px" }}
+              >
                 <div>
                   <h1 className="presales_pdf_banner_title">
                     ACTE CRM — Trainer Payments Analytics Report
@@ -1030,67 +1173,9 @@ export default function TrainerPaymentReport({
                       : "Current Period"}
                   </div>
                   <div>
-                    <strong>Date Basis:</strong>{" "}
-                    {dateFilterType === "RaiseDate"
-                      ? "Bill Raise Date"
-                      : dateFilterType === "PaidDate"
-                        ? "Paid Date"
-                        : "Deadline Date"}
-                  </div>
-                  <div>
-                    <strong>Commercial Model:</strong>{" "}
-                    {commercialType || "All Commercials"}
-                  </div>
-                  <div>
                     <strong>Generated:</strong>{" "}
                     {moment().format("DD MMM YYYY, hh:mm A")}
                   </div>
-                </div>
-              </div>
-              <div className="presales_pdf_banner_kpis">
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">
-                    Total Payout Claimed
-                  </span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#4f46e5" }}
-                  >
-                    ₹
-                    {Number(analytics.totalPayoutClaimed).toLocaleString(
-                      "en-IN",
-                    )}
-                  </strong>
-                </div>
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">Total Disbursed</span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#059669" }}
-                  >
-                    ₹{Number(analytics.totalDisbursed).toLocaleString("en-IN")}
-                  </strong>
-                </div>
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">
-                    Ready to Pay (Finance)
-                  </span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#0284c7" }}
-                  >
-                    ₹
-                    {Number(analytics.readyToPayAmount).toLocaleString("en-IN")}
-                  </strong>
-                </div>
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">Realization Rate</span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#059669" }}
-                  >
-                    {analytics.payoutRealizationRate}%
-                  </strong>
                 </div>
               </div>
             </div>
@@ -1147,89 +1232,55 @@ export default function TrainerPaymentReport({
                   </span>
                   <span
                     className="presales_stat_subtext"
-                    title="gross claims raised"
+                    title={`${analytics.totalPayoutClaimedCount} total claims`}
                   >
-                    gross claims raised
+                    {analytics.totalPayoutClaimedCount}{" "}
+                    {analytics.totalPayoutClaimedCount === 1
+                      ? "claim"
+                      : "claims"}
                   </span>
                 </div>
               </div>
             </Col>
 
-            {/* Card 2: Total Disbursed */}
+            {/* Card 2: Unclaimed Links Sent */}
             <Col xs={24} sm={12} md={12} lg={8} xl={6}>
-              <div className="presales_stat_card presales_theme_emerald">
+              <div className="presales_stat_card presales_theme_amber">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">
-                      Total Disbursed (Paid)
-                    </p>
+                    <p className="presales_stat_label">Unclaimed Links</p>
                     <h3
                       className="presales_stat_value"
-                      style={{ color: "#059669" }}
-                      title={`₹${analytics.totalDisbursed.toLocaleString("en-IN")}`}
+                      style={{ color: "#d97706" }}
+                      title={`₹${analytics.linkSentAmount.toLocaleString("en-IN")}`}
                     >
-                      ₹{analytics.totalDisbursed.toLocaleString("en-IN")}
+                      ₹{analytics.linkSentAmount.toLocaleString("en-IN")}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
-                    <FiCheckCircle size={20} />
+                    <FiSend size={19} />
                   </div>
                 </div>
                 <div className="presales_card_bottom">
                   <span className="presales_badge presales_avg_badge">
-                    <FiCheckCircle size={12} />
+                    <FiSend size={12} />
                     <span className="presales_avg_label">Daily Avg:</span>
                     <strong className="presales_avg_val">
-                      ₹{analytics.disbursedDailyAvg.toLocaleString("en-IN")}
+                      ₹{analytics.linkSentDailyAvg.toLocaleString("en-IN")}
                     </strong>
                   </span>
                   <span
                     className="presales_stat_subtext"
-                    title="cleared disbursements"
+                    title={`${analytics.linkSentCount} unclaimed links`}
                   >
-                    cleared payouts
+                    {analytics.linkSentCount}{" "}
+                    {analytics.linkSentCount === 1 ? "link" : "links"} sent
                   </span>
                 </div>
               </div>
             </Col>
 
-            {/* Card 3: Ready to Pay (Finance Queue) */}
-            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
-              <div className="presales_stat_card presales_theme_sky">
-                <div className="presales_card_top">
-                  <div>
-                    <p className="presales_stat_label">Ready to Pay</p>
-                    <h3
-                      className="presales_stat_value"
-                      style={{ color: "#0284c7" }}
-                      title={`₹${analytics.readyToPayAmount.toLocaleString("en-IN")}`}
-                    >
-                      ₹{analytics.readyToPayAmount.toLocaleString("en-IN")}
-                    </h3>
-                  </div>
-                  <div className="presales_stat_icon_wrapper">
-                    <FiClock size={20} />
-                  </div>
-                </div>
-                <div className="presales_card_bottom">
-                  <span className="presales_badge presales_avg_badge">
-                    <FiClock size={12} />
-                    <span className="presales_avg_label">Daily Avg:</span>
-                    <strong className="presales_avg_val">
-                      ₹{analytics.readyToPayDailyAvg.toLocaleString("en-IN")}
-                    </strong>
-                  </span>
-                  <span
-                    className="presales_stat_subtext"
-                    title="Finance release queue"
-                  >
-                    finance queue
-                  </span>
-                </div>
-              </div>
-            </Col>
-
-            {/* Card 4: Claimed (Awaiting Approval) */}
+            {/* Card 3: Claimed (Awaiting Approval) */}
             <Col xs={24} sm={12} md={12} lg={8} xl={6}>
               <div className="presales_stat_card presales_theme_violet">
                 <div className="presales_card_top">
@@ -1260,45 +1311,88 @@ export default function TrainerPaymentReport({
                   </span>
                   <span
                     className="presales_stat_subtext"
-                    title="Awaiting Ops approval"
+                    title={`${analytics.requestedCount} awaiting approval`}
                   >
-                    awaiting approval
+                    {analytics.requestedCount}{" "}
+                    {analytics.requestedCount === 1 ? "claim" : "claims"}{" "}
+                    awaiting
                   </span>
                 </div>
               </div>
             </Col>
 
-            {/* Card 5: Unclaimed Links Sent */}
+            {/* Card 4: Ready to Pay (Finance Queue) */}
             <Col xs={24} sm={12} md={12} lg={8} xl={6}>
-              <div className="presales_stat_card presales_theme_amber">
+              <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">Unclaimed Links</p>
+                    <p className="presales_stat_label">Ready to Pay</p>
                     <h3
                       className="presales_stat_value"
-                      style={{ color: "#d97706" }}
-                      title={`₹${analytics.linkSentAmount.toLocaleString("en-IN")}`}
+                      style={{ color: "#0284c7" }}
+                      title={`₹${analytics.readyToPayAmount.toLocaleString("en-IN")}`}
                     >
-                      ₹{analytics.linkSentAmount.toLocaleString("en-IN")}
+                      ₹{analytics.readyToPayAmount.toLocaleString("en-IN")}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
-                    <FiSend size={19} />
+                    <FiClock size={20} />
                   </div>
                 </div>
                 <div className="presales_card_bottom">
                   <span className="presales_badge presales_avg_badge">
-                    <FiSend size={12} />
+                    <FiClock size={12} />
                     <span className="presales_avg_label">Daily Avg:</span>
                     <strong className="presales_avg_val">
-                      ₹{analytics.linkSentDailyAvg.toLocaleString("en-IN")}
+                      ₹{analytics.readyToPayDailyAvg.toLocaleString("en-IN")}
                     </strong>
                   </span>
                   <span
                     className="presales_stat_subtext"
-                    title="Pending trainer claim"
+                    title={`${analytics.awaitingFinanceCount} in finance queue`}
                   >
-                    pending trainer claim
+                    {analytics.awaitingFinanceCount}{" "}
+                    {analytics.awaitingFinanceCount === 1 ? "claim" : "claims"}{" "}
+                    is approved
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 5: Total Disbursed */}
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+              <div className="presales_stat_card presales_theme_emerald">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">
+                      Total Disbursed (Paid)
+                    </p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#059669" }}
+                      title={`₹${analytics.totalDisbursed.toLocaleString("en-IN")}`}
+                    >
+                      ₹{analytics.totalDisbursed.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FiCheckCircle size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiCheckCircle size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      ₹{analytics.disbursedDailyAvg.toLocaleString("en-IN")}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title={`${analytics.paidCount} payouts cleared`}
+                  >
+                    {analytics.paidCount}{" "}
+                    {analytics.paidCount === 1 ? "payout" : "payouts"}
                   </span>
                 </div>
               </div>
@@ -1310,14 +1404,17 @@ export default function TrainerPaymentReport({
                 <div className="presales_card_top">
                   <div>
                     <p className="presales_stat_label">
-                      Overdue / SLA Breached
+                      Balance / Pending Payout
                     </p>
                     <h3
                       className="presales_stat_value"
                       style={{ color: "#e11d48" }}
-                      title={`₹${analytics.overdueAmount.toLocaleString("en-IN")}`}
+                      title={`₹${(analytics.balanceAmount || analytics.overdueAmount).toLocaleString("en-IN")}`}
                     >
-                      ₹{analytics.overdueAmount.toLocaleString("en-IN")}
+                      ₹
+                      {(
+                        analytics.balanceAmount || analytics.overdueAmount
+                      ).toLocaleString("en-IN")}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
@@ -1327,16 +1424,94 @@ export default function TrainerPaymentReport({
                 <div className="presales_card_bottom">
                   <span className="presales_badge presales_avg_badge">
                     <FiAlertCircle size={12} />
-                    <span className="presales_avg_label">Breached:</span>
+                    <span className="presales_avg_label">Daily Avg:</span>
                     <strong className="presales_avg_val">
-                      {analytics.overdueCount} claims
+                      ₹{analytics.balanceDailyAvg.toLocaleString("en-IN")}
                     </strong>
                   </span>
                   <span
                     className="presales_stat_subtext"
-                    title="Past deadline date"
+                    title={`${analytics.balanceCount || analytics.overdueCount} pending claims`}
                   >
-                    past deadline date
+                    {analytics.balanceCount || analytics.overdueCount}{" "}
+                    {(analytics.balanceCount || analytics.overdueCount) === 1
+                      ? "claim"
+                      : "claims"}{" "}
+                    pending
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 7: Trainers (Total: Paid + Not Paid) */}
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+              <div className="presales_stat_card presales_theme_sky">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Trainers</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#0284c7" }}
+                      title={`${analytics.totalTrainersCount} total trainers (${analytics.trainersPaidCount} paid, ${analytics.notPaidTotalTrainerCount} pending)`}
+                    >
+                      {analytics.totalTrainersCount.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <HiOutlineAcademicCap size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <HiOutlineSparkles size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      {analytics.paidTrainersDailyAvg}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title={`${analytics.trainersPaidCount} paid of ${analytics.totalTrainersCount} total trainers (${analytics.paidTrainerRate}%)`}
+                  >
+                    {analytics.trainersPaidCount} paid (
+                    {analytics.paidTrainerRate}%)
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 8: Customers (Total: Paid + Not Paid) */}
+            <Col xs={24} sm={12} md={12} lg={8} xl={6}>
+              <div className="presales_stat_card presales_theme_violet">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Customers</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#7c3aed" }}
+                      title={`${analytics.totalCustomersCount} total customers (${analytics.customersPaidCount} paid, ${analytics.notPaidTotalCustomerCount} pending)`}
+                    >
+                      {analytics.totalCustomersCount.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FiUsers size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <HiOutlineSparkles size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      {analytics.paidCustomersDailyAvg}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title={`${analytics.customersPaidCount} paid of ${analytics.totalCustomersCount} total customers (${analytics.paidCustomerRate}%)`}
+                  >
+                    {analytics.customersPaidCount} paid (
+                    {analytics.paidCustomerRate}%)
                   </span>
                 </div>
               </div>
@@ -1355,7 +1530,7 @@ export default function TrainerPaymentReport({
               className="presales_section_title_badge"
               style={{ background: "#e0f2fe", color: "#0284c7" }}
             >
-              5 Key Disbursement Milestones
+              4 Key Disbursement Milestones
             </span>
           </div>
 
@@ -1372,43 +1547,13 @@ export default function TrainerPaymentReport({
                   </p>
                   <div className="presales_funnel_count_row">
                     <span className="presales_funnel_step_count">
-                      {statusCounts.link_sent}
+                      {analytics.linksDispatchedCount}
                     </span>
                     <span
                       className="presales_funnel_step_rate"
                       style={{ color: "#d97706" }}
                     >
-                      ₹{formatIndianNumber(analytics.linkSentAmount)}
-                    </span>
-                  </div>
-                </div>
-                <div className="presales_funnel_subitems">
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#f59e0b" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Links Dispatched
-                      </span>
-                    </span>
-                    <span className="presales_funnel_subitem_count">
-                      {statusCounts.link_sent}
-                    </span>
-                  </div>
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#fbbf24" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Awaiting Submission
-                      </span>
-                    </span>
-                    <span className="presales_funnel_subitem_count">
-                      {statusCounts.link_sent}
+                      ₹{formatIndianNumber(analytics.linksDispatchedAmount)}
                     </span>
                   </div>
                 </div>
@@ -1427,43 +1572,13 @@ export default function TrainerPaymentReport({
                   </p>
                   <div className="presales_funnel_count_row">
                     <span className="presales_funnel_step_count">
-                      {statusCounts.requested}
+                      {analytics.claimSubmittedCount}
                     </span>
                     <span
                       className="presales_funnel_step_rate"
                       style={{ color: "#7c3aed" }}
                     >
-                      ₹{formatIndianNumber(analytics.claimedAmount)}
-                    </span>
-                  </div>
-                </div>
-                <div className="presales_funnel_subitems">
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#8b5cf6" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Forms Submitted
-                      </span>
-                    </span>
-                    <span className="presales_funnel_subitem_count">
-                      {statusCounts.requested}
-                    </span>
-                  </div>
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#a78bfa" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Under HR Review
-                      </span>
-                    </span>
-                    <span className="presales_funnel_subitem_count">
-                      {statusCounts.requested}
+                      ₹{formatIndianNumber(analytics.claimSubmittedAmount)}
                     </span>
                   </div>
                 </div>
@@ -1478,45 +1593,17 @@ export default function TrainerPaymentReport({
                     className="presales_funnel_step_label"
                     style={{ color: "#0284c7" }}
                   >
-                    3. READY TO PAY
+                    3. Approved Claims
                   </p>
                   <div className="presales_funnel_count_row">
                     <span className="presales_funnel_step_count">
-                      {statusCounts.awaiting_finance}
+                      {analytics.awaitingFinanceCount}
                     </span>
                     <span
                       className="presales_funnel_step_rate"
                       style={{ color: "#0284c7" }}
                     >
                       ₹{formatIndianNumber(analytics.readyToPayAmount)}
-                    </span>
-                  </div>
-                </div>
-                <div className="presales_funnel_subitems">
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#0ea5e9" }}
-                      />
-                      <span className="presales_subitem_text">HR Approved</span>
-                    </span>
-                    <span className="presales_funnel_subitem_count">
-                      {statusCounts.awaiting_finance}
-                    </span>
-                  </div>
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#38bdf8" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Finance Bank Queue
-                      </span>
-                    </span>
-                    <span className="presales_funnel_subitem_count">
-                      {statusCounts.awaiting_finance}
                     </span>
                   </div>
                 </div>
@@ -1533,72 +1620,67 @@ export default function TrainerPaymentReport({
                   >
                     4. ★ DISBURSED (PAID)
                   </p>
-                  <div className="presales_funnel_count_row">
+                  <div
+                    className="presales_funnel_count_row"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 8,
+                    }}
+                  >
                     <span
                       className="presales_funnel_step_count"
-                      style={{ color: "#047857" }}
+                      style={{
+                        color: "#047857",
+                        fontSize: 18,
+                        fontWeight: 700,
+                        lineHeight: 1,
+                      }}
+                      title={`${analytics.paidCount} payouts cleared`}
                     >
-                      {statusCounts.paid}
+                      {analytics.paidCount}
                     </span>
                     <span
                       className="presales_funnel_step_rate"
-                      style={{ color: "#047857" }}
+                      style={{
+                        color: "#047857",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                      }}
+                      title={`Disbursed: ₹${formatIndianNumber(analytics.totalDisbursed)}`}
                     >
                       ₹{formatIndianNumber(analytics.totalDisbursed)}
                     </span>
-                  </div>
-                </div>
-                <div className="presales_funnel_subitems">
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
-                      <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#10b981" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Transfers Cleared
-                      </span>
-                    </span>
                     <span
-                      className="presales_funnel_subitem_count"
-                      style={{ color: "#047857" }}
+                      style={{
+                        background: "#dcfce7",
+                        color: "#15803d",
+                        border: "1px solid #bbf7d0",
+                        padding: "2px 7px",
+                        borderRadius: 10,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.2,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 3,
+                      }}
+                      title={`Payout Realization Rate: ${analytics.payoutRealizationRate}%`}
                     >
-                      {statusCounts.paid}
-                    </span>
-                  </div>
-                  <div className="presales_funnel_subitem">
-                    <span className="presales_funnel_subitem_name">
                       <span
-                        className="presales_subitem_dot"
-                        style={{ background: "#34d399" }}
-                      />
-                      <span className="presales_subitem_text">
-                        Payslips Generated
+                        style={{
+                          fontSize: 9.5,
+                          fontWeight: 600,
+                          color: "#166534",
+                        }}
+                      >
+                        Rate:
                       </span>
-                    </span>
-                    <span
-                      className="presales_funnel_subitem_count"
-                      style={{ color: "#047857" }}
-                    >
-                      {statusCounts.paid}
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  className="presales_funnel_hero_box"
-                  style={{ marginTop: 8 }}
-                >
-                  <div className="presales_funnel_hero_tag">
-                    <span>🎯 Payout Realization</span>
-                  </div>
-                  <div className="presales_funnel_hero_stat">
-                    <span className="presales_funnel_hero_stat_label">
-                      Realization Rate
-                    </span>
-                    <strong className="presales_funnel_hero_stat_val">
                       {analytics.payoutRealizationRate}%
-                    </strong>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1606,7 +1688,136 @@ export default function TrainerPaymentReport({
           </div>
 
           {/* ----------------------------------------------------------------
-              SECTION 3: Commercial Model & Operational Distribution
+              SECTION 3: Trainer & Customer Distribution
+              ---------------------------------------------------------------- */}
+          <div className="presales_section_header" style={{ marginTop: 28 }}>
+            <h2 className="presales_section_title">
+              <FiUsers style={{ color: "#0284c7" }} size={20} /> Trainer &
+              Customer Distribution
+            </h2>
+            <span
+              className="presales_section_title_badge"
+              style={{ background: "#e0f2fe", color: "#0284c7" }}
+            >
+              Paid Beneficiary & Volume Reach
+            </span>
+          </div>
+
+          <Row gutter={[16, 16]}>
+            {/* Card 1: Trainers Paid */}
+            <Col xs={24} sm={12} md={8}>
+              <div className="presales_stat_card presales_theme_sky">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Trainers Paid</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#0284c7" }}
+                      title={`${analytics.trainersPaidCount} trainers paid`}
+                    >
+                      {analytics.trainersPaidCount.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <HiOutlineAcademicCap size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiCheckCircle size={12} />
+                    <span className="presales_avg_label">Paid:</span>
+                    <strong className="presales_avg_val">
+                      {analytics.trainersPaidCount} trainers
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title="send payment for how many trainers"
+                  >
+                    send payment for how many trainers
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 2: Customers Paid */}
+            <Col xs={24} sm={12} md={8}>
+              <div className="presales_stat_card presales_theme_violet">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Customers Paid</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#7c3aed" }}
+                      title={`${analytics.customersPaidCount} customers`}
+                    >
+                      {analytics.customersPaidCount.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FiUsers size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <HiOutlineSparkles size={12} />
+                    <span className="presales_avg_label">Coverage:</span>
+                    <strong className="presales_avg_val">
+                      {analytics.customersPaidCount} candidates
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title="this customers trainers payment sent"
+                  >
+                    this customers trainers payment sent
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 3: Amount Distributed */}
+            <Col xs={24} sm={12} md={8}>
+              <div className="presales_stat_card presales_theme_emerald">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Amount Distributed</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#059669" }}
+                      title={`₹${analytics.amountDistributed.toLocaleString("en-IN")}`}
+                    >
+                      ₹{analytics.amountDistributed.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FaRupeeSign size={18} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiCheckCircle size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      ₹
+                      {analytics.amountDistributedDailyAvg.toLocaleString(
+                        "en-IN",
+                      )}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title="total paid amount"
+                  >
+                    total paid amount
+                  </span>
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          {/* ----------------------------------------------------------------
+              SECTION 4: Commercial Model & Operational Distribution
               ---------------------------------------------------------------- */}
           <div className="presales_section_header" style={{ marginTop: 28 }}>
             <h2 className="presales_section_title">
@@ -1756,7 +1967,7 @@ export default function TrainerPaymentReport({
                       }}
                     >
                       <span style={{ color: "#64748b", fontWeight: 500 }}>
-                        Online Training (7/14 Day SLA)
+                        Online Training (14 Days SLA)
                       </span>
                       <strong style={{ color: "#0f172a" }}>
                         ₹{analytics.onlineAmount.toLocaleString("en-IN")} (
@@ -1787,7 +1998,7 @@ export default function TrainerPaymentReport({
                       }}
                     >
                       <span style={{ color: "#64748b", fontWeight: 500 }}>
-                        Classroom Training (2/5 Day SLA)
+                        Classroom Training (5 Days SLA)
                       </span>
                       <strong style={{ color: "#0f172a" }}>
                         ₹{analytics.classroomAmount.toLocaleString("en-IN")} (
