@@ -560,9 +560,6 @@ export default function TrainerPaymentReport({
       Number(reportCounts.paid_total_trainer_count) || 0;
     const customersPaidCount =
       Number(reportCounts.paid_total_customer_count) || 0;
-    const amountDistributed =
-      Number(reportCounts.by_paid_amount) || totalDisbursed;
-
     // Total Trainers & Customers (Sum of Paid + Not Paid)
     const totalTrainersCount = trainersPaidCount + notPaidTotalTrainerCount;
     const totalCustomersCount = customersPaidCount + notPaidTotalCustomerCount;
@@ -732,6 +729,12 @@ export default function TrainerPaymentReport({
         : fallbackClassroomAmount;
 
     // Turnaround (TAT) & SLA Health (API Metrics Mapping)
+    const disbursementPaidTrinerCount =
+      Number(reportCounts.trainer_paid_count) || 0;
+    const disbursementPaidCustomerCount =
+      Number(reportCounts.customer_paid_count) || 0;
+    const amountDistributed =
+      Number(reportCounts.by_paid_amount) || totalDisbursed;
     const rawAvgDays =
       reportCounts.class_mode_avgDays !== undefined &&
       reportCounts.class_mode_avgDays !== null
@@ -821,6 +824,8 @@ export default function TrainerPaymentReport({
       classroom_customer_count: classroomCount,
       classroom_total_amount: classroomAmount,
       // Payout TAT & SLA Health
+      disbursementPaidTrinerCount,
+      disbursementPaidCustomerCount,
       class_mode_avgDays: averageDaysTaken,
       class_mode_percentage: onTimeRate,
     };
@@ -1031,12 +1036,12 @@ export default function TrainerPaymentReport({
       rows.push(["Metric", "Count / Value", "Description / SLA Benchmark"]);
       rows.push([
         "Trainers Paid",
-        analytics.trainersPaidCount,
+        analytics.disbursementPaidTrinerCount,
         "Trainers who have been sent payments",
       ]);
       rows.push([
         "Customers Paid",
-        analytics.customersPaidCount,
+        analytics.disbursementPaidCustomerCount,
         "Customers whose trainers payment sent",
       ]);
       rows.push([
@@ -2077,9 +2082,11 @@ export default function TrainerPaymentReport({
                     <h3
                       className="presales_stat_value"
                       style={{ color: "#0284c7" }}
-                      title={`${analytics.trainersPaidCount} trainers paid`}
+                      title={`${analytics.disbursementPaidTrinerCount} trainers paid`}
                     >
-                      {analytics.trainersPaidCount.toLocaleString("en-IN")}
+                      {analytics.disbursementPaidTrinerCount.toLocaleString(
+                        "en-IN",
+                      )}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
@@ -2091,7 +2098,7 @@ export default function TrainerPaymentReport({
                     <FiCheckCircle size={12} />
                     <span className="presales_avg_label">Paid:</span>
                     <strong className="presales_avg_val">
-                      {analytics.trainersPaidCount}
+                      {analytics.disbursementPaidTrinerCount}
                     </strong>
                   </span>
                   <span
@@ -2113,9 +2120,11 @@ export default function TrainerPaymentReport({
                     <h3
                       className="presales_stat_value"
                       style={{ color: "#7c3aed" }}
-                      title={`${analytics.customersPaidCount} customers`}
+                      title={`${analytics.disbursementPaidCustomerCount} customers`}
                     >
-                      {analytics.customersPaidCount.toLocaleString("en-IN")}
+                      {analytics.disbursementPaidCustomerCount.toLocaleString(
+                        "en-IN",
+                      )}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
@@ -2127,7 +2136,7 @@ export default function TrainerPaymentReport({
                     <HiOutlineSparkles size={12} />
                     <span className="presales_avg_label">Coverage:</span>
                     <strong className="presales_avg_val">
-                      {analytics.customersPaidCount}
+                      {analytics.disbursementPaidCustomerCount}
                     </strong>
                   </span>
                   <span
