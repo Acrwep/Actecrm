@@ -272,6 +272,12 @@ export default function TrainerPaymentReport({
     customer_paid_count: 0,
     trainer_paid_count: 0,
     by_paid_amount: 0,
+    online_customer_count: 0,
+    online_total_amount: 0,
+    classroom_customer_count: 0,
+    classroom_total_amount: 0,
+    class_mode_avgDays: 0,
+    class_mode_percentage: 0,
   });
   const [paymentRequests, setPaymentRequests] = useState([]);
   const [statusCounts, setStatusCounts] = useState({
@@ -290,18 +296,13 @@ export default function TrainerPaymentReport({
   useEffect(() => {
     if (summaryStartAndEndDate && summaryStartAndEndDate.length === 2) {
       setSelectedDates(summaryStartAndEndDate);
+      fetchTrainerPaymentData(summaryStartAndEndDate);
     } else {
       const dates = getCurrentandPreviousweekDate();
       setSelectedDates(dates);
+      fetchTrainerPaymentData(dates);
     }
   }, [summaryStartAndEndDate]);
-
-  // Load Trainer List & Initial Report Data
-  useEffect(() => {
-    if (selectedDates && selectedDates.length === 2) {
-      fetchTrainerPaymentData();
-    }
-  }, []);
 
   const getBranchesData = async (regionId) => {
     const payload = { region_id: regionId };
@@ -332,7 +333,9 @@ export default function TrainerPaymentReport({
   const fetchTrainerPaymentData = async (overrides = {}) => {
     setIsLoading(true);
 
-    const dates = overrides.dates || selectedDates;
+    const dates = Array.isArray(overrides)
+      ? overrides
+      : overrides.dates || selectedDates;
     const regionId =
       overrides.regionId !== undefined ? overrides.regionId : selectedRegionId;
     const branchId =
@@ -387,6 +390,22 @@ export default function TrainerPaymentReport({
         customer_paid_count: Number(apiData.customer_paid_count) || 0,
         trainer_paid_count: Number(apiData.trainer_paid_count) || 0,
         by_paid_amount: Number(apiData.by_paid_amount) || 0,
+        online_customer_count: Number(apiData.online_customer_count) || 0,
+        online_total_amount: Number(apiData.online_total_amount) || 0,
+        classroom_customer_count: Number(apiData.classroom_customer_count) || 0,
+        classroom_total_amount: Number(apiData.classroom_total_amount) || 0,
+        class_mode_avgDays:
+          apiData.class_mode_avgDays !== undefined &&
+          apiData.class_mode_avgDays !== null &&
+          !isNaN(Number(apiData.class_mode_avgDays))
+            ? Number(apiData.class_mode_avgDays)
+            : 0,
+        class_mode_percentage:
+          apiData.class_mode_percentage !== undefined &&
+          apiData.class_mode_percentage !== null &&
+          !isNaN(Number(apiData.class_mode_percentage))
+            ? Number(apiData.class_mode_percentage)
+            : 0,
       });
 
       setStatusCounts({
@@ -519,10 +538,10 @@ export default function TrainerPaymentReport({
     let overdueCount = 0;
     let overdueAmount = 0;
     let onTimeCount = 0;
-    let onlineAmount = 0;
-    let onlineCount = 0;
-    let classroomAmount = 0;
-    let classroomCount = 0;
+    let fallbackOnlineAmount = 0;
+    let fallbackOnlineCount = 0;
+    let fallbackClassroomAmount = 0;
+    let fallbackClassroomCount = 0;
     let totalDaysTaken = 0;
     let paidRecordsWithDays = 0;
 
@@ -603,14 +622,14 @@ export default function TrainerPaymentReport({
           }
         }
 
-        // Mode Split
+        // Mode Split fallback
         const mode = req.mode_of_training || req.training_mode || "";
         if (mode.toLowerCase().includes("online")) {
-          onlineAmount += reqAmt;
-          onlineCount++;
+          fallbackOnlineAmount += reqAmt;
+          fallbackOnlineCount++;
         } else if (mode.toLowerCase().includes("classroom")) {
-          classroomAmount += reqAmt;
-          classroomCount++;
+          fallbackClassroomAmount += reqAmt;
+          fallbackClassroomCount++;
         }
       });
     }
@@ -624,14 +643,64 @@ export default function TrainerPaymentReport({
       totalPayoutClaimed > 0
         ? ((totalDisbursed / totalPayoutClaimed) * 100).toFixed(1)
         : "0.0";
+
+    // Training Mode Split (API Metrics Mapping)
+    const onlineCount =
+      reportCounts.online_customer_count !== undefined &&
+      reportCounts.online_customer_count !== null &&
+      !isNaN(Number(reportCounts.online_customer_count))
+        ? Number(reportCounts.online_customer_count)
+        : fallbackOnlineCount;
+
+    const onlineAmount =
+      reportCounts.online_total_amount !== undefined &&
+      reportCounts.online_total_amount !== null &&
+      !isNaN(Number(reportCounts.online_total_amount))
+        ? Number(reportCounts.online_total_amount)
+        : fallbackOnlineAmount;
+
+    const classroomCount =
+      reportCounts.classroom_customer_count !== undefined &&
+      reportCounts.classroom_customer_count !== null &&
+      !isNaN(Number(reportCounts.classroom_customer_count))
+        ? Number(reportCounts.classroom_customer_count)
+        : fallbackClassroomCount;
+
+    const classroomAmount =
+      reportCounts.classroom_total_amount !== undefined &&
+      reportCounts.classroom_total_amount !== null &&
+      !isNaN(Number(reportCounts.classroom_total_amount))
+        ? Number(reportCounts.classroom_total_amount)
+        : fallbackClassroomAmount;
+
+    // Turnaround (TAT) & SLA Health (API Metrics Mapping)
+    const rawAvgDays =
+      reportCounts.class_mode_avgDays !== undefined &&
+      reportCounts.class_mode_avgDays !== null
+        ? Number(reportCounts.class_mode_avgDays)
+        : null;
     const averageDaysTaken =
-      paidRecordsWithDays > 0
-        ? (totalDaysTaken / paidRecordsWithDays).toFixed(1)
-        : "0";
+      rawAvgDays !== null && !isNaN(rawAvgDays)
+        ? Number.isInteger(rawAvgDays)
+          ? rawAvgDays.toString()
+          : rawAvgDays.toFixed(1)
+        : paidRecordsWithDays > 0
+          ? (totalDaysTaken / paidRecordsWithDays).toFixed(1)
+          : "0";
+
+    const rawOnTime =
+      reportCounts.class_mode_percentage !== undefined &&
+      reportCounts.class_mode_percentage !== null
+        ? Number(reportCounts.class_mode_percentage)
+        : null;
     const onTimeRate =
-      paidRecordsWithDays > 0
-        ? ((onTimeCount / paidRecordsWithDays) * 100).toFixed(1)
-        : "100.0";
+      rawOnTime !== null && !isNaN(rawOnTime)
+        ? Number.isInteger(rawOnTime)
+          ? rawOnTime.toString()
+          : rawOnTime.toFixed(1)
+        : paidRecordsWithDays > 0
+          ? ((onTimeCount / paidRecordsWithDays) * 100).toFixed(1)
+          : "0";
 
     return {
       totalPayoutClaimed,
@@ -684,11 +753,18 @@ export default function TrainerPaymentReport({
       payPerHeadCount,
       batchAmount,
       batchCount,
-      // Mode Split
+      // Mode Split (UI Metrics & Exact API Field Aliases)
       onlineAmount,
       onlineCount,
       classroomAmount,
       classroomCount,
+      online_customer_count: onlineCount,
+      online_total_amount: onlineAmount,
+      classroom_customer_count: classroomCount,
+      classroom_total_amount: classroomAmount,
+      // Payout TAT & SLA Health
+      class_mode_avgDays: averageDaysTaken,
+      class_mode_percentage: onTimeRate,
     };
   }, [reportCounts, paymentRequests, statusCounts, selectedDates]);
 
@@ -902,34 +978,28 @@ export default function TrainerPaymentReport({
 
       // 4. Operational Delivery Split
       rows.push(["4. OPERATIONAL DELIVERY SPLIT"]);
-      rows.push(["Training Mode", "Claims Count", "Total Amount (₹)"]);
+      rows.push(["Training Mode", "Customer Count", "Total Amount (₹)"]);
       rows.push([
         "Online Training",
         analytics.onlineCount,
-        `₹${analytics.onlineAmount.toLocaleString("en-IN")}`,
+        `₹${Number(analytics.onlineAmount || 0).toLocaleString("en-IN")}`,
       ]);
       rows.push([
         "Classroom Training",
         analytics.classroomCount,
-        `₹${analytics.classroomAmount.toLocaleString("en-IN")}`,
+        `₹${Number(analytics.classroomAmount || 0).toLocaleString("en-IN")}`,
       ]);
       rows.push([]);
 
-      // 5. Itemized Transactions
-      rows.push(["5. ITEMIZED PAYMENT REQUESTS"]);
+      // 5. Payout SLA & Turnaround (TAT)
+      rows.push(["5. DISBURSEMENT TURNAROUND (TAT)"]);
+      rows.push(["Metric", "Value"]);
       rows.push([
-        "Payment ID",
-        "Trainer Name",
-        "Status",
-        "Commercial Type",
-        "Mode of Training",
-        "Request Amount (₹)",
-        "Paid Amount (₹)",
-        "Bill Raise Date",
-        "Paid Date",
-        "Deadline Date",
-        "Days Taken To Pay",
+        "Average Payout TAT",
+        `${analytics.averageDaysTaken || 0} days`,
       ]);
+      rows.push(["On-Time Clearance", `${analytics.onTimeRate || 0}%`]);
+      rows.push([]);
 
       paymentRequests.forEach((req) => {
         rows.push([
@@ -1970,19 +2040,33 @@ export default function TrainerPaymentReport({
                         Online Training (14 Days SLA)
                       </span>
                       <strong style={{ color: "#0f172a" }}>
-                        ₹{analytics.onlineAmount.toLocaleString("en-IN")} (
-                        {analytics.onlineCount})
+                        ₹
+                        {Number(analytics.onlineAmount || 0).toLocaleString(
+                          "en-IN",
+                        )}{" "}
+                        (
+                        {Number(analytics.onlineCount || 0).toLocaleString(
+                          "en-IN",
+                        )}
+                        )
                       </strong>
                     </div>
                     <Progress
                       percent={
-                        analytics.totalPayoutClaimed > 0
+                        analytics.onlineAmount + analytics.classroomAmount > 0
                           ? Math.round(
                               (analytics.onlineAmount /
-                                analytics.totalPayoutClaimed) *
+                                (analytics.onlineAmount +
+                                  analytics.classroomAmount)) *
                                 100,
                             )
-                          : 0
+                          : analytics.totalPayoutClaimed > 0
+                            ? Math.round(
+                                (analytics.onlineAmount /
+                                  analytics.totalPayoutClaimed) *
+                                  100,
+                              )
+                            : 0
                       }
                       strokeColor="#0284c7"
                       size="small"
@@ -2001,19 +2085,33 @@ export default function TrainerPaymentReport({
                         Classroom Training (5 Days SLA)
                       </span>
                       <strong style={{ color: "#0f172a" }}>
-                        ₹{analytics.classroomAmount.toLocaleString("en-IN")} (
-                        {analytics.classroomCount})
+                        ₹
+                        {Number(analytics.classroomAmount || 0).toLocaleString(
+                          "en-IN",
+                        )}{" "}
+                        (
+                        {Number(analytics.classroomCount || 0).toLocaleString(
+                          "en-IN",
+                        )}
+                        )
                       </strong>
                     </div>
                     <Progress
                       percent={
-                        analytics.totalPayoutClaimed > 0
+                        analytics.onlineAmount + analytics.classroomAmount > 0
                           ? Math.round(
                               (analytics.classroomAmount /
-                                analytics.totalPayoutClaimed) *
+                                (analytics.onlineAmount +
+                                  analytics.classroomAmount)) *
                                 100,
                             )
-                          : 0
+                          : analytics.totalPayoutClaimed > 0
+                            ? Math.round(
+                                (analytics.classroomAmount /
+                                  analytics.totalPayoutClaimed) *
+                                  100,
+                              )
+                            : 0
                       }
                       strokeColor="#f59e0b"
                       size="small"
@@ -2049,7 +2147,7 @@ export default function TrainerPaymentReport({
                   </h4>
                   <Tag
                     color={
-                      Number(analytics.averageDaysTaken) <= 7
+                      Number(analytics.averageDaysTaken || 0) <= 7
                         ? "green"
                         : "volcano"
                     }
@@ -2077,7 +2175,7 @@ export default function TrainerPaymentReport({
                         color: "#0f172a",
                       }}
                     >
-                      {analytics.averageDaysTaken}{" "}
+                      {analytics.averageDaysTaken || 0}{" "}
                       <span
                         style={{
                           fontSize: "13px",
@@ -2108,7 +2206,7 @@ export default function TrainerPaymentReport({
                         color: "#059669",
                       }}
                     >
-                      {analytics.onTimeRate}%
+                      {analytics.onTimeRate || 0}%
                     </h3>
                   </Col>
                 </Row>
@@ -2118,7 +2216,7 @@ export default function TrainerPaymentReport({
                     strokeColor="#059669"
                     size="small"
                     status={
-                      parseFloat(analytics.onTimeRate) >= 90
+                      (parseFloat(analytics.onTimeRate) || 0) >= 90
                         ? "success"
                         : "normal"
                     }

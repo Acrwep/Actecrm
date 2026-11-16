@@ -127,7 +127,7 @@ export default function NewReports() {
     {
       id: "trainer_payments",
       title: "Trainer Payments",
-      countKey: "trainer_payments_total",
+      countKey: "total_trainerPayment_count",
       subtext: "Disbursements & Liabilities",
       icon: <FaMoneyBillWave />,
       theme: "trainer_payments",
@@ -243,6 +243,8 @@ export default function NewReports() {
         admission_total: summary_counts?.admission_total || 0,
         postsales_total: summary_counts?.admission_total || 0,
         total_collection: summary_counts?.total_collection || 0,
+        total_trainerPayment_count:
+          summary_counts?.total_trainerPayment_count || 0,
       });
     } catch (error) {
       setSummaryCounts(null);
@@ -435,9 +437,7 @@ export default function NewReports() {
                               : undefined
                           }
                         >
-                          {(card.id === "accounts" ||
-                            card.id === "trainer_payments") &&
-                          displayCount !== "-"
+                          {card.id === "accounts" && displayCount !== "-"
                             ? `₹${displayCount}`
                             : displayCount}
                         </span>
