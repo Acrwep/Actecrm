@@ -121,63 +121,7 @@ function TrainerPaymentReportSkeleton() {
         ))}
       </Row>
 
-      {/* 2. Trainer & Customer Distribution Skeleton (3 Cards) */}
-      <div className="presales_section_header" style={{ marginTop: 28 }}>
-        <h2 className="presales_section_title">
-          <FiUsers style={{ color: "#0284c7" }} size={19} /> Trainer & Customer
-          Distribution
-        </h2>
-        <span
-          className="presales_section_title_badge"
-          style={{ background: "#e0f2fe", color: "#0284c7" }}
-        >
-          Paid Beneficiary & Volume Reach
-        </span>
-      </div>
-
-      <Row gutter={[16, 16]}>
-        {[1, 2, 3].map((i) => (
-          <Col xs={24} sm={12} md={8} key={i}>
-            <div className="presales_stat_card">
-              <div className="presales_card_top">
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
-                  <Skeleton.Input
-                    active
-                    size="small"
-                    style={{ width: 100, height: 14 }}
-                  />
-                  <Skeleton.Input
-                    active
-                    style={{ width: 120, height: 28, marginTop: 4 }}
-                  />
-                </div>
-                <Skeleton.Avatar
-                  active
-                  size={38}
-                  shape="square"
-                  style={{ borderRadius: 10 }}
-                />
-              </div>
-              <div className="presales_card_bottom">
-                <Skeleton.Input
-                  active
-                  size="small"
-                  style={{ width: 90, height: 16 }}
-                />
-                <Skeleton.Input
-                  active
-                  size="small"
-                  style={{ width: 70, height: 12 }}
-                />
-              </div>
-            </div>
-          </Col>
-        ))}
-      </Row>
-
-      {/* 3. Funnel Skeleton */}
+      {/* 2. Funnel Skeleton */}
       <div className="presales_section_header" style={{ marginTop: 28 }}>
         <h2 className="presales_section_title">
           <TbTargetArrow style={{ color: "#0284c7" }} size={19} /> Payment Claim
@@ -220,6 +164,120 @@ function TrainerPaymentReportSkeleton() {
           ))}
         </div>
       </div>
+
+      {/* 3. Commercial Model & Training Delivery Split Skeleton */}
+      <div className="presales_section_header" style={{ marginTop: 28 }}>
+        <h2 className="presales_section_title">
+          <TbReportAnalytics style={{ color: "#0284c7" }} size={19} />{" "}
+          Commercial Model & Training Delivery Split
+        </h2>
+        <span
+          className="presales_section_title_badge"
+          style={{ background: "#e0f2fe", color: "#0284c7" }}
+        >
+          Revenue Framework & Delivery Methods
+        </span>
+      </div>
+
+      <Row gutter={[16, 16]}>
+        {[1, 2].map((i) => (
+          <Col xs={24} md={12} key={i}>
+            <div
+              className="presales_stat_card"
+              style={{ padding: "18px 20px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 14,
+                }}
+              >
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 140, height: 16 }}
+                />
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 50, height: 16 }}
+                />
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
+              >
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: "100%", height: 16 }}
+                />
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: "100%", height: 16 }}
+                />
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+
+      {/* 4. Disbursement Reach & Turnaround (TAT) Skeleton (4 Compact Cards) */}
+      <div className="presales_section_header" style={{ marginTop: 26 }}>
+        <h2 className="presales_section_title">
+          <FiUsers style={{ color: "#0284c7" }} size={19} /> Disbursement Reach
+          & Turnaround (TAT)
+        </h2>
+        <span
+          className="presales_section_title_badge"
+          style={{ background: "#e0f2fe", color: "#0284c7" }}
+        >
+          Beneficiary Volume & SLA Performance
+        </span>
+      </div>
+
+      <Row gutter={[16, 16]} style={{ marginBottom: 28 }}>
+        {[1, 2, 3, 4].map((i) => (
+          <Col xs={24} sm={12} md={12} lg={6} key={i}>
+            <div className="presales_stat_card">
+              <div className="presales_card_top">
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
+                >
+                  <Skeleton.Input
+                    active
+                    size="small"
+                    style={{ width: 100, height: 14 }}
+                  />
+                  <Skeleton.Input
+                    active
+                    style={{ width: 110, height: 26, marginTop: 4 }}
+                  />
+                </div>
+                <Skeleton.Avatar
+                  active
+                  size={38}
+                  shape="square"
+                  style={{ borderRadius: 10 }}
+                />
+              </div>
+              <div className="presales_card_bottom">
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 85, height: 16 }}
+                />
+                <Skeleton.Input
+                  active
+                  size="small"
+                  style={{ width: 65, height: 13 }}
+                />
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
     </div>
   );
 }
@@ -930,9 +988,47 @@ export default function TrainerPaymentReport({
       ]);
       rows.push([]);
 
-      // 2. Trainer & Customer Distribution
-      rows.push(["2. TRAINER & CUSTOMER DISTRIBUTION"]);
-      rows.push(["Metric", "Count / Value", "Description"]);
+      // 2. Commercial Model & Training Delivery Split
+      rows.push(["2. COMMERCIAL MODEL & TRAINING DELIVERY SPLIT"]);
+      rows.push([
+        "Model / Mode",
+        "Count (Claims / Customers)",
+        "Total Amount (₹)",
+        "Average / Benchmark",
+      ]);
+      rows.push([
+        "Pay Per Head (PPH)",
+        analytics.payPerHeadCount,
+        `₹${analytics.payPerHeadAmount.toLocaleString("en-IN")}`,
+        analytics.payPerHeadCount > 0
+          ? `₹${Math.round(analytics.payPerHeadAmount / analytics.payPerHeadCount).toLocaleString("en-IN")} avg`
+          : "₹0",
+      ]);
+      rows.push([
+        "Batch Commercial",
+        analytics.batchCount,
+        `₹${analytics.batchAmount.toLocaleString("en-IN")}`,
+        analytics.batchCount > 0
+          ? `₹${Math.round(analytics.batchAmount / analytics.batchCount).toLocaleString("en-IN")} avg`
+          : "₹0",
+      ]);
+      rows.push([
+        "Online Training",
+        analytics.onlineCount,
+        `₹${Number(analytics.onlineAmount || 0).toLocaleString("en-IN")}`,
+        "14 Days SLA Target",
+      ]);
+      rows.push([
+        "Classroom Training",
+        analytics.classroomCount,
+        `₹${Number(analytics.classroomAmount || 0).toLocaleString("en-IN")}`,
+        "5 Days SLA Target",
+      ]);
+      rows.push([]);
+
+      // 3. Disbursement Reach & Turnaround (TAT)
+      rows.push(["3. DISBURSEMENT REACH & TURNAROUND (TAT)"]);
+      rows.push(["Metric", "Count / Value", "Description / SLA Benchmark"]);
       rows.push([
         "Trainers Paid",
         analytics.trainersPaidCount,
@@ -948,57 +1044,16 @@ export default function TrainerPaymentReport({
         `₹${analytics.amountDistributed.toLocaleString("en-IN")}`,
         "Total paid amount disbursed",
       ]);
-      rows.push([]);
-
-      // 3. Commercial Model Breakdown
-      rows.push(["3. COMMERCIAL MODEL BREAKDOWN"]);
-      rows.push([
-        "Model",
-        "Claims Count",
-        "Total Amount (₹)",
-        "Average Payout (₹)",
-      ]);
-      rows.push([
-        "Pay Per Head (PPH)",
-        analytics.payPerHeadCount,
-        `₹${analytics.payPerHeadAmount.toLocaleString("en-IN")}`,
-        analytics.payPerHeadCount > 0
-          ? `₹${Math.round(analytics.payPerHeadAmount / analytics.payPerHeadCount).toLocaleString("en-IN")}`
-          : "₹0",
-      ]);
-      rows.push([
-        "Batch Commercial",
-        analytics.batchCount,
-        `₹${analytics.batchAmount.toLocaleString("en-IN")}`,
-        analytics.batchCount > 0
-          ? `₹${Math.round(analytics.batchAmount / analytics.batchCount).toLocaleString("en-IN")}`
-          : "₹0",
-      ]);
-      rows.push([]);
-
-      // 4. Operational Delivery Split
-      rows.push(["4. OPERATIONAL DELIVERY SPLIT"]);
-      rows.push(["Training Mode", "Customer Count", "Total Amount (₹)"]);
-      rows.push([
-        "Online Training",
-        analytics.onlineCount,
-        `₹${Number(analytics.onlineAmount || 0).toLocaleString("en-IN")}`,
-      ]);
-      rows.push([
-        "Classroom Training",
-        analytics.classroomCount,
-        `₹${Number(analytics.classroomAmount || 0).toLocaleString("en-IN")}`,
-      ]);
-      rows.push([]);
-
-      // 5. Payout SLA & Turnaround (TAT)
-      rows.push(["5. DISBURSEMENT TURNAROUND (TAT)"]);
-      rows.push(["Metric", "Value"]);
       rows.push([
         "Average Payout TAT",
         `${analytics.averageDaysTaken || 0} days`,
+        "SLA: Online 14 Days / Classroom 5 Days",
       ]);
-      rows.push(["On-Time Clearance", `${analytics.onTimeRate || 0}%`]);
+      rows.push([
+        "On-Time Clearance",
+        `${analytics.onTimeRate || 0}%`,
+        "SLA Compliance Rate",
+      ]);
       rows.push([]);
 
       paymentRequests.forEach((req) => {
@@ -1758,153 +1813,25 @@ export default function TrainerPaymentReport({
           </div>
 
           {/* ----------------------------------------------------------------
-              SECTION 3: Trainer & Customer Distribution
-              ---------------------------------------------------------------- */}
-          <div className="presales_section_header" style={{ marginTop: 28 }}>
-            <h2 className="presales_section_title">
-              <FiUsers style={{ color: "#0284c7" }} size={20} /> Trainer &
-              Customer Distribution
-            </h2>
-            <span
-              className="presales_section_title_badge"
-              style={{ background: "#e0f2fe", color: "#0284c7" }}
-            >
-              Paid Beneficiary & Volume Reach
-            </span>
-          </div>
-
-          <Row gutter={[16, 16]}>
-            {/* Card 1: Trainers Paid */}
-            <Col xs={24} sm={12} md={8}>
-              <div className="presales_stat_card presales_theme_sky">
-                <div className="presales_card_top">
-                  <div>
-                    <p className="presales_stat_label">Trainers Paid</p>
-                    <h3
-                      className="presales_stat_value"
-                      style={{ color: "#0284c7" }}
-                      title={`${analytics.trainersPaidCount} trainers paid`}
-                    >
-                      {analytics.trainersPaidCount.toLocaleString("en-IN")}
-                    </h3>
-                  </div>
-                  <div className="presales_stat_icon_wrapper">
-                    <HiOutlineAcademicCap size={20} />
-                  </div>
-                </div>
-                <div className="presales_card_bottom">
-                  <span className="presales_badge presales_avg_badge">
-                    <FiCheckCircle size={12} />
-                    <span className="presales_avg_label">Paid:</span>
-                    <strong className="presales_avg_val">
-                      {analytics.trainersPaidCount} trainers
-                    </strong>
-                  </span>
-                  <span
-                    className="presales_stat_subtext"
-                    title="send payment for how many trainers"
-                  >
-                    send payment for how many trainers
-                  </span>
-                </div>
-              </div>
-            </Col>
-
-            {/* Card 2: Customers Paid */}
-            <Col xs={24} sm={12} md={8}>
-              <div className="presales_stat_card presales_theme_violet">
-                <div className="presales_card_top">
-                  <div>
-                    <p className="presales_stat_label">Customers Paid</p>
-                    <h3
-                      className="presales_stat_value"
-                      style={{ color: "#7c3aed" }}
-                      title={`${analytics.customersPaidCount} customers`}
-                    >
-                      {analytics.customersPaidCount.toLocaleString("en-IN")}
-                    </h3>
-                  </div>
-                  <div className="presales_stat_icon_wrapper">
-                    <FiUsers size={20} />
-                  </div>
-                </div>
-                <div className="presales_card_bottom">
-                  <span className="presales_badge presales_avg_badge">
-                    <HiOutlineSparkles size={12} />
-                    <span className="presales_avg_label">Coverage:</span>
-                    <strong className="presales_avg_val">
-                      {analytics.customersPaidCount} candidates
-                    </strong>
-                  </span>
-                  <span
-                    className="presales_stat_subtext"
-                    title="this customers trainers payment sent"
-                  >
-                    this customers trainers payment sent
-                  </span>
-                </div>
-              </div>
-            </Col>
-
-            {/* Card 3: Amount Distributed */}
-            <Col xs={24} sm={12} md={8}>
-              <div className="presales_stat_card presales_theme_emerald">
-                <div className="presales_card_top">
-                  <div>
-                    <p className="presales_stat_label">Amount Distributed</p>
-                    <h3
-                      className="presales_stat_value"
-                      style={{ color: "#059669" }}
-                      title={`₹${analytics.amountDistributed.toLocaleString("en-IN")}`}
-                    >
-                      ₹{analytics.amountDistributed.toLocaleString("en-IN")}
-                    </h3>
-                  </div>
-                  <div className="presales_stat_icon_wrapper">
-                    <FaRupeeSign size={18} />
-                  </div>
-                </div>
-                <div className="presales_card_bottom">
-                  <span className="presales_badge presales_avg_badge">
-                    <FiCheckCircle size={12} />
-                    <span className="presales_avg_label">Daily Avg:</span>
-                    <strong className="presales_avg_val">
-                      ₹
-                      {analytics.amountDistributedDailyAvg.toLocaleString(
-                        "en-IN",
-                      )}
-                    </strong>
-                  </span>
-                  <span
-                    className="presales_stat_subtext"
-                    title="total paid amount"
-                  >
-                    total paid amount
-                  </span>
-                </div>
-              </div>
-            </Col>
-          </Row>
-
-          {/* ----------------------------------------------------------------
-              SECTION 4: Commercial Model & Operational Distribution
+              SECTION 3: Commercial Model & Training Delivery Split
+              Combines: Commercial Model Split and Training Delivery Mode
               ---------------------------------------------------------------- */}
           <div className="presales_section_header" style={{ marginTop: 28 }}>
             <h2 className="presales_section_title">
               <TbReportAnalytics style={{ color: "#0284c7" }} size={19} />{" "}
-              Commercial Model & Turnaround (TAT) Distribution
+              Commercial Model & Training Delivery Split
             </h2>
             <span
               className="presales_section_title_badge"
               style={{ background: "#e0f2fe", color: "#0284c7" }}
             >
-              Operational Efficiency
+              Revenue Framework & Delivery Methods
             </span>
           </div>
 
           <Row gutter={[16, 16]}>
             {/* Card 1: Commercial Model Split */}
-            <Col xs={24} sm={12} md={12} lg={8}>
+            <Col xs={24} md={12}>
               <div
                 className="presales_stat_card"
                 style={{ height: "100%", padding: "18px 20px" }}
@@ -1999,7 +1926,7 @@ export default function TrainerPaymentReport({
             </Col>
 
             {/* Card 2: Training Delivery Mode Split */}
-            <Col xs={24} sm={12} md={12} lg={8}>
+            <Col xs={24} md={12}>
               <div
                 className="presales_stat_card"
                 style={{ height: "100%", padding: "18px 20px" }}
@@ -2037,7 +1964,7 @@ export default function TrainerPaymentReport({
                       }}
                     >
                       <span style={{ color: "#64748b", fontWeight: 500 }}>
-                        Online Training (14 Days SLA)
+                        Online Training
                       </span>
                       <strong style={{ color: "#0f172a" }}>
                         ₹
@@ -2082,7 +2009,7 @@ export default function TrainerPaymentReport({
                       }}
                     >
                       <span style={{ color: "#64748b", fontWeight: 500 }}>
-                        Classroom Training (5 Days SLA)
+                        Classroom Training
                       </span>
                       <strong style={{ color: "#0f172a" }}>
                         ₹
@@ -2120,107 +2047,257 @@ export default function TrainerPaymentReport({
                 </div>
               </div>
             </Col>
+          </Row>
 
-            {/* Card 3: Payout SLA & Turnaround (TAT) */}
-            <Col xs={24} sm={12} md={12} lg={8}>
+          {/* ----------------------------------------------------------------
+              SECTION 4: Disbursement Reach & Turnaround (TAT) - Very Bottom
+              Combines: Trainers Paid, Customers Paid, Amount Distributed,
+              and Disbursement Turnaround (TAT) with SLA targets
+              ---------------------------------------------------------------- */}
+          <div className="presales_section_header" style={{ marginTop: 26 }}>
+            <h2 className="presales_section_title">
+              <FiUsers style={{ color: "#0284c7" }} size={19} /> Disbursement
+              Reach & Turnaround (TAT)
+            </h2>
+            <span
+              className="presales_section_title_badge"
+              style={{ background: "#e0f2fe", color: "#0284c7" }}
+            >
+              Beneficiary Volume & SLA Performance
+            </span>
+          </div>
+
+          <Row gutter={[16, 16]} style={{ marginBottom: 28 }}>
+            {/* Card 1: Trainers Paid */}
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <div className="presales_stat_card presales_theme_sky">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Trainers Paid</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#0284c7" }}
+                      title={`${analytics.trainersPaidCount} trainers paid`}
+                    >
+                      {analytics.trainersPaidCount.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <HiOutlineAcademicCap size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiCheckCircle size={12} />
+                    <span className="presales_avg_label">Paid:</span>
+                    <strong className="presales_avg_val">
+                      {analytics.trainersPaidCount}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title="send payment for how many trainers"
+                  >
+                    Trainers Paid
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 2: Customers Paid */}
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <div className="presales_stat_card presales_theme_violet">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Customers Paid</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#7c3aed" }}
+                      title={`${analytics.customersPaidCount} customers`}
+                    >
+                      {analytics.customersPaidCount.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FiUsers size={20} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <HiOutlineSparkles size={12} />
+                    <span className="presales_avg_label">Coverage:</span>
+                    <strong className="presales_avg_val">
+                      {analytics.customersPaidCount}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title="this customers trainers payment sent"
+                  >
+                    Customers Paid
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 3: Amount Distributed */}
+            <Col xs={24} sm={12} md={12} lg={6}>
+              <div className="presales_stat_card presales_theme_emerald">
+                <div className="presales_card_top">
+                  <div>
+                    <p className="presales_stat_label">Amount Distributed</p>
+                    <h3
+                      className="presales_stat_value"
+                      style={{ color: "#059669" }}
+                      title={`₹${analytics.amountDistributed.toLocaleString("en-IN")}`}
+                    >
+                      ₹{analytics.amountDistributed.toLocaleString("en-IN")}
+                    </h3>
+                  </div>
+                  <div className="presales_stat_icon_wrapper">
+                    <FaRupeeSign size={18} />
+                  </div>
+                </div>
+                <div className="presales_card_bottom">
+                  <span className="presales_badge presales_avg_badge">
+                    <FiCheckCircle size={12} />
+                    <span className="presales_avg_label">Daily Avg:</span>
+                    <strong className="presales_avg_val">
+                      ₹
+                      {analytics.amountDistributedDailyAvg.toLocaleString(
+                        "en-IN",
+                      )}
+                    </strong>
+                  </span>
+                  <span
+                    className="presales_stat_subtext"
+                    title="total paid amount"
+                  >
+                    Total Disbursed
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            {/* Card 4: Disbursement Turnaround (TAT) */}
+            <Col xs={24} sm={12} md={12} lg={6}>
               <div
                 className="presales_stat_card"
-                style={{ height: "100%", padding: "18px 20px" }}
+                style={{ padding: "16px 12px" }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 12,
-                  }}
-                >
-                  <h4
+                <div>
+                  <div
                     style={{
-                      margin: 0,
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      color: "#0f172a",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 10,
                     }}
                   >
-                    Disbursement Turnaround (TAT)
-                  </h4>
-                  <Tag
-                    color={
-                      Number(analytics.averageDaysTaken || 0) <= 7
-                        ? "green"
-                        : "volcano"
-                    }
-                  >
-                    SLA Health
-                  </Tag>
-                </div>
-                <Row gutter={12} align="middle">
-                  <Col span={12}>
-                    <p
+                    <h4
                       style={{
                         margin: 0,
-                        fontSize: "11px",
-                        color: "#64748b",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Average Payout TAT
-                    </p>
-                    <h3
-                      style={{
-                        margin: "4px 0 0",
-                        fontSize: "24px",
-                        fontWeight: 800,
+                        fontSize: "14px",
+                        fontWeight: 700,
                         color: "#0f172a",
                       }}
                     >
-                      {analytics.averageDaysTaken || 0}{" "}
-                      <span
-                        style={{
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "#64748b",
-                        }}
-                      >
-                        days
-                      </span>
-                    </h3>
-                  </Col>
-                  <Col span={12}>
-                    <p
+                      Disbursement TAT
+                    </h4>
+                    <Tag
+                      color={
+                        Number(analytics.averageDaysTaken || 0) <= 7
+                          ? "green"
+                          : "volcano"
+                      }
                       style={{
                         margin: 0,
+                        borderRadius: 10,
                         fontSize: "11px",
-                        color: "#64748b",
-                        fontWeight: 500,
+                        fontWeight: 700,
                       }}
                     >
-                      On-Time Clearance
-                    </p>
-                    <h3
-                      style={{
-                        margin: "4px 0 0",
-                        fontSize: "24px",
-                        fontWeight: 800,
-                        color: "#059669",
-                      }}
-                    >
-                      {analytics.onTimeRate || 0}%
-                    </h3>
-                  </Col>
-                </Row>
-                <div style={{ marginTop: 12 }}>
-                  <Progress
-                    percent={parseFloat(analytics.onTimeRate) || 0}
-                    strokeColor="#059669"
-                    size="small"
-                    status={
-                      (parseFloat(analytics.onTimeRate) || 0) >= 90
-                        ? "success"
-                        : "normal"
-                    }
-                  />
+                      SLA Health
+                    </Tag>
+                  </div>
+                  <Row gutter={8} align="middle">
+                    <Col span={12}>
+                      <p
+                        className="presales_stat_label"
+                        style={{ margin: 0, fontSize: "11px" }}
+                      >
+                        Avg Payout TAT
+                      </p>
+                      <h3
+                        className="presales_stat_value"
+                        style={{
+                          margin: 0,
+                          marginTop: 6,
+                          fontSize: "20px",
+                          color: "#0f172a",
+                        }}
+                      >
+                        {analytics.averageDaysTaken || 0}{" "}
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 500,
+                            color: "#64748b",
+                          }}
+                        >
+                          days
+                        </span>
+                      </h3>
+                    </Col>
+                    <Col span={12}>
+                      <p
+                        className="presales_stat_label"
+                        style={{ margin: 0, fontSize: "11px" }}
+                      >
+                        On-Time Clearance
+                      </p>
+                      <h3
+                        className="presales_stat_value"
+                        style={{
+                          margin: 0,
+                          marginTop: 6,
+                          fontSize: "18px",
+                          color: "#059669",
+                        }}
+                      >
+                        {analytics.onTimeRate || 0}%
+                      </h3>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="presales_card_bottom">
+                  <span
+                    className="presales_badge"
+                    style={{
+                      background: "#f0f9ff",
+                      color: "#0369a1",
+                      border: "1px solid #bae6fd",
+                      fontSize: "11px",
+                    }}
+                    title="Online Training SLA Target: 14 Days"
+                  >
+                    <span style={{ color: "#0284c7" }}>Online:</span>
+                    <strong>14 Days</strong>
+                  </span>
+                  <span
+                    className="presales_badge"
+                    style={{
+                      background: "#fffbeb",
+                      color: "#b45309",
+                      border: "1px solid #fde68a",
+                      fontSize: "11px",
+                    }}
+                    title="Classroom Training SLA Target: 5 Days"
+                  >
+                    <span style={{ color: "#d97706" }}>Classroom:</span>
+                    <strong>5 Days</strong>
+                  </span>
                 </div>
               </div>
             </Col>
