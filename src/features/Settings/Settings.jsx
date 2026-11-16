@@ -15,6 +15,7 @@ import {
   storeAdmissionsModulePermissionList,
   storeAllUsersList,
   storeBulkSearchModulePermissionList,
+  storeCommonModulePermissionList,
   storeCustomersModulePermissionList,
   storeDashboardModulePermissionList,
   storeEmailTemplateModulePermissionList,
@@ -183,6 +184,28 @@ export default function Settings() {
       console.log("all permissions response", response);
       const allPermissions = response?.data?.data || [];
       dispatch(storePermissionsList(allPermissions));
+
+      //filter common module
+      const commonModule = allPermissions.filter((f) => f.section === "Common");
+      const commonCustomOrder = [
+        "Show Region Summary",
+        "Region and Branch Filtering",
+        "User-Wise Filtering",
+        "Lead Executive Filter",
+      ];
+
+      const commonSortedArray = commonModule.sort(
+        (a, b) =>
+          commonCustomOrder.indexOf(a.permission_name) -
+          commonCustomOrder.indexOf(b.permission_name),
+      );
+
+      const updateCommonModule = commonSortedArray.map((u) => {
+        return { ...u, checked: false };
+      });
+
+      dispatch(storeCommonModulePermissionList(updateCommonModule));
+
       //filter dashboard module
       const dashboardModule = allPermissions.filter(
         (f) => f.section === "Dashboard Module",
@@ -227,7 +250,6 @@ export default function Settings() {
         "Assign Lead",
         "Lead Re-Entry",
         "Show Lead Executive Id",
-        "Lead Executive Filter",
         "Add Quality Comment",
         "Whatsapp Lead Source",
         "Junk Leads Tab",
@@ -235,7 +257,6 @@ export default function Settings() {
         "Revert to Live Leads",
         "View All Assigned Leads",
         "Download Leads",
-        "Show Region Summary",
         "Pick Open Leads",
       ];
 

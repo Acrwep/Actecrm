@@ -60,6 +60,7 @@ import {
   storeUserPermissions,
   storePlacementModulePermissionList,
   storeMarketingModulePermissionList,
+  storeCommonModulePermissionList,
 } from "../Redux/Slice";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -77,6 +78,9 @@ export default function PageAccess({
   const rolesData = useSelector((state) => state.rolelist);
   const roleSearchValue = useSelector((state) => state.rolesearchvalue);
   const usersData = useSelector((state) => state.userslist);
+  const commonModulePermissionData = useSelector(
+    (state) => state.commonmodulepermissionlist,
+  );
   const dashboardModulePermissionData = useSelector(
     (state) => state.dashboardmodulepermissionlist,
   );
@@ -401,6 +405,17 @@ export default function PageAccess({
 
       console.log("role permissions", role_permissions);
 
+      //common module
+      const updatedCommonPermissions = (commonModulePermissionData || []).map(
+        (lp) => ({
+          ...lp,
+          checked: role_permissions.some(
+            (rp) => rp.permission_id === lp.permission_id,
+          ),
+        }),
+      );
+      dispatch(storeCommonModulePermissionList(updatedCommonPermissions));
+
       //dashboard module
       const updatedDashboardPermissions = (
         dashboardModulePermissionData || []
@@ -606,6 +621,7 @@ export default function PageAccess({
 
   const handleInsertRolePermissions = async () => {
     const merged = [
+      ...commonModulePermissionData,
       ...dashboardModulePermissionData,
       ...leadsModulePermissionData,
       ...leadFollowupModulePermissionData,
@@ -1385,6 +1401,43 @@ export default function PageAccess({
           className="settings_addgroup_drawer"
           style={{ position: "relative", paddingBottom: 65 }}
         >
+          <p className="settings_permission_subheading">Common</p>
+          <div className="settings_permission_rowcontainer">
+            <Row>
+              {commonModulePermissionData.map((item) => {
+                return (
+                  <Col
+                    span={8}
+                    style={{
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Checkbox
+                      className="settings_pageaccess_checkbox"
+                      checked={item.checked}
+                      onChange={(e) => {
+                        const { checked } = e.target;
+                        const updateItem = commonModulePermissionData.map(
+                          (i) => {
+                            if (i.permission_id === item.permission_id) {
+                              return { ...i, checked: checked };
+                            } else {
+                              return { ...i };
+                            }
+                          },
+                        );
+                        console.log("updateItem", updateItem);
+                        dispatch(storeCommonModulePermissionList(updateItem));
+                      }}
+                    >
+                      {item.permission_name}
+                    </Checkbox>{" "}
+                  </Col>
+                );
+              })}
+            </Row>
+          </div>
+          <Divider className="settings_addgroupdrawer_divider" />
           <p className="settings_permission_subheading">Dashboard Page</p>
           <div className="settings_permission_rowcontainer">
             <Row>

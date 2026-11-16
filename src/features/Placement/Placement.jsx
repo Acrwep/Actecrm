@@ -944,8 +944,26 @@ export default function Placement({ setPlacementCount }) {
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 22 : 16}
-          xxl={permissions.includes("Lead Executive Filter") ? 20 : 16}
+          lg={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 22
+              : permissions.includes("Region and Branch Filtering")
+                ? 20
+                : permissions.includes("User-Wise Filtering")
+                  ? 18
+                  : 12
+          }
+          xxl={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 18
+              : permissions.includes("Region and Branch Filtering")
+                ? 20
+                : permissions.includes("User-Wise Filtering")
+                  ? 16
+                  : 12
+          }
         >
           <Row gutter={[12, 12]} align="middle" wrap={false}>
             {/* Search */}
@@ -1006,7 +1024,7 @@ export default function Placement({ setPlacementCount }) {
               </Col>
             )}
 
-            {permissions.includes("Lead Executive Filter") && (
+            {permissions.includes("Region and Branch Filtering") && (
               <>
                 {windowsWidth > 1255 && (
                   <>
@@ -1073,20 +1091,22 @@ export default function Placement({ setPlacementCount }) {
                     </Col>
                   </>
                 )}
-
-                <Col flex="1 1 150px">
-                  <CommonMultiSelectField
-                    height="34px"
-                    label="Select User"
-                    labelMarginTop="1px"
-                    labelFontSize="11px"
-                    options={subUsers}
-                    onChange={handleSelectUser}
-                    onBlur={handleSelectUserBlur}
-                    value={selectedUserId}
-                  />
-                </Col>
               </>
+            )}
+
+            {permissions.includes("User-Wise Filtering") && (
+              <Col flex="1 1 150px">
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Select User"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  options={subUsers}
+                  onChange={handleSelectUser}
+                  onBlur={handleSelectUserBlur}
+                  value={selectedUserId}
+                />
+              </Col>
             )}
 
             {windowsWidth > 1440 && (
@@ -1223,7 +1243,9 @@ export default function Placement({ setPlacementCount }) {
 
                         {/* Region and Branch: small screens only */}
                         {windowsWidth < 1255 &&
-                          permissions.includes("Lead Executive Filter") && (
+                          permissions.includes(
+                            "Region and Branch Filtering",
+                          ) && (
                             <>
                               <CommonSelectField
                                 height="33px"
@@ -1314,8 +1336,26 @@ export default function Placement({ setPlacementCount }) {
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 2 : 8}
-          xxl={permissions.includes("Lead Executive Filter") ? 4 : 8}
+          lg={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 2
+              : permissions.includes("Region and Branch Filtering")
+                ? 4
+                : permissions.includes("User-Wise Filtering")
+                  ? 6
+                  : 12
+          }
+          xxl={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 6
+              : permissions.includes("Region and Branch Filtering")
+                ? 4
+                : permissions.includes("User-Wise Filtering")
+                  ? 8
+                  : 12
+          }
           style={{
             display: "flex",
             justifyContent: "flex-end",

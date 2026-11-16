@@ -2264,8 +2264,26 @@ export default function Leads({
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 22 : 12}
-          xxl={permissions.includes("Lead Executive Filter") ? 18 : 12}
+          lg={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 22
+              : permissions.includes("Region and Branch Filtering")
+                ? 20
+                : permissions.includes("User-Wise Filtering")
+                  ? 18
+                  : 12
+          }
+          xxl={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 18
+              : permissions.includes("Region and Branch Filtering")
+                ? 20
+                : permissions.includes("User-Wise Filtering")
+                  ? 16
+                  : 12
+          }
         >
           <Row gutter={12}>
             <Col flex="1 1 0%">
@@ -2315,7 +2333,7 @@ export default function Leads({
                 />
               </div>
             </Col>
-            {permissions.includes("Lead Executive Filter") && (
+            {permissions.includes("Region and Branch Filtering") && (
               <>
                 <Col flex="0.8 1 0%">
                   <CommonSelectField
@@ -2370,6 +2388,11 @@ export default function Leads({
                     disabled={selectedRegion == 3 ? true : false}
                   />
                 </Col>
+              </>
+            )}
+
+            {permissions.includes("User-Wise Filtering") && (
+              <>
                 {leadBucketName != "Open Leads" && (
                   <Col flex="1.2 1 0%">
                     <style>{`
@@ -2851,8 +2874,26 @@ export default function Leads({
           xs={24}
           sm={24}
           md={24}
-          lg={permissions.includes("Lead Executive Filter") ? 2 : 12}
-          xxl={permissions.includes("Lead Executive Filter") ? 6 : 12}
+          lg={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 2
+              : permissions.includes("Region and Branch Filtering")
+                ? 4
+                : permissions.includes("User-Wise Filtering")
+                  ? 6
+                  : 12
+          }
+          xxl={
+            permissions.includes("Region and Branch Filtering") &&
+            permissions.includes("User-Wise Filtering")
+              ? 6
+              : permissions.includes("Region and Branch Filtering")
+                ? 4
+                : permissions.includes("User-Wise Filtering")
+                  ? 8
+                  : 12
+          }
         >
           <div
             style={{

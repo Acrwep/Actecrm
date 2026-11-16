@@ -491,41 +491,45 @@ export default function Batches({ mainType }) {
               </div>
             </Col>
 
-            {/* Region */}
-            <Col flex="0.8 1 0%">
-              <CommonSelectField
-                width="100%"
-                height="33px"
-                label="Select Region"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={regionOptions}
-                onChange={handleSelectRegionId}
-                value={selectedRegionId}
-                disableClearable={false}
-              />
-            </Col>
+            {/* Region and Branch */}
 
-            {/* Branch */}
-            <Col flex="0.8 1 0%">
-              <CommonSelectField
-                label="Branch"
-                height="33px"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={branchOptions}
-                value={selectedBranchId}
-                onChange={(e) => {
-                  setSelectedBranchId(e.target.value);
-                  fetchBatchesData({
-                    branchId: e.target.value,
-                  });
-                }}
-                error=""
-                disableClearable={false}
-                disabled={!selectedRegionId || selectedRegionId == 3}
-              />
-            </Col>
+            {/* {permissions.includes("Region and Branch Filtering") && ( */}
+            <>
+              <Col flex="0.8 1 0%">
+                <CommonSelectField
+                  width="100%"
+                  height="33px"
+                  label="Select Region"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={regionOptions}
+                  onChange={handleSelectRegionId}
+                  value={selectedRegionId}
+                  disableClearable={false}
+                />
+              </Col>
+
+              <Col flex="0.8 1 0%">
+                <CommonSelectField
+                  label="Branch"
+                  height="33px"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={branchOptions}
+                  value={selectedBranchId}
+                  onChange={(e) => {
+                    setSelectedBranchId(e.target.value);
+                    fetchBatchesData({
+                      branchId: e.target.value,
+                    });
+                  }}
+                  error=""
+                  disableClearable={false}
+                  disabled={!selectedRegionId || selectedRegionId == 3}
+                />
+              </Col>
+            </>
+            {/* )} */}
 
             {/* Date */}
             <Col flex="1.4 1 0%">
