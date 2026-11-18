@@ -187,12 +187,43 @@ export default function AccountsReport({
   const selectedUserIdRef = useRef([]);
   const reportContentRef = useRef(null);
 
+  // Helper to determine role-based region from loginUserDetails
+  const getRoleBasedRegionConfig = () => {
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = getLoginUserDetails
+        ? JSON.parse(getLoginUserDetails)
+        : null;
+      const userId = convertAsJson?.user_id
+        ? String(convertAsJson.user_id).toUpperCase()
+        : "";
+
+      if (userId.startsWith("HUB")) {
+        return { regionId: 3, disabled: true };
+      } else if (userId.startsWith("CHN")) {
+        return { regionId: 1, disabled: true };
+      } else if (userId.startsWith("BNG")) {
+        return { regionId: 2, disabled: true };
+      }
+    } catch (e) {
+      console.error("Error reading loginUserDetails:", e);
+    }
+    return { regionId: null, disabled: false };
+  };
+
+  const roleRegionConfig = getRoleBasedRegionConfig();
+
   // Filter state
   const [selectedDates, setSelectedDates] = useState([]);
   const [convenienceFeesType, setConvenienceFeesType] = useState("Yes"); // "Yes" or "No"
   const [accountsUsers, setAccountsUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
-  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState(
+    roleRegionConfig.regionId,
+  );
+  const [isRegionDisabled, setIsRegionDisabled] = useState(
+    roleRegionConfig.disabled,
+  );
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
@@ -218,23 +249,50 @@ export default function AccountsReport({
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  // Initial Date Setup
+  // Initial Date Setup and Role-Based Region Selection
   useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = getLoginUserDetails
+      ? JSON.parse(getLoginUserDetails)
+      : null;
+
     if (summaryStartAndEndDate && summaryStartAndEndDate.length === 2) {
       setSelectedDates(summaryStartAndEndDate);
     } else {
       const dates = getCurrentandPreviousweekDate();
       setSelectedDates(dates);
     }
+
+    const userId = convertAsJson?.user_id
+      ? String(convertAsJson.user_id).toUpperCase()
+      : "";
+
+    if (userId.startsWith("HUB")) {
+      setSelectedRegionId(3);
+      setIsRegionDisabled(true);
+      getBranchesData(3);
+    } else if (userId.startsWith("CHN")) {
+      setSelectedRegionId(1);
+      setIsRegionDisabled(true);
+      getBranchesData(1);
+    } else if (userId.startsWith("BNG")) {
+      setSelectedRegionId(2);
+      setIsRegionDisabled(true);
+      getBranchesData(2);
+    } else {
+      setSelectedRegionId(null);
+      setIsRegionDisabled(false);
+    }
   }, [summaryStartAndEndDate]);
 
   // Initial Load when roleIds ready
   useEffect(() => {
     if (roleIds) {
+      const roleConfig = getRoleBasedRegionConfig();
       fetchAccountsUsersData({
         startDate: summaryStartAndEndDate?.[0] || selectedDates?.[0],
         endDate: summaryStartAndEndDate?.[1] || selectedDates?.[1],
-        regionId: null,
+        regionId: roleConfig.regionId,
         branchId: null,
         convenienceFeesType: "Yes",
       });
@@ -409,17 +467,25 @@ export default function AccountsReport({
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setSelectedRegionId(null);
+
+    const roleConfig = getRoleBasedRegionConfig();
+    setSelectedRegionId(roleConfig.regionId);
     setSelectedBranchId(null);
-    setFilterBranchOptions([]);
     setConvenienceFeesType("Yes");
     prevSelectedUserIdRef.current = "[]";
     selectedUserIdRef.current = [];
     setSelectedUserId([]);
+
+    if (roleConfig.regionId) {
+      getBranchesData(roleConfig.regionId);
+    } else {
+      setFilterBranchOptions([]);
+    }
+
     fetchAccountsUsersData({
       startDate: PreviousAndCurrentDate[0],
       endDate: PreviousAndCurrentDate[1],
-      regionId: null,
+      regionId: roleConfig.regionId,
       branchId: null,
       convenienceFeesType: "Yes",
     });
@@ -894,72 +960,79 @@ export default function AccountsReport({
 
             {/* Region Select */}
             <Col flex="0.8 1 0%">
-              <CommonSelectField
-                height="33px"
-                label="Select Region"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={regionOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedRegionId(value);
-                  setSelectedBranchId(null);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchAccountsUsersData({
-                    regionId: value,
-                    branchId: null,
-                  });
-                  if (value) {
-                    getBranchesData(value);
-                  } else {
-                    setFilterBranchOptions([]);
-                  }
-                }}
-                value={selectedRegionId}
-                disableClearable={false}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Region"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={regionOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedRegionId(value);
+                    setSelectedBranchId(null);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchAccountsUsersData({
+                      regionId: value,
+                      branchId: null,
+                    });
+                    if (value) {
+                      getBranchesData(value);
+                    } else {
+                      setFilterBranchOptions([]);
+                    }
+                  }}
+                  value={selectedRegionId}
+                  disableClearable={isRegionDisabled ? true : false}
+                  disabled={isRegionDisabled}
+                />
+              )}
             </Col>
 
             {/* Branch Select */}
             <Col flex="0.8 1 0%">
-              <CommonSelectField
-                height="33px"
-                label="Select Branch"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={filterBranchOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedBranchId(value);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchAccountsUsersData({
-                    regionId: selectedRegionId,
-                    branchId: value,
-                  });
-                }}
-                value={selectedBranchId}
-                disableClearable={false}
-                disabled={selectedRegionId == 3 ? true : false}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Branch"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={filterBranchOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedBranchId(value);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchAccountsUsersData({
+                      regionId: selectedRegionId,
+                      branchId: value,
+                    });
+                  }}
+                  value={selectedBranchId}
+                  disableClearable={false}
+                  disabled={selectedRegionId == 3 ? true : false}
+                />
+              )}
             </Col>
 
             {/* User Select */}
             <Col flex="1 1 0%">
-              <CommonMultiSelectField
-                height="34px"
-                label="Select User"
-                labelMarginTop="1px"
-                labelFontSize="11px"
-                width="100%"
-                options={accountsUsers}
-                onChange={handleSelectUser}
-                onBlur={handleSelectUserBlur}
-                value={selectedUserId}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Select User"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  width="100%"
+                  options={accountsUsers}
+                  onChange={handleSelectUser}
+                  onBlur={handleSelectUserBlur}
+                  value={selectedUserId}
+                />
+              )}
             </Col>
           </Row>
         </Col>

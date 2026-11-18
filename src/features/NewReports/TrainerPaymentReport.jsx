@@ -13,13 +13,7 @@ import {
 } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import {
-  getBranches,
-  getTrainers,
-  getTrainerPayments,
-  getTrainerReportsCounts,
-} from "../ApiService/action";
-import dayjs from "dayjs";
+import { getBranches, getTrainerReportsCounts } from "../ApiService/action";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
@@ -285,14 +279,44 @@ function TrainerPaymentReportSkeleton() {
 export default function TrainerPaymentReport({
   onBack,
   summaryStartAndEndDate,
-  roleIds,
 }) {
   const regionOptions = useSelector((state) => state.globalregionslist) || [];
   const reportContentRef = useRef(null);
 
+  // Helper to determine role-based region from loginUserDetails
+  const getRoleBasedRegionConfig = () => {
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = getLoginUserDetails
+        ? JSON.parse(getLoginUserDetails)
+        : null;
+      const userId = convertAsJson?.user_id
+        ? String(convertAsJson.user_id).toUpperCase()
+        : "";
+
+      if (userId.startsWith("HUB")) {
+        return { regionId: 3, disabled: true };
+      } else if (userId.startsWith("CHN")) {
+        return { regionId: 1, disabled: true };
+      } else if (userId.startsWith("BNG")) {
+        return { regionId: 2, disabled: true };
+      }
+    } catch (e) {
+      console.error("Error reading loginUserDetails:", e);
+    }
+    return { regionId: null, disabled: false };
+  };
+
+  const roleRegionConfig = getRoleBasedRegionConfig();
+
   // Filter States
   const [selectedDates, setSelectedDates] = useState([]);
-  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState(
+    roleRegionConfig.regionId,
+  );
+  const [isRegionDisabled, setIsRegionDisabled] = useState(
+    roleRegionConfig.disabled,
+  );
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
@@ -345,21 +369,52 @@ export default function TrainerPaymentReport({
     awaiting_finance: 0,
     paid: 0,
   });
-  const [commercialTypeCounts, setCommercialTypeCounts] = useState({
-    Pay_Per_Head_Count: 0,
-    Batch_Count: 0,
-  });
 
-  // Initial Date Setup
+  // Initial Date Setup and Role-Based Region Selection
   useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = getLoginUserDetails
+      ? JSON.parse(getLoginUserDetails)
+      : null;
+
+    let targetDates = [];
     if (summaryStartAndEndDate && summaryStartAndEndDate.length === 2) {
-      setSelectedDates(summaryStartAndEndDate);
-      fetchTrainerPaymentData(summaryStartAndEndDate);
+      targetDates = summaryStartAndEndDate;
     } else {
-      const dates = getCurrentandPreviousweekDate();
-      setSelectedDates(dates);
-      fetchTrainerPaymentData(dates);
+      targetDates = getCurrentandPreviousweekDate();
     }
+    setSelectedDates(targetDates);
+
+    const userId = convertAsJson?.user_id
+      ? String(convertAsJson.user_id).toUpperCase()
+      : "";
+
+    let assignedRegionId = null;
+    if (userId.startsWith("HUB")) {
+      assignedRegionId = 3;
+      setSelectedRegionId(3);
+      setIsRegionDisabled(true);
+      getBranchesData(3);
+    } else if (userId.startsWith("CHN")) {
+      assignedRegionId = 1;
+      setSelectedRegionId(1);
+      setIsRegionDisabled(true);
+      getBranchesData(1);
+    } else if (userId.startsWith("BNG")) {
+      assignedRegionId = 2;
+      setSelectedRegionId(2);
+      setIsRegionDisabled(true);
+      getBranchesData(2);
+    } else {
+      setSelectedRegionId(null);
+      setIsRegionDisabled(false);
+    }
+
+    fetchTrainerPaymentData({
+      dates: targetDates,
+      regionId: assignedRegionId,
+      branchId: null,
+    });
   }, [summaryStartAndEndDate]);
 
   const getBranchesData = async (regionId) => {
@@ -474,11 +529,6 @@ export default function TrainerPaymentReport({
         paid: Number(apiData.paid_count) || 0,
       });
 
-      setCommercialTypeCounts({
-        Pay_Per_Head_Count: Number(apiData.pay_per_head_count) || 0,
-        Batch_Count: Number(apiData.batch_count) || 0,
-      });
-
       if (Array.isArray(apiData.data)) {
         setPaymentRequests(apiData.data);
       } else if (Array.isArray(response?.data?.data?.data)) {
@@ -500,12 +550,20 @@ export default function TrainerPaymentReport({
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setSelectedRegionId(null);
+
+    const roleConfig = getRoleBasedRegionConfig();
+    setSelectedRegionId(roleConfig.regionId);
     setSelectedBranchId(null);
-    setFilterBranchOptions([]);
+
+    if (roleConfig.regionId) {
+      getBranchesData(roleConfig.regionId);
+    } else {
+      setFilterBranchOptions([]);
+    }
+
     fetchTrainerPaymentData({
       dates: PreviousAndCurrentDate,
-      regionId: null,
+      regionId: roleConfig.regionId,
       branchId: null,
     });
   };
@@ -1240,7 +1298,8 @@ export default function TrainerPaymentReport({
                   fetchTrainerPaymentData({ regionId: val, branchId: null });
                 }}
                 value={selectedRegionId}
-                disableClearable={false}
+                disableClearable={isRegionDisabled ? true : false}
+                disabled={isRegionDisabled}
               />
             </Col>
 
@@ -2214,11 +2273,7 @@ export default function TrainerPaymentReport({
                       Disbursement TAT
                     </h4>
                     <Tag
-                      color={
-                        Number(analytics.averageDaysTaken || 0) <= 7
-                          ? "green"
-                          : "volcano"
-                      }
+                      color={"green"}
                       style={{
                         margin: 0,
                         borderRadius: 10,

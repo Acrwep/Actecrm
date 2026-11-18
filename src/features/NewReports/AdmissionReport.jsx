@@ -8,29 +8,23 @@ import {
   getUsersByTheirRole,
   getAdmissionsReportsCounts,
 } from "../ApiService/action";
-import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 import {
-  FiUsers,
   FiActivity,
   FiUserCheck,
-  FiClock,
   FiLayers,
   FiCompass,
-  FiArrowRight,
   FiArrowLeft,
   FiTrendingUp,
   FiDownload,
-  FiCheckCircle,
   FiFileText,
   FiTable,
-  FiAward,
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
-import { TbReportAnalytics, TbTargetArrow } from "react-icons/tb";
+import { TbTargetArrow } from "react-icons/tb";
 import {
   HiOutlineAcademicCap,
   HiOutlineSparkles,
@@ -45,6 +39,42 @@ import CommonMultiSelectField from "../Common/CommonMultiSelectField";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import CommonSelectField from "../Common/CommonSelectField";
+
+// Unified progress bar color for all user progress bars across all admission cards
+const USER_PROGRESS_BAR_COLOR = "rgb(2, 132, 199)";
+
+// Default / Initial API Mock Data matching the new backend API structure
+const INITIAL_ADMISSION_REPORT_DATA = {
+  admission: {
+    total_count: 0,
+    online_mode: 0,
+    classroom_mode: 0,
+  },
+  sources: {
+    direct: 0,
+    website: 0,
+    reference: 0,
+    smo: 0,
+    call: 0,
+    live_chat: 0,
+  },
+  sub_sources: {
+    branch: 0,
+    instant_form: 0,
+    reference: 0,
+    whatsapp_smo: 0,
+    enquiry_form: 0,
+    ivr: 0,
+    whatsapp_website: 0,
+    google_ads: 0,
+  },
+  leadsCount: {
+    all_leads: 0,
+  },
+  courseResult: [],
+  companies_top_10_courses: [],
+  region_branches_usersCounts: [],
+};
 
 /**
  * Dedicated Skeleton Loader for Admissions Report
@@ -109,61 +139,124 @@ function AdmissionReportSkeleton() {
         ))}
       </Row>
 
-      {/* 2. Lifecycle Pipeline Skeleton */}
+      {/* 2. Regional & User Admission Summary Skeleton */}
       <div className="presales_section_header" style={{ marginTop: 28 }}>
         <h2 className="presales_section_title">
-          <TbTargetArrow style={{ color: "#059669" }} size={19} /> Student
-          Onboarding & Admission Lifecycle
+          <TbTargetArrow style={{ color: "#059669" }} size={19} /> Admission
+          Summary & Regional Distribution
         </h2>
         <span
           className="presales_section_title_badge"
           style={{ background: "#ecfdf5", color: "#059669" }}
         >
-          Pipeline Milestones
+          Overall & 3 Regional Divisions
         </span>
       </div>
 
       <div className="presales_funnel_container">
-        <div className="presales_funnel_steps">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <React.Fragment key={i}>
-              <div className="presales_funnel_step">
-                <div className="presales_funnel_step_header">
+        <Row gutter={[16, 16]}>
+          {[1, 2, 3, 4].map((i) => (
+            <Col xs={24} sm={12} lg={6} key={i}>
+              <div
+                className="presales_funnel_step"
+                style={{
+                  height: 310,
+                  padding: "14px 12px",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div
+                  className="presales_funnel_step_header"
+                  style={{ flexShrink: 0 }}
+                >
                   <Skeleton.Input
                     active
                     size="small"
-                    style={{ width: "80%", height: 13 }}
+                    style={{ width: "70%", height: 13 }}
                   />
-                  <div className="presales_funnel_count_row">
+                  <div
+                    className="presales_funnel_count_row"
+                    style={{ marginTop: 6 }}
+                  >
                     <Skeleton.Input active style={{ width: 45, height: 22 }} />
                     <Skeleton.Input
                       active
                       size="small"
-                      style={{ width: 40, height: 14 }}
+                      style={{ width: i === 1 ? 36 : 75, height: 12 }}
                     />
                   </div>
                 </div>
-                <div className="presales_funnel_subitems">
-                  {[1, 2, 3, 4].map((sub) => (
-                    <div className="presales_funnel_subitem" key={sub}>
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: "60%", height: 13 }}
-                      />
-                      <Skeleton.Input
-                        active
-                        size="small"
-                        style={{ width: 25, height: 13 }}
-                      />
+
+                <div
+                  className="presales_funnel_subitems"
+                  style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: "hidden",
+                    marginTop: 8,
+                    borderTop: "1px solid #eef2f6",
+                  }}
+                >
+                  {[1, 2, 3, 4, 5].map((u) => (
+                    <div
+                      className="presales_funnel_subitem"
+                      key={u}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                        padding: "5px 8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          width: "100%",
+                        }}
+                      >
+                        <span className="presales_funnel_subitem_name">
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: 14, height: 12, marginRight: 2 }}
+                          />
+                          <Skeleton.Input
+                            active
+                            size="small"
+                            style={{ width: "65%", height: 12 }}
+                          />
+                        </span>
+                        <Skeleton.Input
+                          active
+                          size="small"
+                          style={{ width: 22, height: 12 }}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          height: 3,
+                          background: "#f1f5f9",
+                          borderRadius: 2,
+                          width: "100%",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Skeleton.Input
+                          active
+                          size="small"
+                          style={{ width: "80%", height: 3, borderRadius: 2 }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-              {i < 5 && <FiArrowRight className="presales_funnel_arrow" />}
-            </React.Fragment>
+            </Col>
           ))}
-        </div>
+        </Row>
       </div>
 
       {/* 3. Top 10 Courses Skeleton */}
@@ -346,57 +439,198 @@ export default function AdmissionReport({
   const selectedUserIdRef = useRef([]);
   const reportContentRef = useRef(null);
 
+  // Helper to determine role-based region from loginUserDetails
+  const getRoleBasedRegionConfig = () => {
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = getLoginUserDetails
+        ? JSON.parse(getLoginUserDetails)
+        : null;
+      const userId = convertAsJson?.user_id
+        ? String(convertAsJson.user_id).toUpperCase()
+        : "";
+
+      if (userId.startsWith("HUB")) {
+        return { regionId: 3, disabled: true };
+      } else if (userId.startsWith("CHN")) {
+        return { regionId: 1, disabled: true };
+      } else if (userId.startsWith("BNG")) {
+        return { regionId: 2, disabled: true };
+      }
+    } catch (e) {
+      console.error("Error reading loginUserDetails:", e);
+    }
+    return { regionId: null, disabled: false };
+  };
+
+  const roleRegionConfig = getRoleBasedRegionConfig();
+
   // Filter state
   const [selectedDates, setSelectedDates] = useState([]);
   const [counselorUsers, setCounselorUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
-  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState(
+    roleRegionConfig.regionId,
+  );
+  const [isRegionDisabled, setIsRegionDisabled] = useState(
+    roleRegionConfig.disabled,
+  );
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
+  const [selectedModeOfTraining, setSelectedModeOfTraining] = useState(null);
 
   // Loading, refresh, and export states
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showAllCourses, setShowAllCourses] = useState(false);
+  const [courseFilterType, setCourseFilterType] = useState("courseResult"); // "courseResult" | "company"
 
-  // Backend API Data State
-  const [reportData, setReportData] = useState({
-    admission: {
-      total_count: 0,
-      online_mode: 0,
-      classroom_mode: 0,
-      student_onboarding: {},
-      trainer_coordination: {},
-      progress_monitoring: {},
-      course_completion: {},
-      review_certifications: {},
-    },
-    sources: {},
-    sub_sources: {},
-    leadsCount: { all_leads: 0 },
-    courseResult: [],
-  });
+  // Backend API Data State (Initialized with latest API response structure)
+  const [reportData, setReportData] = useState(INITIAL_ADMISSION_REPORT_DATA);
 
   // Synchronize ref with selectedUserId
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  // Initial Date Setup
+  // Initial Date Setup and Role-Based Region Selection
   useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = getLoginUserDetails
+      ? JSON.parse(getLoginUserDetails)
+      : null;
+
+    // Preserve existing date selection logic using summaryStartAndEndDate
     if (summaryStartAndEndDate && summaryStartAndEndDate.length === 2) {
       setSelectedDates(summaryStartAndEndDate);
     } else {
       const dates = getCurrentandPreviousweekDate();
       setSelectedDates(dates);
     }
+
+    // Role-based region selection using convertAsJson.user_id
+    const userId = convertAsJson?.user_id
+      ? String(convertAsJson.user_id).toUpperCase()
+      : "";
+
+    if (userId.startsWith("HUB")) {
+      setSelectedRegionId(3);
+      setIsRegionDisabled(true);
+      getBranchesData(3);
+    } else if (userId.startsWith("CHN")) {
+      setSelectedRegionId(1);
+      setIsRegionDisabled(true);
+      getBranchesData(1);
+    } else if (userId.startsWith("BNG")) {
+      setSelectedRegionId(2);
+      setIsRegionDisabled(true);
+      getBranchesData(2);
+    } else {
+      setSelectedRegionId(null);
+      setIsRegionDisabled(false);
+    }
   }, [summaryStartAndEndDate]);
+
+  // Initial Counselor Load & Data Fetch
+  useEffect(() => {
+    if (roleIds) {
+      const roleConfig = getRoleBasedRegionConfig();
+      fetchCounselorUsersData({
+        startDate: summaryStartAndEndDate?.[0] || selectedDates?.[0],
+        endDate: summaryStartAndEndDate?.[1] || selectedDates?.[1],
+        mode_of_training: null,
+        regionId: roleConfig.regionId,
+        branchId: null,
+      });
+    }
+  }, [roleIds]);
+
+  const fetchCounselorUsersData = async (overrides = {}) => {
+    const regionId =
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId;
+    const branchId =
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId;
+    const modeOfClass =
+      overrides.mode_of_training !== undefined
+        ? overrides.mode_of_training
+        : selectedModeOfTraining;
+    const startDate =
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null;
+    const endDate =
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null;
+
+    setIsLoading(true);
+    const payload = {
+      roles: [roleIds.sale_role_id],
+      ...(regionId && { region_id: regionId }),
+      ...(branchId && { branch_id: branchId }),
+      page: 1,
+      limit: 1000,
+    };
+    try {
+      const response = await getUsersByTheirRole(payload);
+      console.log("user by their role response", response);
+      const users = response?.data?.data || [];
+      const downlines = downlineUsers.filter((downline) =>
+        users.some((user) => user.user_id === downline.user_id),
+      );
+      const activeCounselors = downlines.length > 0 ? downlines : users;
+      setCounselorUsers(activeCounselors);
+      console.log("admission sale users", activeCounselors);
+
+      getAdmissionReportsData(
+        startDate,
+        endDate,
+        modeOfClass,
+        regionId,
+        branchId,
+        activeCounselors.map((su) => su.user_id),
+      );
+    } catch (error) {
+      console.log("get counselor users error", error);
+      setCounselorUsers([]);
+      getAdmissionReportsData(
+        startDate,
+        endDate,
+        modeOfClass,
+        regionId,
+        branchId,
+        [],
+      );
+    }
+  };
+
+  const fetchAdmissionData = (overrides = {}) => {
+    getAdmissionReportsData(
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null,
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null,
+      overrides.mode_of_training !== undefined
+        ? overrides.mode_of_training
+        : selectedModeOfTraining,
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
+      overrides.user_ids !== undefined
+        ? overrides.user_ids
+        : (selectedUserIdRef.current || selectedUserId).length >= 1
+          ? selectedUserIdRef.current || selectedUserId
+          : counselorUsers.map((su) => su.user_id),
+    );
+  };
 
   // Fetch report counts from backend API
   const getAdmissionReportsData = async (
     startDate,
     endDate,
+    mode_of_training,
     regionId,
     branchId,
     user_ids,
@@ -413,6 +647,7 @@ export default function AdmissionReport({
         : selectedDates?.[1]
           ? moment(selectedDates[1]).format("YYYY-MM-DD")
           : undefined,
+      ...(mode_of_training && { mode_of_class: mode_of_training }),
       ...(regionId && { region: regionId }),
       ...(branchId && { branch: branchId }),
       ...(user_ids && user_ids.length >= 1
@@ -434,6 +669,16 @@ export default function AdmissionReport({
           courseResult: Array.isArray(apiData.courseResult)
             ? apiData.courseResult
             : [],
+          companies_top_10_courses: Array.isArray(
+            apiData.companies_top_10_courses,
+          )
+            ? apiData.companies_top_10_courses
+            : [],
+          region_branches_usersCounts: Array.isArray(
+            apiData.region_branches_usersCounts,
+          )
+            ? apiData.region_branches_usersCounts
+            : [],
         });
       }
     } catch (error) {
@@ -448,81 +693,6 @@ export default function AdmissionReport({
       setIsRefreshing(false);
     }
   };
-
-  const fetchAdmissionData = (overrides = {}) => {
-    getAdmissionReportsData(
-      overrides.startDate !== undefined
-        ? overrides.startDate
-        : selectedDates?.[0] || null,
-      overrides.endDate !== undefined
-        ? overrides.endDate
-        : selectedDates?.[1] || null,
-      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId,
-      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId,
-      overrides.user_ids !== undefined
-        ? overrides.user_ids
-        : (selectedUserIdRef.current || selectedUserId).length >= 1
-          ? selectedUserIdRef.current || selectedUserId
-          : counselorUsers.map((su) => su.user_id),
-    );
-  };
-
-  const fetchCounselorUsersData = async (overrides = {}) => {
-    const regionId =
-      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId;
-    const branchId =
-      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId;
-    const startDate =
-      overrides.startDate !== undefined
-        ? overrides.startDate
-        : selectedDates?.[0] || null;
-    const endDate =
-      overrides.endDate !== undefined
-        ? overrides.endDate
-        : selectedDates?.[1] || null;
-
-    setIsLoading(true);
-    const payload = {
-      roles: [roleIds.sale_role_id, roleIds.ra_role_id, roleIds.hr_role_id],
-      ...(regionId && { region_id: regionId }),
-      ...(branchId && { branch_id: branchId }),
-      page: 1,
-      limit: 1000,
-    };
-    try {
-      const response = await getUsersByTheirRole(payload);
-      const users = response?.data?.data || [];
-      const downlines = downlineUsers.filter((downline) =>
-        users.some((user) => user.user_id === downline.user_id),
-      );
-      const activeCounselors = downlines.length > 0 ? downlines : users;
-      setCounselorUsers(activeCounselors);
-
-      getAdmissionReportsData(
-        startDate,
-        endDate,
-        regionId,
-        branchId,
-        activeCounselors.map((su) => su.user_id),
-      );
-    } catch (error) {
-      console.log("get counselor users error", error);
-      setCounselorUsers([]);
-      getAdmissionReportsData(startDate, endDate, regionId, branchId, []);
-    }
-  };
-
-  // Initial Counselor Load & Data Fetch
-  useEffect(() => {
-    if (roleIds) {
-      fetchCounselorUsersData({
-        startDate: summaryStartAndEndDate?.[0] || selectedDates?.[0],
-        endDate: summaryStartAndEndDate?.[1] || selectedDates?.[1],
-        regionId: null,
-        branchId: null,
-      });
-    }
-  }, [roleIds]);
 
   const getBranchesData = async (regionId) => {
     const payload = { region_id: regionId };
@@ -553,16 +723,26 @@ export default function AdmissionReport({
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setSelectedRegionId(null);
+
+    const roleConfig = getRoleBasedRegionConfig();
+    setSelectedRegionId(roleConfig.regionId);
     setSelectedBranchId(null);
-    setFilterBranchOptions([]);
+    setSelectedModeOfTraining(null);
     prevSelectedUserIdRef.current = "[]";
     selectedUserIdRef.current = [];
     setSelectedUserId([]);
+
+    if (roleConfig.regionId) {
+      getBranchesData(roleConfig.regionId);
+    } else {
+      setFilterBranchOptions([]);
+    }
+
     fetchCounselorUsersData({
       startDate: PreviousAndCurrentDate[0],
       endDate: PreviousAndCurrentDate[1],
-      regionId: null,
+      mode_of_training: null,
+      regionId: roleConfig.regionId,
       branchId: null,
     });
   };
@@ -600,7 +780,6 @@ export default function AdmissionReport({
     const sources = reportData?.sources || {};
     const sub_sources = reportData?.sub_sources || {};
     const leadsCount = reportData?.leadsCount || {};
-    const courseResult = reportData?.courseResult || [];
 
     const totalAdmissions = Number(admission.total_count) || 0;
     const directWalkinAdmissions = Number(admission.classroom_mode) || 0;
@@ -624,13 +803,13 @@ export default function AdmissionReport({
         ? ((totalAdmissions / totalQualifiedLeads) * 100).toFixed(1)
         : "0.0";
 
-    const calcActivityRate = (count) => {
-      if (!totalAdmissions || totalAdmissions <= 0) return "0.0%";
-      return `${((count / totalAdmissions) * 100).toFixed(1)}%`;
-    };
+    // Top Courses (Filtered or Company-Wide based on courseFilterType)
+    const activeCoursesRaw =
+      courseFilterType === "company"
+        ? reportData?.companies_top_10_courses || []
+        : reportData?.courseResult || [];
 
-    // Top Courses
-    const sortedCourses = [...courseResult].sort(
+    const sortedCourses = [...activeCoursesRaw].sort(
       (a, b) =>
         (Number(b.customer_count) || 0) - (Number(a.customer_count) || 0),
     );
@@ -651,7 +830,7 @@ export default function AdmissionReport({
 
       return {
         rank,
-        id: c.course_id,
+        id: c.course_id || idx,
         name: c.course_name || "Unknown Course",
         category: "Technology",
         count,
@@ -659,282 +838,6 @@ export default function AdmissionReport({
         demand,
       };
     });
-
-    // Lifecycle Stages
-    const onboarding = admission.student_onboarding || {};
-    const coord = admission.trainer_coordination || {};
-    const prog = admission.progress_monitoring || {};
-    const comp = admission.course_completion || {};
-    const cert = admission.review_certifications || {};
-
-    const studentOnboardingCount =
-      Number(onboarding.student_onboarding_count) || 0;
-    const welcomeCall = Number(onboarding.welcome_call_status) || 0;
-    const reqVerified = Number(onboarding.technology_verified) || 0;
-    const trainerReq = Number(onboarding.trainer_assignment_request) || 0;
-    const trainerFix = Number(onboarding.trainer_fixation_call) || 0;
-
-    const trainerCoordinationCount =
-      Number(coord.trainer_coordination_count) || 0;
-    const waGroup = Number(coord.whatsapp_group_creation) || 0;
-    const hrWelcome = Number(coord.hr_welcome_message) || 0;
-    const attendLink = Number(coord.shared_attendance_link) || 0;
-    const firstClass = Number(coord.first_class_monitoring) || 0;
-    const trainerConfirm = Number(coord.trainer_confirmation) || 0;
-
-    const progressMonitoringCount = Number(prog.progress_monitoring_count) || 0;
-    const classProg = Number(prog.class_progress_monitoring) || 0;
-    const ticketRaised = Number(prog.ticket_raised) || 0;
-    const midFeedback = Number(prog.mid_course_feedback) || 0;
-    const lmsAccess = Number(prog.lms_access) || 0;
-    const serverReq = Number(prog.is_server_required) || 0;
-    const placementHandover = Number(prog.placement_handover) || 0;
-
-    const courseCompletionCount = Number(comp.course_completion_count) || 0;
-    const classCompConfirm = Number(comp.class_completion_confirmation) || 0;
-    const trainerCompRep = Number(comp.trainer_completion_report) || 0;
-    const studentCompRep = Number(comp.student_completion_report) || 0;
-
-    const reviewsAndCertificatesCount =
-      Number(cert.review_certifications_count) || 0;
-    const googleReview = Number(cert.google_review_collection) || 0;
-    const linkedinReview = Number(cert.linkedin_review_collection) || 0;
-    const reviewVerified = Number(cert.review_verification_status) || 0;
-    const certIssued = Number(cert.course_completion_certificate) || 0;
-    const closureCall = Number(cert.course_closure_call) || 0;
-
-    const stage1Activities = [
-      {
-        name: "Welcome Call",
-        count: welcomeCall,
-        completedText: "Completed",
-        rate: calcActivityRate(welcomeCall),
-        color: "#16a34a",
-      },
-      {
-        name: "Requirement Verification",
-        count: reqVerified,
-        completedText: "Completed",
-        rate: calcActivityRate(reqVerified),
-        color: "#0284c7",
-      },
-      {
-        name: "Trainer Assignment Request",
-        count: trainerReq,
-        completedText: "Completed",
-        rate: calcActivityRate(trainerReq),
-        color: "#8b5cf6",
-      },
-      {
-        name: "Trainer Fixation Call",
-        count: trainerFix,
-        completedText: "Completed",
-        rate: calcActivityRate(trainerFix),
-        color: "#ea580c",
-      },
-    ];
-
-    const stage2Activities = [
-      {
-        name: "WhatsApp Group Creation",
-        count: waGroup,
-        completedText: "Completed",
-        rate: calcActivityRate(waGroup),
-        color: "#16a34a",
-      },
-      {
-        name: "Welcome Message",
-        count: hrWelcome,
-        completedText: "Completed",
-        rate: calcActivityRate(hrWelcome),
-        color: "#4f46e5",
-      },
-      {
-        name: "Teams Link & Attendance",
-        count: attendLink,
-        completedText: "Shared",
-        rate: calcActivityRate(attendLink),
-        color: "#0284c7",
-      },
-      {
-        name: "First Class Monitoring",
-        count: firstClass,
-        completedText: "Monitored",
-        rate: calcActivityRate(firstClass),
-        color: "#ea580c",
-      },
-      {
-        name: "Trainer Confirmation",
-        count: trainerConfirm,
-        completedText: "Confirmed",
-        rate: calcActivityRate(trainerConfirm),
-        color: "#16a34a",
-      },
-    ];
-
-    const stage3Activities = [
-      {
-        name: "Class Progress Monitoring",
-        count: classProg,
-        completedText: "Active",
-        rate: calcActivityRate(classProg),
-        color: "#0284c7",
-      },
-      {
-        name: "Student Support / Tickets",
-        count: ticketRaised,
-        completedText: "Resolved",
-        rate: calcActivityRate(ticketRaised),
-        color: "#16a34a",
-      },
-      {
-        name: "Mid Course Feedback",
-        count: midFeedback,
-        completedText: "Collected",
-        rate: calcActivityRate(midFeedback),
-        color: "#eab308",
-      },
-      {
-        name: "LMS Access",
-        count: lmsAccess,
-        completedText: "Provisioned",
-        rate: calcActivityRate(lmsAccess),
-        color: "#8b5cf6",
-      },
-      {
-        name: "Server Provisioning",
-        count: serverReq,
-        completedText: "Allocated",
-        rate: calcActivityRate(serverReq),
-        color: "#ea580c",
-      },
-      {
-        name: "Placement Handover",
-        count: placementHandover,
-        completedText: "Handed Over",
-        rate: calcActivityRate(placementHandover),
-        color: "#ea580c",
-      },
-    ];
-
-    const stage4Activities = [
-      {
-        name: "Class Completion Confirmed",
-        count: classCompConfirm,
-        completedText: "Confirmed",
-        rate: calcActivityRate(classCompConfirm),
-        color: "#16a34a",
-      },
-      {
-        name: "Trainer Completion Report",
-        count: trainerCompRep,
-        completedText: "Submitted",
-        rate: calcActivityRate(trainerCompRep),
-        color: "#0284c7",
-      },
-      {
-        name: "Student Completion Report",
-        count: studentCompRep,
-        completedText: "Submitted",
-        rate: calcActivityRate(studentCompRep),
-        color: "#8b5cf6",
-      },
-    ];
-
-    const stage5Activities = [
-      {
-        name: "Google Reviews",
-        count: googleReview,
-        completedText: "Collected",
-        rate: calcActivityRate(googleReview),
-        color: "#16a34a",
-      },
-      {
-        name: "LinkedIn Reviews",
-        count: linkedinReview,
-        completedText: "Collected",
-        rate: calcActivityRate(linkedinReview),
-        color: "#0284c7",
-      },
-      {
-        name: "Reviews Verified",
-        count: reviewVerified,
-        completedText: "Verified",
-        rate: calcActivityRate(reviewVerified),
-        color: "#0D9488",
-      },
-      {
-        name: "Certificates Issued",
-        count: certIssued,
-        completedText: "Issued",
-        rate: calcActivityRate(certIssued),
-        color: "#8b5cf6",
-      },
-      {
-        name: "Course Closure Call",
-        count: closureCall,
-        completedText: "Completed",
-        rate: calcActivityRate(closureCall),
-        color: "#ea580c",
-      },
-    ];
-
-    const lifecycleStages = [
-      {
-        stepNum: 1,
-        title: "1. Student Onboarding",
-        count: studentOnboardingCount,
-        rateLabel: calcActivityRate(studentOnboardingCount) + " In Onboarding",
-        rateColor: "#059669",
-        activities: stage1Activities,
-      },
-      {
-        stepNum: 2,
-        title: "2. Trainer Coordination",
-        count: trainerCoordinationCount,
-        rateLabel:
-          calcActivityRate(trainerCoordinationCount) + " In Coordination",
-        rateColor: "#0284c7",
-        activities: stage2Activities,
-      },
-      {
-        stepNum: 3,
-        title: "3. Progress Monitoring",
-        count: progressMonitoringCount,
-        rateLabel: calcActivityRate(progressMonitoringCount) + " In Training",
-        rateColor: "#4f46e5",
-        activities: stage3Activities,
-      },
-      {
-        stepNum: 4,
-        title: "4. Course Completion",
-        count: courseCompletionCount,
-        rateLabel: calcActivityRate(courseCompletionCount) + " Final Stage",
-        rateColor: "#ea580c",
-        activities: stage4Activities,
-      },
-      {
-        stepNum: 5,
-        title: "★ Certification & Closure",
-        count: reviewsAndCertificatesCount,
-        rateLabel: calcActivityRate(reviewsAndCertificatesCount) + " Graduated",
-        rateColor: "#059669",
-        isHero: true,
-        activities: stage5Activities,
-      },
-    ];
-
-    // Onboarding Health (Welcome call status / total admissions)
-    const totalOnboardedActivities =
-      trainerCoordinationCount +
-      progressMonitoringCount +
-      courseCompletionCount +
-      reviewsAndCertificatesCount;
-
-    const onboardedHealth =
-      totalAdmissions > 0
-        ? `${((totalOnboardedActivities / totalAdmissions) * 100).toFixed(1)}%`
-        : "0.0%";
 
     // Raw Sources (Matching PreSalesReport.jsx standard)
     const rawSources = [
@@ -1049,25 +952,248 @@ export default function AdmissionReport({
       dailyAverage,
       walkinDailyAverage,
       onlineDailyAverage,
-      targetConversionRate: 20,
       totalQualifiedLeads,
-      onboardedHealth,
       topCourses,
-      lifecycleStages,
       leadSources,
       leadSubSources,
       leadSourcesCount,
       leadSubSourcesCount,
-      admissionSources: leadSources,
-      admissionSubSources: leadSubSources,
     };
-  }, [reportData, selectedDates]);
+  }, [reportData, selectedDates, courseFilterType]);
 
   // Max count for scaling the course comparison bar
   const maxCourseCount = Math.max(
     1,
     ...(admissionReportData?.topCourses?.map((c) => c.count) || [1]),
   );
+
+  // ---------------------------------------------------------------------------
+  // Dynamic Regional / Branch Cards Data Model
+  // - Initial render: 1. OVERALL (all users with view_user_id - user_name) + Regions
+  // - Single region chosen: 1. OVERALL (region total) + that region's branches
+  // ---------------------------------------------------------------------------
+  const regionalCardsData = useMemo(() => {
+    const rawRegions = reportData?.region_branches_usersCounts;
+    const apiRegions =
+      Array.isArray(rawRegions) && rawRegions.length > 0
+        ? rawRegions
+        : INITIAL_ADMISSION_REPORT_DATA.region_branches_usersCounts;
+
+    const REGION_PALETTE = [
+      "#0284c7", // Sky Blue
+      "#4f46e5", // Indigo
+      "#ea580c", // Orange
+      "#10b981", // Emerald
+      "#ec4899", // Pink
+      "#8b5cf6", // Purple
+      "#06b6d4", // Cyan
+      "#f59e0b", // Amber
+    ];
+
+    const isSingleRegionChosen = Boolean(
+      selectedRegionId ||
+      (apiRegions.length === 1 && selectedRegionId !== null),
+    );
+
+    if (!isSingleRegionChosen) {
+      // -----------------------------------------------------------------------
+      // Case 1: Initial Render / All Regions View
+      // Show 1. OVERALL (all users across all regions) + Each Region as Card 2, 3, 4...
+      // -----------------------------------------------------------------------
+      const allUsersMap = {};
+      let calculatedTotal = 0;
+
+      apiRegions.forEach((reg) => {
+        calculatedTotal += Number(reg.total_count) || 0;
+        (reg.branches || []).forEach((br) => {
+          (br.users || []).forEach((u) => {
+            const key = u.user_id || u.view_user_id || u.user_name;
+            const count = Number(u.customer_count) || 0;
+            const displayName = u.view_user_id
+              ? `${u.view_user_id} - ${u.user_name}`
+              : u.user_name;
+
+            if (!allUsersMap[key]) {
+              allUsersMap[key] = {
+                id: key,
+                name: displayName,
+                count: count,
+              };
+            } else {
+              allUsersMap[key].count += count;
+            }
+          });
+        });
+      });
+
+      const overallTotal =
+        Number(reportData?.admission?.total_count) || calculatedTotal || 1;
+
+      const overallUsers = Object.values(allUsersMap).sort(
+        (a, b) => b.count - a.count,
+      );
+
+      const cards = [
+        {
+          id: "overall",
+          title: "1. OVERALL",
+          totalAdmissions: overallTotal,
+          rateLabel: "TOTAL",
+          color: "#059669",
+          users: overallUsers,
+        },
+      ];
+
+      // Desired regional card order: HUB, Chennai, Bangalore
+      const PREFERRED_REGION_ORDER = ["hub", "chennai", "bangalore"];
+      const sortedRegions = [...apiRegions].sort((a, b) => {
+        const nameA = String(a.region || "")
+          .toLowerCase()
+          .trim();
+        const nameB = String(b.region || "")
+          .toLowerCase()
+          .trim();
+        const idxA = PREFERRED_REGION_ORDER.indexOf(nameA);
+        const idxB = PREFERRED_REGION_ORDER.indexOf(nameB);
+
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return nameA.localeCompare(nameB);
+      });
+
+      sortedRegions.forEach((reg, idx) => {
+        const regUsersMap = {};
+        (reg.branches || []).forEach((br) => {
+          (br.users || []).forEach((u) => {
+            const key = u.user_id || u.view_user_id || u.user_name;
+            const count = Number(u.customer_count) || 0;
+            const displayName = u.view_user_id
+              ? `${u.view_user_id} - ${u.user_name}`
+              : u.user_name;
+
+            if (!regUsersMap[key]) {
+              regUsersMap[key] = {
+                id: key,
+                name: displayName,
+                count: count,
+              };
+            } else {
+              regUsersMap[key].count += count;
+            }
+          });
+        });
+
+        const regUsers = Object.values(regUsersMap).sort(
+          (a, b) => b.count - a.count,
+        );
+
+        const regCount = Number(reg.total_count) || 0;
+        const pct =
+          overallTotal > 0
+            ? ((regCount / overallTotal) * 100).toFixed(1)
+            : "0.0";
+
+        cards.push({
+          id: `region-${reg.region_id || idx}`,
+          title: `${idx + 2}. ${String(reg.region || "").toUpperCase()}`,
+          totalAdmissions: regCount,
+          rateLabel: `${pct}% In ${reg.region}`,
+          color: REGION_PALETTE[idx % REGION_PALETTE.length],
+          users: regUsers,
+        });
+      });
+
+      return cards;
+    } else {
+      // -----------------------------------------------------------------------
+      // Case 2: One Region Chosen
+      // Show 1. OVERALL (for that region) + All branches of that region as separate cards
+      // -----------------------------------------------------------------------
+      const selectedReg =
+        apiRegions.find(
+          (r) =>
+            String(r.region_id) === String(selectedRegionId) ||
+            String(r.region).toLowerCase() ===
+              String(selectedRegionId).toLowerCase(),
+        ) || apiRegions[0];
+
+      if (!selectedReg) return [];
+
+      const regTotal = Number(selectedReg.total_count) || 0;
+
+      // Collect all users in this region across all branches
+      const regAllUsersMap = {};
+      (selectedReg.branches || []).forEach((br) => {
+        (br.users || []).forEach((u) => {
+          const key = u.user_id || u.view_user_id || u.user_name;
+          const count = Number(u.customer_count) || 0;
+          const displayName = u.view_user_id
+            ? `${u.view_user_id} - ${u.user_name}`
+            : u.user_name;
+
+          if (!regAllUsersMap[key]) {
+            regAllUsersMap[key] = {
+              id: key,
+              name: displayName,
+              count: count,
+            };
+          } else {
+            regAllUsersMap[key].count += count;
+          }
+        });
+      });
+
+      const overallRegUsers = Object.values(regAllUsersMap).sort(
+        (a, b) => b.count - a.count,
+      );
+
+      const cards = [
+        {
+          id: `overall-${selectedReg.region_id || "sel"}`,
+          title: "1. OVERALL",
+          totalAdmissions: regTotal,
+          rateLabel: "TOTAL",
+          color: "#059669",
+          users: overallRegUsers,
+        },
+      ];
+
+      // Branch cards
+      const branchesToDisplay = selectedBranchId
+        ? (selectedReg.branches || []).filter(
+            (b) => String(b.branch_id) === String(selectedBranchId),
+          )
+        : selectedReg.branches || [];
+
+      branchesToDisplay.forEach((br, bIdx) => {
+        const brUsers = (br.users || [])
+          .map((u) => ({
+            id: u.user_id || u.view_user_id || u.user_name,
+            name: u.view_user_id
+              ? `${u.view_user_id} - ${u.user_name}`
+              : u.user_name,
+            count: Number(u.customer_count) || 0,
+          }))
+          .sort((a, b) => b.count - a.count);
+
+        const brCount = Number(br.total_count) || 0;
+        const pct =
+          regTotal > 0 ? ((brCount / regTotal) * 100).toFixed(1) : "0.0";
+
+        cards.push({
+          id: `branch-${br.branch_id || bIdx}`,
+          title: `${bIdx + 2}. ${String(br.branch_name || "").toUpperCase()}`,
+          totalAdmissions: brCount,
+          rateLabel: `${pct}% In ${br.branch_name}`,
+          color: REGION_PALETTE[bIdx % REGION_PALETTE.length],
+          users: brUsers,
+        });
+      });
+
+      return cards;
+    }
+  }, [reportData, selectedRegionId, selectedBranchId]);
 
   // ---------------------------------------------------------------------------
   // Export Handlers (PDF & CSV)
@@ -1175,31 +1301,17 @@ export default function AdmissionReport({
       });
       rows.push([]);
 
-      // 3. Lifecycle Stages (Main Stages Overview from API)
+      // 3. Regional & User-Wise Admission Summary
+      rows.push(["3. REGIONAL & USER-WISE ADMISSION SUMMARY"]);
       rows.push([
-        "3. STUDENT ONBOARDING & ADMISSION LIFECYCLE (STAGE OVERVIEW)",
+        "Card Title",
+        "Total Admissions",
+        "Counsellor / User",
+        "User Admissions",
       ]);
-      rows.push([
-        "Stage Name",
-        "Main Volume Count",
-        "Status / Progression Rate",
-      ]);
-      admissionReportData.lifecycleStages.forEach((stage) => {
-        rows.push([stage.title, stage.count, stage.rateLabel]);
-      });
-      rows.push([]);
-
-      // 4. Lifecycle Activities (Granular Sub-activity Breakdown)
-      rows.push(["4. LIFECYCLE ACTIVITIES DETAILED BREAKDOWN"]);
-      rows.push([
-        "Stage",
-        "Activity Name",
-        "Completed Count",
-        "Completion Rate (%)",
-      ]);
-      admissionReportData.lifecycleStages.forEach((stage) => {
-        stage.activities.forEach((act) => {
-          rows.push([stage.title, act.name, act.count, act.rate]);
+      regionalCardsData.forEach((card) => {
+        (card.users || []).forEach((u) => {
+          rows.push([card.title, card.totalAdmissions, u.name, u.count]);
         });
       });
       rows.push([]);
@@ -1346,7 +1458,7 @@ export default function AdmissionReport({
           Filters Row (Date Range, Region, Branch, Counselor)
           ==================================================================== */}
       <Row gutter={[12, 8]} style={{ marginTop: "0px" }}>
-        <Col xs={24} sm={24} md={24} lg={20}>
+        <Col xs={24} sm={24} md={24} lg={22}>
           <Row gutter={12} align="middle" wrap={false}>
             <Col flex="1.5 1 0%">
               <CommonMuiCustomDatePicker
@@ -1362,69 +1474,98 @@ export default function AdmissionReport({
                 }}
               />
             </Col>
-            <Col flex="1 1 0%">
+
+            <Col flex={downlineUsers.length < 2 ? "1.1 1 0%" : "1 1 0%"}>
               <CommonSelectField
                 height="33px"
-                label="Select Region"
+                label="Select Mode Of Training"
                 labelMarginTop="0px"
-                labelFontSize="11px"
-                options={regionOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedRegionId(value);
-                  setSelectedBranchId(null);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchCounselorUsersData({
-                    regionId: value,
-                    branchId: null,
-                  });
-                  if (value) {
-                    getBranchesData(value);
-                  } else {
-                    setFilterBranchOptions([]);
-                  }
-                }}
-                value={selectedRegionId}
-                disableClearable={false}
-              />
-            </Col>
-            <Col flex="1 1 0%">
-              <CommonSelectField
-                height="33px"
-                label="Select Branch"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={filterBranchOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedBranchId(value);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchCounselorUsersData({
-                    regionId: selectedRegionId,
-                    branchId: value,
-                  });
-                }}
-                value={selectedBranchId}
-                disableClearable={false}
-                disabled={selectedRegionId == 3 ? true : false}
-              />
-            </Col>
-            <Col flex="1 1 0%">
-              <CommonMultiSelectField
-                height="34px"
-                label="Select User"
-                labelMarginTop="1px"
-                labelFontSize="11px"
+                labelFontSize="10.5px"
+                options={[
+                  { id: "Online", name: " Online" },
+                  { id: "Classroom", name: " Classroom" },
+                ]}
                 width="100%"
-                options={counselorUsers}
-                onChange={handleSelectUser}
-                onBlur={handleSelectUserBlur}
-                value={selectedUserId}
+                onChange={(e) => {
+                  setSelectedModeOfTraining(e.target.value);
+                  fetchAdmissionData({
+                    mode_of_training: e.target.value,
+                  });
+                }}
+                value={selectedModeOfTraining}
               />
+            </Col>
+
+            <Col flex="1 1 0%">
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Region"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={regionOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedRegionId(value);
+                    setSelectedBranchId(null);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchCounselorUsersData({
+                      regionId: value,
+                      branchId: null,
+                    });
+                    if (value) {
+                      getBranchesData(value);
+                    } else {
+                      setFilterBranchOptions([]);
+                    }
+                  }}
+                  value={selectedRegionId}
+                  disableClearable={isRegionDisabled ? true : false}
+                  disabled={isRegionDisabled}
+                />
+              )}
+            </Col>
+            <Col flex="1 1 0%">
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Branch"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={filterBranchOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedBranchId(value);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchCounselorUsersData({
+                      regionId: selectedRegionId,
+                      branchId: value,
+                    });
+                  }}
+                  value={selectedBranchId}
+                  disableClearable={false}
+                  disabled={selectedRegionId == 3 ? true : false}
+                />
+              )}
+            </Col>
+            <Col flex="1 1 0%">
+              {downlineUsers.length < 2 ? null : (
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Select User"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  width="100%"
+                  options={counselorUsers}
+                  onChange={handleSelectUser}
+                  onBlur={handleSelectUserBlur}
+                  value={selectedUserId}
+                />
+              )}
             </Col>
           </Row>
         </Col>
@@ -1464,48 +1605,6 @@ export default function AdmissionReport({
                     <strong>Generated:</strong>{" "}
                     {moment().format("DD MMM YYYY, hh:mm A")}
                   </div>
-                </div>
-              </div>
-              <div className="presales_pdf_banner_kpis">
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">Total Admissions</span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#059669" }}
-                  >
-                    {admissionReportData.totalAdmissions}
-                  </strong>
-                </div>
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">Net Conversion</span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#4f46e5" }}
-                  >
-                    {admissionReportData.netConversionRate}%
-                  </strong>
-                </div>
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">
-                    Walk-in Admissions
-                  </span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#0284c7" }}
-                  >
-                    {admissionReportData.directWalkinAdmissions}
-                  </strong>
-                </div>
-                <div className="presales_pdf_kpi_card">
-                  <span className="presales_pdf_kpi_lbl">
-                    Online Admissions
-                  </span>
-                  <strong
-                    className="presales_pdf_kpi_val"
-                    style={{ color: "#d97706" }}
-                  >
-                    {admissionReportData.onlineAdmissions}
-                  </strong>
                 </div>
               </div>
             </div>
@@ -1647,238 +1746,269 @@ export default function AdmissionReport({
           </Row>
 
           {/* ====================================================================
-              2. Student Onboarding & Admission Lifecycle
-              (Based on categories & columns in Admission.jsx)
+              2. Admission Summary & Regional / Branch Distribution
               ==================================================================== */}
           <div className="presales_section_header" style={{ marginTop: 28 }}>
             <h2 className="presales_section_title">
-              <TbTargetArrow style={{ color: "#059669" }} size={19} /> Student
-              Onboarding & Admission Lifecycle
+              <TbTargetArrow style={{ color: "#059669" }} size={19} />{" "}
+              {selectedRegionId
+                ? "Branch-Wise Admission Summary"
+                : "Admission Summary & Regional Distribution"}
             </h2>
             <span
               className="presales_section_title_badge"
               style={{ background: "#ecfdf5", color: "#059669" }}
             >
-              Onboarded Health: {admissionReportData.onboardedHealth}
+              {selectedRegionId
+                ? "Overall & Branch Divisions"
+                : "Overall & Regional Divisions"}
             </span>
           </div>
 
-          {/* Visual Lifecycle Funnel Track (Matching PreSalesReport layout) */}
           <div className="presales_funnel_container">
-            <div className="presales_funnel_steps">
-              {admissionReportData.lifecycleStages.map((stage, idx) => {
-                const isHero = stage.isHero;
+            <Row gutter={[16, 16]}>
+              {regionalCardsData.map((card) => {
+                const maxCount = card.users?.[0]?.count || 1;
+                const cardColor = card.color || "#059669";
+
                 return (
-                  <React.Fragment key={stage.stepNum}>
+                  <Col xs={24} sm={12} lg={6} key={card.id}>
                     <div
-                      className={`presales_funnel_step ${isHero ? "hero_step" : ""}`}
+                      className="presales_funnel_step"
+                      style={{
+                        height: 310,
+                        padding: "14px 12px",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
                     >
-                      <div className="presales_funnel_step_header">
+                      <div
+                        className="presales_funnel_step_header"
+                        style={{ flexShrink: 0 }}
+                      >
                         <p
                           className="presales_funnel_step_label"
-                          style={{ color: isHero ? "#047857" : "#64748b" }}
+                          title={card.title}
                         >
-                          {stage.title}
+                          {card.title}
                         </p>
                         <div className="presales_funnel_count_row">
-                          <span
-                            className="presales_funnel_step_count"
-                            style={{ color: isHero ? "#047857" : "#0f172a" }}
-                          >
-                            {stage.count}
+                          <span className="presales_funnel_step_count">
+                            {Number(card.totalAdmissions).toLocaleString(
+                              "en-IN",
+                            )}
                           </span>
-                          <span
-                            className="presales_funnel_step_rate"
-                            style={{ color: stage.rateColor }}
-                          >
-                            {stage.rateLabel}
-                          </span>
+                          {card.id.startsWith("overall") ? (
+                            <span
+                              style={{
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                color: "#64748b",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.3px",
+                              }}
+                            >
+                              TOTAL
+                            </span>
+                          ) : (
+                            <span
+                              className="presales_funnel_step_rate"
+                              style={{
+                                color: cardColor,
+                                fontWeight: 700,
+                                fontSize: "10.5px",
+                              }}
+                            >
+                              {card.rateLabel}
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      {/* Onboarding Activities Subitems */}
-                      {!isHero ? (
-                        <div className="presales_funnel_subitems">
-                          {stage.activities.map((act) => (
-                            <Tooltip
-                              key={act.name}
-                              title={
-                                <span>
-                                  <span
-                                    style={{
-                                      color: "#727272",
-                                      fontWeight: 500,
-                                    }}
-                                  >
-                                    {act.name}:
-                                  </span>{" "}
-                                  <span
-                                    style={{ color: "#333", fontWeight: 600 }}
-                                  >
-                                    {act.count}
-                                  </span>{" "}
-                                  <span
-                                    style={{ color: "#333", fontWeight: 500 }}
-                                  >
-                                    {act.completedText || ""}
-                                  </span>
-                                </span>
-                              }
-                              placement="top"
-                              mouseEnterDelay={0.1}
-                              color="#fff"
-                              styles={{
-                                body: {
-                                  backgroundColor: "#fff",
-                                  color: "#333",
-                                  fontWeight: 600,
-                                  fontSize: "12px",
-                                },
-                              }}
-                            >
+                      <div
+                        className="presales_funnel_subitems admission_subitems_scroll"
+                        style={{
+                          flex: 1,
+                          minHeight: 0,
+                          overflowY: "auto",
+                          paddingRight: 4,
+                          marginTop: 8,
+                          borderTop: "1px solid #eef2f6",
+                        }}
+                      >
+                        {card.users.length === 0 ? (
+                          <div
+                            style={{
+                              textAlign: "center",
+                              padding: "24px 8px",
+                              fontSize: "11px",
+                              color: "#94a3b8",
+                            }}
+                          >
+                            No user admissions recorded
+                          </div>
+                        ) : (
+                          card.users.map((user, idx) => {
+                            const percentOfMax = Math.min(
+                              100,
+                              Math.round((user.count / maxCount) * 100),
+                            );
+
+                            return (
                               <div
                                 className="presales_funnel_subitem"
-                                title={`${act.name}: ${act.count} ${act.completedText}`}
-                              >
-                                <span className="presales_funnel_subitem_name">
-                                  <span
-                                    className="presales_subitem_dot"
-                                    style={{ background: act.color }}
-                                  />
-                                  <span className="presales_subitem_text">
-                                    {act.name}
-                                  </span>
-                                </span>
-                                <span className="presales_funnel_subitem_count">
-                                  {act.count}
-                                </span>
-                              </div>
-                            </Tooltip>
-                          ))}
-                        </div>
-                      ) : (
-                        <>
-                          <div className="presales_funnel_subitems">
-                            {stage.activities.map((act) => (
-                              <Tooltip
-                                key={act.name}
-                                title={
-                                  <span>
-                                    <span
-                                      style={{
-                                        color: "#727272",
-                                        fontWeight: 500,
-                                      }}
-                                    >
-                                      {act.name}:
-                                    </span>{" "}
-                                    <span
-                                      style={{ color: "#333", fontWeight: 600 }}
-                                    >
-                                      {act.count}
-                                    </span>{" "}
-                                    <span
-                                      style={{ color: "#333", fontWeight: 500 }}
-                                    >
-                                      {act.completedText || ""}
-                                    </span>
-                                  </span>
-                                }
-                                placement="top"
-                                mouseEnterDelay={0.1}
-                                color="#fff"
-                                styles={{
-                                  body: {
-                                    backgroundColor: "#fff",
-                                    color: "#333",
-                                    fontWeight: 600,
-                                    fontSize: "12px",
-                                  },
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 4,
+                                  padding: "5px 8px",
                                 }}
+                                title={`${user.name}: ${user.count} Admissions`}
                               >
                                 <div
-                                  className="presales_funnel_subitem"
-                                  title={`${act.name}: ${act.count} ${act.completedText}`}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    width: "100%",
+                                  }}
                                 >
                                   <span className="presales_funnel_subitem_name">
                                     <span
-                                      className="presales_subitem_dot"
-                                      style={{ background: act.color }}
-                                    />
+                                      className="presales_subitem_sno"
+                                      style={{
+                                        fontSize: "11px",
+                                        fontWeight: 700,
+                                        color: "#64748b",
+                                        minWidth: 10,
+                                        flexShrink: 0,
+                                        lineHeight: "14px",
+                                      }}
+                                    >
+                                      {idx + 1}.
+                                    </span>
                                     <span className="presales_subitem_text">
-                                      {act.name}
+                                      {user.name}
                                     </span>
                                   </span>
-                                  <span
-                                    className="presales_funnel_subitem_count"
-                                    style={{ color: "#047857" }}
-                                  >
-                                    {act.count}
+                                  <span className="presales_funnel_subitem_count">
+                                    {user.count}
                                   </span>
                                 </div>
-                              </Tooltip>
-                            ))}
-                          </div>
 
-                          <div
-                            className="presales_funnel_hero_box"
-                            style={{ marginTop: 8 }}
-                          >
-                            <div className="presales_funnel_hero_tag">
-                              <span>🎯 Goal Achievement</span>
-                            </div>
-                            <Tooltip
-                              title={`Overall Graduation: ${stage.rateLabel}`}
-                              placement="top"
-                              mouseEnterDelay={0.1}
-                              color="#fff"
-                              styles={{
-                                body: {
-                                  backgroundColor: "#fff",
-                                  color: "#333",
-                                  fontWeight: 600,
-                                  fontSize: "12px",
-                                },
-                              }}
-                            >
-                              <div className="presales_funnel_hero_stat">
-                                <span className="presales_funnel_hero_stat_label">
-                                  Graduation
-                                </span>
-                                <strong className="presales_funnel_hero_stat_val">
-                                  {stage.rateLabel}
-                                </strong>
+                                {/* Progress Bar Track & Fill */}
+                                <div
+                                  style={{
+                                    height: 3,
+                                    background: "#f1f5f9",
+                                    borderRadius: 999,
+                                    overflow: "hidden",
+                                    width: "100%",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      height: "100%",
+                                      width: `${percentOfMax}%`,
+                                      background: USER_PROGRESS_BAR_COLOR,
+                                      borderRadius: 999,
+                                      transition: "width 0.3s ease",
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </Tooltip>
-                          </div>
-                        </>
-                      )}
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
-
-                    {idx < admissionReportData.lifecycleStages.length - 1 && (
-                      <FiArrowRight className="presales_funnel_arrow" />
-                    )}
-                  </React.Fragment>
+                  </Col>
                 );
               })}
-            </div>
+            </Row>
           </div>
 
           {/* ====================================================================
               3. Top 10 Best-Selling Courses (Clean & Attractive Comparison Grid)
               ==================================================================== */}
-          <div className="presales_section_header" style={{ marginTop: 28 }}>
-            <h2 className="presales_section_title">
-              <HiOutlineTrophy style={{ color: "#d97706" }} size={20} /> Top 10
-              Best-Selling Courses
-            </h2>
-            <span className="presales_section_title_badge">
-              {admissionReportData.topCourses.length <= 5
-                ? `Showing ${admissionReportData.topCourses.length} Courses`
-                : showAllCourses
-                  ? `Showing All ${admissionReportData.topCourses.length} Courses`
-                  : "Showing Top 5 Courses"}
-            </span>
+          <div
+            className="presales_section_header"
+            style={{
+              marginTop: 28,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <h2 className="presales_section_title">
+                <HiOutlineTrophy style={{ color: "#d97706" }} size={20} />{" "}
+                {courseFilterType === "company"
+                  ? "Top 10 Company-Wide Best-Selling Courses"
+                  : "Top 10 Best-Selling Courses"}
+              </h2>
+              <span className="presales_section_title_badge">
+                {courseFilterType === "company"
+                  ? "Company-Wide Benchmark"
+                  : admissionReportData.topCourses.length <= 5
+                    ? `Showing ${admissionReportData.topCourses.length} Courses`
+                    : showAllCourses
+                      ? `Showing All ${admissionReportData.topCourses.length} Courses`
+                      : "Showing Top 5 Courses"}
+              </span>
+            </div>
+
+            {/* Filter Toggle Buttons matching PostSalesReport */}
+            <div
+              className="postsales_datetype_toggle"
+              style={{
+                width: "auto",
+                padding: "3px 4px",
+                background: "#f1f5f9",
+                borderRadius: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <button
+                type="button"
+                className={`postsales_toggle_btn ${courseFilterType === "courseResult" ? "active" : ""}`}
+                onClick={() => setCourseFilterType("courseResult")}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: "11px",
+                  borderRadius: 6,
+                  fontWeight: courseFilterType === "courseResult" ? 700 : 600,
+                  cursor: "pointer",
+                }}
+              >
+                Top 10 Best-Selling Courses
+              </button>
+              <button
+                type="button"
+                className={`postsales_toggle_btn ${courseFilterType === "company" ? "active" : ""}`}
+                onClick={() => setCourseFilterType("company")}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: "11px",
+                  borderRadius: 6,
+                  fontWeight: courseFilterType === "company" ? 700 : 600,
+                  cursor: "pointer",
+                }}
+              >
+                Top 10 Company-Wide Best-Selling Courses
+              </button>
+            </div>
           </div>
 
           {admissionReportData.topCourses.length === 0 ? (

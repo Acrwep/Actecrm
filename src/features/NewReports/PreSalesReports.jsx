@@ -4,12 +4,10 @@ import { Button, Col, Divider, Row, Tooltip, Skeleton, Dropdown } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
 import {
-  getAllDownlineUsers,
   getBranches,
   getPreSalesReportsCounts,
   getUsersByTheirRole,
 } from "../ApiService/action";
-import dayjs from "dayjs";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
@@ -487,8 +485,6 @@ export default function PreSalesReports({
   saleRoleId,
 }) {
   const mounted = useRef(false);
-  //permissions
-  const permissions = useSelector((state) => state.userpermissions);
   const childUsers = useSelector((state) => state.childusers);
   const downlineUsers = useSelector((state) => state.downlineusers);
   //regions
@@ -498,6 +494,32 @@ export default function PreSalesReports({
   const selectedUserIdRef = useRef([]);
   const reportContentRef = useRef(null);
 
+  // Helper to determine role-based region from loginUserDetails
+  const getRoleBasedRegionConfig = () => {
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = getLoginUserDetails
+        ? JSON.parse(getLoginUserDetails)
+        : null;
+      const userId = convertAsJson?.user_id
+        ? String(convertAsJson.user_id).toUpperCase()
+        : "";
+
+      if (userId.startsWith("HUB")) {
+        return { regionId: 3, disabled: true };
+      } else if (userId.startsWith("CHN")) {
+        return { regionId: 1, disabled: true };
+      } else if (userId.startsWith("BNG")) {
+        return { regionId: 2, disabled: true };
+      }
+    } catch (e) {
+      console.error("Error reading loginUserDetails:", e);
+    }
+    return { regionId: null, disabled: false };
+  };
+
+  const roleRegionConfig = getRoleBasedRegionConfig();
+
   //filter usestated
   const [selectedDates, setSelectedDates] = useState([]);
   const [saleDownliners, setSaleDownliners] = useState([]);
@@ -506,7 +528,12 @@ export default function PreSalesReports({
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
-  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState(
+    roleRegionConfig.regionId,
+  );
+  const [isRegionDisabled, setIsRegionDisabled] = useState(
+    roleRegionConfig.disabled,
+  );
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
@@ -565,15 +592,56 @@ export default function PreSalesReports({
     apiPercentages: null,
   });
 
-  // Trigger fetch when selectedDates changes
+  // Initial Date Setup and Role-Based Region Selection
+  useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = getLoginUserDetails
+      ? JSON.parse(getLoginUserDetails)
+      : null;
+
+    if (summaryStartAndEndDate && summaryStartAndEndDate.length === 2) {
+      setSelectedDates(summaryStartAndEndDate);
+    } else {
+      const dates = getCurrentandPreviousweekDate();
+      setSelectedDates(dates);
+    }
+
+    const userId = convertAsJson?.user_id
+      ? String(convertAsJson.user_id).toUpperCase()
+      : "";
+
+    if (userId.startsWith("HUB")) {
+      setSelectedRegionId(3);
+      setIsRegionDisabled(true);
+      getBranchesData(3);
+    } else if (userId.startsWith("CHN")) {
+      setSelectedRegionId(1);
+      setIsRegionDisabled(true);
+      getBranchesData(1);
+    } else if (userId.startsWith("BNG")) {
+      setSelectedRegionId(2);
+      setIsRegionDisabled(true);
+      getBranchesData(2);
+    } else {
+      setSelectedRegionId(null);
+      setIsRegionDisabled(false);
+    }
+  }, [summaryStartAndEndDate]);
+
+  // Trigger fetch when childUsers load
   useEffect(() => {
     if (childUsers.length > 0 && !mounted.current) {
       console.log("downlineUsers", downlineUsers);
-      setSelectedDates(summaryStartAndEndDate);
+      const roleConfig = getRoleBasedRegionConfig();
+      const initialDates =
+        summaryStartAndEndDate && summaryStartAndEndDate.length === 2
+          ? summaryStartAndEndDate
+          : getCurrentandPreviousweekDate();
+      setSelectedDates(initialDates);
       fetchSalesUsersData({
-        startDate: summaryStartAndEndDate[0],
-        endDate: summaryStartAndEndDate[1],
-        regionId: null,
+        startDate: initialDates[0],
+        endDate: initialDates[1],
+        regionId: roleConfig.regionId,
         branchId: null,
       });
     }
@@ -1006,16 +1074,24 @@ export default function PreSalesReports({
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setSelectedRegionId(null);
+
+    const roleConfig = getRoleBasedRegionConfig();
+    setSelectedRegionId(roleConfig.regionId);
     setSelectedBranchId(null);
-    setFilterBranchOptions([]);
     prevSelectedUserIdRef.current = "[]";
     selectedUserIdRef.current = [];
     setSelectedUserId([]);
+
+    if (roleConfig.regionId) {
+      getBranchesData(roleConfig.regionId);
+    } else {
+      setFilterBranchOptions([]);
+    }
+
     fetchSalesUsersData({
       startDate: PreviousAndCurrentDate[0],
       endDate: PreviousAndCurrentDate[1],
-      regionId: null,
+      regionId: roleConfig.regionId,
       branchId: null,
     });
   };
@@ -1457,68 +1533,75 @@ export default function PreSalesReports({
               />
             </Col>
             <Col flex="1 1 0%">
-              <CommonSelectField
-                height="33px"
-                label="Select Region"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={regionOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedRegionId(value);
-                  setSelectedBranchId(null);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchSalesUsersData({
-                    regionId: value,
-                    branchId: null,
-                  });
-                  if (value) {
-                    getBranchesData(value);
-                  } else {
-                    setFilterBranchOptions([]);
-                  }
-                }}
-                value={selectedRegionId}
-                disableClearable={false}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Region"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={regionOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedRegionId(value);
+                    setSelectedBranchId(null);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchSalesUsersData({
+                      regionId: value,
+                      branchId: null,
+                    });
+                    if (value) {
+                      getBranchesData(value);
+                    } else {
+                      setFilterBranchOptions([]);
+                    }
+                  }}
+                  value={selectedRegionId}
+                  disableClearable={isRegionDisabled ? true : false}
+                  disabled={isRegionDisabled}
+                />
+              )}
             </Col>
             <Col flex="1 1 0%">
-              <CommonSelectField
-                height="33px"
-                label="Select Branch"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={filterBranchOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedBranchId(value);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchSalesUsersData({
-                    regionId: selectedRegionId,
-                    branchId: value,
-                  });
-                }}
-                value={selectedBranchId}
-                disableClearable={false}
-                disabled={selectedRegionId == 3 ? true : false}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Branch"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={filterBranchOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedBranchId(value);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchSalesUsersData({
+                      regionId: selectedRegionId,
+                      branchId: value,
+                    });
+                  }}
+                  value={selectedBranchId}
+                  disableClearable={false}
+                  disabled={selectedRegionId == 3 ? true : false}
+                />
+              )}
             </Col>
             <Col flex="1 1 0%">
-              <CommonMultiSelectField
-                height="34px"
-                label="Select User"
-                labelMarginTop="1px"
-                labelFontSize="11px"
-                width="100%"
-                options={saleDownliners}
-                onChange={handleSelectUser}
-                onBlur={handleSelectUserBlur}
-                value={selectedUserId}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Select User"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  width="100%"
+                  options={saleDownliners}
+                  onChange={handleSelectUser}
+                  onBlur={handleSelectUserBlur}
+                  value={selectedUserId}
+                />
+              )}
             </Col>
           </Row>
         </Col>

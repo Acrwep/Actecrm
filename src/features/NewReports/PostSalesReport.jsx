@@ -190,12 +190,43 @@ export default function PostSalesReport({
   const selectedUserIdRef = useRef([]);
   const reportContentRef = useRef(null);
 
+  // Helper to determine role-based region from loginUserDetails
+  const getRoleBasedRegionConfig = () => {
+    try {
+      const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+      const convertAsJson = getLoginUserDetails
+        ? JSON.parse(getLoginUserDetails)
+        : null;
+      const userId = convertAsJson?.user_id
+        ? String(convertAsJson.user_id).toUpperCase()
+        : "";
+
+      if (userId.startsWith("HUB")) {
+        return { regionId: 3, disabled: true };
+      } else if (userId.startsWith("CHN")) {
+        return { regionId: 1, disabled: true };
+      } else if (userId.startsWith("BNG")) {
+        return { regionId: 2, disabled: true };
+      }
+    } catch (e) {
+      console.error("Error reading loginUserDetails:", e);
+    }
+    return { regionId: null, disabled: false };
+  };
+
+  const roleRegionConfig = getRoleBasedRegionConfig();
+
   // Filter state
   const [selectedDates, setSelectedDates] = useState([]);
   const [dateType, setDateType] = useState("Joining"); // "Joining" or "Updated"
   const [postSaleUsers, setPostSaleUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState([]);
-  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState(
+    roleRegionConfig.regionId,
+  );
+  const [isRegionDisabled, setIsRegionDisabled] = useState(
+    roleRegionConfig.disabled,
+  );
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
@@ -236,24 +267,51 @@ export default function PostSalesReport({
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  // Initial Date Setup
+  // Initial Date Setup and Role-Based Region Selection
   useEffect(() => {
+    const getLoginUserDetails = localStorage.getItem("loginUserDetails");
+    const convertAsJson = getLoginUserDetails
+      ? JSON.parse(getLoginUserDetails)
+      : null;
+
     if (summaryStartAndEndDate && summaryStartAndEndDate.length === 2) {
       setSelectedDates(summaryStartAndEndDate);
     } else {
       const dates = getCurrentandPreviousweekDate();
       setSelectedDates(dates);
     }
+
+    const userId = convertAsJson?.user_id
+      ? String(convertAsJson.user_id).toUpperCase()
+      : "";
+
+    if (userId.startsWith("HUB")) {
+      setSelectedRegionId(3);
+      setIsRegionDisabled(true);
+      getBranchesData(3);
+    } else if (userId.startsWith("CHN")) {
+      setSelectedRegionId(1);
+      setIsRegionDisabled(true);
+      getBranchesData(1);
+    } else if (userId.startsWith("BNG")) {
+      setSelectedRegionId(2);
+      setIsRegionDisabled(true);
+      getBranchesData(2);
+    } else {
+      setSelectedRegionId(null);
+      setIsRegionDisabled(false);
+    }
   }, [summaryStartAndEndDate]);
 
   // Initial load
   useEffect(() => {
     if (roleIds) {
+      const roleConfig = getRoleBasedRegionConfig();
       setDateType("Joining");
       fetchPostSaleUsersData({
         startDate: summaryStartAndEndDate?.[0] || selectedDates?.[0],
         endDate: summaryStartAndEndDate?.[1] || selectedDates?.[1],
-        regionId: null,
+        regionId: roleConfig.regionId,
         branchId: null,
         dateType: "Joining",
       });
@@ -438,17 +496,25 @@ export default function PostSalesReport({
     setIsRefreshing(true);
     const PreviousAndCurrentDate = getCurrentandPreviousweekDate();
     setSelectedDates(PreviousAndCurrentDate);
-    setSelectedRegionId(null);
+
+    const roleConfig = getRoleBasedRegionConfig();
+    setSelectedRegionId(roleConfig.regionId);
     setSelectedBranchId(null);
-    setFilterBranchOptions([]);
     setDateType("Joining");
     prevSelectedUserIdRef.current = "[]";
     selectedUserIdRef.current = [];
     setSelectedUserId([]);
+
+    if (roleConfig.regionId) {
+      getBranchesData(roleConfig.regionId);
+    } else {
+      setFilterBranchOptions([]);
+    }
+
     fetchPostSaleUsersData({
       startDate: PreviousAndCurrentDate[0],
       endDate: PreviousAndCurrentDate[1],
-      regionId: null,
+      regionId: roleConfig.regionId,
       branchId: null,
       dateType: "Joining",
     });
@@ -1033,7 +1099,13 @@ export default function PostSalesReport({
             </Col>
 
             {/* Date Picker */}
-            <Col xs={24} sm={12} md={8} lg={6} xl={6}>
+            <Col
+              xs={24}
+              sm={12}
+              md={8}
+              lg={downlineUsers.length < 2 ? 7 : 6}
+              xl={downlineUsers.length < 2 ? 7 : 6}
+            >
               <CommonMuiCustomDatePicker
                 label={
                   dateType === "Updated"
@@ -1054,72 +1126,79 @@ export default function PostSalesReport({
 
             {/* Region Select */}
             <Col xs={24} sm={12} md={8} lg={4} xl={4}>
-              <CommonSelectField
-                height="33px"
-                label="Select Region"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={regionOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedRegionId(value);
-                  setSelectedBranchId(null);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchPostSaleUsersData({
-                    regionId: value,
-                    branchId: null,
-                  });
-                  if (value) {
-                    getBranchesData(value);
-                  } else {
-                    setFilterBranchOptions([]);
-                  }
-                }}
-                value={selectedRegionId}
-                disableClearable={false}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Region"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={regionOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedRegionId(value);
+                    setSelectedBranchId(null);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchPostSaleUsersData({
+                      regionId: value,
+                      branchId: null,
+                    });
+                    if (value) {
+                      getBranchesData(value);
+                    } else {
+                      setFilterBranchOptions([]);
+                    }
+                  }}
+                  value={selectedRegionId}
+                  disableClearable={isRegionDisabled ? true : false}
+                  disabled={isRegionDisabled}
+                />
+              )}
             </Col>
 
             {/* Branch Select */}
             <Col xs={24} sm={12} md={12} lg={4} xl={4}>
-              <CommonSelectField
-                height="33px"
-                label="Select Branch"
-                labelMarginTop="0px"
-                labelFontSize="11px"
-                options={filterBranchOptions}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedBranchId(value);
-                  prevSelectedUserIdRef.current = "[]";
-                  selectedUserIdRef.current = [];
-                  setSelectedUserId([]);
-                  fetchPostSaleUsersData({
-                    regionId: selectedRegionId,
-                    branchId: value,
-                  });
-                }}
-                value={selectedBranchId}
-                disableClearable={false}
-                disabled={selectedRegionId == 3 ? true : false}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonSelectField
+                  height="33px"
+                  label="Select Branch"
+                  labelMarginTop="0px"
+                  labelFontSize="11px"
+                  options={filterBranchOptions}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedBranchId(value);
+                    prevSelectedUserIdRef.current = "[]";
+                    selectedUserIdRef.current = [];
+                    setSelectedUserId([]);
+                    fetchPostSaleUsersData({
+                      regionId: selectedRegionId,
+                      branchId: value,
+                    });
+                  }}
+                  value={selectedBranchId}
+                  disableClearable={false}
+                  disabled={selectedRegionId == 3 ? true : false}
+                />
+              )}
             </Col>
 
             {/* User Select */}
             <Col xs={24} sm={12} md={12} lg={5} xl={5}>
-              <CommonMultiSelectField
-                height="34px"
-                label="Select User"
-                labelMarginTop="1px"
-                labelFontSize="11px"
-                width="100%"
-                options={postSaleUsers}
-                onChange={handleSelectUser}
-                onBlur={handleSelectUserBlur}
-                value={selectedUserId}
-              />
+              {downlineUsers.length < 2 ? null : (
+                <CommonMultiSelectField
+                  height="34px"
+                  label="Select User"
+                  labelMarginTop="1px"
+                  labelFontSize="11px"
+                  width="100%"
+                  options={postSaleUsers}
+                  onChange={handleSelectUser}
+                  onBlur={handleSelectUserBlur}
+                  value={selectedUserId}
+                />
+              )}
             </Col>
           </Row>
         </Col>
