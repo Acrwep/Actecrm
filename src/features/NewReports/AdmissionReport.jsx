@@ -814,7 +814,12 @@ export default function AdmissionReport({
         (Number(b.customer_count) || 0) - (Number(a.customer_count) || 0),
     );
 
-    const topCourses = sortedCourses.slice(0, 10).map((c, idx) => {
+    const coursesToMap =
+      courseFilterType === "company"
+        ? sortedCourses.slice(0, 10)
+        : sortedCourses;
+
+    const topCourses = coursesToMap.map((c, idx) => {
       const count = Number(c.customer_count) || 0;
       const share =
         totalAdmissions > 0
@@ -1204,32 +1209,64 @@ export default function AdmissionReport({
     CommonMessage("info", "Generating Admissions Report PDF...");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      // Allow DOM to re-render with all items expanded for PDF capture
+      await new Promise((resolve) => setTimeout(resolve, 400));
       const element = reportContentRef.current;
+
+      // Reset scroll offset on all scrollable elements inside printable content
+      const scrollables = element.querySelectorAll(
+        ".admission_subitems_scroll, .presales_funnel_subitems, [class*='scroll']",
+      );
+      scrollables.forEach((el) => {
+        el.scrollTop = 0;
+        el.scrollLeft = 0;
+      });
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
+        windowWidth: 1280,
       });
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      let position = 0;
-      let heightLeft = pdfHeight;
       const pageHeight = pdf.internal.pageSize.getHeight();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 5;
+      const printWidth = pageWidth - margin * 2;
+      const printHeight = (canvas.height * printWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
+      let position = margin;
+      let heightLeft = printHeight;
 
-      while (heightLeft >= 0) {
-        position = heightLeft - pdfHeight;
+      pdf.addImage(
+        imgData,
+        "PNG",
+        margin,
+        position,
+        printWidth,
+        printHeight,
+        undefined,
+        "FAST",
+      );
+      heightLeft -= pageHeight - margin * 2;
+
+      while (heightLeft > 0) {
+        position = heightLeft - printHeight + margin;
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+        pdf.addImage(
+          imgData,
+          "PNG",
+          margin,
+          position,
+          printWidth,
+          printHeight,
+          undefined,
+          "FAST",
+        );
+        heightLeft -= pageHeight - margin * 2;
       }
 
       const filename = `Admissions_Report_${getFormattedDateString(selectedDates[0], selectedDates[1])}.pdf`;
@@ -1766,7 +1803,10 @@ export default function AdmissionReport({
           </div>
 
           <div className="presales_funnel_container">
-            <Row gutter={[16, 16]}>
+            <Row
+              gutter={[16, 16]}
+              style={isExporting ? { alignItems: "flex-start" } : undefined}
+            >
               {regionalCardsData.map((card) => {
                 const maxCount = card.users?.[0]?.count || 1;
                 const cardColor = card.color || "#059669";
@@ -1776,7 +1816,8 @@ export default function AdmissionReport({
                     <div
                       className="presales_funnel_step"
                       style={{
-                        height: 310,
+                        height: isExporting ? "auto" : 310,
+                        minHeight: 310,
                         padding: "14px 12px",
                         display: "flex",
                         flexDirection: "column",
@@ -1828,9 +1869,11 @@ export default function AdmissionReport({
                       <div
                         className="presales_funnel_subitems admission_subitems_scroll"
                         style={{
-                          flex: 1,
+                          flex: isExporting ? "none" : 1,
                           minHeight: 0,
-                          overflowY: "auto",
+                          overflowY: isExporting ? "visible" : "auto",
+                          maxHeight: isExporting ? "none" : undefined,
+                          height: isExporting ? "auto" : undefined,
                           paddingRight: 4,
                           marginTop: 8,
                           borderTop: "1px solid #eef2f6",
@@ -1954,14 +1997,16 @@ export default function AdmissionReport({
                 <HiOutlineTrophy style={{ color: "#d97706" }} size={20} />{" "}
                 {courseFilterType === "company"
                   ? "Top 10 Company-Wide Best-Selling Courses"
-                  : "Top 10 Best-Selling Courses"}
+                  : admissionReportData.topCourses.length > 10
+                    ? "Best-Selling Courses"
+                    : "Top 10 Best-Selling Courses"}
               </h2>
               <span className="presales_section_title_badge">
                 {courseFilterType === "company"
                   ? "Company-Wide Benchmark"
                   : admissionReportData.topCourses.length <= 5
                     ? `Showing ${admissionReportData.topCourses.length} Courses`
-                    : showAllCourses
+                    : showAllCourses || isExporting
                       ? `Showing All ${admissionReportData.topCourses.length} Courses`
                       : "Showing Top 5 Courses"}
               </span>
@@ -2027,7 +2072,7 @@ export default function AdmissionReport({
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-              {(showAllCourses
+              {(showAllCourses || isExporting
                 ? admissionReportData.topCourses
                 : admissionReportData.topCourses.slice(0, 5)
               ).map((course) => {
@@ -2115,7 +2160,7 @@ export default function AdmissionReport({
             </Row>
           )}
 
-          {admissionReportData.topCourses.length > 5 && (
+          {admissionReportData.topCourses.length > 5 && !isExporting && (
             <div
               style={{
                 display: "flex",

@@ -1480,6 +1480,27 @@
   margin: 0 auto !important;
 }
 
+/* When exporting Admissions Report PDF, expand funnel cards and user list to show ALL users without scrolling */
+.presales_printable_content.is_exporting_pdf .presales_funnel_step {
+  height: auto !important;
+  min-height: 310px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.presales_printable_content.is_exporting_pdf .admission_subitems_scroll,
+.presales_printable_content.is_exporting_pdf .presales_funnel_subitems {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+  flex: none !important;
+}
+
+.presales_printable_content.is_exporting_pdf .admission_show_more_btn {
+  display: none !important;
+}
+
 /* Spin animation for export button */
 .presales_icon_button.is_exporting {
   cursor: wait;
