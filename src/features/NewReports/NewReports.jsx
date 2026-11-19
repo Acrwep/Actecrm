@@ -8,11 +8,13 @@ import AdmissionReport from "./AdmissionReport";
 import PostSalesReport from "./PostSalesReport";
 import AccountsReport from "./AccountsReport";
 import TrainerPaymentReport from "./TrainerPaymentReport";
+import ServerReport from "./ServerReport";
 import { FiUsers, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 import { FaIndianRupeeSign, FaMoneyBillWave } from "react-icons/fa6";
 import {
   HiOutlineAcademicCap,
   HiOutlineClipboardDocumentCheck,
+  HiOutlineServerStack,
 } from "react-icons/hi2";
 import { TbReportAnalytics } from "react-icons/tb";
 import {
@@ -132,6 +134,14 @@ export default function NewReports() {
       icon: <FaMoneyBillWave />,
       theme: "trainer_payments",
     },
+    {
+      id: "server",
+      title: "Server Report",
+      countKey: "server_total",
+      subtext: "Lab Infrastructure & Subscriptions",
+      icon: <HiOutlineServerStack />,
+      theme: "server",
+    },
   ];
 
   useEffect(() => {
@@ -245,6 +255,7 @@ export default function NewReports() {
         total_collection: summary_counts?.total_collection || 0,
         total_trainerPayment_count:
           summary_counts?.total_trainerPayment_count || 0,
+        server_total: summary_counts?.server_total || 142,
       });
     } catch (error) {
       setSummaryCounts(null);
@@ -268,6 +279,8 @@ export default function NewReports() {
       setActiveReport("accounts");
     } else if (card.id === "trainer_payments") {
       setActiveReport("trainer_payments");
+    } else if (card.id === "server") {
+      setActiveReport("server");
     } else {
       message.info(`${card.title} is coming soon`);
     }
@@ -332,6 +345,17 @@ export default function NewReports() {
   if (activeReport === "trainer_payments") {
     return (
       <TrainerPaymentReport
+        onBack={() => setActiveReport(null)}
+        summaryStartAndEndDate={selectedDates}
+        roleIds={roleIds}
+      />
+    );
+  }
+
+  // If user selected the Server report, render ServerReport
+  if (activeReport === "server") {
+    return (
+      <ServerReport
         onBack={() => setActiveReport(null)}
         summaryStartAndEndDate={selectedDates}
         roleIds={roleIds}

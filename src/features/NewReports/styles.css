@@ -338,6 +338,43 @@
   transform: scale(1.06);
 }
 
+/* 7. Server Report Theme (Modern Indigo / Cloud Blue) */
+.mgmt_theme_server .mgmt_card_icon_circle {
+  background: #eef2ff;
+  color: #6366f1;
+}
+.mgmt_theme_server .mgmt_card_count,
+.mgmt_theme_server .mgmt_card_action_hint {
+  color: #6366f1;
+}
+.mgmt_theme_server::after {
+  background: linear-gradient(90deg, #818cf8 0%, #6366f1 100%);
+}
+.mgmt_theme_server:hover {
+  transform: translateY(-2px);
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 18px -4px rgba(99, 102, 241, 0.16);
+}
+.mgmt_theme_server:hover::after {
+  opacity: 1;
+}
+.mgmt_theme_server:hover .mgmt_card_icon_circle {
+  transform: scale(1.06);
+}
+
+.server_header_icon_box {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
 .trainer_payments_header_icon_box {
   width: 44px;
   height: 44px;

@@ -1625,6 +1625,7 @@ const TrainerPaymentDirectPaid = forwardRef(
           <Col span={5}>
             <CommonMuiDatePicker
               label={"Payment Date"}
+              labelMarginTop={"-0.8px"}
               required={true}
               onChange={(value) => {
                 setPaymentDate(value);
