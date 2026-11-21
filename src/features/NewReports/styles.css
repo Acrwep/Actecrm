@@ -363,16 +363,16 @@
 }
 
 .server_header_icon_box {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
-  background: #eef2ff;
-  color: #6366f1;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
 }
 
 .trainer_payments_header_icon_box {

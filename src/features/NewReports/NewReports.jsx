@@ -138,7 +138,7 @@ export default function NewReports() {
       id: "server",
       title: "Server Report",
       countKey: "server_total",
-      subtext: "Lab Infrastructure & Subscriptions",
+      subtext: "Manage server resources",
       icon: <HiOutlineServerStack />,
       theme: "server",
     },
@@ -255,7 +255,7 @@ export default function NewReports() {
         total_collection: summary_counts?.total_collection || 0,
         total_trainerPayment_count:
           summary_counts?.total_trainerPayment_count || 0,
-        server_total: summary_counts?.server_total || 142,
+        server_total: summary_counts?.all_server_trans_counts || 0,
       });
     } catch (error) {
       setSummaryCounts(null);

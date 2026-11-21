@@ -1083,6 +1083,7 @@ const CustomerUpdate = forwardRef(
                   }}
                   value={dateOfJoining}
                   error={""}
+                  disabled={true}
                 />
               </Col>
 

@@ -447,6 +447,37 @@ export default function Users({
     getBranchesData(3);
   }, []);
 
+  //https://jsonplaceholder.typicode.com/users
+
+  const getTestingData = async () => {
+    const params = new URLSearchParams({
+      search_value: "",
+    });
+
+    // const payload = {
+    //   name:"Balaji",
+    // }
+
+    const payload = new FormData();
+
+    payload.append("name", "Balaji");
+
+    try {
+      const response = await fetch(
+        `https://jsonplaceholder.typicode.com/users`,
+        {
+          method: "POST",
+          // headers:{'Content-Type':"application/json"},
+          body: payload,
+        },
+      );
+      const data = await response.json();
+      console.log("dataaa", data);
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
   useEffect(() => {
     if (userSearchValue) {
       setSearchValue(userSearchValue);

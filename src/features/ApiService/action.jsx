@@ -29,6 +29,54 @@ api.interceptors.request.use(
   },
 );
 
+// const apiFetch = async (endPoint, options = {}) => {
+//   const headers = {
+//     ...(options.body instanceof FormData
+//       ? {}
+//       : { "Content-Type": "application/json" }),
+//     ...options.headers,
+//   };
+
+//   headers.Authorization = `Bearer ${""}`;
+
+//   try {
+//     const response = await fetch(
+//       `${import.meta.env.VITE_API_URL}/${endPoint}`,
+//       {
+//         ...options,
+//         headers,
+//       },
+//     );
+//     return await response.json();
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// const apii = {
+//   get: (url) => apiFetch(url),
+
+//   post: (url, payload) =>
+//     apiFetch(url, {
+//       method: "POST",
+//       body: JSON.stringify(payload),
+//     }),
+
+//   post: (url, payload) =>
+//     apiFetch(url, {
+//       method: "PUT",
+//       body: JSON.stringify(payload),
+//     }),
+// };
+
+// const getPractice = async () => {
+//   try {
+//     const response = await apii.get("");
+//     return response;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 //login api
 export const LoginApi = async (payload) => {
   try {
@@ -2640,6 +2688,15 @@ export const getTrainerReportsCounts = async (payload) => {
       `/api/getTrainerPaymentsReportsCounts`,
       payload,
     );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getServerReportsCounts = async (payload) => {
+  try {
+    const response = await api.post(`/api/getServerReportsCounts`, payload);
     return response;
   } catch (error) {
     throw error;

@@ -3,7 +3,7 @@ import "./styles.css";
 import { Button, Col, Divider, Row, Tooltip, Skeleton, Dropdown } from "antd";
 import { RedoOutlined } from "@ant-design/icons";
 import CommonMuiCustomDatePicker from "../Common/CommonMuiCustomDatePicker";
-import { getBranches } from "../ApiService/action";
+import { getBranches, getServerReportsCounts } from "../ApiService/action";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
@@ -53,8 +53,8 @@ function ServerReportSkeleton() {
       </div>
 
       <Row gutter={[16, 16]}>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Col xs={24} sm={12} md={8} lg={i <= 2 ? 5 : 4} key={i}>
+        {[1, 2, 3, 4].map((i) => (
+          <Col xs={24} sm={12} md={12} lg={6} key={i}>
             <div className="presales_stat_card">
               <div className="presales_card_top">
                 <div
@@ -91,409 +91,262 @@ function ServerReportSkeleton() {
 }
 
 /**
- * Mock / Initial Dataset for Server Analytics
- * Mapped directly to the business workflow:
- * 1. Sale Person requested
- * 2. RA raised with duration
- * 3. Server Admin added amount
- * 4. Finance Head approved
- * 5. Finance Employee purchased (Date, Mode, Txn ID)
- * 6. Server Admin issued to Customer
- * 7. Expired after validity
+ * Initial / Fallback Dataset for Server Analytics
+ * Matches real backend response schema from /getServerReportsCounts
  */
 const INITIAL_SERVER_REPORT_DATA = {
-  summary: {
-    total_raised_count: 142, // Evalo server raise pannirukaga
-    total_raised_amount: 295000, // Evalo amount ku raise pannirukaga
-    total_purchased_amount: 248500, // Evalo amount ku purchase pannirukaga
-    total_purchased_count: 114, // Purchased count
-    total_issued_count: 98, // Evalo server issue pannirukaga
-    active_servers: 98,
-    expired_servers: 18,
-    pending_approval_count: 14,
-    ready_to_pay_count: 4,
-    unique_customers: 118, // Multi-server customers insight
-    multi_server_customers: 24,
-  },
-  flow_stages: [
+  all_server_trans_counts: 634,
+  all_customers: 634,
+  all_server_trans_amount: "1211449.00",
+  purchased_server_trans_amount: "0.00",
+  issude_server_trans_counts: 0,
+  server_region_reports: [
     {
-      step: 1,
-      title: "1. REQUESTED",
-      role: "Sale Person",
-      desc: "Requested practice server for customer",
-      count: 18,
-      subtext: "18 Awaiting RA action",
-      color: "#6366f1",
-      badge: "Pending RA",
-    },
-    {
-      step: 2,
-      title: "2. RAISED WITH DURATION",
-      role: "RA",
-      desc: "Raised with validity (30d / 60d / 90d)",
-      count: 14,
-      subtext: "14 In RA review",
-      color: "#818cf8",
-      badge: "Pending Admin Valuation",
-    },
-    {
-      step: 3,
-      title: "3. VALUATION & APPROVAL",
-      role: "Server Admin & Finance Head",
-      desc: "Admin priced amount & Finance Head approved",
-      count: 26,
-      subtext: "14 Awaiting Approval · 4 Ready to Pay",
-      color: "#f59e0b",
-      badge: "In Approval",
-    },
-    {
-      step: 4,
-      title: "4. PURCHASED",
-      role: "Finance Employee",
-      desc: "Filled Payment Date, Mode & Txn ID",
-      count: 114,
-      amount: 248500,
-      subtext: "₹2,48,500 total spend disbursed",
-      color: "#0284c7",
-      badge: "Procured",
-    },
-    {
-      step: 5,
-      title: "5. ISSUED TO CUSTOMER",
-      role: "Server Admin",
-      desc: "Delivered credentials via WhatsApp & Email",
-      count: 98,
-      subtext: "98 Active in-training labs",
-      color: "#10b981",
-      badge: "Active in Use",
-    },
-    {
-      step: 6,
-      title: "6. EXPIRED",
-      role: "System / Renewal",
-      desc: "Practice validity term completed",
-      count: 18,
-      subtext: "18 Expired / Renewal Watchlist",
-      color: "#ef4444",
-      badge: "Expired / Renew",
-    },
-  ],
-  regional_data: [
-    {
-      region: "HUB",
-      region_id: 3,
-      raised_count: 54,
-      raised_amount: 112000,
-      purchased_count: 44,
-      purchased_amount: 94500,
-      issued_count: 38,
-      active_count: 38,
-      expired_count: 6,
-      users: [
-        { user_id: "HUB8003", user_name: "Kalki", count: 16, spend: 28000 },
-        { user_id: "HUB8004", user_name: "Kaviya", count: 14, spend: 24500 },
-        { user_id: "HUB8007", user_name: "Kaviya K", count: 12, spend: 21000 },
-        { user_id: "HUB8010", user_name: "Sathish", count: 8, spend: 14000 },
-        {
-          user_id: "HUB8001",
-          user_name: "ASIRDASS ISAAC",
-          count: 4,
-          spend: 7000,
-        },
-      ],
-    },
-    {
-      region: "Chennai",
       region_id: 1,
-      raised_count: 48,
-      raised_amount: 99500,
-      purchased_count: 38,
-      purchased_amount: 83500,
-      issued_count: 34,
-      active_count: 34,
-      expired_count: 7,
-      users: [
-        { user_id: "CHN7007", user_name: "Asra Banu", count: 15, spend: 26250 },
+      region_name: "Chennai",
+      all_server_trans_amount: 334513,
+      purchased_server_trans_amount: 0,
+      issude_server_trans_counts: 0,
+      branches: [
         {
-          user_id: "CHN7014",
-          user_name: "Manikandan T",
-          count: 13,
-          spend: 22750,
+          branch_id: 1,
+          branch_name: "Anna Nagar",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 112700,
         },
-        { user_id: "CHN7019", user_name: "Logesh", count: 11, spend: 19250 },
-        { user_id: "CHN7006", user_name: "RSM - 2", count: 9, spend: 15750 },
+        {
+          branch_id: 5,
+          branch_name: "OMR",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 101100,
+        },
+        {
+          branch_id: 8,
+          branch_name: "Velachery",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 120713,
+        },
       ],
     },
     {
-      region: "Bangalore",
       region_id: 2,
-      raised_count: 40,
-      raised_amount: 83500,
-      purchased_count: 32,
-      purchased_amount: 70500,
-      issued_count: 26,
-      active_count: 26,
-      expired_count: 5,
-      users: [
-        { user_id: "BNG9005", user_name: "Rasheetha", count: 14, spend: 24500 },
-        { user_id: "BNG9023", user_name: "Revathi", count: 12, spend: 21000 },
-        { user_id: "BNG9010", user_name: "Kavin", count: 8, spend: 14000 },
+      region_name: "Bangalore",
+      all_server_trans_amount: 135300,
+      purchased_server_trans_amount: 0,
+      issude_server_trans_counts: 0,
+      branches: [
         {
-          user_id: "BNG9009",
-          user_name: "Meherriya Dholi",
-          count: 6,
-          spend: 10500,
+          branch_id: 2,
+          branch_name: "BTM Layout",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 36800,
+        },
+        {
+          branch_id: 3,
+          branch_name: "Electronic city",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 29200,
+        },
+        {
+          branch_id: 4,
+          branch_name: "Marathahalli",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 40800,
+        },
+        {
+          branch_id: 14,
+          branch_name: "Rajaji Nagar",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 28500,
+        },
+      ],
+    },
+    {
+      region_id: 3,
+      region_name: "Hub",
+      all_server_trans_amount: 741636,
+      purchased_server_trans_amount: 0,
+      issude_server_trans_counts: 0,
+      branches: [
+        {
+          branch_id: 10,
+          branch_name: "Virtual",
+          purchased_server_trans_amount: 0,
+          issude_server_trans_counts: 0,
+          all_server_trans_amount: 741636,
         },
       ],
     },
   ],
-  top_10_servers: [
+  course_reports: [
     {
-      rank: 1,
-      server_id: "SRV-SAP-FICO",
-      server_name: "SAP FICO Server (ECC & S/4)",
-      category: "ERP & Finance",
-      raised_count: 38,
-      raised_amount: 76000,
-      purchased_count: 35,
-      purchased_amount: 66500,
-      issued_count: 34,
-      duration: "60 Days",
-      vendor: "SAP Remote Lab Networks",
-      demand: "🔥 Highest Enrolled",
+      course_id: 10,
+      course_name: "Sap Fico on Hana",
+      serverTrans_counts: 99,
+      all_server_trans_amount: "109400.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 2,
-      server_id: "SRV-SAP-MM",
-      server_name: "SAP MM Material Management Server",
-      category: "ERP & Supply Chain",
-      raised_count: 26,
-      raised_amount: 52000,
-      purchased_count: 24,
-      purchased_amount: 45500,
-      issued_count: 22,
-      duration: "60 Days",
-      vendor: "SAP Remote Lab Networks",
-      demand: "🔥 High Demand",
+      course_id: 13,
+      course_name: "Sap MM",
+      serverTrans_counts: 80,
+      all_server_trans_amount: "88800.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 3,
-      server_id: "SRV-SAP-HANA",
-      server_name: "SAP S/4 HANA 2023 Sandbox",
-      category: "Next-Gen ERP",
-      raised_count: 22,
-      raised_amount: 50000,
-      purchased_count: 20,
-      purchased_amount: 44000,
-      issued_count: 18,
-      duration: "60 Days",
-      vendor: "CloudLabs Partner India",
-      demand: "🔥 High Demand",
+      course_id: 332,
+      course_name: "Sap Fico",
+      serverTrans_counts: 68,
+      all_server_trans_amount: "97400.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 4,
-      server_id: "SRV-AWS-DEVOPS",
-      server_name: "AWS & DevOps Cloud Practice Instance",
-      category: "Cloud Infrastructure",
-      raised_count: 18,
-      raised_amount: 36000,
-      purchased_count: 16,
-      purchased_amount: 32400,
-      issued_count: 14,
-      duration: "30 Days",
-      vendor: "AWS Cloud Practice Sandbox",
-      demand: "▲ Consistent",
+      course_id: 474,
+      course_name: "Sap Fico On S4 Hana",
+      serverTrans_counts: 32,
+      all_server_trans_amount: "39900.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 5,
-      server_id: "SRV-DATA-ANALYTICS",
-      server_name: "Data Analytics (Power BI & SQL) Lab",
-      category: "Business Intelligence",
-      raised_count: 14,
-      raised_amount: 24000,
-      purchased_count: 12,
-      purchased_amount: 21000,
-      issued_count: 11,
-      duration: "30 Days",
-      vendor: "TechVM Infrastructure",
-      demand: "▲ Consistent",
+      course_id: 410,
+      course_name: "Sap Mm On S4 Hana",
+      serverTrans_counts: 27,
+      all_server_trans_amount: "33600.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 6,
-      server_id: "SRV-AI-ML",
-      server_name: "AI & Machine Learning GPU Server",
-      category: "Artificial Intelligence",
-      raised_count: 10,
-      raised_amount: 20000,
-      purchased_count: 9,
-      purchased_amount: 18000,
-      issued_count: 8,
-      duration: "30 Days",
-      vendor: "AWS Cloud Practice Sandbox",
-      demand: "▲ Consistent",
+      course_id: 44,
+      course_name: "Sap Ehs",
+      serverTrans_counts: 16,
+      all_server_trans_amount: "13400.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 7,
-      server_id: "SRV-SAP-SF",
-      server_name: "SAP SuccessFactors Cloud Lab",
-      category: "HR & Cloud ERP",
-      raised_count: 6,
-      raised_amount: 14000,
-      purchased_count: 5,
-      purchased_amount: 12000,
-      issued_count: 4,
-      duration: "60 Days",
-      vendor: "CloudLabs Partner India",
-      demand: "▲ Consistent",
+      course_id: 19,
+      course_name: "SAP SD",
+      serverTrans_counts: 14,
+      all_server_trans_amount: "17700.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 8,
-      server_id: "SRV-NUTANIX",
-      server_name: "Nutanix Cloud Virtualization Cluster",
-      category: "Enterprise Cloud",
-      raised_count: 4,
-      raised_amount: 6400,
-      purchased_count: 4,
-      purchased_amount: 5600,
-      issued_count: 3,
-      duration: "30 Days",
-      vendor: "TechVM Infrastructure",
-      demand: "▲ Consistent",
+      course_id: 192,
+      course_name: "Oracle Fusion Finance ",
+      serverTrans_counts: 13,
+      all_server_trans_amount: "27700.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 9,
-      server_id: "SRV-SAP-ARIBA",
-      server_name: "SAP Ariba Procurement Practice Server",
-      category: "Procurement Cloud",
-      raised_count: 3,
-      raised_amount: 5000,
-      purchased_count: 2,
-      purchased_amount: 4500,
-      issued_count: 2,
-      duration: "60 Days",
-      vendor: "SAP Remote Lab Networks",
-      demand: "▲ Consistent",
+      course_id: 244,
+      course_name: "Sap Pm",
+      serverTrans_counts: 13,
+      all_server_trans_amount: "13000.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      rank: 10,
-      server_id: "SRV-SALESFORCE",
-      server_name: "Salesforce Developer & Admin Sandbox",
-      category: "CRM & Cloud",
-      raised_count: 1,
-      raised_amount: 1600,
-      purchased_count: 1,
-      purchased_amount: 1500,
-      issued_count: 1,
-      duration: "30 Days",
-      vendor: "TechVM Infrastructure",
-      demand: "▲ Consistent",
+      course_id: 66,
+      course_name: "Sap Success Factor Employee Central",
+      serverTrans_counts: 13,
+      all_server_trans_amount: "52700.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
   ],
-  customers_watchlist: [
+  companies_top_10_courses_server: [
     {
-      id: "SRV-2026-101",
-      candidate: "Rohan Varma",
-      mobile: "+91 98451 23412",
-      course: "SAP FICO Server (ECC & S/4)",
-      customer_server_note: "Server 1 of 2 (Also purchased SAP MM)",
-      raisedAmount: 2000,
-      purchasedAmount: 1950,
-      status: "Expiring Soon",
-      paymentMode: "Bank - NEFT/IMPS",
-      txnId: "TXN9841284",
-      expiryDate: moment().add(3, "days").format("YYYY-MM-DD"),
-      daysLeft: 3,
-      raisedBy: "HUB8003 - Kalki",
+      course_id: 265,
+      course_name: "Oracle Cpq",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      id: "SRV-2026-102",
-      candidate: "Pooja Hegde",
-      mobile: "+91 97412 88910",
-      course: "SAP MM Material Management",
-      customer_server_note: "Single Server",
-      raisedAmount: 2000,
-      purchasedAmount: 1950,
-      status: "Expiring Soon",
-      paymentMode: "UPI",
-      txnId: "UPI7784102",
-      expiryDate: moment().add(5, "days").format("YYYY-MM-DD"),
-      daysLeft: 5,
-      raisedBy: "CHN7007 - Asra Banu",
+      course_id: 72,
+      course_name: "Sap Successfactors Ec",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      id: "SRV-2026-103",
-      candidate: "Karthik Raja",
-      mobile: "+91 99801 12345",
-      course: "AWS & DevOps Cloud Practice",
-      customer_server_note: "Server 1 of 2 (Also purchased Data Analytics)",
-      raisedAmount: 1900,
-      purchasedAmount: 1800,
-      status: "Expiring Soon",
-      paymentMode: "Bank - NEFT/IMPS",
-      txnId: "TXN1029384",
-      expiryDate: moment().add(6, "days").format("YYYY-MM-DD"),
-      daysLeft: 6,
-      raisedBy: "BNG9005 - Rasheetha",
+      course_id: 981,
+      course_name: "Sap Bi/bw",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      id: "SRV-2026-104",
-      candidate: "Divya Balan",
-      mobile: "+91 98840 76543",
-      course: "SAP S/4 HANA 2023 Sandbox",
-      customer_server_note: "Single Server",
-      raisedAmount: 2200,
-      purchasedAmount: 2000,
-      status: "Expired",
-      paymentMode: "UPI",
-      txnId: "UPI9028172",
-      expiryDate: moment().subtract(2, "days").format("YYYY-MM-DD"),
-      daysLeft: -2,
-      raisedBy: "CHN7014 - Manikandan T",
+      course_id: 192,
+      course_name: "Oracle Fusion Finance ",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      id: "SRV-2026-105",
-      candidate: "Deepak Verma",
-      mobile: "+91 96112 43210",
-      course: "Data Analytics Lab",
-      customer_server_note: "Single Server",
-      raisedAmount: 1600,
-      purchasedAmount: 1400,
-      status: "Expired",
-      paymentMode: "UPI",
-      txnId: "UPI6641920",
-      expiryDate: moment().subtract(5, "days").format("YYYY-MM-DD"),
-      daysLeft: -5,
-      raisedBy: "HUB8004 - Kaviya",
+      course_id: 1814,
+      course_name: "Oracle Ebs Scm",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      id: "SRV-2026-106",
-      candidate: "Suresh Raina",
-      mobile: "+91 94441 55667",
-      course: "SAP SuccessFactors Cloud Lab",
-      customer_server_note: "Server 2 of 2 (Also has SAP FICO)",
-      raisedAmount: 2200,
-      purchasedAmount: 0,
-      status: "Awaiting Accounts Approval",
-      paymentMode: "-",
-      txnId: "-",
-      expiryDate: moment().add(30, "days").format("YYYY-MM-DD"),
-      daysLeft: 30,
-      raisedBy: "BNG9023 - Revathi",
+      course_id: 26,
+      course_name: "Sap Analytics Cloud",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
     {
-      id: "SRV-2026-107",
-      candidate: "Ananya Iyer",
-      mobile: "+91 98842 99001",
-      course: "AI & Machine Learning GPU",
-      customer_server_note: "Single Server",
-      raisedAmount: 2000,
-      purchasedAmount: 0,
-      status: "Ready to Pay (Approved)",
-      paymentMode: "Pending Payment",
-      txnId: "-",
-      expiryDate: moment().add(30, "days").format("YYYY-MM-DD"),
-      daysLeft: 30,
-      raisedBy: "HUB8007 - Kaviya K",
+      course_id: 579,
+      course_name: "Guidewire",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
+    },
+    {
+      course_id: 142,
+      course_name: "Oracle Paas",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
+    },
+    {
+      course_id: 1582,
+      course_name: "Sap Successfactors Ec Payroll",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
+    },
+    {
+      course_id: 410,
+      course_name: "Sap Mm On S4 Hana",
+      serverTrans_counts: 0,
+      all_server_trans_amount: "0.00",
+      purchased_server_trans_amount: "0.00",
+      issude_server_trans_counts: 0,
     },
   ],
 };
@@ -539,11 +392,12 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
   const [filterBranchOptions, setFilterBranchOptions] = useState([]);
 
   // Data & UI States
-  const [reportData] = useState(INITIAL_SERVER_REPORT_DATA);
+  const [reportData, setReportData] = useState(INITIAL_SERVER_REPORT_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showAllTopServers, setShowAllTopServers] = useState(false);
+  const [courseFilterType, setCourseFilterType] = useState("courseResult"); // "courseResult" | "company"
 
   // Redux Region Options
   const reduxRegionOptions = useSelector(
@@ -555,6 +409,112 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
       name: r.name || r.region_name || r.region,
     }));
   }, [reduxRegionOptions]);
+
+  // Selected region display name helper
+  const selectedRegionName = useMemo(() => {
+    if (!selectedRegionId) return "";
+    const reg = regionOptions.find(
+      (r) => String(r.id) === String(selectedRegionId),
+    );
+    if (reg) return reg.name;
+    const apiReg = (reportData?.server_region_reports || []).find(
+      (r) => String(r.region_id) === String(selectedRegionId),
+    );
+    return apiReg?.region_name || "Regional";
+  }, [selectedRegionId, regionOptions, reportData]);
+
+  // Fetch report counts from backend API
+  const getServerReportsData = async (
+    startDate,
+    endDate,
+    regionId,
+    branchId,
+  ) => {
+    setIsLoading(true);
+    const sDate = startDate
+      ? moment(startDate).format("YYYY-MM-DD")
+      : selectedDates?.[0]
+        ? moment(selectedDates[0]).format("YYYY-MM-DD")
+        : undefined;
+    const eDate = endDate
+      ? moment(endDate).format("YYYY-MM-DD")
+      : selectedDates?.[1]
+        ? moment(selectedDates[1]).format("YYYY-MM-DD")
+        : undefined;
+
+    const payload = {
+      ...(sDate && { start_date: sDate }),
+      ...(eDate && { end_date: eDate }),
+      ...(regionId && { region: regionId, region_id: regionId }),
+      ...(branchId && { branch: branchId, branch_id: branchId }),
+    };
+
+    try {
+      const response = await getServerReportsCounts(payload);
+      const apiData =
+        response?.data?.data?.server_reports_counts ||
+        response?.data?.server_reports_counts ||
+        response?.data?.data ||
+        response?.data ||
+        {};
+
+      if (apiData && Object.keys(apiData).length > 0) {
+        setReportData(apiData);
+      }
+    } catch (error) {
+      console.error("Error fetching Server Reports counts:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.details ||
+        "Failed to fetch server report data";
+      CommonMessage("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  // Helper to trigger API fetch with parameter overrides
+  const fetchServerData = (overrides = {}) => {
+    const sDate =
+      overrides.startDate !== undefined
+        ? overrides.startDate
+        : selectedDates?.[0] || null;
+    const eDate =
+      overrides.endDate !== undefined
+        ? overrides.endDate
+        : selectedDates?.[1] || null;
+    const rId =
+      overrides.regionId !== undefined ? overrides.regionId : selectedRegionId;
+    const bId =
+      overrides.branchId !== undefined ? overrides.branchId : selectedBranchId;
+
+    getServerReportsData(sDate, eDate, rId, bId);
+  };
+
+  // Fetch branches for region
+  const getBranchesData = async (region_id) => {
+    try {
+      const response = await getBranches({ region_id });
+      const branch_data = response?.data?.result || response?.data?.data || [];
+      const formatted = branch_data.map((b) => ({
+        id: b.id || b.branch_id,
+        name: b.name || b.branch_name,
+      }));
+      if (region_id == 1 || region_id == 2) {
+        const reordered = [
+          ...formatted.filter((item) => item.name !== "Online"),
+          ...formatted.filter((item) => item.name === "Online"),
+        ];
+        setFilterBranchOptions(reordered);
+      } else {
+        setFilterBranchOptions(formatted);
+      }
+    } catch (error) {
+      console.error("Error loading branches for Server Report:", error);
+      setFilterBranchOptions([]);
+    }
+  };
 
   // Initial Load & Date Setup
   useEffect(() => {
@@ -580,33 +540,16 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
       getBranchesData(assignedRegionId);
     }
 
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 350);
-
-    return () => clearTimeout(timer);
+    getServerReportsData(datesToUse[0], datesToUse[1], assignedRegionId, null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [summaryStartAndEndDate]);
-
-  // Fetch branches for region
-  const getBranchesData = async (region_id) => {
-    try {
-      const response = await getBranches({ region_id });
-      const branches = response?.data?.data || [];
-      const formatted = branches.map((b) => ({
-        id: b.branch_id || b.id,
-        name: b.branch_name || b.name,
-      }));
-      setFilterBranchOptions(formatted);
-    } catch (error) {
-      console.error("Error loading branches for Server Report:", error);
-      setFilterBranchOptions([]);
-    }
-  };
 
   // Refresh handler
   const handleRefresh = () => {
     setIsRefreshing(true);
     setIsLoading(true);
+    setCourseFilterType("courseResult");
+    setShowAllTopServers(false);
     const prevAndCurr = getCurrentandPreviousweekDate();
     setSelectedDates(prevAndCurr);
 
@@ -621,83 +564,295 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
       setFilterBranchOptions([]);
     }
 
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsRefreshing(false);
-      CommonMessage("success", "Server report data refreshed");
-    }, 400);
+    getServerReportsData(prevAndCurr[0], prevAndCurr[1], config.regionId, null);
   };
 
   // ---------------------------------------------------------------------------
-  // Regional Cards Calculation (Overall, HUB, Chennai, Bangalore)
+  // Dynamic Regional / Branch Cards Data Model
+  // - When no region chosen: 1. OVERALL (all regions) + HUB, CHENNAI, BANGALORE
+  // - When single region chosen: 1. OVERALL (region total) + that region's branches
   // ---------------------------------------------------------------------------
   const regionalCardsData = useMemo(() => {
-    const rawRegions = reportData?.regional_data || [];
+    const apiRegions = Array.isArray(reportData?.server_region_reports)
+      ? reportData.server_region_reports
+      : [];
+
     const REGION_PALETTE = [
-      "#0284c7",
-      "#6366f1",
-      "#ea580c",
-      "#10b981",
-      "#8b5cf6",
+      "#0284c7", // Sky Blue
+      "#4f46e5", // Indigo
+      "#ea580c", // Orange
+      "#10b981", // Emerald
+      "#ec4899", // Pink
+      "#8b5cf6", // Purple
+      "#06b6d4", // Cyan
+      "#f59e0b", // Amber
     ];
 
-    const overallTotalRaised =
-      Number(reportData?.summary?.total_raised_count) || 0;
+    const isSingleRegionChosen = Boolean(
+      selectedRegionId ||
+      (apiRegions.length === 1 && selectedRegionId !== null),
+    );
 
-    const cards = [
-      {
-        id: "overall",
-        title: "1. OVERALL",
-        totalServers: overallTotalRaised,
-        raisedAmount: reportData?.summary?.total_raised_amount || 0,
-        purchasedCount: reportData?.summary?.total_purchased_count || 0,
-        purchasedAmount: reportData?.summary?.total_purchased_amount || 0,
-        issuedCount: reportData?.summary?.total_issued_count || 0,
-        rateLabel: "TOTAL",
-        color: "#059669",
-      },
-    ];
+    if (!isSingleRegionChosen) {
+      // -----------------------------------------------------------------------
+      // Case 1: Initial Render / All Regions View
+      // Show 1. OVERALL (total across all regions) + Cards for HUB, CHENNAI, BANGALORE
+      // -----------------------------------------------------------------------
+      const overallTotalAmount =
+        Number(reportData?.all_server_trans_amount) ||
+        apiRegions.reduce(
+          (sum, r) => sum + (Number(r.all_server_trans_amount) || 0),
+          0,
+        ) ||
+        0;
 
-    // Preferred Order: HUB, Chennai, Bangalore
-    const PREFERRED_REGION_ORDER = ["hub", "chennai", "bangalore"];
-    const sortedRegions = [...rawRegions].sort((a, b) => {
-      const nameA = String(a.region || "")
-        .toLowerCase()
-        .trim();
-      const nameB = String(b.region || "")
-        .toLowerCase()
-        .trim();
-      const idxA = PREFERRED_REGION_ORDER.indexOf(nameA);
-      const idxB = PREFERRED_REGION_ORDER.indexOf(nameB);
+      const overallTotalTrans =
+        Number(reportData?.all_server_trans_counts) ||
+        apiRegions.reduce(
+          (sum, r) =>
+            sum +
+            (Number(
+              r.all_server_trans_counts ??
+                r.serverTrans_counts ??
+                r.server_trans_counts,
+            ) || 0),
+          0,
+        ) ||
+        0;
 
-      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-      if (idxA !== -1) return -1;
-      if (idxB !== -1) return 1;
-      return nameA.localeCompare(nameB);
-    });
+      const overallPurchasedAmount =
+        Number(reportData?.purchased_server_trans_amount) ||
+        apiRegions.reduce(
+          (sum, r) => sum + (Number(r.purchased_server_trans_amount) || 0),
+          0,
+        ) ||
+        0;
 
-    sortedRegions.forEach((reg, idx) => {
-      const regRaised = Number(reg.raised_count) || 0;
-      const pct =
-        overallTotalRaised > 0
-          ? ((regRaised / overallTotalRaised) * 100).toFixed(1)
-          : "0.0";
+      const overallIssuedCount =
+        Number(
+          reportData?.issude_server_trans_counts ??
+            reportData?.issued_server_trans_counts,
+        ) ||
+        apiRegions.reduce(
+          (sum, r) =>
+            sum +
+            (Number(
+              r.issude_server_trans_counts ?? r.issued_server_trans_counts,
+            ) || 0),
+          0,
+        ) ||
+        0;
 
-      cards.push({
-        id: `region-${reg.region_id || idx}`,
-        title: `${idx + 2}. ${String(reg.region || "").toUpperCase()}`,
-        totalServers: regRaised,
-        raisedAmount: reg.raised_amount || 0,
-        purchasedCount: reg.purchased_count || 0,
-        purchasedAmount: reg.purchased_amount || 0,
-        issuedCount: reg.issued_count || 0,
-        rateLabel: `${pct}% In ${reg.region}`,
-        color: REGION_PALETTE[idx % REGION_PALETTE.length],
+      const cards = [
+        {
+          id: "overall",
+          title: "1. OVERALL",
+          totalTransactions: overallTotalTrans,
+          raisedAmount: overallTotalAmount,
+          purchasedAmount: overallPurchasedAmount,
+          issuedCount: overallIssuedCount,
+          rateLabel: "TOTAL",
+          color: "#059669",
+        },
+      ];
+
+      // Desired regional card order: HUB, Chennai, Bangalore
+      const PREFERRED_REGION_ORDER = ["hub", "chennai", "bangalore"];
+      const sortedRegions = [...apiRegions].sort((a, b) => {
+        const nameA = String(a.region_name || a.region || "")
+          .toLowerCase()
+          .trim();
+        const nameB = String(b.region_name || b.region || "")
+          .toLowerCase()
+          .trim();
+        const idxA = PREFERRED_REGION_ORDER.indexOf(nameA);
+        const idxB = PREFERRED_REGION_ORDER.indexOf(nameB);
+
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return nameA.localeCompare(nameB);
       });
-    });
 
-    return cards;
-  }, [reportData]);
+      sortedRegions.forEach((reg, idx) => {
+        const regAmount = Number(reg.all_server_trans_amount) || 0;
+        const regTrans =
+          Number(
+            reg.all_server_trans_counts ??
+              reg.serverTrans_counts ??
+              reg.server_trans_counts,
+          ) || 0;
+        const regPurchased = Number(reg.purchased_server_trans_amount) || 0;
+        const regIssued =
+          Number(
+            reg.issude_server_trans_counts ?? reg.issued_server_trans_counts,
+          ) || 0;
+        const regName = reg.region_name || reg.region || `Region ${idx + 1}`;
+
+        const pct =
+          overallTotalAmount > 0
+            ? ((regAmount / overallTotalAmount) * 100).toFixed(1)
+            : overallTotalTrans > 0
+              ? ((regTrans / overallTotalTrans) * 100).toFixed(1)
+              : "0.0";
+
+        cards.push({
+          id: `region-${reg.region_id || idx}`,
+          title: `${idx + 2}. ${String(regName).toUpperCase()}`,
+          totalTransactions: regTrans,
+          raisedAmount: regAmount,
+          purchasedAmount: regPurchased,
+          issuedCount: regIssued,
+          rateLabel: `${pct}% In ${regName}`,
+          color: REGION_PALETTE[idx % REGION_PALETTE.length],
+        });
+      });
+
+      return cards;
+    } else {
+      // -----------------------------------------------------------------------
+      // Case 2: One Region Chosen
+      // Show 1. OVERALL (for selected region) + All branches of that region
+      // -----------------------------------------------------------------------
+      const activeReg =
+        apiRegions.find(
+          (r) =>
+            String(r.region_id) === String(selectedRegionId) ||
+            String(r.region_name || r.region || "").toLowerCase() ===
+              String(selectedRegionId).toLowerCase(),
+        ) ||
+        apiRegions[0] ||
+        {};
+
+      const regTotalAmount = Number(activeReg.all_server_trans_amount) || 0;
+      const regTotalTrans =
+        Number(
+          activeReg.all_server_trans_counts ??
+            activeReg.serverTrans_counts ??
+            activeReg.server_trans_counts,
+        ) ||
+        (activeReg.branches || []).reduce(
+          (sum, b) =>
+            sum +
+            (Number(
+              b.all_server_trans_counts ??
+                b.serverTrans_counts ??
+                b.server_trans_counts,
+            ) || 0),
+          0,
+        );
+      const regPurchasedAmount =
+        Number(activeReg.purchased_server_trans_amount) || 0;
+      const regIssuedCount =
+        Number(
+          activeReg.issude_server_trans_counts ??
+            activeReg.issued_server_trans_counts,
+        ) || 0;
+
+      const cards = [
+        {
+          id: `overall-${activeReg.region_id || "sel"}`,
+          title: "1. OVERALL",
+          totalTransactions: regTotalTrans,
+          raisedAmount: regTotalAmount,
+          purchasedAmount: regPurchasedAmount,
+          issuedCount: regIssuedCount,
+          rateLabel: "TOTAL",
+          color: "#059669",
+        },
+      ];
+
+      // Branch cards
+      const branchesToDisplay = selectedBranchId
+        ? (activeReg.branches || []).filter(
+            (b) => String(b.branch_id || b.id) === String(selectedBranchId),
+          )
+        : activeReg.branches || [];
+
+      branchesToDisplay.forEach((br, bIdx) => {
+        const brAmount = Number(br.all_server_trans_amount) || 0;
+        const brTrans =
+          Number(
+            br.all_server_trans_counts ??
+              br.serverTrans_counts ??
+              br.server_trans_counts,
+          ) || 0;
+        const brPurchased = Number(br.purchased_server_trans_amount) || 0;
+        const brIssued =
+          Number(
+            br.issude_server_trans_counts ?? br.issued_server_trans_counts,
+          ) || 0;
+        const brName = br.branch_name || br.name || `Branch ${bIdx + 1}`;
+
+        const pct =
+          regTotalAmount > 0
+            ? ((brAmount / regTotalAmount) * 100).toFixed(1)
+            : regTotalTrans > 0
+              ? ((brTrans / regTotalTrans) * 100).toFixed(1)
+              : "0.0";
+
+        cards.push({
+          id: `branch-${br.branch_id || bIdx}`,
+          title: `${bIdx + 2}. ${String(brName).toUpperCase()}`,
+          totalTransactions: brTrans,
+          raisedAmount: brAmount,
+          purchasedAmount: brPurchased,
+          issuedCount: brIssued,
+          rateLabel: `${pct}% In ${brName}`,
+          color: REGION_PALETTE[bIdx % REGION_PALETTE.length],
+        });
+      });
+
+      return cards;
+    }
+  }, [reportData, selectedRegionId, selectedBranchId]);
+
+  // ---------------------------------------------------------------------------
+  // Top 10 Servers / Courses Data Model
+  // Maps directly from course_reports / companies_top_10_courses_server from backend
+  // ---------------------------------------------------------------------------
+  const topServersList = useMemo(() => {
+    const activeList =
+      courseFilterType === "company"
+        ? reportData?.companies_top_10_courses_server ||
+          reportData?.companies_top_10_courses ||
+          []
+        : reportData?.course_reports || reportData?.courseResult || [];
+
+    const list = Array.isArray(activeList) ? activeList : [];
+
+    const sortedList = [...list].sort(
+      (a, b) =>
+        (Number(b.serverTrans_counts) || 0) -
+        (Number(a.serverTrans_counts) || 0),
+    );
+
+    const listToMap =
+      courseFilterType === "company" ? sortedList.slice(0, 10) : sortedList;
+
+    return listToMap.map((c, idx) => ({
+      server_id: c.course_id || idx + 1,
+      rank: idx + 1,
+      server_name: c.course_name || "Practice Server Lab",
+      trans_count: Number(c.serverTrans_counts) || 0,
+      raised_amount: Number(c.all_server_trans_amount) || 0,
+      purchased_amount: Number(c.purchased_server_trans_amount) || 0,
+      issued_count:
+        Number(c.issude_server_trans_counts ?? c.issued_server_trans_counts) ||
+        0,
+      demand:
+        idx === 0
+          ? "🔥 Highest Demand"
+          : idx <= 2
+            ? "🔥 High Demand"
+            : "▲ Consistent",
+    }));
+  }, [reportData, courseFilterType]);
+
+  const maxTopServerTrans = Math.max(
+    1,
+    ...(topServersList.map((s) => s.trans_count) || [1]),
+  );
 
   // ---------------------------------------------------------------------------
   // Export Handlers (PDF & CSV)
@@ -795,85 +950,70 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
       rows.push(["1. CORE SERVER KPI SUMMARY"]);
       rows.push(["Metric Description", "Value"]);
       rows.push([
-        "Total Servers Raised",
-        reportData.summary.total_raised_count,
+        "Total Server Transactions (Admin Priced)",
+        reportData.all_server_trans_counts || 0,
       ]);
       rows.push([
-        "Total Raised Amount (Valuation)",
-        `₹${Number(reportData.summary.total_raised_amount).toLocaleString("en-IN")}`,
+        "Total Valuation Amount (Admin Priced)",
+        `₹${Number(reportData.all_server_trans_amount || 0).toLocaleString("en-IN")}`,
       ]);
       rows.push([
-        "Total Purchased Amount (Spent)",
-        `₹${Number(reportData.summary.total_purchased_amount).toLocaleString("en-IN")}`,
-      ]);
-      rows.push([
-        "Total Purchased Servers Count",
-        reportData.summary.total_purchased_count,
+        "Total Purchased Amount (Finance Spent)",
+        `₹${Number(reportData.purchased_server_trans_amount || 0).toLocaleString("en-IN")}`,
       ]);
       rows.push([
         "Total Servers Issued to Customers",
-        reportData.summary.total_issued_count,
+        reportData.issude_server_trans_counts || 0,
       ]);
-      rows.push(["Active Practice Servers", reportData.summary.active_servers]);
-      rows.push([
-        "Expired Practice Servers",
-        reportData.summary.expired_servers,
-      ]);
-      rows.push(["Unique Customers", reportData.summary.unique_customers]);
-      rows.push([
-        "Multi-Server Customers",
-        reportData.summary.multi_server_customers,
-      ]);
+      rows.push(["Total Customers", reportData.all_customers || 0]);
       rows.push([]);
 
-      // 2. Region-Wise Breakdown
-      rows.push(["2. REGION-WISE SERVER DISTRIBUTION & METRICS"]);
+      // 2. Region / Branch Breakdown
+      rows.push(["2. REGION / BRANCH SERVER DISTRIBUTION & METRICS"]);
       rows.push([
-        "Region",
-        "Servers Raised",
-        "Raised Amount (₹)",
-        "Servers Purchased",
+        "Division / Card",
+        "Server Transactions",
+        "Valuation Amount (₹)",
         "Purchased Amount (₹)",
         "Servers Issued",
+        "Share / Rate",
       ]);
       regionalCardsData.forEach((r) => {
         rows.push([
           r.title,
-          r.totalServers,
-          r.raisedAmount,
-          r.purchasedCount,
-          r.purchasedAmount,
-          r.issuedCount,
+          r.totalTransactions || 0,
+          r.raisedAmount || 0,
+          r.purchasedAmount || 0,
+          r.issuedCount || 0,
+          r.rateLabel || "",
         ]);
       });
       rows.push([]);
 
-      // 3. Top 10 Servers
-      rows.push(["3. TOP 10 SERVERS DEMAND & SPEND"]);
+      // 3. Top Courses / Servers
+      rows.push([
+        courseFilterType === "company"
+          ? "3. TOP 10 COMPANY-WIDE BEST-SELLING COURSES"
+          : "3. TOP 10 BEST-SELLING COURSES",
+      ]);
       rows.push([
         "Rank",
-        "Server Name",
-        "Category",
-        "Raised Count",
-        "Raised Value (₹)",
-        "Purchased Count",
+        "Course / Server Name",
+        "Server Transactions",
+        "Valuation Amount (₹)",
         "Purchased Amount (₹)",
-        "Issued Count",
-        "Duration",
-        "Vendor",
+        "Servers Issued",
+        "Demand",
       ]);
-      reportData.top_10_servers.forEach((s) => {
+      topServersList.forEach((s) => {
         rows.push([
           s.rank,
           s.server_name,
-          s.category,
-          s.raised_count,
+          s.trans_count,
           s.raised_amount,
-          s.purchased_count,
           s.purchased_amount,
           s.issued_count,
-          s.duration,
-          s.vendor,
+          s.demand,
         ]);
       });
 
@@ -909,6 +1049,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
       ),
       onClick: handleDownloadPDF,
     },
+    { type: "divider" },
     {
       key: "csv",
       label: (
@@ -928,10 +1069,6 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
     },
   ];
 
-  const maxTopServerRaised = Math.max(
-    ...(reportData?.top_10_servers?.map((s) => s.raised_count) || [1]),
-  );
-
   return (
     <div className="presales_report_wrapper">
       {/* ====================================================================
@@ -948,7 +1085,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
           )}
 
           <div className="server_header_icon_box">
-            <HiOutlineServerStack size={22} />
+            <HiOutlineServerStack />
           </div>
 
           <div>
@@ -956,8 +1093,8 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
               Server Analytics & Lifecycle
             </h1>
             <p className="presales_header_subtitle">
-              Tracking server requests, valuation amounts, finance purchases,
-              customer issuance, and regional distribution
+              End-to-end tracking of practice server transactions, valuation,
+              vendor procurement, and customer issuance
             </p>
           </div>
         </div>
@@ -983,7 +1120,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                 disabled={isLoading || isExporting}
               >
                 {isExporting ? (
-                  <RedoOutlined spin style={{ color: "#6366f1" }} />
+                  <RedoOutlined spin style={{ color: "#10b981" }} />
                 ) : (
                   <FiDownload />
                 )}
@@ -1021,6 +1158,9 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                 value={selectedDates}
                 onDateChange={(dates) => {
                   setSelectedDates(dates);
+                  if (dates?.[0] && dates?.[1]) {
+                    fetchServerData({ startDate: dates[0], endDate: dates[1] });
+                  }
                 }}
               />
             </Col>
@@ -1042,6 +1182,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                   } else {
                     setFilterBranchOptions([]);
                   }
+                  fetchServerData({ regionId: value, branchId: null });
                 }}
                 value={selectedRegionId}
                 disableClearable={isRegionDisabled ? true : false}
@@ -1058,7 +1199,9 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                 labelFontSize="11px"
                 options={filterBranchOptions}
                 onChange={(e) => {
-                  setSelectedBranchId(e.target.value);
+                  const value = e.target.value;
+                  setSelectedBranchId(value);
+                  fetchServerData({ branchId: value });
                 }}
                 value={selectedBranchId}
                 disabled={!selectedRegionId || selectedRegionId == 3}
@@ -1141,7 +1284,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                   fontWeight: 700,
                 }}
               >
-                {reportData.summary.unique_customers} Unique Customers
+                {reportData?.all_customers || 0} Total Customers
               </span>
               <span
                 style={{
@@ -1153,18 +1296,18 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                   fontWeight: 700,
                 }}
               >
-                {reportData.summary.multi_server_customers} Multi-Server
-                Learners
+                {reportData?.all_server_trans_counts || 0} Total Server
+                Transactions
               </span>
             </div>
           </div>
 
           {/* ====================================================================
               1. HERO KPI STAT CARDS (Core Requested Metrics)
-              - Evalo server raise pannirukaga
-              - Evalo amount ku raise pannirukaga
-              - Evalo amount ku purchase pannirukaga
-              - Evalo server issue pannirukaga
+              - Server Transactions (all_server_trans_counts)
+              - Total Valuation Amount (all_server_trans_amount)
+              - Purchased Amount (purchased_server_trans_amount)
+              - Servers Issued (issude_server_trans_counts)
               ==================================================================== */}
           <div className="presales_section_header" style={{ marginTop: 8 }}>
             <h2 className="presales_section_title">
@@ -1175,22 +1318,22 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
               className="presales_section_title_badge"
               style={{ background: "#eef2ff", color: "#6366f1" }}
             >
-              Raised, Valuation, Purchase & Delivery Metrics
+              Transactions, Valuation, Purchase & Delivery Metrics
             </span>
           </div>
 
           <Row gutter={[16, 16]}>
-            {/* Card 1: Evalo server raise pannirukaga (Servers Raised) */}
+            {/* Card 1: Server Transactions (Formerly Server Raised) */}
             <Col xs={24} sm={12} md={12} lg={6}>
               <div className="presales_stat_card presales_theme_indigo">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">Servers Raised</p>
+                    <p className="presales_stat_label">Server Transactions</p>
                     <h3
                       className="presales_stat_value"
                       style={{ color: "#4f46e5" }}
                     >
-                      {reportData.summary.total_raised_count}
+                      {reportData?.all_server_trans_counts || 0}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
@@ -1200,28 +1343,30 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                 <div className="presales_card_bottom">
                   <span className="presales_badge">
                     <FiTrendingUp size={12} />
-                    <span>Total Raised</span>
+                    <span>Priced by Admin</span>
                   </span>
                   <span className="presales_stat_subtext">
-                    Raised with validity duration
+                    Admin added amount to transaction
                   </span>
                 </div>
               </div>
             </Col>
 
-            {/* Card 2: Evalo amount ku raise pannirukaga (Raised Amount) */}
+            {/* Card 2: Total Valuation Amount (all_server_trans_amount) */}
             <Col xs={24} sm={12} md={12} lg={6}>
               <div className="presales_stat_card presales_theme_amber">
                 <div className="presales_card_top">
                   <div>
-                    <p className="presales_stat_label">Total Raised Value</p>
+                    <p className="presales_stat_label">
+                      Total Valuation Amount
+                    </p>
                     <h3
                       className="presales_stat_value"
                       style={{ color: "#d97706" }}
                     >
                       ₹
                       {Number(
-                        reportData.summary.total_raised_amount,
+                        reportData?.all_server_trans_amount || 0,
                       ).toLocaleString("en-IN")}
                     </h3>
                   </div>
@@ -1232,16 +1377,16 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                 <div className="presales_card_bottom">
                   <span className="presales_badge">
                     <FaIndianRupeeSign size={11} />
-                    <span>Admin Priced</span>
+                    <span>Admin Valuated</span>
                   </span>
                   <span className="presales_stat_subtext">
-                    Estimated server valuation
+                    Total priced transaction value
                   </span>
                 </div>
               </div>
             </Col>
 
-            {/* Card 3: Evalo amount ku purchase pannirukaga (Purchased Amount) */}
+            {/* Card 3: Purchased Amount (purchased_server_trans_amount) */}
             <Col xs={24} sm={12} md={12} lg={6}>
               <div className="presales_stat_card presales_theme_sky">
                 <div className="presales_card_top">
@@ -1253,7 +1398,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                     >
                       ₹
                       {Number(
-                        reportData.summary.total_purchased_amount,
+                        reportData?.purchased_server_trans_amount || 0,
                       ).toLocaleString("en-IN")}
                     </h3>
                   </div>
@@ -1264,9 +1409,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                 <div className="presales_card_bottom">
                   <span className="presales_badge">
                     <FiCheckCircle size={12} />
-                    <span>
-                      {reportData.summary.total_purchased_count} Purchased
-                    </span>
+                    <span>Procured</span>
                   </span>
                   <span className="presales_stat_subtext">
                     Paid by Finance with Txn ID
@@ -1275,7 +1418,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
               </div>
             </Col>
 
-            {/* Card 4: Evalo server issue pannirukaga (Servers Issued) */}
+            {/* Card 4: Servers Issued (issude_server_trans_counts) */}
             <Col xs={24} sm={12} md={12} lg={6}>
               <div className="presales_stat_card presales_theme_emerald">
                 <div className="presales_card_top">
@@ -1285,7 +1428,9 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                       className="presales_stat_value"
                       style={{ color: "#059669" }}
                     >
-                      {reportData.summary.total_issued_count}
+                      {reportData?.issude_server_trans_counts ??
+                        reportData?.issued_server_trans_counts ??
+                        0}
                     </h3>
                   </div>
                   <div className="presales_stat_icon_wrapper">
@@ -1306,24 +1451,29 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
           </Row>
 
           {/* ====================================================================
-              2. REGIONAL BREAKDOWN (As requested: "i want Region-wise also")
-              Shows Raised Count, Raised Amount, Purchased Amount, Issued Count
-              in exact preferred order: OVERALL, HUB, CHENNAI, BANGALORE
+              2. REGIONAL & BRANCH BREAKDOWN
+              Matches AdmissionReport:
+              - When no region selected: 1. OVERALL + HUB, CHENNAI, BANGALORE
+              - When region selected: 1. OVERALL (Region) + each branch of that region
               ==================================================================== */}
           <div className="presales_section_header" style={{ marginTop: 28 }}>
             <h2 className="presales_section_title">
               <TbTargetArrow style={{ color: "#059669" }} size={19} />{" "}
-              Region-Wise Server Distribution & Financial Realization
+              {selectedRegionId
+                ? `${selectedRegionName} Branch-Wise Server Distribution`
+                : "Region-Wise Server Distribution & Financial Realization"}
             </h2>
             <span
               className="presales_section_title_badge"
               style={{ background: "#ecfdf5", color: "#059669" }}
             >
-              Raised, Purchased & Issued Metrics by Region
+              {selectedRegionId
+                ? `${selectedRegionName} & Branch Divisions`
+                : "Overall & Regional Divisions"}
             </span>
           </div>
 
-          {/* 4 Cards: OVERALL, HUB, CHENNAI, BANGALORE */}
+          {/* Dynamic Cards: Either Regional (Overall, HUB, CHN, BNG) or Branch Cards */}
           <div className="presales_funnel_container">
             <Row gutter={[16, 16]}>
               {regionalCardsData.map((card) => {
@@ -1334,95 +1484,55 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                     <div
                       className="presales_funnel_step"
                       style={{
-                        padding: "16px 14px",
-                        borderRadius: 12,
-                        background: "#ffffff",
-                        border: "1px solid #e2e8f0",
+                        padding: "14px 12px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: 12,
-                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-                        transition: "all 0.2s ease",
+                        gap: 10,
                       }}
                     >
-                      {/* Card Header */}
+                      {/* Card Header matching AdmissionReport UI */}
                       <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          borderBottom: "1px solid #f1f5f9",
-                          paddingBottom: 10,
-                        }}
+                        className="presales_funnel_step_header"
+                        style={{ flexShrink: 0 }}
                       >
-                        <span
-                          style={{
-                            fontSize: "12.5px",
-                            fontWeight: 700,
-                            color: "#0f172a",
-                            letterSpacing: "0.2px",
-                          }}
+                        <p
+                          className="presales_funnel_step_label"
+                          title={card.title}
                         >
                           {card.title}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "10.5px",
-                            fontWeight: 700,
-                            padding: "3px 8px",
-                            borderRadius: 12,
-                            background: `${cardColor}15`,
-                            color: cardColor,
-                          }}
-                        >
-                          {card.rateLabel}
-                        </span>
-                      </div>
-
-                      {/* Primary Metric: Servers Raised */}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "baseline",
-                          justifyContent: "space-between",
-                          padding: "2px 0",
-                        }}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "#64748b",
-                              fontWeight: 600,
-                            }}
-                          >
-                            Servers Raised
-                          </div>
-                          <div
-                            style={{
-                              fontSize: "24px",
-                              fontWeight: 800,
-                              color: cardColor,
-                              lineHeight: 1.1,
-                              marginTop: 3,
-                            }}
-                          >
-                            {Number(card.totalServers).toLocaleString("en-IN")}
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            width: 38,
-                            height: 38,
-                            borderRadius: 8,
-                            background: `${cardColor}12`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: cardColor,
-                          }}
-                        >
-                          <HiOutlineServerStack size={20} />
+                        </p>
+                        <div className="presales_funnel_count_row">
+                          <span className="presales_funnel_step_count">
+                            {card.totalTransactions > 0
+                              ? Number(card.totalTransactions).toLocaleString(
+                                  "en-IN",
+                                )
+                              : `₹${Number(card.raisedAmount).toLocaleString("en-IN")}`}
+                          </span>
+                          {card.id.startsWith("overall") ? (
+                            <span
+                              style={{
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                color: "#64748b",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.3px",
+                              }}
+                            >
+                              TOTAL
+                            </span>
+                          ) : (
+                            <span
+                              className="presales_funnel_step_rate"
+                              style={{
+                                color: cardColor,
+                                fontWeight: 700,
+                                fontSize: "10.5px",
+                              }}
+                            >
+                              {card.rateLabel}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -1438,7 +1548,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                           border: "1px solid #f1f5f9",
                         }}
                       >
-                        {/* Metric 1: Raised Value */}
+                        {/* Metric 1: Valuation Value */}
                         <div
                           style={{
                             display: "flex",
@@ -1448,7 +1558,7 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
                           }}
                         >
                           <span style={{ color: "#64748b", fontWeight: 500 }}>
-                            Raised Value:
+                            Valuation Value:
                           </span>
                           <strong style={{ color: "#d97706", fontWeight: 700 }}>
                             ₹{Number(card.raisedAmount).toLocaleString("en-IN")}
@@ -1500,7 +1610,8 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
           </div>
 
           {/* ====================================================================
-              4. TOP 10 SERVERS (As requested: "Then top 10 servers")
+              3. TOP 10 SERVERS / COURSES
+              Mapped directly from course_reports / companies_top_10_courses_server from backend API
               ==================================================================== */}
           <div
             className="presales_section_header"
@@ -1522,174 +1633,255 @@ export default function ServerReport({ onBack, summaryStartAndEndDate }) {
               }}
             >
               <h2 className="presales_section_title">
-                <HiOutlineTrophy style={{ color: "#d97706" }} size={20} /> Top
-                10 Servers
+                <HiOutlineTrophy style={{ color: "#d97706" }} size={20} />{" "}
+                {courseFilterType === "company"
+                  ? "Top 10 Company-Wide Best-Selling Courses"
+                  : topServersList.length > 10
+                    ? "Best-Selling Courses"
+                    : "Top 10 Best-Selling Courses"}
               </h2>
               <span className="presales_section_title_badge">
-                {showAllTopServers || isExporting
-                  ? `Showing All 10 Servers`
-                  : "Showing Top 5 Servers"}
+                {courseFilterType === "company"
+                  ? "Company-Wide Benchmark"
+                  : topServersList.length <= 5
+                    ? `Showing ${topServersList.length} Courses`
+                    : showAllTopServers || isExporting
+                      ? `Showing All ${topServersList.length} Courses`
+                      : "Showing Top 5 Courses"}
               </span>
             </div>
-          </div>
 
-          <Row gutter={[16, 16]}>
-            {(showAllTopServers || isExporting
-              ? reportData.top_10_servers
-              : reportData.top_10_servers.slice(0, 5)
-            ).map((server) => {
-              const rankClass =
-                server.rank === 1
-                  ? "rank_1"
-                  : server.rank === 2
-                    ? "rank_2"
-                    : server.rank === 3
-                      ? "rank_3"
-                      : "rank_standard";
-              const cardClass =
-                server.rank === 1
-                  ? "top_1"
-                  : server.rank === 2
-                    ? "top_2"
-                    : server.rank === 3
-                      ? "top_3"
-                      : "";
-              const barWidthPercent =
-                (server.raised_count / maxTopServerRaised) * 100;
-
-              return (
-                <Col xs={24} sm={24} md={12} key={server.server_id}>
-                  <div className={`admission_course_card ${cardClass}`}>
-                    <div className="admission_course_top_row">
-                      <div className="admission_course_left">
-                        <div className={`admission_rank_badge ${rankClass}`}>
-                          {server.rank <= 3 ? `#${server.rank}` : server.rank}
-                        </div>
-                        <div className="admission_course_info">
-                          <h4
-                            className="admission_course_title"
-                            title={server.server_name}
-                          >
-                            {server.server_name}
-                          </h4>
-                          <span
-                            style={{
-                              fontSize: "11px",
-                              color: "#64748b",
-                              fontWeight: 500,
-                            }}
-                          >
-                            Category: {server.category} · Duration:{" "}
-                            {server.duration}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="admission_course_count_box">
-                        <span className="admission_course_count">
-                          {server.raised_count}
-                        </span>
-                        <span className="admission_course_count_lbl">
-                          Raised
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Progress Fill Bar */}
-                    <div className="admission_course_progress_track">
-                      <div
-                        className="admission_course_progress_fill"
-                        style={{
-                          width: `${barWidthPercent}%`,
-                          background:
-                            server.rank === 1
-                              ? "linear-gradient(90deg, #6366f1 0%, #4338ca 100%)"
-                              : server.rank === 2
-                                ? "linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%)"
-                                : server.rank === 3
-                                  ? "linear-gradient(90deg, #f59e0b 0%, #d97706 100%)"
-                                  : "linear-gradient(90deg, #10b981 0%, #059669 100%)",
-                        }}
-                      />
-                    </div>
-
-                    {/* Metrics Footer */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "6px 2px",
-                        fontSize: "11px",
-                        color: "#475569",
-                        borderBottom: "1px dashed #e2e8f0",
-                        marginBottom: 6,
-                      }}
-                    >
-                      <span>
-                        Raised Val:{" "}
-                        <strong>
-                          ₹
-                          {Number(server.raised_amount).toLocaleString("en-IN")}
-                        </strong>
-                      </span>
-                      <span>
-                        Purchased:{" "}
-                        <strong>
-                          ₹
-                          {Number(server.purchased_amount).toLocaleString(
-                            "en-IN",
-                          )}
-                        </strong>{" "}
-                        ({server.purchased_count} servers)
-                      </span>
-                      <span>
-                        Issued:{" "}
-                        <strong style={{ color: "#059669" }}>
-                          {server.issued_count}
-                        </strong>
-                      </span>
-                    </div>
-
-                    <div className="admission_course_footer">
-                      <span className="admission_course_share_pill">
-                        Vendor: {server.vendor}
-                      </span>
-                      <span className="admission_demand_pill">
-                        {server.demand}
-                      </span>
-                    </div>
-                  </div>
-                </Col>
-              );
-            })}
-          </Row>
-
-          {reportData.top_10_servers.length > 5 && !isExporting && (
+            {/* Filter Toggle Buttons matching AdmissionReport */}
             <div
+              className="postsales_datetype_toggle"
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginTop: 18,
-                marginBottom: 6,
+                width: "auto",
+                padding: "3px 4px",
+                background: "#f1f5f9",
+                borderRadius: 8,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 2,
               }}
             >
               <button
                 type="button"
-                onClick={() => setShowAllTopServers(!showAllTopServers)}
-                className="admission_show_more_btn"
+                className={`postsales_toggle_btn ${courseFilterType === "courseResult" ? "active" : ""}`}
+                onClick={() => {
+                  setCourseFilterType("courseResult");
+                  setShowAllTopServers(false);
+                }}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: "11px",
+                  borderRadius: 6,
+                  fontWeight: courseFilterType === "courseResult" ? 700 : 600,
+                  cursor: "pointer",
+                }}
               >
-                {showAllTopServers ? (
-                  <>
-                    Show Less <FiChevronUp size={16} />
-                  </>
-                ) : (
-                  <>
-                    Show All 10 Servers (5 More) <FiChevronDown size={16} />
-                  </>
-                )}
+                Top 10 Best-Selling Courses
+              </button>
+              <button
+                type="button"
+                className={`postsales_toggle_btn ${courseFilterType === "company" ? "active" : ""}`}
+                onClick={() => {
+                  setCourseFilterType("company");
+                  setShowAllTopServers(false);
+                }}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: "11px",
+                  borderRadius: 6,
+                  fontWeight: courseFilterType === "company" ? 700 : 600,
+                  cursor: "pointer",
+                }}
+              >
+                Top 10 Company-Wide Best-Selling Courses
               </button>
             </div>
+          </div>
+
+          {topServersList.length === 0 ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "36px 16px",
+                background: "#f8fafc",
+                borderRadius: "12px",
+                border: "1px dashed #cbd5e1",
+                color: "#64748b",
+                fontWeight: 500,
+              }}
+            >
+              No course server data available for the selected period
+            </div>
+          ) : (
+            <>
+              <Row gutter={[16, 16]}>
+                {(showAllTopServers || isExporting
+                  ? topServersList
+                  : topServersList.slice(0, 5)
+                ).map((server) => {
+                  const rankClass =
+                    server.rank === 1
+                      ? "rank_1"
+                      : server.rank === 2
+                        ? "rank_2"
+                        : server.rank === 3
+                          ? "rank_3"
+                          : "rank_standard";
+                  const cardClass =
+                    server.rank === 1
+                      ? "top_1"
+                      : server.rank === 2
+                        ? "top_2"
+                        : server.rank === 3
+                          ? "top_3"
+                          : "";
+                  const barWidthPercent =
+                    (server.trans_count / maxTopServerTrans) * 100;
+
+                  return (
+                    <Col xs={24} sm={24} md={12} key={server.server_id}>
+                      <div className={`admission_course_card ${cardClass}`}>
+                        <div className="admission_course_top_row">
+                          <div className="admission_course_left">
+                            <div
+                              className={`admission_rank_badge ${rankClass}`}
+                            >
+                              {server.rank <= 3
+                                ? `#${server.rank}`
+                                : server.rank}
+                            </div>
+                            <div className="admission_course_info">
+                              <h4
+                                className="admission_course_title"
+                                title={server.server_name}
+                              >
+                                {server.server_name}
+                              </h4>
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  color: "#64748b",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Server Course Lab
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="admission_course_count_box">
+                            <span className="admission_course_count">
+                              {server.trans_count}
+                            </span>
+                            <span className="admission_course_count_lbl">
+                              Trans
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Progress Fill Bar */}
+                        <div className="admission_course_progress_track">
+                          <div
+                            className="admission_course_progress_fill"
+                            style={{
+                              width: `${barWidthPercent}%`,
+                              background:
+                                server.rank === 1
+                                  ? "linear-gradient(90deg, #6366f1 0%, #4338ca 100%)"
+                                  : server.rank === 2
+                                    ? "linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%)"
+                                    : server.rank === 3
+                                      ? "linear-gradient(90deg, #f59e0b 0%, #d97706 100%)"
+                                      : "linear-gradient(90deg, #10b981 0%, #059669 100%)",
+                            }}
+                          />
+                        </div>
+
+                        {/* Metrics Footer */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "6px 2px",
+                            fontSize: "11px",
+                            color: "#475569",
+                            borderBottom: "1px dashed #e2e8f0",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <span>
+                            Valuation:{" "}
+                            <strong style={{ color: "#d97706" }}>
+                              ₹
+                              {Number(server.raised_amount).toLocaleString(
+                                "en-IN",
+                              )}
+                            </strong>
+                          </span>
+                          <span>
+                            Purchased:{" "}
+                            <strong style={{ color: "#0284c7" }}>
+                              ₹
+                              {Number(server.purchased_amount).toLocaleString(
+                                "en-IN",
+                              )}
+                            </strong>
+                          </span>
+                          <span>
+                            Issued:{" "}
+                            <strong style={{ color: "#059669" }}>
+                              {server.issued_count}
+                            </strong>
+                          </span>
+                        </div>
+
+                        <div className="admission_course_footer">
+                          <span className="admission_course_share_pill">
+                            Transactions: {server.trans_count}
+                          </span>
+                          <span className="admission_demand_pill">
+                            {server.demand}
+                          </span>
+                        </div>
+                      </div>
+                    </Col>
+                  );
+                })}
+              </Row>
+
+              {topServersList.length > 5 && !isExporting && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginTop: 18,
+                    marginBottom: 6,
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTopServers(!showAllTopServers)}
+                    className="admission_show_more_btn"
+                  >
+                    {showAllTopServers ? (
+                      <>
+                        Show Less <FiChevronUp size={16} />
+                      </>
+                    ) : (
+                      <>
+                        Show All {topServersList.length} Courses (
+                        {topServersList.length - 5} More){" "}
+                        <FiChevronDown size={16} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

@@ -56,7 +56,6 @@ export default function CustomerRegistration() {
   const [dateOfBirthError, setDateOfBirthError] = useState(null);
   const [gender, setGender] = useState(null);
   const [genderError, setGenderError] = useState("");
-  const [dateOfJoining, setDateOfJoining] = useState("");
   const [countryId, setCountryId] = useState(null);
   const [stateId, setStateId] = useState(null);
   const [areaOptions, setAreaOptions] = useState([]);
@@ -194,7 +193,6 @@ export default function CustomerRegistration() {
       setCountryId(customerDetails.country);
       setStateId(customerDetails.state);
       setCourse(customerDetails.enrolled_course);
-      setDateOfJoining(customerDetails?.date_of_joining);
       setPreferredBatch(customerDetails.batch_track_id);
       setBatchTiming(customerDetails.batch_timing_id);
       setPlacementSupport(customerDetails.placement_support);
@@ -392,9 +390,6 @@ export default function CustomerRegistration() {
       whatsapp: whatsApp,
       date_of_birth: formatToBackendIST(dateOfBirth),
       gender: gender,
-      date_of_joining: dateOfJoining
-        ? formatToBackendIST(dateOfJoining)
-        : formatToBackendIST(customerFullDetails?.created_date),
       enrolled_course: course,
       region_id:
         customerFullDetails && customerFullDetails.region_id
